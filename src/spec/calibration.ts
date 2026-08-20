@@ -10,10 +10,20 @@ export const CalibrationDatumSchema = Type.Object({
   method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
 });
 
+export const CalibrationDistributionDatumSchema = Type.Object({
+  model: Type.String(),
+  population: Type.Optional(Type.String()),
+  horizon: Type.Optional(Type.Number()),
+  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
+  count: Type.Number({ minimum: 0 }),
+  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 }),
+});
+
 export const CalibrationSpecSchema = Type.Object({
   schemaVersion: Type.Literal("1.0"),
   type: Type.Literal("calibration"),
   data: Type.Array(CalibrationDatumSchema),
+  distribution: Type.Optional(Type.Array(CalibrationDistributionDatumSchema)),
   x: Type.Literal("predicted"),
   y: Type.Literal("observed"),
   xAxis: AxisSpecSchema,
@@ -22,4 +32,5 @@ export const CalibrationSpecSchema = Type.Object({
 });
 
 export type CalibrationDatum = Static<typeof CalibrationDatumSchema>;
+export type CalibrationDistributionDatum = Static<typeof CalibrationDistributionDatumSchema>;
 export type CalibrationSpec = Static<typeof CalibrationSpecSchema>;
