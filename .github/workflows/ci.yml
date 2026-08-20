@@ -18,14 +18,22 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run build:demo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r consumers/python_plotly/requirements.txt
+      - run: python consumers/python_plotly/render.py
       - name: Smoke-test generated assets
         run: |
           test -s dist/rtichoke-viz.js
           test -s schemas/rtichoke-viz.schema.json
           test -s site/index.html
           test -s site/demo.js
+          test -s site/python-plotly/roc.html
+          test -s site/python-plotly/calibration.html
           grep -q 'roc-chart' site/index.html
           grep -q 'calibration-chart' site/index.html
+          grep -q 'Python Plotly' site/index.html
       - uses: actions/upload-artifact@v4
         with:
           name: demo-site
