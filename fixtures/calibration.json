@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "type": "calibration",
+  "data": [
+    {"model":"Model A","predicted":0.1,"observed":0.08,"method":"discrete"},
+    {"model":"Model A","predicted":0.3,"observed":0.27,"method":"discrete"},
+    {"model":"Model A","predicted":0.5,"observed":0.53,"method":"discrete"},
+    {"model":"Model A","predicted":0.7,"observed":0.74,"method":"discrete"},
+    {"model":"Model A","predicted":0.9,"observed":0.88,"method":"discrete"}
+  ],
+  "x": "predicted",
+  "y": "observed",
+  "xAxis": {"label":"Predicted probability","domain":[0,1]},
+  "yAxis": {"label":"Observed probability","domain":[0,1]},
+  "references": [{"type":"identity"}]
+}
