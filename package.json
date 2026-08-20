@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/rtichoke-viz.js",
+    "build:demo": "npm run schema && node scripts/build-demo.mjs",
+    "schema": "esbuild scripts/generate-schema.ts --bundle --platform=node --format=esm --outfile=.tmp/generate-schema.mjs && node .tmp/generate-schema.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -13,6 +15,7 @@
     "@sinclair/typebox": "^0.34.38"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "esbuild": "^0.25.9",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
