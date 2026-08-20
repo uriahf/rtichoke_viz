@@ -30,8 +30,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r consumers/python_plotly/requirements.txt
-      - run: python consumers/python_plotly/render.py
+      - uses: astral-sh/setup-uv@v6
+      - run: uv run --project consumers/python_plotly python consumers/python_plotly/render.py
       - name: Restore PR previews
         uses: actions/checkout@v4
         with:
