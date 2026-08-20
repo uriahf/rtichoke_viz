@@ -12,5 +12,10 @@ export type {
   RtichokePythonRocRow,
   RtichokeRRocRow,
 } from "./adapters/roc.js";
+export { calibrationSpecFromRtichokeRows } from "./adapters/calibration.js";
+export type {
+  CalibrationMethod,
+  RtichokeCalibrationRow,
+} from "./adapters/calibration.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
