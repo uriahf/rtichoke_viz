@@ -2,7 +2,10 @@ import { Value } from "@sinclair/typebox/value";
 import { describe, expect, it } from "vitest";
 import pythonRows from "../fixtures/integration/calibration-rtichoke-python.json" with { type: "json" };
 import rRows from "../fixtures/integration/calibration-rtichoke-r.json" with { type: "json" };
-import { calibrationSpecFromRtichokeRows } from "../src/adapters/calibration.js";
+import {
+  calibrationSpecFromRtichokeRows,
+  type RtichokeCalibrationRow,
+} from "../src/adapters/calibration.js";
 import { CalibrationSpecSchema } from "../src/spec/calibration.js";
 
 function commonRows(rows: Array<{ reference_group: string; x: number; y: number }>) {
@@ -11,20 +14,29 @@ function commonRows(rows: Array<{ reference_group: string; x: number; y: number 
 
 describe("real calibration output-shape integration", () => {
   it("maps R and Python discrete calibration rows to the same canonical spec", () => {
-    const fromR = calibrationSpecFromRtichokeRows(commonRows(rRows), "discrete");
+    const fromR = calibrationSpecFromRtichokeRows(
+      rRows as RtichokeCalibrationRow[],
+      "discrete",
+    );
     const fromPython = calibrationSpecFromRtichokeRows(
-      commonRows(pythonRows),
+      pythonRows as RtichokeCalibrationRow[],
       "discrete",
     );
 
     expect(fromR).toEqual(fromPython);
+    expect(fromR.data[0]).toMatchObject({ events: 8, total: 100 });
     expect(Value.Check(CalibrationSpecSchema, fromR)).toBe(true);
   });
 
-  it("records smoothing as canonical method semantics rather than source columns", () => {
-    const smooth = calibrationSpecFromRtichokeRows(commonRows(rRows), "smooth");
+  it("records smoothing as canonical method semantics without discrete count metadata", () => {
+    const smooth = calibrationSpecFromRtichokeRows(
+      rRows as RtichokeCalibrationRow[],
+      "smooth",
+    );
 
     expect(smooth.data.every((datum) => datum.method === "smooth")).toBe(true);
+    expect(smooth.data.every((datum) => datum.events === undefined)).toBe(true);
+    expect(smooth.data.every((datum) => datum.total === undefined)).toBe(true);
     expect(Value.Check(CalibrationSpecSchema, smooth)).toBe(true);
   });
 
