@@ -85,10 +85,10 @@ def render_roc(spec: dict[str, Any]) -> go.Figure:
     return fig
 
 
-def calibration_hover(row: dict[str, Any]) -> str:
+def calibration_hover(rows: list[dict[str, Any]]) -> str:
     text = "Predicted: %{x:.3f}<br>Observed: %{y:.3f}"
-    if row.get("events") is not None and row.get("total") is not None:
-        text += f" ({row['events']} / {row['total']})"
+    if any(row.get("events") is not None and row.get("total") is not None for row in rows):
+        text += " (%{customdata[0]} / %{customdata[1]})"
     return text + "<extra></extra>"
 
 
@@ -126,7 +126,6 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
     for model in models:
         rows = [row for row in spec["data"] if row["model"] == model]
         discrete = any(row["method"] == "discrete" for row in rows)
-        first = rows[0]
         fig.add_trace(
             go.Scatter(
                 x=[row["predicted"] for row in rows],
@@ -136,11 +135,8 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
                 line={"color": colors[model], "width": 2},
                 name=model,
                 showlegend=len(models) > 1,
-                customdata=[
-                    [row.get("events"), row.get("total")]
-                    for row in rows
-                ],
-                hovertemplate=calibration_hover(first),
+                customdata=[[row.get("events"), row.get("total")] for row in rows],
+                hovertemplate=calibration_hover(rows),
             ),
             row=1,
             col=1,
