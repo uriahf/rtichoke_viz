@@ -11,6 +11,10 @@ export interface RtichokeCalibrationRow {
   reference_group: string;
   x: number;
   y: number;
+  sum_reals?: number;
+  total_obs?: number;
+  n_reals?: number;
+  n?: number;
 }
 
 /** Histogram row shape produced by rtichoke calibration helpers. */
@@ -26,12 +30,19 @@ export function calibrationSpecFromRtichokeRows(
   method: CalibrationMethod,
   distributionRows?: RtichokeCalibrationDistributionRow[],
 ): CalibrationSpec {
-  const data: CalibrationDatum[] = rows.map((row) => ({
-    model: row.reference_group,
-    predicted: row.x,
-    observed: row.y,
-    method,
-  }));
+  const data: CalibrationDatum[] = rows.map((row) => {
+    const events = row.sum_reals ?? row.n_reals;
+    const total = row.total_obs ?? row.n;
+
+    return {
+      model: row.reference_group,
+      predicted: row.x,
+      observed: row.y,
+      method,
+      ...(method === "discrete" && events !== undefined ? { events } : {}),
+      ...(method === "discrete" && total !== undefined ? { total } : {}),
+    };
+  });
 
   const distribution: CalibrationDistributionDatum[] | undefined =
     distributionRows?.map((row) => ({
