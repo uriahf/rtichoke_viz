@@ -8,6 +8,8 @@ export const CalibrationDatumSchema = Type.Object({
   predicted: Type.Number({ minimum: 0, maximum: 1 }),
   observed: Type.Number({ minimum: 0, maximum: 1 }),
   method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 })),
 });
 
 export const CalibrationDistributionDatumSchema = Type.Object({
