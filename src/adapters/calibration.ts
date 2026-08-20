@@ -1,4 +1,8 @@
-import type { CalibrationDatum, CalibrationSpec } from "../spec/calibration.js";
+import type {
+  CalibrationDatum,
+  CalibrationDistributionDatum,
+  CalibrationSpec,
+} from "../spec/calibration.js";
 
 export type CalibrationMethod = "discrete" | "smooth";
 
@@ -9,10 +13,18 @@ export interface RtichokeCalibrationRow {
   y: number;
 }
 
+/** Histogram row shape produced by rtichoke calibration helpers. */
+export interface RtichokeCalibrationDistributionRow {
+  reference_group: string;
+  mids: number;
+  counts: number;
+}
+
 /** Map plotted calibration rows from either rtichoke implementation to the canonical spec. */
 export function calibrationSpecFromRtichokeRows(
   rows: RtichokeCalibrationRow[],
   method: CalibrationMethod,
+  distributionRows?: RtichokeCalibrationDistributionRow[],
 ): CalibrationSpec {
   const data: CalibrationDatum[] = rows.map((row) => ({
     model: row.reference_group,
@@ -21,10 +33,19 @@ export function calibrationSpecFromRtichokeRows(
     method,
   }));
 
+  const distribution: CalibrationDistributionDatum[] | undefined =
+    distributionRows?.map((row) => ({
+      model: row.reference_group,
+      midpoint: row.mids,
+      count: row.counts,
+      binWidth: 0.01,
+    }));
+
   return {
     schemaVersion: "1.0",
     type: "calibration",
     data,
+    ...(distribution ? { distribution } : {}),
     x: "predicted",
     y: "observed",
     xAxis: { label: "Predicted probability", domain: [0, 1] },
