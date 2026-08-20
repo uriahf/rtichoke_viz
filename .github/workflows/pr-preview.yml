@@ -1,0 +1,161 @@
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build:demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr-preview-site
+          path: site
+
+  deploy:
+    needs: build
+    if: always() && github.event.pull_request.head.repo.full_name == github.repository && (github.event.action == 'closed' || needs.build.result == 'success')
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PR demo
+        if: github.event.action != 'closed'
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-preview-site
+          path: pr-site
+
+      - name: Check out production source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-source
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build production demo
+        working-directory: main-source
+        run: |
+          npm install
+          npm run build:demo
+
+      - name: Check out preview store
+        uses: actions/checkout@v4
+        with:
+          ref: preview-store
+          path: preview-store
+          token: ${{ github.token }}
+
+      - name: Update preview store
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          target="preview-store/pr-preview/pr-${PR_NUMBER}"
+          rm -rf "$target"
+          if [ "$ACTION" != "closed" ]; then
+            mkdir -p "$target"
+            cp -R pr-site/. "$target/"
+          fi
+          cd preview-store
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Update preview for PR #${PR_NUMBER}"
+            git push origin preview-store
+          fi
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p pages-site
+          cp -R main-source/site/. pages-site/
+          if [ -d preview-store/pr-preview ]; then
+            mkdir -p pages-site/pr-preview
+            cp -R preview-store/pr-preview/. pages-site/pr-preview/
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Update PR preview comment
+        if: github.event.action != 'closed'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.pull_request.number }}/
+        with:
+          script: |
+            const marker = '<!-- rtichoke-viz-pr-preview -->';
+            const body = `${marker}\n**Rendered preview:** ${process.env.PREVIEW_URL}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (comment) => comment.user?.type === 'Bot' && comment.body?.includes(marker),
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Mark preview removed
+        if: github.event.action == 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- rtichoke-viz-pr-preview -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (comment) => comment.user?.type === 'Bot' && comment.body?.includes(marker),
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: `${marker}\nRendered preview removed because this PR is closed.`,
+              });
+            }

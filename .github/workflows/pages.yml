@@ -27,10 +27,23 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run build:demo
+      - name: Restore PR previews
+        uses: actions/checkout@v4
+        with:
+          ref: preview-store
+          path: preview-store
+      - name: Assemble Pages site
+        run: |
+          mkdir -p pages-site
+          cp -R site/. pages-site/
+          if [ -d preview-store/pr-preview ]; then
+            mkdir -p pages-site/pr-preview
+            cp -R preview-store/pr-preview/. pages-site/pr-preview/
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: pages-site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
