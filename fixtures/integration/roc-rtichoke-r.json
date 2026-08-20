@@ -1,0 +1,5 @@
+[
+  {"model":"Model A","probability_threshold":0,"sensitivity":1,"specificity":0},
+  {"model":"Model A","probability_threshold":0.5,"sensitivity":0.5,"specificity":0.5},
+  {"model":"Model A","probability_threshold":1,"sensitivity":0,"specificity":1}
+]
