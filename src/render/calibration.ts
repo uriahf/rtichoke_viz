@@ -21,8 +21,33 @@ const BASE_STYLE = {
   fontSize: "13px",
 };
 
+function formatPointTooltip(
+  datum: CalibrationSpec["data"][number],
+  showModel: boolean,
+): string {
+  const lines = [
+    ...(showModel ? [datum.model] : []),
+    `Predicted: ${datum.predicted.toFixed(3)}`,
+    `Observed: ${datum.observed.toFixed(3)}`,
+  ];
+
+  if (datum.method === "discrete" && datum.events !== undefined && datum.total !== undefined) {
+    lines[lines.length - 1] += ` ( ${datum.events} / ${datum.total} )`;
+  }
+
+  return lines.join("\n");
+}
+
 /** Render a calibration specification with rtichoke-style visual semantics. */
 export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLElement {
+  const models = [...new Set(spec.data.map((datum) => datum.model))];
+  const showLegend = models.length > 1;
+  const colorRange = showLegend ? RTICHOKE_COLORS : ["#000000"];
+  const plottedData = spec.data.map((datum) => ({
+    ...datum,
+    tooltip: formatPointTooltip(datum, showLegend),
+  }));
+
   const marks: Plot.Markish[] = [];
 
   if (spec.references?.some((reference) => reference.type === "identity")) {
@@ -44,16 +69,17 @@ export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLEl
   }
 
   marks.push(
-    Plot.line(spec.data, {
+    Plot.line(plottedData, {
       x: "predicted",
       y: "observed",
       stroke: "model",
       strokeWidth: 2,
+      title: "tooltip",
       tip: true,
     }),
   );
 
-  const discrete = spec.data.filter((datum) => datum.method === "discrete");
+  const discrete = plottedData.filter((datum) => datum.method === "discrete");
   if (discrete.length > 0) {
     marks.push(
       Plot.dot(discrete, {
@@ -63,6 +89,7 @@ export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLEl
         stroke: "white",
         strokeWidth: 1.5,
         r: 5,
+        title: "tooltip",
         tip: true,
       }),
     );
@@ -88,7 +115,7 @@ export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLEl
       grid: false,
       ticks: 6,
     },
-    color: { legend: true, range: RTICHOKE_COLORS },
+    color: { legend: showLegend, range: colorRange },
     marks,
   });
 
@@ -96,6 +123,13 @@ export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLEl
     return calibration;
   }
 
+  const distribution = spec.distribution.map((datum) => ({
+    ...datum,
+    tooltip: `${showLegend ? `${datum.model}\n` : ""}${datum.count} observations in [${(
+      datum.midpoint -
+      datum.binWidth / 2
+    ).toFixed(3)}, ${(datum.midpoint + datum.binWidth / 2).toFixed(3)}]`,
+  }));
   const modelCount = new Set(spec.distribution.map((datum) => datum.model)).size;
   const histogram = Plot.plot({
     width: 600,
@@ -115,14 +149,15 @@ export function renderCalibration(spec: CalibrationSpec): SVGSVGElement | HTMLEl
       grid: false,
       ticks: 3,
     },
-    color: { legend: false, range: RTICHOKE_COLORS },
+    color: { legend: false, range: colorRange },
     marks: [
-      Plot.rectY(spec.distribution, {
+      Plot.rectY(distribution, {
         x1: (datum) => datum.midpoint - datum.binWidth / 2,
         x2: (datum) => datum.midpoint + datum.binWidth / 2,
         y: "count",
         fill: "model",
         fillOpacity: 1 / Math.max(modelCount, 1),
+        title: "tooltip",
         tip: true,
       }),
     ],
