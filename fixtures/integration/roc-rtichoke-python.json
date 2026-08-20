@@ -1,0 +1,5 @@
+[
+  {"reference_group":"Model A","chosen_cutoff":0,"sensitivity":1,"specificity":0},
+  {"reference_group":"Model A","chosen_cutoff":0.5,"sensitivity":0.5,"specificity":0.5},
+  {"reference_group":"Model A","chosen_cutoff":1,"sensitivity":0,"specificity":1}
+]
