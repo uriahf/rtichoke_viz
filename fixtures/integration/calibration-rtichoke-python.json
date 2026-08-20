@@ -1,0 +1,6 @@
+[
+  {"reference_group":"Model A","model":"Model A","decile":1,"n":100,"x":0.10,"y":0.08,"n_reals":8},
+  {"reference_group":"Model A","model":"Model A","decile":2,"n":100,"x":0.30,"y":0.27,"n_reals":27},
+  {"reference_group":"Model B","model":"Model B","decile":1,"n":100,"x":0.10,"y":0.12,"n_reals":12},
+  {"reference_group":"Model B","model":"Model B","decile":2,"n":100,"x":0.30,"y":0.35,"n_reals":35}
+]
