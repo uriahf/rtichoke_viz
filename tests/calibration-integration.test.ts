@@ -27,4 +27,17 @@ describe("real calibration output-shape integration", () => {
     expect(smooth.data.every((datum) => datum.method === "smooth")).toBe(true);
     expect(Value.Check(CalibrationSpecSchema, smooth)).toBe(true);
   });
+
+  it("maps rtichoke histogram rows without recomputing bins in the renderer", () => {
+    const spec = calibrationSpecFromRtichokeRows(commonRows(rRows), "discrete", [
+      { reference_group: "Model A", mids: 0.005, counts: 4 },
+      { reference_group: "Model A", mids: 0.015, counts: 9 },
+    ]);
+
+    expect(spec.distribution).toEqual([
+      { model: "Model A", midpoint: 0.005, count: 4, binWidth: 0.01 },
+      { model: "Model A", midpoint: 0.015, count: 9, binWidth: 0.01 },
+    ]);
+    expect(Value.Check(CalibrationSpecSchema, spec)).toBe(true);
+  });
 });
