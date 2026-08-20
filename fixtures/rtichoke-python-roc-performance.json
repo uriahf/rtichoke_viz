@@ -1,0 +1,6 @@
+[
+  {"reference_group":"Model A","chosen_cutoff":0.0,"sensitivity":1.0,"specificity":0.0,"false_positive_rate":1.0},
+  {"reference_group":"Model A","chosen_cutoff":0.3,"sensitivity":0.82,"specificity":0.68,"false_positive_rate":0.32},
+  {"reference_group":"Model A","chosen_cutoff":0.6,"sensitivity":0.45,"specificity":0.92,"false_positive_rate":0.08},
+  {"reference_group":"Model A","chosen_cutoff":1.0,"sensitivity":0.0,"specificity":1.0,"false_positive_rate":0.0}
+]
