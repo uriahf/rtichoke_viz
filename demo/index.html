@@ -5,19 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rtichoke_viz demo</title>
   <style>
-    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-    body { max-width: 1100px; margin: 0 auto; padding: 2rem; }
-    main { display: grid; gap: 2rem; }
-    section { border: 1px solid #bbb6; border-radius: 12px; padding: 1rem; }
-    .chart { overflow-x: auto; }
-    code { font-family: ui-monospace, monospace; }
+    :root { font-family: Arial, Helvetica, sans-serif; color: #222; background: #fff; }
+    body { max-width: 1280px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+    main { display: grid; gap: 3rem; }
+    header { max-width: 760px; }
+    h1 { margin-bottom: .5rem; font-size: 2rem; font-weight: 600; }
+    h2 { margin: 0 0 1rem; font-size: 1.25rem; font-weight: 600; }
+    p { line-height: 1.5; color: #555; }
+    section { padding: 0; }
+    .chart { overflow-x: auto; min-height: 600px; }
+    .chart > * { display: block; }
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>rtichoke_viz proof of concept</h1>
-      <p>These charts are rendered from the canonical deterministic JSON fixtures used by the test suite.</p>
+      <p>Canonical ROC and calibration specifications rendered in the browser with visual semantics aligned to rtichoke.</p>
     </header>
     <section>
       <h2>ROC</h2>
