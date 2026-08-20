@@ -1,6 +1,0 @@
-[
-  {"reference_group":"Model A","x":0.10,"y":0.08,"sum_reals":8,"total_obs":100,"text":"Predicted: 0.1<br>Observed: 0.08"},
-  {"reference_group":"Model A","x":0.30,"y":0.27,"sum_reals":27,"total_obs":100,"text":"Predicted: 0.3<br>Observed: 0.27"},
-  {"reference_group":"Model B","x":0.10,"y":0.12,"sum_reals":12,"total_obs":100,"text":"Predicted: 0.1<br>Observed: 0.12"},
-  {"reference_group":"Model B","x":0.30,"y":0.35,"sum_reals":35,"total_obs":100,"text":"Predicted: 0.3<br>Observed: 0.35"}
-]
