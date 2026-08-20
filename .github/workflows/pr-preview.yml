@@ -4,43 +4,50 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 
-permissions:
-  contents: write
-  pull-requests: write
-  pages: write
-  id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  preview:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  build:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build:demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr-preview-site
+          path: site
+
+  deploy:
+    needs: build
+    if: always() && github.event.pull_request.head.repo.full_name == github.repository && (github.event.action == 'closed' || needs.build.result == 'success')
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check out PR
+      - name: Download PR demo
         if: github.event.action != 'closed'
-        uses: actions/checkout@v4
+        uses: actions/download-artifact@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: pr-source
-
-      - name: Set up Node
-        if: github.event.action != 'closed'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Build PR demo
-        if: github.event.action != 'closed'
-        working-directory: pr-source
-        run: |
-          npm install
-          npm run build:demo
+          name: pr-preview-site
+          path: pr-site
 
       - name: Check out production source
         uses: actions/checkout@v4
@@ -48,8 +55,7 @@ jobs:
           ref: main
           path: main-source
 
-      - name: Set up Node for production
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
 
@@ -76,7 +82,7 @@ jobs:
           rm -rf "$target"
           if [ "$ACTION" != "closed" ]; then
             mkdir -p "$target"
-            cp -R pr-source/site/. "$target/"
+            cp -R pr-site/. "$target/"
           fi
           cd preview-store
           git config user.name "github-actions[bot]"
@@ -126,12 +132,7 @@ jobs:
               (comment) => comment.user?.type === 'Bot' && comment.body?.includes(marker),
             );
             if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
