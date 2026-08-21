@@ -23,8 +23,8 @@ def load_spec(path: Path) -> dict[str, Any]:
     return spec
 
 
-def series_groups(spec: dict[str, Any]) -> dict[str, str]:
-    return {series["id"]: series["display"]["group"] for series in spec["series"]}
+def series_specs(spec: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {series["id"]: series for series in spec["series"]}
 
 
 def group_colors(groups: list[str]) -> dict[str, str]:
@@ -34,21 +34,25 @@ def group_colors(groups: list[str]) -> dict[str, str]:
 
 
 def render_roc(spec: dict[str, Any]) -> go.Figure:
-    mapping = series_groups(spec)
-    groups = list(dict.fromkeys(mapping[row["seriesId"]] for row in spec["data"]))
+    series = series_specs(spec)
+    groups = list(dict.fromkeys(item["display"]["group"] for item in spec["series"]))
     colors = group_colors(groups)
     fig = go.Figure()
-    for group in groups:
-        rows = [row for row in spec["data"] if mapping[row["seriesId"]] == group]
+    for series_id, item in series.items():
+        rows = [row for row in spec["data"] if row["seriesId"] == series_id]
+        if not rows:
+            continue
+        display = item["display"]
         fig.add_trace(go.Scatter(
             x=[1 - row["specificity"] for row in rows],
             y=[row["sensitivity"] for row in rows],
             mode="lines",
-            name=group,
-            line={"color": colors[group], "width": 2},
+            name=display["label"],
+            legendgroup=display["group"],
+            line={"color": colors[display["group"]], "width": 2},
             customdata=[[row["cutoff"], row["specificity"]] for row in rows],
             hovertemplate="Cutoff: %{customdata[0]:.3f}<br>Sensitivity: %{y:.3f}<br>Specificity: %{customdata[1]:.3f}<extra></extra>",
-            showlegend=len(groups) > 1,
+            showlegend=len(series) > 1,
         ))
     if any(ref.get("type") == "identity" for ref in spec.get("references", [])):
         fig.add_trace(go.Scatter(
@@ -70,9 +74,9 @@ def calibration_hover(rows: list[dict[str, Any]]) -> str:
 
 
 def render_calibration(spec: dict[str, Any]) -> go.Figure:
-    mapping = series_groups(spec)
+    series = series_specs(spec)
     distribution = spec.get("distribution", [])
-    groups = list(dict.fromkeys(mapping[row["seriesId"]] for row in spec["data"]))
+    groups = list(dict.fromkeys(item["display"]["group"] for item in spec["series"]))
     colors = group_colors(groups)
     has_distribution = bool(distribution)
     fig = make_subplots(rows=2 if has_distribution else 1, cols=1, shared_xaxes=has_distribution,
@@ -81,26 +85,32 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines",
                                  line={"color": "#BEBEBE", "width": 2, "dash": "dot"},
                                  hovertemplate="Perfectly Calibrated<extra></extra>", showlegend=False), row=1, col=1)
-    for group in groups:
-        rows = [row for row in spec["data"] if mapping[row["seriesId"]] == group]
+    for series_id, item in series.items():
+        rows = [row for row in spec["data"] if row["seriesId"] == series_id]
+        if not rows:
+            continue
+        display = item["display"]
         discrete = any(row["method"] == "discrete" for row in rows)
         fig.add_trace(go.Scatter(
             x=[row["predicted"] for row in rows], y=[row["observed"] for row in rows],
-            mode="lines+markers" if discrete else "lines", name=group,
-            marker={"size": 10, "color": colors[group]}, line={"color": colors[group], "width": 2},
-            showlegend=len(groups) > 1,
+            mode="lines+markers" if discrete else "lines", name=display["label"],
+            legendgroup=display["group"],
+            marker={"size": 10, "color": colors[display["group"]]}, line={"color": colors[display["group"]], "width": 2},
+            showlegend=len(series) > 1,
             customdata=[[row.get("events"), row.get("total")] for row in rows],
             hovertemplate=calibration_hover(rows),
         ), row=1, col=1)
     if has_distribution:
-        for group in groups:
-            rows = [row for row in distribution if mapping[row["seriesId"]] == group]
+        for series_id, item in series.items():
+            rows = [row for row in distribution if row["seriesId"] == series_id]
             if not rows:
                 continue
+            display = item["display"]
             fig.add_trace(go.Bar(
                 x=[row["midpoint"] for row in rows], y=[row["count"] for row in rows],
-                width=[row["binWidth"] for row in rows], marker={"color": colors[group]},
-                opacity=1 / max(len(groups), 1), name=group, showlegend=False,
+                width=[row["binWidth"] for row in rows], marker={"color": colors[display["group"]]},
+                opacity=1 / max(len(groups), 1), name=display["label"], legendgroup=display["group"],
+                showlegend=False,
             ), row=2, col=1)
     fig.update_layout(width=600, height=600, barmode="overlay", plot_bgcolor="white", paper_bgcolor="white")
     fig.update_xaxes(range=spec["xAxis"]["domain"], showgrid=False)
@@ -110,24 +120,28 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
 
 
 def render_precision_recall(spec: dict[str, Any]) -> go.Figure:
-    mapping = series_groups(spec)
-    groups = list(dict.fromkeys(mapping[row["seriesId"]] for row in spec["data"]))
+    series = series_specs(spec)
+    groups = list(dict.fromkeys(item["display"]["group"] for item in spec["series"]))
     colors = group_colors(groups)
     fig = go.Figure()
     for ref in spec.get("references", []):
         if ref.get("type") == "horizontal" and ref.get("value") is not None:
             fig.add_hline(y=ref["value"], line={"color": "#BEBEBE", "width": 2, "dash": "dot"})
-    for group in groups:
-        rows = [row for row in spec["data"] if mapping[row["seriesId"]] == group]
+    for series_id, item in series.items():
+        rows = [row for row in spec["data"] if row["seriesId"] == series_id]
+        if not rows:
+            continue
+        display = item["display"]
         fig.add_trace(go.Scatter(
             x=[row["sensitivity"] for row in rows],
             y=[row["ppv"] for row in rows],
             mode="lines",
-            name=group,
-            line={"color": colors[group], "width": 2},
+            name=display["label"],
+            legendgroup=display["group"],
+            line={"color": colors[display["group"]], "width": 2},
             customdata=[[row["cutoff"]] for row in rows],
             hovertemplate="Cutoff: %{customdata[0]:.3f}<br>Sensitivity: %{x:.3f}<br>PPV: %{y:.3f}<extra></extra>",
-            showlegend=len(groups) > 1,
+            showlegend=len(series) > 1,
         ))
     fig.update_layout(width=600, height=600, plot_bgcolor="white", paper_bgcolor="white")
     fig.update_xaxes(title=spec["xAxis"]["label"], range=spec["xAxis"]["domain"], showgrid=False)
@@ -143,12 +157,23 @@ def render(spec: dict[str, Any]) -> go.Figure:
     return render_precision_recall(spec)
 
 
+def assert_shared_display_group_series_identity(fixtures: Path) -> None:
+    spec = load_spec(fixtures / "precision-recall-shared-display-group.json")
+    fig = render_precision_recall(spec)
+    assert len(fig.data) == 2
+    assert [trace.name for trace in fig.data] == ["Curve A", "Curve B"]
+    assert len({trace.legendgroup for trace in fig.data}) == 1
+    assert len({trace.line.color for trace in fig.data}) == 1
+    assert [len(trace.x) for trace in fig.data] == [2, 2]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixtures", type=Path, default=Path("fixtures/v2"))
     parser.add_argument("--output", type=Path, default=Path("site/python-plotly"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    assert_shared_display_group_series_identity(args.fixtures)
     fixtures = {
         "roc": "roc.json",
         "calibration": "calibration.json",

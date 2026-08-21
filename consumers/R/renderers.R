@@ -18,7 +18,8 @@ has_identity_reference <- function(spec) {
 attach_display_group <- function(spec, dat) {
   groups <- data.frame(
     seriesId = spec$series$id,
-    group = spec$series$display$group
+    group = spec$series$display$group,
+    label = spec$series$display$label
   )
   merge(dat, groups, by = "seriesId", sort = FALSE)
 }
@@ -28,7 +29,7 @@ render_roc_ggplot <- function(spec) {
   dat$false_positive_rate <- 1 - dat$specificity
   one_group <- length(unique(dat$group)) == 1
 
-  p <- ggplot(dat, aes(x = false_positive_rate, y = sensitivity, color = group, group = group)) +
+  p <- ggplot(dat, aes(x = false_positive_rate, y = sensitivity, color = group, group = seriesId)) +
     geom_line(linewidth = 0.8) +
     scale_x_continuous(name = spec$xAxis$label, limits = unlist(spec$xAxis$domain)) +
     scale_y_continuous(name = spec$yAxis$label, limits = unlist(spec$yAxis$domain)) +
@@ -47,7 +48,7 @@ render_roc_ggplot <- function(spec) {
 }
 
 render_roc_plotly <- function(spec) {
-  ggplotly(render_roc_ggplot(spec), tooltip = c("group", "false_positive_rate", "sensitivity")) |>
+  ggplotly(render_roc_ggplot(spec), tooltip = c("label", "false_positive_rate", "sensitivity")) |>
     config(displayModeBar = FALSE)
 }
 
@@ -55,7 +56,7 @@ render_calibration_ggplot <- function(spec) {
   dat <- attach_display_group(spec, spec$data)
   one_group <- length(unique(dat$group)) == 1
 
-  p <- ggplot(dat, aes(x = predicted, y = observed, color = group, group = group)) +
+  p <- ggplot(dat, aes(x = predicted, y = observed, color = group, group = seriesId)) +
     geom_line(linewidth = 0.8) +
     scale_x_continuous(name = spec$xAxis$label, limits = unlist(spec$xAxis$domain)) +
     scale_y_continuous(name = spec$yAxis$label, limits = unlist(spec$yAxis$domain)) +
@@ -77,7 +78,7 @@ render_calibration_ggplot <- function(spec) {
 render_calibration_plotly <- function(spec) {
   main <- ggplotly(
     render_calibration_ggplot(spec),
-    tooltip = c("group", "predicted", "observed", "events", "total")
+    tooltip = c("label", "predicted", "observed", "events", "total")
   )
   if (is.null(spec$distribution) || nrow(spec$distribution) == 0) {
     return(config(main, displayModeBar = FALSE))
@@ -111,7 +112,7 @@ render_calibration_plotly <- function(spec) {
 render_precision_recall_ggplot <- function(spec) {
   dat <- attach_display_group(spec, spec$data)
   one_group <- length(unique(dat$group)) == 1
-  p <- ggplot(dat, aes(x = sensitivity, y = ppv, color = group, group = group)) +
+  p <- ggplot(dat, aes(x = sensitivity, y = ppv, color = group, group = seriesId)) +
     geom_line(linewidth = 0.8) +
     scale_x_continuous(name = spec$xAxis$label, limits = unlist(spec$xAxis$domain)) +
     scale_y_continuous(name = spec$yAxis$label, limits = unlist(spec$yAxis$domain)) +
@@ -132,6 +133,6 @@ render_precision_recall_ggplot <- function(spec) {
 }
 
 render_precision_recall_plotly <- function(spec) {
-  ggplotly(render_precision_recall_ggplot(spec), tooltip = c("group", "sensitivity", "ppv", "cutoff")) |>
+  ggplotly(render_precision_recall_ggplot(spec), tooltip = c("label", "sensitivity", "ppv", "cutoff")) |>
     config(displayModeBar = FALSE)
 }

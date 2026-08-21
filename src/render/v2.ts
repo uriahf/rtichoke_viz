@@ -22,15 +22,22 @@ function displayBySeries(spec: SeriesChartSpec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
 }
 
+export function seriesRenderData<T extends { seriesId: string }>(spec: SeriesChartSpec, data: T[]) {
+  const displays = displayBySeries(spec);
+  return data.map((datum) => ({
+    ...datum,
+    group: displays.get(datum.seriesId)!.group,
+    label: displays.get(datum.seriesId)!.label,
+  }));
+}
+
 export function renderRocV2(spec: RocV2Spec): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups.length > 1;
-  const data = spec.data.map((datum) => ({
+  const data = seriesRenderData(spec, spec.data).map((datum) => ({
     ...datum,
     false_positive_rate: 1 - datum.specificity,
-    group: displays.get(datum.seriesId)!.group,
   }));
   const marks: Plot.Markish[] = [];
 
@@ -40,7 +47,7 @@ export function renderRocV2(spec: RocV2Spec): SVGSVGElement | HTMLElement {
     }));
   }
   marks.push(Plot.line(data, {
-    x: "false_positive_rate", y: "sensitivity", stroke: "group", strokeWidth: 2, tip: true,
+    x: "false_positive_rate", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true,
   }));
 
   return Plot.plot({
@@ -58,14 +65,10 @@ export function renderRocV2(spec: RocV2Spec): SVGSVGElement | HTMLElement {
 
 export function renderCalibrationV2(spec: CalibrationV2Spec): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups.length > 1;
   const colorRange = showLegend ? RTICHOKE_COLORS : ["#000000"];
-  const data = spec.data.map((datum) => ({
-    ...datum,
-    group: displays.get(datum.seriesId)!.group,
-  }));
+  const data = seriesRenderData(spec, spec.data);
   const marks: Plot.Markish[] = [];
 
   if (spec.references?.some((reference) => reference.type === "identity")) {
@@ -74,7 +77,7 @@ export function renderCalibrationV2(spec: CalibrationV2Spec): SVGSVGElement | HT
     }));
   }
   marks.push(Plot.line(data, {
-    x: "predicted", y: "observed", stroke: "group", strokeWidth: 2, tip: true,
+    x: "predicted", y: "observed", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true,
   }));
   const discrete = data.filter((datum) => datum.method === "discrete");
   if (discrete.length > 0) {
@@ -97,10 +100,7 @@ export function renderCalibrationV2(spec: CalibrationV2Spec): SVGSVGElement | HT
   });
 
   if (!hasDistribution || !spec.distribution) return calibration;
-  const distribution = spec.distribution.map((datum) => ({
-    ...datum,
-    group: displays.get(datum.seriesId)!.group,
-  }));
+  const distribution = seriesRenderData(spec, spec.distribution);
   const histogram = Plot.plot({
     width: 600,
     height: 120,
@@ -128,13 +128,9 @@ export function renderPrecisionRecallV2(
   spec: PrecisionRecallV2Spec,
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups.length > 1;
-  const data = spec.data.map((datum) => ({
-    ...datum,
-    group: displays.get(datum.seriesId)!.group,
-  }));
+  const data = seriesRenderData(spec, spec.data);
   const marks: Plot.Markish[] = [];
 
   for (const reference of spec.references ?? []) {
@@ -149,6 +145,7 @@ export function renderPrecisionRecallV2(
   marks.push(Plot.line(data, {
     x: "sensitivity",
     y: "ppv",
+    z: "seriesId",
     stroke: "group",
     strokeWidth: 2,
     tip: true,
