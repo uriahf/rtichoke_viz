@@ -18227,15 +18227,21 @@ var BASE_STYLE = {
 function displayBySeries(spec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
 }
+function seriesRenderData(spec, data) {
+  const displays = displayBySeries(spec);
+  return data.map((datum2) => ({
+    ...datum2,
+    group: displays.get(datum2.seriesId).group,
+    label: displays.get(datum2.seriesId).label
+  }));
+}
 function renderRocV2(spec) {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups2.length > 1;
-  const data = spec.data.map((datum2) => ({
+  const data = seriesRenderData(spec, spec.data).map((datum2) => ({
     ...datum2,
-    false_positive_rate: 1 - datum2.specificity,
-    group: displays.get(datum2.seriesId).group
+    false_positive_rate: 1 - datum2.specificity
   }));
   const marks2 = [];
   if (spec.references?.some((reference) => reference.type === "identity")) {
@@ -18249,6 +18255,7 @@ function renderRocV2(spec) {
   marks2.push(line(data, {
     x: "false_positive_rate",
     y: "sensitivity",
+    z: "seriesId",
     stroke: "group",
     strokeWidth: 2,
     tip: true
@@ -18267,14 +18274,10 @@ function renderRocV2(spec) {
 }
 function renderCalibrationV2(spec) {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups2.length > 1;
   const colorRange = showLegend ? RTICHOKE_COLORS : ["#000000"];
-  const data = spec.data.map((datum2) => ({
-    ...datum2,
-    group: displays.get(datum2.seriesId).group
-  }));
+  const data = seriesRenderData(spec, spec.data);
   const marks2 = [];
   if (spec.references?.some((reference) => reference.type === "identity")) {
     marks2.push(line([{ x: 0, y: 0 }, { x: 1, y: 1 }], {
@@ -18288,6 +18291,7 @@ function renderCalibrationV2(spec) {
   marks2.push(line(data, {
     x: "predicted",
     y: "observed",
+    z: "seriesId",
     stroke: "group",
     strokeWidth: 2,
     tip: true
@@ -18317,10 +18321,7 @@ function renderCalibrationV2(spec) {
     marks: marks2
   });
   if (!hasDistribution || !spec.distribution) return calibration;
-  const distribution = spec.distribution.map((datum2) => ({
-    ...datum2,
-    group: displays.get(datum2.seriesId).group
-  }));
+  const distribution = seriesRenderData(spec, spec.distribution);
   const histogram = plot({
     width: 600,
     height: 120,
@@ -18348,13 +18349,9 @@ function renderCalibrationV2(spec) {
 }
 function renderPrecisionRecallV2(spec) {
   assertV2ReferentialIntegrity(spec);
-  const displays = displayBySeries(spec);
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups2.length > 1;
-  const data = spec.data.map((datum2) => ({
-    ...datum2,
-    group: displays.get(datum2.seriesId).group
-  }));
+  const data = seriesRenderData(spec, spec.data);
   const marks2 = [];
   for (const reference of spec.references ?? []) {
     if (reference.type !== "horizontal" || reference.value === void 0) continue;
@@ -18367,6 +18364,7 @@ function renderPrecisionRecallV2(spec) {
   marks2.push(line(data, {
     x: "sensitivity",
     y: "ppv",
+    z: "seriesId",
     stroke: "group",
     strokeWidth: 2,
     tip: true
