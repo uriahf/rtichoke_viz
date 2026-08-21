@@ -1,0 +1,21 @@
+{
+  "schemaVersion":"2.0","type":"gains",
+  "evaluations":[
+    {"id":"eval-a","model":"Model A","population":"Population X","label":"Model A"},
+    {"id":"eval-b","model":"Model B","population":"Population X","label":"Model B"}
+  ],
+  "series":[
+    {"id":"series-a","evaluationId":"eval-a","display":{"label":"Model A","group":"Model A","role":"model"}},
+    {"id":"series-b","evaluationId":"eval-b","display":{"label":"Model B","group":"Model B","role":"model"}}
+  ],
+  "data":[
+    {"seriesId":"series-a","cutoff":0.5,"ppcr":0.4,"sensitivity":0.8},
+    {"seriesId":"series-b","cutoff":0.5,"ppcr":0.5,"sensitivity":0.7}
+  ],
+  "x":"ppcr","y":"sensitivity",
+  "xAxis":{"label":"Predicted Positives (Rate)","domain":[0,1]},"yAxis":{"label":"Sensitivity","domain":[0,1]},
+  "references":[
+    {"type":"identity","scope":"global","label":"Random"},
+    {"type":"path","points":[{"x":0,"y":0},{"x":0.25,"y":1},{"x":1,"y":1}],"scope":"population","population":"Population X","label":"Perfect Model"}
+  ]
+}
