@@ -18,7 +18,7 @@ describe("rtichoke visualization v2 semantic specs", () => {
   });
 
   it("accepts calibration when model identity is unknown", () => {
-    expect(calibration.evaluations[0].model).toBeUndefined();
+    expect("model" in calibration.evaluations[0]).toBe(false);
     expect(Value.Check(CalibrationV2SpecSchema, calibration)).toBe(true);
   });
 
