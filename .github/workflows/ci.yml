@@ -17,6 +17,12 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: node scripts/smoke-dist.mjs
+      - run: npm run schema
+      - name: Verify release artifact
+        run: |
+          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/package-release.sh
+          bash scripts/verify-release.sh
       - run: npm run build:demo
       - uses: actions/setup-python@v5
         with:
