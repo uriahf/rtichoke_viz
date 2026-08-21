@@ -26,6 +26,7 @@ jobs:
       - name: Smoke-test generated assets
         run: |
           test -s dist/rtichoke-viz.js
+          test -s dist/rtichoke-viz.css
           test -s schemas/rtichoke-viz.schema.json
           test -s site/index.html
           test -s site/demo.js
