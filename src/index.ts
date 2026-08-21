@@ -32,6 +32,11 @@ export type {
   CalibrationV2DistributionDatum,
   CalibrationV2Spec,
 } from "./spec/v2/calibration.js";
+export { PrecisionRecallV2SpecSchema } from "./spec/v2/precision_recall.js";
+export type {
+  PrecisionRecallV2Datum,
+  PrecisionRecallV2Spec,
+} from "./spec/v2/precision_recall.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
 export {
   rocSpecFromRtichokePython,
