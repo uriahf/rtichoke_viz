@@ -32,6 +32,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: node scripts/smoke-dist.mjs
       - run: npm run schema
 
       - name: Verify tag matches bundle version
@@ -40,19 +41,10 @@ jobs:
           test "${RELEASE_TAG}" = "v${VERSION}"
 
       - name: Package immutable bundle
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          SOURCE_COMMIT="$(git rev-parse HEAD)"
-          BUNDLE="rtichoke-viz-${VERSION}"
-          mkdir -p "release/${BUNDLE}"
-          cp dist/rtichoke-viz.js "release/${BUNDLE}/"
-          cp dist/rtichoke-viz.css "release/${BUNDLE}/"
-          cp schemas/rtichoke-viz.schema.json "release/${BUNDLE}/"
-          printf 'version=%s\ncommit=%s\n' "${VERSION}" "${SOURCE_COMMIT}" \
-            > "release/${BUNDLE}/MANIFEST"
-          tar -C release -czf "release/${BUNDLE}.tar.gz" "${BUNDLE}"
-          sha256sum "release/${BUNDLE}.tar.gz" \
-            > "release/${BUNDLE}.tar.gz.sha256"
+        run: bash scripts/package-release.sh
+
+      - name: Verify packaged bundle
+        run: bash scripts/verify-release.sh
 
       - name: Publish GitHub release
         env:
