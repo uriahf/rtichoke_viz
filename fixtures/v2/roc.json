@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2.0",
+  "type": "roc",
+  "evaluations": [
+    {
+      "id": "eval-model-a",
+      "model": "Model A",
+      "population": "population-shared",
+      "label": "Model A"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-model-a",
+      "evaluationId": "eval-model-a",
+      "display": {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {"seriesId":"series-model-a","cutoff":0.8,"sensitivity":0.45,"specificity":0.92},
+    {"seriesId":"series-model-a","cutoff":0.5,"sensitivity":0.78,"specificity":0.74},
+    {"seriesId":"series-model-a","cutoff":0.2,"sensitivity":0.95,"specificity":0.31}
+  ],
+  "x": "false_positive_rate",
+  "y": "sensitivity",
+  "xAxis": {"label":"1 - Specificity","domain":[0,1]},
+  "yAxis": {"label":"Sensitivity","domain":[0,1]},
+  "references": [
+    {"type":"identity","scope":"global","label":"Random Guess"}
+  ]
+}
