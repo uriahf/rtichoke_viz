@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "2.0",
+  "type": "roc",
+  "evaluations": [
+    {
+      "id": "eval-model-a",
+      "model": "Model A",
+      "population": "population-shared",
+      "label": "Model A"
+    },
+    {
+      "id": "eval-model-b",
+      "model": "Model B",
+      "population": "population-shared",
+      "label": "Model B"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-model-a",
+      "evaluationId": "eval-model-a",
+      "display": {
+        "label": "Model A",
+        "group": "shared-aesthetic-group",
+        "role": "model"
+      }
+    },
+    {
+      "id": "series-model-b",
+      "evaluationId": "eval-model-b",
+      "display": {
+        "label": "Model B",
+        "group": "shared-aesthetic-group",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {"seriesId":"series-model-a","cutoff":0.8,"sensitivity":0.30,"specificity":0.95},
+    {"seriesId":"series-model-a","cutoff":0.5,"sensitivity":0.55,"specificity":0.80},
+    {"seriesId":"series-model-a","cutoff":0.2,"sensitivity":0.75,"specificity":0.60},
+    {"seriesId":"series-model-b","cutoff":0.8,"sensitivity":0.60,"specificity":0.90},
+    {"seriesId":"series-model-b","cutoff":0.5,"sensitivity":0.78,"specificity":0.68},
+    {"seriesId":"series-model-b","cutoff":0.2,"sensitivity":0.92,"specificity":0.35}
+  ],
+  "x": "false_positive_rate",
+  "y": "sensitivity",
+  "xAxis": {"label":"1 - Specificity","domain":[0,1]},
+  "yAxis": {"label":"Sensitivity","domain":[0,1]}
+}

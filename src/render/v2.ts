@@ -40,7 +40,7 @@ export function renderRocV2(spec: RocV2Spec): SVGSVGElement | HTMLElement {
     }));
   }
   marks.push(Plot.line(data, {
-    x: "false_positive_rate", y: "sensitivity", stroke: "group", strokeWidth: 2, tip: true,
+    x: "false_positive_rate", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true,
   }));
 
   return Plot.plot({
@@ -74,7 +74,7 @@ export function renderCalibrationV2(spec: CalibrationV2Spec): SVGSVGElement | HT
     }));
   }
   marks.push(Plot.line(data, {
-    x: "predicted", y: "observed", stroke: "group", strokeWidth: 2, tip: true,
+    x: "predicted", y: "observed", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true,
   }));
   const discrete = data.filter((datum) => datum.method === "discrete");
   if (discrete.length > 0) {
@@ -149,6 +149,7 @@ export function renderPrecisionRecallV2(
   marks.push(Plot.line(data, {
     x: "sensitivity",
     y: "ppv",
+    z: "seriesId",
     stroke: "group",
     strokeWidth: 2,
     tip: true,
