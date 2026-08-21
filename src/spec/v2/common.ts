@@ -28,15 +28,32 @@ export const SeriesSpecSchema = Type.Object({
   display: DisplayGroupingSpecSchema,
 });
 
-const ReferenceGeometrySchema = Type.Object({
-  type: Type.Union([
-    Type.Literal("identity"),
-    Type.Literal("horizontal"),
-    Type.Literal("vertical"),
-  ]),
-  value: Type.Optional(Type.Number()),
-  label: Type.Optional(Type.String()),
+export const ReferencePointSchema = Type.Object({
+  x: Type.Number(),
+  y: Type.Number(),
 });
+
+const ReferenceGeometrySchema = Type.Union([
+  Type.Object({
+    type: Type.Literal("identity"),
+    label: Type.Optional(Type.String()),
+  }),
+  Type.Object({
+    type: Type.Literal("horizontal"),
+    value: Type.Number(),
+    label: Type.Optional(Type.String()),
+  }),
+  Type.Object({
+    type: Type.Literal("vertical"),
+    value: Type.Number(),
+    label: Type.Optional(Type.String()),
+  }),
+  Type.Object({
+    type: Type.Literal("path"),
+    points: Type.Array(ReferencePointSchema, { minItems: 2 }),
+    label: Type.Optional(Type.String()),
+  }),
+]);
 
 const GlobalReferenceLineSpecSchema = Type.Intersect([
   ReferenceGeometrySchema,
@@ -80,4 +97,5 @@ export type EvaluationSpec = Static<typeof EvaluationSpecSchema>;
 export type DisplayRole = Static<typeof DisplayRoleSchema>;
 export type DisplayGroupingSpec = Static<typeof DisplayGroupingSpecSchema>;
 export type SeriesSpec = Static<typeof SeriesSpecSchema>;
+export type ReferencePoint = Static<typeof ReferencePointSchema>;
 export type ReferenceLineV2Spec = Static<typeof ReferenceLineV2SpecSchema>;
