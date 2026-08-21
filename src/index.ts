@@ -32,6 +32,7 @@ export type {
   CalibrationV2DistributionDatum,
   CalibrationV2Spec,
 } from "./spec/v2/calibration.js";
+export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
 export {
   rocSpecFromRtichokePython,
   rocSpecFromRtichokeR,
@@ -46,5 +47,12 @@ export type {
   RtichokeCalibrationDistributionRow,
   RtichokeCalibrationRow,
 } from "./adapters/calibration.js";
+export {
+  calibrationV2SpecFromRtichokeRows,
+  rocV2SpecFromRtichokePython,
+  rocV2SpecFromRtichokeR,
+} from "./adapters/v2.js";
+export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
+export { renderCalibrationV2, renderRocV2 } from "./render/v2.js";
