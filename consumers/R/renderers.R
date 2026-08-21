@@ -107,3 +107,31 @@ render_calibration_plotly <- function(spec) {
   subplot(main, hist, nrows = 2, shareX = TRUE, heights = c(0.8, 0.2)) |>
     config(displayModeBar = FALSE)
 }
+
+render_precision_recall_ggplot <- function(spec) {
+  dat <- attach_display_group(spec, spec$data)
+  one_group <- length(unique(dat$group)) == 1
+  p <- ggplot(dat, aes(x = sensitivity, y = ppv, color = group, group = group)) +
+    geom_line(linewidth = 0.8) +
+    scale_x_continuous(name = spec$xAxis$label, limits = unlist(spec$xAxis$domain)) +
+    scale_y_continuous(name = spec$yAxis$label, limits = unlist(spec$yAxis$domain)) +
+    theme_minimal(base_size = 12) +
+    theme(panel.grid = element_blank())
+  if (!is.null(spec$references)) {
+    refs <- spec$references[spec$references$type == "horizontal", , drop = FALSE]
+    if (nrow(refs) > 0) {
+      p <- p + geom_hline(yintercept = refs$value, color = "grey", linetype = "dotted")
+    }
+  }
+  if (one_group) {
+    p <- p + scale_color_manual(values = "black") + theme(legend.position = "none")
+  } else {
+    p <- p + scale_color_manual(values = rtichoke_colors)
+  }
+  p
+}
+
+render_precision_recall_plotly <- function(spec) {
+  ggplotly(render_precision_recall_ggplot(spec), tooltip = c("group", "sensitivity", "ppv", "cutoff")) |>
+    config(displayModeBar = FALSE)
+}
