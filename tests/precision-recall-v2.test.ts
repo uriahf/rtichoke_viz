@@ -6,7 +6,10 @@ import sharedPopulation from "../fixtures/v2/precision-recall-shared-population.
 import single from "../fixtures/v2/precision-recall-single.json" with { type: "json" };
 import timeDependent from "../fixtures/v2/precision-recall-time.json" with { type: "json" };
 import { RtichokeChartSpecV2Schema } from "../src/spec/v2/chart.js";
-import { PrecisionRecallV2SpecSchema } from "../src/spec/v2/precision_recall.js";
+import {
+  PrecisionRecallV2SpecSchema,
+  type PrecisionRecallV2Spec,
+} from "../src/spec/v2/precision_recall.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
 describe("v2 precision-recall semantics", () => {
@@ -15,7 +18,9 @@ describe("v2 precision-recall semantics", () => {
     (spec) => {
       expect(Value.Check(PrecisionRecallV2SpecSchema, spec)).toBe(true);
       expect(Value.Check(RtichokeChartSpecV2Schema, spec)).toBe(true);
-      expect(() => assertV2ReferentialIntegrity(spec)).not.toThrow();
+      expect(() =>
+        assertV2ReferentialIntegrity(spec as PrecisionRecallV2Spec),
+      ).not.toThrow();
     },
   );
 
