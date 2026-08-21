@@ -26,7 +26,9 @@ Python -> same spec -> Plotly
 
 ## Current proof of concept
 
-The initial contract covers ROC and calibration specifications. Deterministic JSON fixtures drive both the tests and the browser demo.
+The initial v1 contract covers ROC and calibration specifications and remains the contract consumed by the existing browser/R/Python renderers. Deterministic JSON fixtures drive both the tests and the browser demo.
+
+The v2 schema is the semantic successor for the same two chart types. It represents evaluations separately from plotted series, permits unknown model identity, makes display grouping explicit, and encodes global/population/population-and-horizon reference ownership. It is intentionally introduced alongside v1 before adapters and renderers migrate to it; no new chart type is included in v2 yet.
 
 ```bash
 npm install
@@ -36,11 +38,11 @@ npm run build
 npm run build:demo
 ```
 
-`npm run build` creates the distributable browser assets under `dist/`. `npm run build:demo` also exports the canonical JSON Schema to `schemas/rtichoke-viz.schema.json` and creates a self-contained demo site under `site/`. After changes reach `main`, GitHub Pages deploys that generated demo.
+`npm run build` creates the distributable browser assets under `dist/`. `npm run build:demo` also exports the JSON Schemas to `schemas/rtichoke-viz.schema.json` (v1) and `schemas/rtichoke-viz-v2.schema.json` (v2), and creates a self-contained demo site under `site/`. After changes reach `main`, GitHub Pages deploys that generated demo.
 
 ## Distribution
 
-`rtichoke_viz` GitHub Releases are the language-neutral distribution boundary for the compiled browser bundle. A `vX.Y.Z` tag matching the version in `package.json` publishes `rtichoke-viz-X.Y.Z.tar.gz` plus its SHA-256 checksum. The archive contains the compiled JavaScript, CSS, exported JSON Schema, and a manifest recording the version and source commit.
+`rtichoke_viz` GitHub Releases are the language-neutral distribution boundary for the compiled browser bundle. A `vX.Y.Z` tag matching the version in `package.json` publishes `rtichoke-viz-X.Y.Z.tar.gz` plus its SHA-256 checksum. The archive contains the compiled JavaScript, CSS, JSON Schema, and a manifest recording the version and source commit.
 
 R and Python consumers should vendor an exact released archive during package development and record its version/checksum. Package installation itself should not require Node, GitHub, or network access.
 
