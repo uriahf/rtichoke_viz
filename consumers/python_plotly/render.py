@@ -157,12 +157,23 @@ def render(spec: dict[str, Any]) -> go.Figure:
     return render_precision_recall(spec)
 
 
+def assert_shared_display_group_series_identity(fixtures: Path) -> None:
+    spec = load_spec(fixtures / "precision-recall-shared-display-group.json")
+    fig = render_precision_recall(spec)
+    assert len(fig.data) == 2
+    assert [trace.name for trace in fig.data] == ["Curve A", "Curve B"]
+    assert len({trace.legendgroup for trace in fig.data}) == 1
+    assert len({trace.line.color for trace in fig.data}) == 1
+    assert [len(trace.x) for trace in fig.data] == [2, 2]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixtures", type=Path, default=Path("fixtures/v2"))
     parser.add_argument("--output", type=Path, default=Path("site/python-plotly"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    assert_shared_display_group_series_identity(args.fixtures)
     fixtures = {
         "roc": "roc.json",
         "calibration": "calibration.json",
