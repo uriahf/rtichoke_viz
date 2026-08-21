@@ -18,7 +18,7 @@ def load_spec(path: Path) -> dict[str, Any]:
     spec = json.loads(path.read_text())
     if spec.get("schemaVersion") != "2.0":
         raise ValueError("unsupported schemaVersion")
-    if spec.get("type") not in {"roc", "calibration"}:
+    if spec.get("type") not in {"roc", "calibration", "precision_recall"}:
         raise ValueError("unsupported chart type")
     return spec
 
@@ -109,8 +109,38 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
     return fig
 
 
+def render_precision_recall(spec: dict[str, Any]) -> go.Figure:
+    mapping = series_groups(spec)
+    groups = list(dict.fromkeys(mapping[row["seriesId"]] for row in spec["data"]))
+    colors = group_colors(groups)
+    fig = go.Figure()
+    for ref in spec.get("references", []):
+        if ref.get("type") == "horizontal" and ref.get("value") is not None:
+            fig.add_hline(y=ref["value"], line={"color": "#BEBEBE", "width": 2, "dash": "dot"})
+    for group in groups:
+        rows = [row for row in spec["data"] if mapping[row["seriesId"]] == group]
+        fig.add_trace(go.Scatter(
+            x=[row["sensitivity"] for row in rows],
+            y=[row["ppv"] for row in rows],
+            mode="lines",
+            name=group,
+            line={"color": colors[group], "width": 2},
+            customdata=[[row["cutoff"]] for row in rows],
+            hovertemplate="Cutoff: %{customdata[0]:.3f}<br>Sensitivity: %{x:.3f}<br>PPV: %{y:.3f}<extra></extra>",
+            showlegend=len(groups) > 1,
+        ))
+    fig.update_layout(width=600, height=600, plot_bgcolor="white", paper_bgcolor="white")
+    fig.update_xaxes(title=spec["xAxis"]["label"], range=spec["xAxis"]["domain"], showgrid=False)
+    fig.update_yaxes(title=spec["yAxis"]["label"], range=spec["yAxis"]["domain"], showgrid=False)
+    return fig
+
+
 def render(spec: dict[str, Any]) -> go.Figure:
-    return render_roc(spec) if spec["type"] == "roc" else render_calibration(spec)
+    if spec["type"] == "roc":
+        return render_roc(spec)
+    if spec["type"] == "calibration":
+        return render_calibration(spec)
+    return render_precision_recall(spec)
 
 
 def main() -> None:
@@ -119,8 +149,13 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("site/python-plotly"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    for chart in ("roc", "calibration"):
-        spec = load_spec(args.fixtures / f"{chart}.json")
+    fixtures = {
+        "roc": "roc.json",
+        "calibration": "calibration.json",
+        "precision-recall": "precision-recall-shared-population.json",
+    }
+    for chart, filename in fixtures.items():
+        spec = load_spec(args.fixtures / filename)
         render(spec).write_html(args.output / f"{chart}.html", include_plotlyjs=True, full_html=True,
                                 config={"displayModeBar": False})
 
