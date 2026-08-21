@@ -18,6 +18,7 @@ for (const name of [
   "calibrationV2SpecFromRtichokeRows",
   "renderCalibration",
   "renderCalibrationV2",
+  "renderPrecisionRecallV2",
   "renderRoc",
   "renderRocV2",
   "rocSpecFromRtichokePython",
