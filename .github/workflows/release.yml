@@ -1,0 +1,56 @@
+name: Release browser bundle
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run schema
+
+      - name: Verify tag matches bundle version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test "${GITHUB_REF_NAME}" = "v${VERSION}"
+
+      - name: Package immutable bundle
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          BUNDLE="rtichoke-viz-${VERSION}"
+          mkdir -p "release/${BUNDLE}"
+          cp dist/rtichoke-viz.js "release/${BUNDLE}/"
+          cp dist/rtichoke-viz.css "release/${BUNDLE}/"
+          cp schemas/rtichoke-viz.schema.json "release/${BUNDLE}/"
+          printf 'version=%s\ncommit=%s\n' "${VERSION}" "${GITHUB_SHA}" \
+            > "release/${BUNDLE}/MANIFEST"
+          tar -C release -czf "release/${BUNDLE}.tar.gz" "${BUNDLE}"
+          sha256sum "release/${BUNDLE}.tar.gz" \
+            > "release/${BUNDLE}.tar.gz.sha256"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          BUNDLE="rtichoke-viz-${VERSION}"
+          gh release create "${GITHUB_REF_NAME}" \
+            "release/${BUNDLE}.tar.gz" \
+            "release/${BUNDLE}.tar.gz.sha256" \
+            --title "rtichoke_viz ${VERSION}" \
+            --generate-notes
