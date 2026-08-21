@@ -22,6 +22,7 @@ Python -> same spec -> Plotly
 - TypeScript defines and validates the visualization contract.
 - Browser assets compile to ordinary JavaScript/CSS that can be vendored into CRAN and PyPI packages.
 - Parity means the same semantics, mappings, ordering, scales, reference lines, labels, and interaction intent across renderers; not pixel-identical output.
+- Canonical model, population, evaluation, series, display-grouping, horizon, and reference-ownership semantics are defined in [`SEMANTICS.md`](SEMANTICS.md).
 
 ## Current proof of concept
 
