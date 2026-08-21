@@ -16,7 +16,7 @@ shared_display_gg <- render_precision_recall_ggplot(shared_display)
 shared_display_plotly <- render_precision_recall_plotly(shared_display)
 
 stopifnot(inherits(roc_gg, "ggplot"))
-stopifnot(inherits(calibration_gg, "ggplot"))
+stopifnot(inherits(calibration_gg, "patchwork"))
 stopifnot(inherits(precision_recall_gg, "ggplot"))
 stopifnot(inherits(roc_plotly, "plotly"))
 stopifnot(inherits(calibration_plotly, "plotly"))
@@ -29,6 +29,15 @@ shared_layer <- ggplot_build(shared_display_gg)$data[[1]]
 stopifnot(length(unique(shared_layer$group)) == 2)
 shared_traces <- plotly_build(shared_display_plotly)$x$data
 stopifnot(length(shared_traces) >= 2)
+
+mixed_calibration <- calibration
+mixed_calibration$data$method <- c("smooth", "discrete", "smooth")
+mixed_curve <- build_calibration_curve_ggplot(mixed_calibration)
+mixed_build <- ggplot_build(mixed_curve)
+point_layer <- mixed_build$data[[2]]
+stopifnot(nrow(point_layer) == 1)
+stopifnot(isTRUE(all.equal(point_layer$x[[1]], 0.4)))
+stopifnot(isTRUE(all.equal(point_layer$y[[1]], 0.36)))
 
 out_dir <- "site/r-consumers"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
