@@ -16,8 +16,10 @@ has_identity_reference <- function(spec) {
 }
 
 attach_display_group <- function(spec, dat) {
-  groups <- spec$series[, c("id", "display.group")]
-  names(groups) <- c("seriesId", "group")
+  groups <- data.frame(
+    seriesId = spec$series$id,
+    group = spec$series$display$group
+  )
   merge(dat, groups, by = "seriesId", sort = FALSE)
 }
 
