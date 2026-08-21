@@ -34,6 +34,7 @@ jobs:
           test -s dist/rtichoke-viz.js
           test -s dist/rtichoke-viz.css
           test -s schemas/rtichoke-viz.schema.json
+          test -s schemas/rtichoke-viz-v2.schema.json
           test -s site/index.html
           test -s site/demo.js
           test -s site/python-plotly/roc.html
