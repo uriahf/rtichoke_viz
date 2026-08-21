@@ -1,10 +1,11 @@
 import { Type, type Static } from "@sinclair/typebox";
 import { CalibrationV2SpecSchema } from "./calibration.js";
+import { PrecisionRecallV2SpecSchema } from "./precision_recall.js";
 import { RocV2SpecSchema } from "./roc.js";
 
 /** Canonical v2 union with explicit evaluation and reference ownership. */
 export const RtichokeChartSpecV2Schema = Type.Union(
-  [RocV2SpecSchema, CalibrationV2SpecSchema],
+  [RocV2SpecSchema, CalibrationV2SpecSchema, PrecisionRecallV2SpecSchema],
   {
     $id: "https://rtichoke.dev/schema/viz/2.0.json",
     title: "rtichoke visualization specification v2",

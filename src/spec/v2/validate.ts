@@ -1,7 +1,8 @@
 import type { CalibrationV2Spec } from "./calibration.js";
+import type { PrecisionRecallV2Spec } from "./precision_recall.js";
 import type { RocV2Spec } from "./roc.js";
 
-export type ChartV2Spec = RocV2Spec | CalibrationV2Spec;
+export type ChartV2Spec = RocV2Spec | CalibrationV2Spec | PrecisionRecallV2Spec;
 
 /** Validate cross-object identity references that JSON Schema cannot express. */
 export function assertV2ReferentialIntegrity(spec: ChartV2Spec): void {

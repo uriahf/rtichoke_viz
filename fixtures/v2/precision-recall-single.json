@@ -1,0 +1,9 @@
+{
+  "schemaVersion":"2.0","type":"precision_recall",
+  "evaluations":[{"id":"eval-a","model":"Model A","population":"Population A","label":"Model A"}],
+  "series":[{"id":"series-a","evaluationId":"eval-a","display":{"label":"Model A","group":"Model A","role":"model"}}],
+  "data":[{"seriesId":"series-a","cutoff":0.5,"sensitivity":0.8,"ppv":0.6}],
+  "x":"sensitivity","y":"ppv",
+  "xAxis":{"label":"Sensitivity","domain":[0,1]},"yAxis":{"label":"PPV","domain":[0,1]},
+  "references":[{"type":"horizontal","value":0.3,"scope":"population","population":"Population A","label":"Random Guess"}]
+}

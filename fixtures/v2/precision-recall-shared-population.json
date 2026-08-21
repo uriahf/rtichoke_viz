@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2.0",
+  "type": "precision_recall",
+  "evaluations": [
+    {"id":"eval-a","model":"Model A","population":"Population X","label":"Model A"},
+    {"id":"eval-b","model":"Model B","population":"Population X","label":"Model B"}
+  ],
+  "series": [
+    {"id":"series-a","evaluationId":"eval-a","display":{"label":"Model A","group":"Model A","role":"model"}},
+    {"id":"series-b","evaluationId":"eval-b","display":{"label":"Model B","group":"Model B","role":"model"}}
+  ],
+  "data": [
+    {"seriesId":"series-a","cutoff":0.5,"sensitivity":0.8,"ppv":0.6},
+    {"seriesId":"series-b","cutoff":0.5,"sensitivity":0.75,"ppv":0.58}
+  ],
+  "x":"sensitivity",
+  "y":"ppv",
+  "xAxis":{"label":"Sensitivity","domain":[0,1]},
+  "yAxis":{"label":"PPV","domain":[0,1]},
+  "references":[
+    {"type":"horizontal","value":0.3,"scope":"population","population":"Population X","label":"Random Guess"}
+  ]
+}

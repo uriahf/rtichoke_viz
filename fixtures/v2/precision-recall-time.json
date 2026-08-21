@@ -1,0 +1,20 @@
+{
+  "schemaVersion":"2.0","type":"precision_recall",
+  "evaluations":[
+    {"id":"eval-a","model":"Model A","population":"Population A","label":"Model A / Population A"}
+  ],
+  "series":[
+    {"id":"series-a-5","evaluationId":"eval-a","horizon":5,"display":{"label":"5","group":"5","role":"context"}},
+    {"id":"series-a-10","evaluationId":"eval-a","horizon":10,"display":{"label":"10","group":"10","role":"context"}}
+  ],
+  "data":[
+    {"seriesId":"series-a-5","cutoff":0.5,"sensitivity":0.75,"ppv":0.5},
+    {"seriesId":"series-a-10","cutoff":0.5,"sensitivity":0.8,"ppv":0.62}
+  ],
+  "x":"sensitivity","y":"ppv",
+  "xAxis":{"label":"Sensitivity","domain":[0,1]},"yAxis":{"label":"PPV","domain":[0,1]},
+  "references":[
+    {"type":"horizontal","value":0.2,"scope":"population_horizon","population":"Population A","horizon":5,"label":"Random Guess"},
+    {"type":"horizontal","value":0.35,"scope":"population_horizon","population":"Population A","horizon":10,"label":"Random Guess"}
+  ]
+}
