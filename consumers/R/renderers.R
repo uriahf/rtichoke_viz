@@ -1,6 +1,7 @@
 library(jsonlite)
 library(ggplot2)
 library(plotly)
+library(patchwork)
 
 rtichoke_colors <- c(
   "#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#07004D",
@@ -52,7 +53,7 @@ render_roc_plotly <- function(spec) {
     config(displayModeBar = FALSE)
 }
 
-render_calibration_ggplot <- function(spec) {
+build_calibration_curve_ggplot <- function(spec) {
   dat <- attach_display_group(spec, spec$data)
   one_group <- length(unique(dat$group)) == 1
 
@@ -63,7 +64,10 @@ render_calibration_ggplot <- function(spec) {
     theme_minimal(base_size = 12) +
     theme(panel.grid = element_blank())
 
-  if (any(dat$method == "discrete")) p <- p + geom_point(size = 2.5)
+  discrete <- dat[dat$method == "discrete", , drop = FALSE]
+  if (nrow(discrete) > 0) {
+    p <- p + geom_point(data = discrete, size = 2.5)
+  }
   if (has_identity_reference(spec)) {
     p <- p + geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey")
   }
@@ -75,9 +79,45 @@ render_calibration_ggplot <- function(spec) {
   p
 }
 
+render_calibration_ggplot <- function(spec) {
+  main <- build_calibration_curve_ggplot(spec)
+  if (is.null(spec$distribution) || nrow(spec$distribution) == 0) {
+    return(main)
+  }
+
+  dist <- attach_display_group(spec, spec$distribution)
+  one_group <- length(unique(dist$group)) == 1
+  hist <- ggplot(
+    dist,
+    aes(
+      xmin = midpoint - binWidth / 2,
+      xmax = midpoint + binWidth / 2,
+      ymin = 0,
+      ymax = count,
+      fill = group,
+      group = seriesId
+    )
+  ) +
+    geom_rect(alpha = 1 / max(length(unique(dist$group)), 1)) +
+    scale_x_continuous(name = spec$xAxis$label, limits = unlist(spec$xAxis$domain)) +
+    scale_y_continuous(name = NULL) +
+    theme_minimal(base_size = 12) +
+    theme(panel.grid = element_blank(), legend.position = "none")
+
+  if (one_group) {
+    hist <- hist + scale_fill_manual(values = "black")
+  } else {
+    hist <- hist + scale_fill_manual(values = rtichoke_colors)
+  }
+
+  main + theme(axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) /
+    hist +
+    plot_layout(heights = c(4, 1))
+}
+
 render_calibration_plotly <- function(spec) {
   main <- ggplotly(
-    render_calibration_ggplot(spec),
+    build_calibration_curve_ggplot(spec),
     tooltip = c("label", "predicted", "observed", "events", "total")
   )
   if (is.null(spec$distribution) || nrow(spec$distribution) == 0) {
@@ -86,19 +126,24 @@ render_calibration_plotly <- function(spec) {
 
   dist <- attach_display_group(spec, spec$distribution)
   groups <- unique(dist$group)
-  colors <- if (length(groups) == 1) "black" else rtichoke_colors[seq_along(groups)]
+  colors <- if (length(groups) == 1) {
+    setNames("black", groups)
+  } else {
+    setNames(rtichoke_colors[seq_along(groups)], groups)
+  }
   hist <- plot_ly()
-  for (i in seq_along(groups)) {
-    group <- groups[[i]]
-    d <- dist[dist$group == group, , drop = FALSE]
+  for (series_id in unique(dist$seriesId)) {
+    d <- dist[dist$seriesId == series_id, , drop = FALSE]
+    group <- d$group[[1]]
     hist <- add_bars(
       hist,
       data = d,
       x = ~midpoint,
       y = ~count,
-      name = group,
-      marker = list(color = colors[[i]]),
-      opacity = 1 / length(groups),
+      name = d$label[[1]],
+      legendgroup = group,
+      marker = list(color = colors[[group]]),
+      opacity = 1 / max(length(groups), 1),
       width = ~binWidth,
       showlegend = FALSE,
       text = ~paste0(count, " observations in [", midpoint - binWidth / 2, ", ", midpoint + binWidth / 2, "]"),
