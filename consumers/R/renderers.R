@@ -110,9 +110,13 @@ render_calibration_ggplot <- function(spec) {
     hist <- hist + scale_fill_manual(values = rtichoke_colors)
   }
 
-  main + theme(axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) /
-    hist +
-    plot_layout(heights = c(4, 1))
+  main <- main + theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+  main / hist + plot_layout(heights = c(4, 1))
 }
 
 render_calibration_plotly <- function(spec) {
