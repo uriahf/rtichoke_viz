@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0",
+  "type": "calibration",
+  "evaluations": [
+    {
+      "id": "eval-pop-a",
+      "population": "Population A",
+      "label": "Population A"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-pop-a",
+      "evaluationId": "eval-pop-a",
+      "display": {
+        "label": "Population A",
+        "group": "Population A",
+        "role": "population"
+      }
+    }
+  ],
+  "data": [
+    {"seriesId":"series-pop-a","predicted":0.1,"observed":0.08,"method":"discrete","events":8,"total":100},
+    {"seriesId":"series-pop-a","predicted":0.4,"observed":0.36,"method":"discrete","events":36,"total":100},
+    {"seriesId":"series-pop-a","predicted":0.8,"observed":0.76,"method":"discrete","events":76,"total":100}
+  ],
+  "distribution": [
+    {"seriesId":"series-pop-a","midpoint":0.1,"count":20,"binWidth":0.1},
+    {"seriesId":"series-pop-a","midpoint":0.4,"count":45,"binWidth":0.1},
+    {"seriesId":"series-pop-a","midpoint":0.8,"count":35,"binWidth":0.1}
+  ],
+  "x": "predicted",
+  "y": "observed",
+  "xAxis": {"label":"Predicted probability","domain":[0,1]},
+  "yAxis": {"label":"Observed probability","domain":[0,1]},
+  "references": [
+    {"type":"identity","scope":"global","label":"Perfectly Calibrated"}
+  ]
+}
