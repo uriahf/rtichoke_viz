@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,8 +17,12 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -27,17 +37,18 @@ jobs:
       - name: Verify tag matches bundle version
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          test "${GITHUB_REF_NAME}" = "v${VERSION}"
+          test "${RELEASE_TAG}" = "v${VERSION}"
 
       - name: Package immutable bundle
         run: |
           VERSION="$(node -p "require('./package.json').version")"
+          SOURCE_COMMIT="$(git rev-parse HEAD)"
           BUNDLE="rtichoke-viz-${VERSION}"
           mkdir -p "release/${BUNDLE}"
           cp dist/rtichoke-viz.js "release/${BUNDLE}/"
           cp dist/rtichoke-viz.css "release/${BUNDLE}/"
           cp schemas/rtichoke-viz.schema.json "release/${BUNDLE}/"
-          printf 'version=%s\ncommit=%s\n' "${VERSION}" "${GITHUB_SHA}" \
+          printf 'version=%s\ncommit=%s\n' "${VERSION}" "${SOURCE_COMMIT}" \
             > "release/${BUNDLE}/MANIFEST"
           tar -C release -czf "release/${BUNDLE}.tar.gz" "${BUNDLE}"
           sha256sum "release/${BUNDLE}.tar.gz" \
@@ -49,8 +60,15 @@ jobs:
         run: |
           VERSION="$(node -p "require('./package.json').version")"
           BUNDLE="rtichoke-viz-${VERSION}"
-          gh release create "${GITHUB_REF_NAME}" \
-            "release/${BUNDLE}.tar.gz" \
-            "release/${BUNDLE}.tar.gz.sha256" \
-            --title "rtichoke_viz ${VERSION}" \
-            --generate-notes
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_TAG}" \
+              "release/${BUNDLE}.tar.gz" \
+              "release/${BUNDLE}.tar.gz.sha256" \
+              --clobber
+          else
+            gh release create "${RELEASE_TAG}" \
+              "release/${BUNDLE}.tar.gz" \
+              "release/${BUNDLE}.tar.gz.sha256" \
+              --title "rtichoke_viz ${VERSION}" \
+              --generate-notes
+          fi
