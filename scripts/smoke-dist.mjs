@@ -12,11 +12,17 @@ for (const name of [
   "RtichokeChartSpecSchema",
   "RtichokeChartSpecV2Schema",
   "SeriesSpecSchema",
+  "assertV2ReferentialIntegrity",
   "calibrationSpecFromRtichokeRows",
+  "calibrationV2SpecFromRtichokeRows",
   "renderCalibration",
+  "renderCalibrationV2",
   "renderRoc",
+  "renderRocV2",
   "rocSpecFromRtichokePython",
   "rocSpecFromRtichokeR",
+  "rocV2SpecFromRtichokePython",
+  "rocV2SpecFromRtichokeR",
 ]) {
   assert.ok(name in viz, `compiled bundle is missing export: ${name}`);
 }
