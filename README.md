@@ -20,7 +20,7 @@ Python -> same spec -> Plotly
 - Statistical calculations stay in `rtichoke` and `rtichoke_python`.
 - JSON is the interchange format between languages.
 - TypeScript defines and validates the visualization contract.
-- Browser assets should compile to ordinary JavaScript/CSS that can later be vendored into CRAN and PyPI packages.
+- Browser assets compile to ordinary JavaScript/CSS that can be vendored into CRAN and PyPI packages.
 - Parity means the same semantics, mappings, ordering, scales, reference lines, labels, and interaction intent across renderers; not pixel-identical output.
 
 ## Current proof of concept
@@ -35,7 +35,13 @@ npm run build
 npm run build:demo
 ```
 
-`npm run build:demo` also exports the canonical JSON Schema to `schemas/rtichoke-viz.schema.json` and creates a self-contained demo site under `site/`. After changes reach `main`, GitHub Pages deploys that generated demo.
+`npm run build` creates the distributable browser assets under `dist/`. `npm run build:demo` also exports the canonical JSON Schema to `schemas/rtichoke-viz.schema.json` and creates a self-contained demo site under `site/`. After changes reach `main`, GitHub Pages deploys that generated demo.
+
+## Distribution
+
+`rtichoke_viz` GitHub Releases are the language-neutral distribution boundary for the compiled browser bundle. A `vX.Y.Z` tag matching the version in `package.json` publishes `rtichoke-viz-X.Y.Z.tar.gz` plus its SHA-256 checksum. The archive contains the compiled JavaScript, CSS, exported JSON Schema, and a manifest recording the version and source commit.
+
+R and Python consumers should vendor an exact released archive during package development and record its version/checksum. Package installation itself should not require Node, GitHub, or network access.
 
 ## Initial scope
 
@@ -45,4 +51,5 @@ npm run build:demo
 - Runtime schema validation
 - Exported JSON Schema
 - Self-contained browser rendering
+- Versioned browser bundle releases
 - CI-built demo artifact and GitHub Pages deployment
