@@ -28,6 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
+      - run: uv run --project consumers/python_plotly python -m unittest discover -s consumers/python_plotly -p 'test_*.py'
       - run: uv run --project consumers/python_plotly python consumers/python_plotly/render.py
       - name: Smoke-test generated assets
         run: |
@@ -61,6 +62,7 @@ jobs:
             any::ggplot2
             any::plotly
             any::htmlwidgets
+            any::patchwork
       - run: Rscript consumers/R/render.R
       - name: Smoke-test R consumer outputs
         run: |

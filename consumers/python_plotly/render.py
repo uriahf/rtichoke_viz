@@ -90,16 +90,28 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
         if not rows:
             continue
         display = item["display"]
-        discrete = any(row["method"] == "discrete" for row in rows)
         fig.add_trace(go.Scatter(
             x=[row["predicted"] for row in rows], y=[row["observed"] for row in rows],
-            mode="lines+markers" if discrete else "lines", name=display["label"],
+            mode="lines", name=display["label"],
             legendgroup=display["group"],
-            marker={"size": 10, "color": colors[display["group"]]}, line={"color": colors[display["group"]], "width": 2},
+            line={"color": colors[display["group"]], "width": 2},
             showlegend=len(series) > 1,
             customdata=[[row.get("events"), row.get("total")] for row in rows],
             hovertemplate=calibration_hover(rows),
         ), row=1, col=1)
+
+        discrete_rows = [row for row in rows if row["method"] == "discrete"]
+        if discrete_rows:
+            fig.add_trace(go.Scatter(
+                x=[row["predicted"] for row in discrete_rows],
+                y=[row["observed"] for row in discrete_rows],
+                mode="markers", name=display["label"],
+                legendgroup=display["group"],
+                marker={"size": 10, "color": colors[display["group"]]},
+                showlegend=False,
+                customdata=[[row.get("events"), row.get("total")] for row in discrete_rows],
+                hovertemplate=calibration_hover(discrete_rows),
+            ), row=1, col=1)
     if has_distribution:
         for series_id, item in series.items():
             rows = [row for row in distribution if row["seriesId"] == series_id]
