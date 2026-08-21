@@ -1,1 +1,21 @@
-{}
+{
+  "schemaVersion":"2.0","type":"precision_recall",
+  "evaluations":[
+    {"id":"eval-a","model":"Model A","population":"Population A","label":"Population A"},
+    {"id":"eval-b","model":"Model A","population":"Population B","label":"Population B"}
+  ],
+  "series":[
+    {"id":"series-a","evaluationId":"eval-a","display":{"label":"Population A","group":"Population A","role":"population"}},
+    {"id":"series-b","evaluationId":"eval-b","display":{"label":"Population B","group":"Population B","role":"population"}}
+  ],
+  "data":[
+    {"seriesId":"series-a","cutoff":0.5,"sensitivity":0.8,"ppv":0.6},
+    {"seriesId":"series-b","cutoff":0.5,"sensitivity":0.7,"ppv":0.7}
+  ],
+  "x":"sensitivity","y":"ppv",
+  "xAxis":{"label":"Sensitivity","domain":[0,1]},"yAxis":{"label":"PPV","domain":[0,1]},
+  "references":[
+    {"type":"horizontal","value":0.3,"scope":"population","population":"Population A","label":"Random Guess"},
+    {"type":"horizontal","value":0.5,"scope":"population","population":"Population B","label":"Random Guess"}
+  ]
+}
