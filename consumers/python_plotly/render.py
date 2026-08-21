@@ -159,7 +159,7 @@ def assert_shared_display_group_series_identity(fixtures: Path) -> None:
     fig = render_roc(spec)
     assert len(fig.data) == 2
     assert [trace.name for trace in fig.data] == ["Model A", "Model B"]
-    assert [list(trace.x) for trace in fig.data] == [[0.05, 0.2, 0.4], [0.1, 0.32, 0.65]]
+    assert [list(trace.y) for trace in fig.data] == [[0.3, 0.55, 0.75], [0.6, 0.78, 0.92]]
     assert fig.data[0].line.color == fig.data[1].line.color
 
 
