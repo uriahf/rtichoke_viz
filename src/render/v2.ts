@@ -1,5 +1,6 @@
 import * as Plot from "@observablehq/plot";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
+import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
 import type { RocV2Spec } from "../spec/v2/roc.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 
@@ -15,7 +16,9 @@ const BASE_STYLE = {
   fontSize: "13px",
 };
 
-function displayBySeries(spec: RocV2Spec | CalibrationV2Spec) {
+type SeriesChartSpec = RocV2Spec | CalibrationV2Spec | PrecisionRecallV2Spec;
+
+function displayBySeries(spec: SeriesChartSpec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
 }
 
@@ -119,4 +122,47 @@ export function renderCalibrationV2(spec: CalibrationV2Spec): SVGSVGElement | HT
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+
+export function renderPrecisionRecallV2(
+  spec: PrecisionRecallV2Spec,
+): SVGSVGElement | HTMLElement {
+  assertV2ReferentialIntegrity(spec);
+  const displays = displayBySeries(spec);
+  const groups = [...new Set(spec.series.map((series) => series.display.group))];
+  const showLegend = groups.length > 1;
+  const data = spec.data.map((datum) => ({
+    ...datum,
+    group: displays.get(datum.seriesId)!.group,
+  }));
+  const marks: Plot.Markish[] = [];
+
+  for (const reference of spec.references ?? []) {
+    if (reference.type !== "horizontal" || reference.value === undefined) continue;
+    marks.push(Plot.ruleY([reference.value], {
+      stroke: "#BEBEBE",
+      strokeWidth: 2,
+      strokeDasharray: "4,4",
+    }));
+  }
+
+  marks.push(Plot.line(data, {
+    x: "sensitivity",
+    y: "ppv",
+    stroke: "group",
+    strokeWidth: 2,
+    tip: true,
+  }));
+
+  return Plot.plot({
+    width: 600,
+    height: 600,
+    marginLeft: 64,
+    marginBottom: 56,
+    style: BASE_STYLE,
+    x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
+    y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
+    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] },
+    marks,
+  });
 }
