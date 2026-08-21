@@ -6,6 +6,7 @@ for (const name of [
   "CalibrationSpecSchema",
   "CalibrationV2SpecSchema",
   "EvaluationSpecSchema",
+  "PrecisionRecallV2SpecSchema",
   "ReferenceLineV2SpecSchema",
   "RocSpecSchema",
   "RocV2SpecSchema",
