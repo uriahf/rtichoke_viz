@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"2.0","type":"gains",
+  "evaluations":[{"id":"eval-a","model":"Model A","population":"Population A","label":"Model A"}],
+  "series":[{"id":"series-a","evaluationId":"eval-a","display":{"label":"Model A","group":"Model A","role":"model"}}],
+  "data":[{"seriesId":"series-a","cutoff":1,"ppcr":0,"sensitivity":0},{"seriesId":"series-a","cutoff":0.5,"ppcr":0.4,"sensitivity":0.8},{"seriesId":"series-a","cutoff":0,"ppcr":1,"sensitivity":1}],
+  "x":"ppcr","y":"sensitivity",
+  "xAxis":{"label":"Predicted Positives (Rate)","domain":[0,1]},"yAxis":{"label":"Sensitivity","domain":[0,1]},
+  "references":[
+    {"type":"identity","scope":"global","label":"Random"},
+    {"type":"path","points":[{"x":0,"y":0},{"x":0.3,"y":1},{"x":1,"y":1}],"scope":"population","population":"Population A","label":"Perfect Model"}
+  ]
+}
