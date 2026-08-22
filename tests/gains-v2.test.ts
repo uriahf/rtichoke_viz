@@ -6,8 +6,15 @@ import sharedPopulation from "../fixtures/v2/gains-shared-population.json" with 
 import single from "../fixtures/v2/gains-single.json" with { type: "json" };
 import timeDependent from "../fixtures/v2/gains-time.json" with { type: "json" };
 import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
+import type { ReferenceLineV2Spec } from "../src/spec/v2/common.js";
 import { GainsV2SpecSchema } from "../src/spec/v2/gains.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
+
+function isPathReference(
+  reference: ReferenceLineV2Spec,
+): reference is ReferenceLineV2Spec & { type: "path"; points: Array<{ x: number; y: number }> } {
+  return reference.type === "path";
+}
 
 describe("v2 gains semantics", () => {
   it.each([single, sharedPopulation, populations, equalPrevalence, timeDependent])(
@@ -35,17 +42,17 @@ describe("v2 gains semantics", () => {
 
   it("shares one perfect reference across models evaluated on one population", () => {
     expect(sharedPopulation.series).toHaveLength(2);
-    expect(sharedPopulation.references.filter((x) => x.type === "path")).toHaveLength(1);
+    expect(sharedPopulation.references.filter(isPathReference)).toHaveLength(1);
   });
 
   it("keeps distinct perfect references for distinct populations", () => {
-    const perfect = populations.references.filter((x) => x.type === "path");
+    const perfect = populations.references.filter(isPathReference);
     expect(perfect.map((x) => x.population)).toEqual(["Population A", "Population B"]);
     expect(perfect.map((x) => x.points[1].x)).toEqual([0.3, 0.5]);
   });
 
   it("does not collapse equal-prevalence populations with identical path geometry", () => {
-    const perfect = equalPrevalence.references.filter((x) => x.type === "path");
+    const perfect = equalPrevalence.references.filter(isPathReference);
     expect(perfect).toHaveLength(2);
     expect(perfect[0].points).toEqual(perfect[1].points);
     expect(new Set(perfect.map((x) => x.population))).toEqual(
@@ -54,7 +61,7 @@ describe("v2 gains semantics", () => {
   });
 
   it("scopes time-dependent perfect references by population and horizon", () => {
-    const perfect = timeDependent.references.filter((x) => x.type === "path");
+    const perfect = timeDependent.references.filter(isPathReference);
     expect(perfect.map((x) => x.scope)).toEqual([
       "population_horizon",
       "population_horizon",
