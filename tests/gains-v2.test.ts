@@ -6,14 +6,13 @@ import sharedPopulation from "../fixtures/v2/gains-shared-population.json" with 
 import single from "../fixtures/v2/gains-single.json" with { type: "json" };
 import timeDependent from "../fixtures/v2/gains-time.json" with { type: "json" };
 import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
-import type { ReferenceLineV2Spec } from "../src/spec/v2/common.js";
 import { GainsV2SpecSchema } from "../src/spec/v2/gains.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
-function isPathReference(
-  reference: ReferenceLineV2Spec,
-): reference is ReferenceLineV2Spec & { type: "path"; points: Array<{ x: number; y: number }> } {
-  return reference.type === "path";
+function isPathReference<T extends { type: string; points?: unknown }>(
+  reference: T,
+): reference is T & { type: "path"; points: Array<{ x: number; y: number }> } {
+  return reference.type === "path" && Array.isArray(reference.points);
 }
 
 describe("v2 gains semantics", () => {
