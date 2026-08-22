@@ -1,67 +1,28 @@
 export { CalibrationSpecSchema } from "./spec/calibration.js";
-export type {
-  CalibrationDatum,
-  CalibrationDistributionDatum,
-  CalibrationSpec,
-} from "./spec/calibration.js";
+export type { CalibrationDatum, CalibrationDistributionDatum, CalibrationSpec } from "./spec/calibration.js";
 export { RocSpecSchema } from "./spec/roc.js";
 export type { RocDatum, RocSpec } from "./spec/roc.js";
 export { RtichokeChartSpecSchema } from "./spec/chart.js";
 export type { RtichokeChartSpec } from "./spec/chart.js";
 export { RtichokeChartSpecV2Schema } from "./spec/v2/chart.js";
 export type { RtichokeChartSpecV2 } from "./spec/v2/chart.js";
-export {
-  DisplayGroupingSpecSchema,
-  DisplayRoleSchema,
-  EvaluationSpecSchema,
-  ReferenceLineV2SpecSchema,
-  SeriesSpecSchema,
-} from "./spec/v2/common.js";
-export type {
-  DisplayGroupingSpec,
-  DisplayRole,
-  EvaluationSpec,
-  ReferenceLineV2Spec,
-  SeriesSpec,
-} from "./spec/v2/common.js";
+export { DisplayGroupingSpecSchema, DisplayRoleSchema, EvaluationSpecSchema, ReferenceLineV2SpecSchema, SeriesSpecSchema } from "./spec/v2/common.js";
+export type { DisplayGroupingSpec, DisplayRole, EvaluationSpec, ReferenceLineV2Spec, SeriesSpec } from "./spec/v2/common.js";
 export { RocV2SpecSchema } from "./spec/v2/roc.js";
 export type { RocV2Datum, RocV2Spec } from "./spec/v2/roc.js";
 export { CalibrationV2SpecSchema } from "./spec/v2/calibration.js";
-export type {
-  CalibrationV2Datum,
-  CalibrationV2DistributionDatum,
-  CalibrationV2Spec,
-} from "./spec/v2/calibration.js";
+export type { CalibrationV2Datum, CalibrationV2DistributionDatum, CalibrationV2Spec } from "./spec/v2/calibration.js";
 export { PrecisionRecallV2SpecSchema } from "./spec/v2/precision_recall.js";
-export type {
-  PrecisionRecallV2Datum,
-  PrecisionRecallV2Spec,
-} from "./spec/v2/precision_recall.js";
+export type { PrecisionRecallV2Datum, PrecisionRecallV2Spec } from "./spec/v2/precision_recall.js";
+export { GainsV2SpecSchema } from "./spec/v2/gains.js";
+export type { GainsV2Datum, GainsV2Spec } from "./spec/v2/gains.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
-export {
-  rocSpecFromRtichokePython,
-  rocSpecFromRtichokeR,
-} from "./adapters/roc.js";
-export type {
-  RtichokePythonRocRow,
-  RtichokeRRocRow,
-} from "./adapters/roc.js";
+export { rocSpecFromRtichokePython, rocSpecFromRtichokeR } from "./adapters/roc.js";
+export type { RtichokePythonRocRow, RtichokeRRocRow } from "./adapters/roc.js";
 export { calibrationSpecFromRtichokeRows } from "./adapters/calibration.js";
-export type {
-  CalibrationMethod,
-  RtichokeCalibrationDistributionRow,
-  RtichokeCalibrationRow,
-} from "./adapters/calibration.js";
-export {
-  calibrationV2SpecFromRtichokeRows,
-  rocV2SpecFromRtichokePython,
-  rocV2SpecFromRtichokeR,
-} from "./adapters/v2.js";
+export type { CalibrationMethod, RtichokeCalibrationDistributionRow, RtichokeCalibrationRow } from "./adapters/calibration.js";
+export { calibrationV2SpecFromRtichokeRows, rocV2SpecFromRtichokePython, rocV2SpecFromRtichokeR } from "./adapters/v2.js";
 export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
-export {
-  renderCalibrationV2,
-  renderPrecisionRecallV2,
-  renderRocV2,
-} from "./render/v2.js";
+export { renderCalibrationV2, renderGainsV2, renderPrecisionRecallV2, renderRocV2 } from "./render/v2.js";
