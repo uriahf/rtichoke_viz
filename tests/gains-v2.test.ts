@@ -5,8 +5,8 @@ import populations from "../fixtures/v2/gains-populations.json" with { type: "js
 import sharedPopulation from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
 import single from "../fixtures/v2/gains-single.json" with { type: "json" };
 import timeDependent from "../fixtures/v2/gains-time.json" with { type: "json" };
-import { RtichokeChartSpecV2Schema } from "../src/spec/v2/chart.js";
-import { GainsV2SpecSchema, type GainsV2Spec } from "../src/spec/v2/gains.js";
+import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
+import { GainsV2SpecSchema } from "../src/spec/v2/gains.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
 describe("v2 gains semantics", () => {
@@ -15,7 +15,7 @@ describe("v2 gains semantics", () => {
     (spec) => {
       expect(Value.Check(GainsV2SpecSchema, spec)).toBe(true);
       expect(Value.Check(RtichokeChartSpecV2Schema, spec)).toBe(true);
-      expect(() => assertV2ReferentialIntegrity(spec as GainsV2Spec)).not.toThrow();
+      expect(() => assertV2ReferentialIntegrity(spec as RtichokeChartSpecV2)).not.toThrow();
     },
   );
 
