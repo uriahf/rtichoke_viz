@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rtichoke_viz demo</title>
+  <style>
+    :root { font-family: Arial, Helvetica, sans-serif; color: #222; background: #fff; }
+    body { max-width: 1280px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+    main { display: grid; gap: 3rem; }
+    header { max-width: 760px; }
+    h1 { margin-bottom: .5rem; font-size: 2rem; font-weight: 600; }
+    h2 { margin: 0 0 1rem; font-size: 1.25rem; font-weight: 600; }
+    p { line-height: 1.5; color: #555; }
+    section { padding: 0; }
+    .chart { overflow-x: auto; min-height: 600px; }
+    .chart > * { display: block; }
+    .consumer-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .consumer-links a { color: #006E90; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>rtichoke_viz proof of concept</h1>
+      <p>Canonical ROC, calibration, and precision-recall specifications rendered in the browser with shared v2 semantics.</p>
+    </header>
+    <section>
+      <h2>TypeScript browser renderer</h2>
+      <h3>ROC</h3>
+      <div id="roc-chart" class="chart"></div>
+      <h3>Calibration</h3>
+      <div id="calibration-chart" class="chart"></div>
+      <h3>Precision-recall</h3>
+      <div id="precision-recall-chart" class="chart"></div>
+    </section>
+    <section>
+      <h2>Python Plotly consumer</h2>
+      <p>The same canonical JSON fixtures above are consumed directly by Python Plotly.</p>
+      <div class="consumer-links">
+        <a href="./python-plotly/roc.html">Open ROC in Python Plotly</a>
+        <a href="./python-plotly/calibration.html">Open calibration in Python Plotly</a>
+        <a href="./python-plotly/precision-recall.html">Open precision-recall in Python Plotly</a>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>
