@@ -37,13 +37,25 @@ class GainsRendererTest(unittest.TestCase):
         spec = json.loads(Path("fixtures/v2/gains-shared-population.json").read_text())
         fig = render_gains(spec)
         model_traces = [trace for trace in fig.data if trace.legendgroup is not None]
-        reference_traces = [trace for trace in fig.data if trace.legendgroup is None]
+        reference_traces = {
+            trace.name: trace for trace in fig.data if trace.legendgroup is None
+        }
         self.assertEqual(len(model_traces), 2)
         self.assertEqual([trace.name for trace in model_traces], ["Model A", "Model B"])
-        self.assertEqual(len(reference_traces), 2)
-        self.assertEqual(list(reference_traces[0].x), [0, 1])
-        self.assertEqual(list(reference_traces[1].x), [0, 0.3, 1])
-        self.assertEqual(list(reference_traces[1].y), [0, 1, 1])
+        self.assertEqual(set(reference_traces), {"Random", "Perfect Model"})
+        self.assertEqual(list(reference_traces["Random"].x), [0, 1])
+
+        perfect_spec = next(
+            reference for reference in spec["references"] if reference["label"] == "Perfect Model"
+        )
+        self.assertEqual(
+            list(reference_traces["Perfect Model"].x),
+            [point["x"] for point in perfect_spec["points"]],
+        )
+        self.assertEqual(
+            list(reference_traces["Perfect Model"].y),
+            [point["y"] for point in perfect_spec["points"]],
+        )
 
 
 if __name__ == "__main__":
