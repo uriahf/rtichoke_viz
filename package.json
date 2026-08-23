@@ -15,9 +15,12 @@
     "@sinclair/typebox": "^0.34.38"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^22.0.0",
     "esbuild": "^0.25.9",
+    "jsdom": "^29.1.1",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
 }
+
