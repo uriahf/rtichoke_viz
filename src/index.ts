@@ -26,3 +26,4 @@ export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
 export { renderCalibrationV2, renderGainsV2, renderPrecisionRecallV2, renderRocV2 } from "./render/v2.js";
+export type { V2RenderOptions } from "./render/v2.js";

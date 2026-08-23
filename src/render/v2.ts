@@ -17,6 +17,32 @@ const BASE_STYLE = {
   fontSize: "13px",
 };
 
+export interface V2RenderOptions {
+  width?: number;
+  height?: number;
+  colors?: readonly string[];
+}
+
+export function resolveV2RenderOptions(
+  groupCount: number,
+  options: V2RenderOptions = {},
+) {
+  const width = options.width ?? 600;
+  const height = options.height ?? 600;
+  if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) {
+    throw new Error("Renderer width and height must be positive finite numbers");
+  }
+
+  const colors = groupCount <= 1
+    ? ["#000000"]
+    : [...(options.colors ?? RTICHOKE_COLORS)];
+  if (colors.length < groupCount) {
+    throw new Error("Renderer colors must contain at least one color per display group");
+  }
+
+  return { width, height, colors: colors.slice(0, Math.max(groupCount, 1)) };
+}
+
 type SeriesChartSpec = RocV2Spec | CalibrationV2Spec | PrecisionRecallV2Spec | GainsV2Spec;
 
 function displayBySeries(spec: SeriesChartSpec) {
@@ -102,14 +128,18 @@ export function renderPrecisionRecallV2(spec: PrecisionRecallV2Spec): SVGSVGElem
     color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] }, marks });
 }
 
-export function renderGainsV2(spec: GainsV2Spec): SVGSVGElement | HTMLElement {
+export function renderGainsV2(
+  spec: GainsV2Spec,
+  options: V2RenderOptions = {},
+): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups.length > 1;
+  const resolved = resolveV2RenderOptions(groups.length, options);
   const data = seriesRenderData(spec, spec.data);
   const marks = referenceMarks(spec);
   marks.push(Plot.line(data, { x: "ppcr", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
-  return Plot.plot({ width: 600, height: 600, marginLeft: 64, marginBottom: 56, style: BASE_STYLE,
+  return Plot.plot({ width: resolved.width, height: resolved.height, marginLeft: 64, marginBottom: 56, style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 }, y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] }, marks });
+    color: { legend: showLegend, range: resolved.colors }, marks });
 }
