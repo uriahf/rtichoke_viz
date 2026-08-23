@@ -487,10 +487,10 @@ export function renderCalibrationV2(
 }
 
 function renderLineChart(
-  spec: PrecisionRecallV2Spec | GainsV2Spec,
+  spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec,
   options: V2RenderOptions,
   x: "sensitivity" | "ppcr",
-  y: "ppv" | "sensitivity",
+  y: "ppv" | "sensitivity" | "lift",
 ) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -500,24 +500,27 @@ function renderLineChart(
     spec.data as Array<{
       seriesId: string;
       cutoff: number;
-      sensitivity: number;
+      sensitivity?: number;
       ppcr?: number;
       ppv?: number;
+      lift?: number;
     }>,
   ).map((datum) => {
     const values = datum as typeof datum & {
       cutoff: number;
-      sensitivity: number;
+      sensitivity?: number;
       ppcr?: number;
       ppv?: number;
+      lift?: number;
     };
+    const yLabel = y === "ppv" ? "PPV" : y === "sensitivity" ? "Sensitivity" : "Lift";
     return {
       ...datum,
       title: tooltip(theme.tip.digits, [
         ["Series", datum.label],
         ["Cutoff", values.cutoff],
         [x === "ppcr" ? "PPCR" : "Sensitivity", values[x]],
-        [y === "ppv" ? "PPV" : "Sensitivity", values[y]],
+        [yLabel, values[y]],
       ]),
     };
   });
@@ -576,10 +579,10 @@ export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec 
 }
 
 function renderHorizonLineChart(
-  spec: PrecisionRecallV2Spec | GainsV2Spec,
+  spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec,
   options: V2RenderOptions,
   x: "sensitivity" | "ppcr",
-  y: "ppv" | "sensitivity",
+  y: "ppv" | "sensitivity" | "lift",
 ) {
   const availableHorizons = horizons(spec);
   if (availableHorizons.length <= 1) return renderLineChart(spec, options, x, y);
@@ -620,4 +623,10 @@ export function renderGainsV2(
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
   return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
+}
+export function renderLiftV2(
+  spec: LiftV2Spec,
+  options: V2RenderOptions = {},
+): SVGSVGElement | HTMLElement {
+  return renderHorizonLineChart(spec, options, "ppcr", "lift");
 }
