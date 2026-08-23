@@ -40,6 +40,26 @@ npm run build:demo
 
 `npm run build` creates the distributable browser assets under `dist/`. `npm run build:demo` also exports the JSON Schemas to `schemas/rtichoke-viz.schema.json` (v1) and `schemas/rtichoke-viz-v2.schema.json` (v2), and creates a self-contained demo site under `site/`. After changes reach `main`, GitHub Pages deploys that generated demo.
 
+### Browser theme options
+
+All v2 renderers share the exported `RTICHOKE_BROWSER_THEME`. Presentation overrides stay outside the canonical v2 spec:
+
+```ts
+renderRocV2(spec, {
+  width: 720,
+  height: 480,
+  colors: ["#1b9e77", "#d95f02"],
+  theme: {
+    line: { width: 3 },
+    marker: { radius: 6 },
+    reference: { dash: "2,3" },
+    tip: { digits: 2 },
+  },
+});
+```
+
+Display groups receive colors in their first explicit series order. A single display group remains black and has no legend, preserving the existing renderer behavior.
+
 ## Distribution
 
 `rtichoke_viz` GitHub Releases are the language-neutral distribution boundary for the compiled browser bundle. A `vX.Y.Z` tag matching the version in `package.json` publishes `rtichoke-viz-X.Y.Z.tar.gz` plus its SHA-256 checksum. The archive contains the compiled JavaScript, CSS, JSON Schema, and a manifest recording the version and source commit.
@@ -58,3 +78,4 @@ R and Python consumers should vendor an exact released archive during package de
 - Self-contained browser rendering
 - Versioned browser bundle releases
 - CI-built demo artifact and GitHub Pages deployment
+

@@ -25,5 +25,6 @@ export { calibrationV2SpecFromRtichokeRows, rocV2SpecFromRtichokePython, rocV2Sp
 export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
-export { renderCalibrationV2, renderGainsV2, renderPrecisionRecallV2, renderRocV2 } from "./render/v2.js";
-export type { V2RenderOptions } from "./render/v2.js";
+export { RTICHOKE_BROWSER_THEME, RTICHOKE_COLORS, renderCalibrationV2, renderGainsV2, renderPrecisionRecallV2, renderRocV2, resolveV2RenderOptions } from "./render/v2.js";
+export type { ResolvedV2RenderOptions, V2RendererTheme, V2RenderOptions, V2ThemeOptions } from "./render/v2.js";
+
