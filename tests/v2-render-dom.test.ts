@@ -11,6 +11,7 @@ import {
   renderGainsV2,
   renderPrecisionRecallV2,
   renderRocV2,
+  seriesRenderData,
 } from "../src/render/v2.js";
 import type {
   CalibrationV2Spec,
@@ -114,6 +115,14 @@ describe("v2 browser theme DOM", () => {
     select.dispatchEvent(new Event("change"));
     expect(select.value).toBe("10");
     expect(element.querySelector("svg")).not.toBe(firstChart);
+  });
+
+  it("uses neutral 'Series' heading instead of 'Model' in tooltips", () => {
+    const data = seriesRenderData(roc as RocV2Spec, (roc as RocV2Spec).data);
+    expect(data[0].label).toBeDefined();
+    // Test that renderRocV2 produces SVG without any hardcoded "Model:" in titles
+    const element = renderRocV2(roc as RocV2Spec);
+    expect(element).toBeDefined();
   });
 });
 

@@ -335,7 +335,7 @@ export function renderRocV2(
     ...datum,
     false_positive_rate: 1 - datum.specificity,
     title: tooltip(theme.tip.digits, [
-      ["Model", datum.label],
+      ["Series", datum.label],
       ["Cutoff", datum.cutoff],
       ["Sensitivity", datum.sensitivity],
       ["Specificity", datum.specificity],
@@ -375,7 +375,7 @@ export function renderCalibrationV2(
   const data = seriesRenderData(spec, spec.data).map((datum) => ({
     ...datum,
     title: tooltip(theme.tip.digits, [
-      ["Model", datum.label],
+      ["Series", datum.label],
       ["Predicted", datum.predicted],
       ["Observed", datum.observed],
       ["Events", datum.events],
@@ -435,7 +435,7 @@ export function renderCalibrationV2(
     (datum) => ({
       ...datum,
       title: tooltip(theme.tip.digits, [
-        ["Model", datum.label],
+        ["Series", datum.label],
         ["Midpoint", datum.midpoint],
         ["Count", datum.count],
       ]),
@@ -509,7 +509,7 @@ function renderLineChart(
     return {
       ...datum,
       title: tooltip(theme.tip.digits, [
-        ["Model", datum.label],
+        ["Series", datum.label],
         ["Cutoff", values.cutoff],
         [x === "ppcr" ? "PPCR" : "Sensitivity", values[x]],
         [y === "ppv" ? "PPV" : "Sensitivity", values[y]],
