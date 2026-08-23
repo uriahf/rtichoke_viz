@@ -18470,8 +18470,12 @@ var gains_shared_population_default = {
     { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
   ],
   data: [
+    { seriesId: "series-a", cutoff: 1, ppcr: 0, sensitivity: 0 },
     { seriesId: "series-a", cutoff: 0.5, ppcr: 0.4, sensitivity: 0.8 },
-    { seriesId: "series-b", cutoff: 0.5, ppcr: 0.5, sensitivity: 0.7 }
+    { seriesId: "series-a", cutoff: 0, ppcr: 1, sensitivity: 1 },
+    { seriesId: "series-b", cutoff: 1, ppcr: 0, sensitivity: 0 },
+    { seriesId: "series-b", cutoff: 0.5, ppcr: 0.5, sensitivity: 0.7 },
+    { seriesId: "series-b", cutoff: 0, ppcr: 1, sensitivity: 1 }
   ],
   x: "ppcr",
   y: "sensitivity",
@@ -18496,8 +18500,12 @@ var precision_recall_shared_population_default = {
     { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
   ],
   data: [
+    { seriesId: "series-a", cutoff: 0.9, sensitivity: 0.2, ppv: 0.9 },
     { seriesId: "series-a", cutoff: 0.5, sensitivity: 0.8, ppv: 0.6 },
-    { seriesId: "series-b", cutoff: 0.5, sensitivity: 0.75, ppv: 0.58 }
+    { seriesId: "series-a", cutoff: 0.1, sensitivity: 1, ppv: 0.3 },
+    { seriesId: "series-b", cutoff: 0.9, sensitivity: 0.15, ppv: 0.82 },
+    { seriesId: "series-b", cutoff: 0.5, sensitivity: 0.75, ppv: 0.58 },
+    { seriesId: "series-b", cutoff: 0.1, sensitivity: 1, ppv: 0.3 }
   ],
   x: "sensitivity",
   y: "ppv",
