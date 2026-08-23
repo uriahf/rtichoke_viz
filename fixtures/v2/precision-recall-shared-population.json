@@ -10,8 +10,12 @@
     {"id":"series-b","evaluationId":"eval-b","display":{"label":"Model B","group":"Model B","role":"model"}}
   ],
   "data": [
+    {"seriesId":"series-a","cutoff":0.9,"sensitivity":0.2,"ppv":0.9},
     {"seriesId":"series-a","cutoff":0.5,"sensitivity":0.8,"ppv":0.6},
-    {"seriesId":"series-b","cutoff":0.5,"sensitivity":0.75,"ppv":0.58}
+    {"seriesId":"series-a","cutoff":0.1,"sensitivity":1.0,"ppv":0.3},
+    {"seriesId":"series-b","cutoff":0.9,"sensitivity":0.15,"ppv":0.82},
+    {"seriesId":"series-b","cutoff":0.5,"sensitivity":0.75,"ppv":0.58},
+    {"seriesId":"series-b","cutoff":0.1,"sensitivity":1.0,"ppv":0.3}
   ],
   "x":"sensitivity",
   "y":"ppv",
