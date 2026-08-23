@@ -1,6 +1,7 @@
 import * as Plot from "@observablehq/plot";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
 import type { GainsV2Spec } from "../spec/v2/gains.js";
+import type { LiftV2Spec } from "../spec/v2/lift.js";
 import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
 import type { RocV2Spec } from "../spec/v2/roc.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
@@ -172,7 +173,11 @@ export function resolveV2RenderOptions(
 }
 
 type SeriesChartSpec =
-  RocV2Spec | CalibrationV2Spec | PrecisionRecallV2Spec | GainsV2Spec;
+  | RocV2Spec
+  | CalibrationV2Spec
+  | PrecisionRecallV2Spec
+  | GainsV2Spec
+  | LiftV2Spec;
 
 function displayBySeries(spec: SeriesChartSpec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
@@ -540,7 +545,7 @@ function renderLineChart(
   );
 }
 
-function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec) {
+function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec) {
   return [
     ...new Set(
       spec.series
@@ -550,7 +555,7 @@ function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec) {
   ];
 }
 
-export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec>(
+export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec>(
   spec: T,
   horizon: number,
 ): T {
@@ -616,4 +621,3 @@ export function renderGainsV2(
 ): SVGSVGElement | HTMLElement {
   return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
 }
-

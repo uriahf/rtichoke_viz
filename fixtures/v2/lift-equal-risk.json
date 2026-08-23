@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0",
+  "type": "lift",
+  "evaluations": [
+    { "id": "eval-a", "model": "Model A", "population": "Population A", "label": "Model A (Pop A)" },
+    { "id": "eval-b", "model": "Model A", "population": "Population B", "label": "Model A (Pop B)" }
+  ],
+  "series": [
+    {
+      "id": "series-a-5",
+      "evaluationId": "eval-a",
+      "horizon": 5,
+      "display": { "label": "Model A (Pop A, t=5)", "group": "Population A", "role": "population" }
+    },
+    {
+      "id": "series-b-10",
+      "evaluationId": "eval-b",
+      "horizon": 10,
+      "display": { "label": "Model A (Pop B, t=10)", "group": "Population B", "role": "population" }
+    }
+  ],
+  "data": [
+    { "seriesId": "series-a-5", "cutoff": 0.5, "ppcr": 0.2, "lift": 5.0 },
+    { "seriesId": "series-a-5", "cutoff": 0.0, "ppcr": 1.0, "lift": 1.0 },
+    { "seriesId": "series-b-10", "cutoff": 0.5, "ppcr": 0.2, "lift": 4.5 },
+    { "seriesId": "series-b-10", "cutoff": 0.0, "ppcr": 1.0, "lift": 1.0 }
+  ],
+  "x": "ppcr",
+  "y": "lift",
+  "xAxis": { "label": "Predicted Positives (Rate)", "domain": [0, 1] },
+  "yAxis": { "label": "Lift", "domain": [0, 5.0] },
+  "references": [
+    { "type": "horizontal", "value": 1, "scope": "global", "label": "Random" },
+    {
+      "type": "path",
+      "points": [
+        { "x": 0, "y": 5.0 },
+        { "x": 0.2, "y": 5.0 },
+        { "x": 1, "y": 1 }
+      ],
+      "scope": "population_horizon",
+      "population": "Population A",
+      "horizon": 5,
+      "label": "Perfect Model (Pop A, t=5)"
+    },
+    {
+      "type": "path",
+      "points": [
+        { "x": 0, "y": 5.0 },
+        { "x": 0.2, "y": 5.0 },
+        { "x": 1, "y": 1 }
+      ],
+      "scope": "population_horizon",
+      "population": "Population B",
+      "horizon": 10,
+      "label": "Perfect Model (Pop B, t=10)"
+    }
+  ]
+}

@@ -16,6 +16,8 @@ export { PrecisionRecallV2SpecSchema } from "./spec/v2/precision_recall.js";
 export type { PrecisionRecallV2Datum, PrecisionRecallV2Spec } from "./spec/v2/precision_recall.js";
 export { GainsV2SpecSchema } from "./spec/v2/gains.js";
 export type { GainsV2Datum, GainsV2Spec } from "./spec/v2/gains.js";
+export { LiftV2SpecSchema } from "./spec/v2/lift.js";
+export type { LiftV2Datum, LiftV2Spec } from "./spec/v2/lift.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
 export { rocSpecFromRtichokePython, rocSpecFromRtichokeR } from "./adapters/roc.js";
 export type { RtichokePythonRocRow, RtichokeRRocRow } from "./adapters/roc.js";
@@ -27,4 +29,3 @@ export { renderCalibration } from "./render/calibration.js";
 export { renderRoc } from "./render/roc.js";
 export { RTICHOKE_BROWSER_THEME, RTICHOKE_COLORS, renderCalibrationV2, renderGainsV2, renderPrecisionRecallV2, renderRocV2, resolveV2RenderOptions } from "./render/v2.js";
 export type { ResolvedV2RenderOptions, V2RendererTheme, V2RenderOptions, V2ThemeOptions } from "./render/v2.js";
-
