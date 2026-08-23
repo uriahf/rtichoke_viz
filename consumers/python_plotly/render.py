@@ -18,7 +18,7 @@ def load_spec(path: Path) -> dict[str, Any]:
     spec = json.loads(path.read_text())
     if spec.get("schemaVersion") != "2.0":
         raise ValueError("unsupported schemaVersion")
-    if spec.get("type") not in {"roc", "calibration", "precision_recall"}:
+    if spec.get("type") not in {"roc", "calibration", "precision_recall", "gains"}:
         raise ValueError("unsupported chart type")
     return spec
 
@@ -166,7 +166,11 @@ def render(spec: dict[str, Any]) -> go.Figure:
         return render_roc(spec)
     if spec["type"] == "calibration":
         return render_calibration(spec)
-    return render_precision_recall(spec)
+    if spec["type"] == "precision_recall":
+        return render_precision_recall(spec)
+    from gains import render_gains
+
+    return render_gains(spec)
 
 
 def assert_shared_display_group_series_identity(fixtures: Path) -> None:
@@ -190,6 +194,7 @@ def main() -> None:
         "roc": "roc.json",
         "calibration": "calibration.json",
         "precision-recall": "precision-recall-shared-population.json",
+        "gains": "gains-shared-population.json",
     }
     for chart, filename in fixtures.items():
         spec = load_spec(args.fixtures / filename)

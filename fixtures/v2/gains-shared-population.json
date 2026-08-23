@@ -9,8 +9,12 @@
     {"id":"series-b","evaluationId":"eval-b","display":{"label":"Model B","group":"Model B","role":"model"}}
   ],
   "data":[
+    {"seriesId":"series-a","cutoff":1.0,"ppcr":0.0,"sensitivity":0.0},
     {"seriesId":"series-a","cutoff":0.5,"ppcr":0.4,"sensitivity":0.8},
-    {"seriesId":"series-b","cutoff":0.5,"ppcr":0.5,"sensitivity":0.7}
+    {"seriesId":"series-a","cutoff":0.0,"ppcr":1.0,"sensitivity":1.0},
+    {"seriesId":"series-b","cutoff":1.0,"ppcr":0.0,"sensitivity":0.0},
+    {"seriesId":"series-b","cutoff":0.5,"ppcr":0.5,"sensitivity":0.7},
+    {"seriesId":"series-b","cutoff":0.0,"ppcr":1.0,"sensitivity":1.0}
   ],
   "x":"ppcr","y":"sensitivity",
   "xAxis":{"label":"Predicted Positives (Rate)","domain":[0,1]},"yAxis":{"label":"Sensitivity","domain":[0,1]},

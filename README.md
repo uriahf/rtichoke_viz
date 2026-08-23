@@ -26,9 +26,9 @@ Python -> same spec -> Plotly
 
 ## Current proof of concept
 
-The initial v1 contract covers ROC and calibration specifications and remains the contract consumed by the existing browser/R/Python renderers. Deterministic JSON fixtures drive both the tests and the browser demo.
+The initial v1 contract covers ROC and calibration specifications. Deterministic JSON fixtures drive both the tests and the browser demo.
 
-The v2 schema is the semantic successor for the same two chart types. It represents evaluations separately from plotted series, permits unknown model identity, makes display grouping explicit, and encodes global/population/population-and-horizon reference ownership. It is intentionally introduced alongside v1 before adapters and renderers migrate to it; no new chart type is included in v2 yet.
+The v2 schema is the semantic successor used by the current browser, R, and Python consumer proofs for ROC, calibration, precision-recall, and gains. It represents evaluations separately from plotted series, permits unknown model identity, makes display grouping explicit, and encodes global/population/population-and-horizon reference ownership. Browser renderer options such as dimensions and palettes remain presentation metadata outside the canonical statistical specification.
 
 ```bash
 npm install
@@ -50,6 +50,8 @@ R and Python consumers should vendor an exact released archive during package de
 
 - ROC
 - Calibration
+- Precision-recall
+- Gains
 - Deterministic fixtures
 - Runtime schema validation
 - Exported JSON Schema

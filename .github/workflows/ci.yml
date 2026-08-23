@@ -41,9 +41,11 @@ jobs:
           test -s site/python-plotly/roc.html
           test -s site/python-plotly/calibration.html
           test -s site/python-plotly/precision-recall.html
+          test -s site/python-plotly/gains.html
           grep -q 'roc-chart' site/index.html
           grep -q 'calibration-chart' site/index.html
           grep -q 'precision-recall-chart' site/index.html
+          grep -q 'gains-chart' site/index.html
           grep -q 'Python Plotly' site/index.html
       - uses: actions/upload-artifact@v4
         with:
@@ -72,3 +74,5 @@ jobs:
           test -s site/r-consumers/roc-plotly.html
           test -s site/r-consumers/calibration-plotly.html
           test -s site/r-consumers/precision-recall-plotly.html
+          test -s site/r-consumers/gains-ggplot.png
+          test -s site/r-consumers/gains-plotly.html
