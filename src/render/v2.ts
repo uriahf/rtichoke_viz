@@ -123,9 +123,10 @@ export function renderPrecisionRecallV2(spec: PrecisionRecallV2Spec): SVGSVGElem
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references ?? []) if (reference.type === "horizontal" && reference.value !== undefined) marks.push(Plot.ruleY([reference.value], { stroke: "#BEBEBE", strokeWidth: 2, strokeDasharray: "4,4" }));
   marks.push(Plot.line(data, { x: "sensitivity", y: "ppv", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
+  marks.push(Plot.dot(data, { x: "sensitivity", y: "ppv", fill: "group", stroke: "white", strokeWidth: 1.5, r: 4, tip: true }));
   return Plot.plot({ width: 600, height: 600, marginLeft: 64, marginBottom: 56, style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 }, y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] }, marks });
+    color: { legend: showLegend, domain: groups, range: showLegend ? RTICHOKE_COLORS : ["#000000"] }, marks });
 }
 
 export function renderGainsV2(
@@ -139,7 +140,8 @@ export function renderGainsV2(
   const data = seriesRenderData(spec, spec.data);
   const marks = referenceMarks(spec);
   marks.push(Plot.line(data, { x: "ppcr", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
+  marks.push(Plot.dot(data, { x: "ppcr", y: "sensitivity", fill: "group", stroke: "white", strokeWidth: 1.5, r: 4, tip: true }));
   return Plot.plot({ width: resolved.width, height: resolved.height, marginLeft: 64, marginBottom: 56, style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 }, y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: resolved.colors }, marks });
+    color: { legend: showLegend, domain: groups, range: resolved.colors }, marks });
 }
