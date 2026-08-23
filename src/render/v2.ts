@@ -540,6 +540,70 @@ function renderLineChart(
   );
 }
 
+function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec) {
+  return [
+    ...new Set(
+      spec.series
+        .map((series) => series.horizon)
+        .filter((horizon): horizon is number => horizon !== undefined),
+    ),
+  ];
+}
+
+export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec>(
+  spec: T,
+  horizon: number,
+): T {
+  const series = spec.series.filter(
+    (item) => item.horizon === undefined || item.horizon === horizon,
+  );
+  const seriesIds = new Set(series.map((item) => item.id));
+  return {
+    ...spec,
+    series,
+    data: spec.data.filter((datum) => seriesIds.has(datum.seriesId)),
+    references: spec.references?.filter(
+      (reference) =>
+        reference.scope !== "population_horizon" ||
+        reference.horizon === horizon,
+    ),
+  } as T;
+}
+
+function renderHorizonLineChart(
+  spec: PrecisionRecallV2Spec | GainsV2Spec,
+  options: V2RenderOptions,
+  x: "sensitivity" | "ppcr",
+  y: "ppv" | "sensitivity",
+) {
+  const availableHorizons = horizons(spec);
+  if (availableHorizons.length <= 1) return renderLineChart(spec, options, x, y);
+
+  const container = document.createElement("div");
+  container.className = "rtichoke-horizon-chart";
+  const control = document.createElement("label");
+  control.textContent = "Fixed Time Horizon: ";
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", "Fixed Time Horizon");
+  for (const horizon of availableHorizons) {
+    const option = document.createElement("option");
+    option.value = String(horizon);
+    option.textContent = String(horizon);
+    select.append(option);
+  }
+  control.append(select);
+  const chart = document.createElement("div");
+  const draw = (horizon: number) => {
+    chart.replaceChildren(
+      renderLineChart(selectHorizonSpec(spec, horizon), options, x, y),
+    );
+  };
+  select.addEventListener("change", () => draw(Number(select.value)));
+  container.append(control, chart);
+  draw(availableHorizons[0]);
+  return container;
+}
+
 export function renderPrecisionRecallV2(
   spec: PrecisionRecallV2Spec,
   options: V2RenderOptions = {},
@@ -550,6 +614,6 @@ export function renderGainsV2(
   spec: GainsV2Spec,
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
-  return renderLineChart(spec, options, "ppcr", "sensitivity");
+  return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
 }
 

@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import calibration from "../fixtures/v2/calibration.json" with { type: "json" };
 import gains from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
+import timeGains from "../fixtures/v2/gains-time.json" with { type: "json" };
 import precisionRecall from "../fixtures/v2/precision-recall-shared-population.json" with { type: "json" };
 import roc from "../fixtures/v2/roc.json" with { type: "json" };
 import {
@@ -100,6 +101,19 @@ describe("v2 browser theme DOM", () => {
     expect(multiple.textContent!.indexOf("Model A")).toBeLessThan(
       multiple.textContent!.indexOf("Model B"),
     );
+  });
+
+  it("renders one time-dependent gains horizon at a time", () => {
+    const element = renderGainsV2(timeGains as GainsV2Spec);
+    const select = element.querySelector("select")!;
+    expect(select.value).toBe("5");
+    expect([...select.options].map((option) => option.value)).toEqual(["5", "10"]);
+    const firstChart = element.querySelector("svg");
+
+    select.value = "10";
+    select.dispatchEvent(new Event("change"));
+    expect(select.value).toBe("10");
+    expect(element.querySelector("svg")).not.toBe(firstChart);
   });
 });
 
