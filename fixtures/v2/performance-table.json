@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "2.0",
+  "type": "performance_table",
+  "title": "Performance table",
+  "evaluations": [
+    { "id": "eval-model-a-pop-a", "model": "model-a", "population": "pop-a", "label": "Model A / Population A" },
+    { "id": "eval-model-b-pop-a", "model": "model-b", "population": "pop-a", "label": "Model B / Population A" },
+    { "id": "eval-model-a-pop-b", "model": "model-a", "population": "pop-b", "label": "Model A / Population B" },
+    { "id": "eval-unknown-pop-c", "population": "pop-c", "label": "Population C" }
+  ],
+  "metrics": [
+    { "id": "sensitivity", "label": "Sensitivity" },
+    { "id": "specificity", "label": "Specificity" },
+    { "id": "ppv", "label": "PPV" },
+    { "id": "net_benefit", "label": "Net Benefit" }
+  ],
+  "rows": [
+    {
+      "evaluationId": "eval-model-a-pop-a",
+      "operatingPoint": { "type": "probability_threshold", "value": 0.25 },
+      "values": [
+        { "metricId": "sensitivity", "estimate": 0.82 },
+        { "metricId": "specificity", "estimate": 0.74 },
+        { "metricId": "ppv", "estimate": 0.4 },
+        { "metricId": "net_benefit", "estimate": 0 }
+      ]
+    },
+    {
+      "evaluationId": "eval-model-b-pop-a",
+      "operatingPoint": { "type": "ppcr", "value": 0.2 },
+      "values": [
+        { "metricId": "sensitivity", "estimate": 0.79 },
+        { "metricId": "specificity", "estimate": 0.77 },
+        { "metricId": "ppv", "estimate": null }
+      ]
+    },
+    {
+      "evaluationId": "eval-model-a-pop-b",
+      "operatingPoint": { "type": "probability_threshold", "value": 0.25 },
+      "values": [
+        { "metricId": "sensitivity", "estimate": 0.82 },
+        { "metricId": "specificity", "estimate": 0.74 }
+      ]
+    },
+    {
+      "evaluationId": "eval-unknown-pop-c",
+      "horizon": 365,
+      "operatingPoint": { "type": "probability_threshold", "value": 0.25 },
+      "context": {
+        "censoringHeuristic": "adjusted",
+        "competingEventHeuristic": "adjusted_as_negative"
+      },
+      "values": [{ "metricId": "sensitivity", "estimate": 0.7 }]
+    },
+    {
+      "evaluationId": "eval-unknown-pop-c",
+      "horizon": 730,
+      "operatingPoint": { "type": "probability_threshold", "value": 0.25 },
+      "context": {
+        "censoringHeuristic": "adjusted",
+        "competingEventHeuristic": "adjusted_as_negative"
+      },
+      "values": [{ "metricId": "sensitivity", "estimate": 0.7 }]
+    }
+  ]
+}
