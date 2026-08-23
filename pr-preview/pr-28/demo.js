@@ -18262,6 +18262,18 @@ var BASE_STYLE = {
   fontFamily: "Arial, Helvetica, sans-serif",
   fontSize: "13px"
 };
+function resolveV2RenderOptions(groupCount, options = {}) {
+  const width = options.width ?? 600;
+  const height = options.height ?? 600;
+  if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) {
+    throw new Error("Renderer width and height must be positive finite numbers");
+  }
+  const colors = groupCount <= 1 ? ["#000000"] : [...options.colors ?? RTICHOKE_COLORS];
+  if (colors.length < groupCount) {
+    throw new Error("Renderer colors must contain at least one color per display group");
+  }
+  return { width, height, colors: colors.slice(0, Math.max(groupCount, 1)) };
+}
 function displayBySeries(spec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
 }
@@ -18383,22 +18395,23 @@ function renderPrecisionRecallV2(spec) {
     marks: marks2
   });
 }
-function renderGainsV2(spec) {
+function renderGainsV2(spec, options = {}) {
   assertV2ReferentialIntegrity(spec);
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const showLegend = groups2.length > 1;
+  const resolved = resolveV2RenderOptions(groups2.length, options);
   const data = seriesRenderData(spec, spec.data);
   const marks2 = referenceMarks(spec);
   marks2.push(line(data, { x: "ppcr", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
   return plot({
-    width: 600,
-    height: 600,
+    width: resolved.width,
+    height: resolved.height,
     marginLeft: 64,
     marginBottom: 56,
     style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
     y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] },
+    color: { legend: showLegend, range: resolved.colors },
     marks: marks2
   });
 }
