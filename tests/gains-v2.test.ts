@@ -83,4 +83,3 @@ describe("v2 gains semantics", () => {
     expect(selected.references?.[1]).toMatchObject({ horizon: 10 });
   });
 });
-
