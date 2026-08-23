@@ -5,8 +5,9 @@ import populations from "../fixtures/v2/gains-populations.json" with { type: "js
 import sharedPopulation from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
 import single from "../fixtures/v2/gains-single.json" with { type: "json" };
 import timeDependent from "../fixtures/v2/gains-time.json" with { type: "json" };
+import { selectHorizonSpec } from "../src/render/v2.js";
 import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
-import { GainsV2SpecSchema } from "../src/spec/v2/gains.js";
+import { GainsV2SpecSchema, type GainsV2Spec } from "../src/spec/v2/gains.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
 function isPathReference<T extends { type: string; points?: unknown }>(
@@ -68,4 +69,18 @@ describe("v2 gains semantics", () => {
     expect(perfect.map((x) => x.horizon)).toEqual([5, 10]);
     expect(perfect.map((x) => x.points[1].x)).toEqual([0.2, 0.4]);
   });
+
+  it("selects one horizon without dropping global references", () => {
+    const selected = selectHorizonSpec(timeDependent as GainsV2Spec, 10);
+    expect(selected.series.map((series) => series.horizon)).toEqual([10]);
+    expect(new Set(selected.data.map((datum) => datum.seriesId))).toEqual(
+      new Set(["series-a-10"]),
+    );
+    expect(selected.references?.map((reference) => reference.scope)).toEqual([
+      "global",
+      "population_horizon",
+    ]);
+    expect(selected.references?.[1]).toMatchObject({ horizon: 10 });
+  });
 });
+
