@@ -117,4 +117,3 @@ describe("v2 browser theme DOM", () => {
   });
 });
 
-
