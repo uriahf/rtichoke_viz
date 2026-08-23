@@ -617,4 +617,3 @@ export function renderGainsV2(
   return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
 }
 
-
