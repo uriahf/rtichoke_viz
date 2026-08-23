@@ -18383,6 +18383,7 @@ function renderPrecisionRecallV2(spec) {
   const marks2 = [];
   for (const reference of spec.references ?? []) if (reference.type === "horizontal" && reference.value !== void 0) marks2.push(ruleY([reference.value], { stroke: "#BEBEBE", strokeWidth: 2, strokeDasharray: "4,4" }));
   marks2.push(line(data, { x: "sensitivity", y: "ppv", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
+  marks2.push(dot(data, { x: "sensitivity", y: "ppv", fill: "group", stroke: "white", strokeWidth: 1.5, r: 4, tip: true }));
   return plot({
     width: 600,
     height: 600,
@@ -18391,7 +18392,7 @@ function renderPrecisionRecallV2(spec) {
     style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
     y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS : ["#000000"] },
+    color: { legend: showLegend, domain: groups2, range: showLegend ? RTICHOKE_COLORS : ["#000000"] },
     marks: marks2
   });
 }
@@ -18403,6 +18404,7 @@ function renderGainsV2(spec, options = {}) {
   const data = seriesRenderData(spec, spec.data);
   const marks2 = referenceMarks(spec);
   marks2.push(line(data, { x: "ppcr", y: "sensitivity", z: "seriesId", stroke: "group", strokeWidth: 2, tip: true }));
+  marks2.push(dot(data, { x: "ppcr", y: "sensitivity", fill: "group", stroke: "white", strokeWidth: 1.5, r: 4, tip: true }));
   return plot({
     width: resolved.width,
     height: resolved.height,
@@ -18411,7 +18413,7 @@ function renderGainsV2(spec, options = {}) {
     style: BASE_STYLE,
     x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
     y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
-    color: { legend: showLegend, range: resolved.colors },
+    color: { legend: showLegend, domain: groups2, range: resolved.colors },
     marks: marks2
   });
 }
