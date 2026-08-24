@@ -39,6 +39,35 @@
       section {
         padding: 0;
       }
+      .report-preview {
+        max-width: 900px;
+        padding: 1.5rem;
+        border: 1px solid #ddd;
+      }
+      .report-preview .rtichoke-report {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+      }
+      .report-preview .rtichoke-report__title,
+      .report-preview .rtichoke-report__component-title {
+        margin: 0 0 1rem;
+      }
+      .report-preview .rtichoke-report__component-content {
+        overflow-x: auto;
+      }
+      .report-preview table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.875rem;
+      }
+      .report-preview th,
+      .report-preview td {
+        border-bottom: 1px solid #ddd;
+        padding: 0.5rem;
+        text-align: left;
+        white-space: nowrap;
+      }
       .comparison {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 600px));
@@ -87,10 +116,18 @@
       <header>
         <h1>rtichoke_viz proof of concept</h1>
         <p>
-          Canonical ROC, calibration, precision-recall, and gains specifications
-          rendered in the browser with shared v2 semantics.
+          Canonical performance reports and standalone v2 specifications rendered
+          in the browser with shared semantics.
         </p>
       </header>
+      <section>
+        <h2>Composed ReportSpec</h2>
+        <p>
+          One canonical report composed vertically from the existing PerformanceTable,
+          ROC, calibration, precision-recall, Gains, and Lift renderers.
+        </p>
+        <div id="report-demo" class="report-preview"></div>
+      </section>
       <section>
         <h2>Browser and Python Plotly comparison</h2>
         <p>
@@ -192,4 +229,3 @@
     <script type="module" src="./demo.js"></script>
   </body>
 </html>
-
