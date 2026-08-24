@@ -76,8 +76,12 @@ describe("canonical ReportSpec", () => {
 
   it("leaves equal-valued references with distinct semantic owners untouched", () => {
     const spec = chart(gainsEqualPrevalence);
-    expect(spec.references.length).toBeGreaterThan(1);
-    expect(new Set(spec.references.map((reference) => reference.population)).size).toBeGreaterThan(1);
+    const references = spec.references ?? [];
+    const populations = references.flatMap((reference) =>
+      "population" in reference ? [reference.population] : [],
+    );
+    expect(references.length).toBeGreaterThan(1);
+    expect(new Set(populations).size).toBeGreaterThan(1);
     expectValid(report([{ id: "equal-valued-references", spec }]));
   });
 
