@@ -11,12 +11,15 @@ for (const name of [
   "PerformanceTableSpecSchema",
   "PrecisionRecallV2SpecSchema",
   "ReferenceLineV2SpecSchema",
+  "ReportComponentSchema",
+  "ReportSpecSchema",
   "RocSpecSchema",
   "RocV2SpecSchema",
   "RtichokeChartSpecSchema",
   "RtichokeChartSpecV2Schema",
   "SeriesSpecSchema",
   "assertPerformanceTableReferentialIntegrity",
+  "assertReportReferentialIntegrity",
   "assertV2ReferentialIntegrity",
   "calibrationSpecFromRtichokeRows",
   "calibrationV2SpecFromRtichokeRows",
@@ -44,3 +47,4 @@ assert.equal(
   viz.RtichokeChartSpecV2Schema.$id,
   "https://rtichoke.dev/schema/viz/2.0.json",
 );
+assert.equal(viz.ReportSpecSchema.$id, undefined);
