@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rtichoke_viz demo</title>
+    <style>
+      :root {
+        font-family: Arial, Helvetica, sans-serif;
+        color: #222;
+        background: #fff;
+      }
+      body {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: 2rem 2.5rem 4rem;
+      }
+      main {
+        display: grid;
+        gap: 3rem;
+      }
+      header {
+        max-width: 760px;
+      }
+      h1 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        font-weight: 600;
+      }
+      h2 {
+        margin: 0 0 1rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      p {
+        line-height: 1.5;
+        color: #555;
+      }
+      section {
+        padding: 0;
+      }
+      .comparison {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 600px));
+        gap: 1.5rem;
+        align-items: start;
+        margin-bottom: 3rem;
+      }
+      .renderer-label {
+        color: #555;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+      }
+      .chart {
+        overflow-x: auto;
+        min-height: 600px;
+      }
+      .chart > * {
+        display: block;
+      }
+      .table-preview {
+        max-width: 100%;
+        overflow-x: auto;
+        margin-bottom: 3rem;
+      }
+      .table-preview table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+      .table-preview th,
+      .table-preview td {
+        border-bottom: 1px solid #ddd;
+        padding: 0.5rem 0.625rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      .table-preview th {
+        color: #333;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .table-preview td {
+        color: #444;
+      }
+      .table-preview .rtichoke-performance-table__metric {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .table-preview .rtichoke-performance-table__title {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      iframe {
+        display: block;
+        width: 600px;
+        max-width: 100%;
+        height: 600px;
+        border: 0;
+        background: #fff;
+      }
+      @media (max-width: 1000px) {
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+      .consumer-links {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .consumer-links a {
+        color: #006e90;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>rtichoke_viz proof of concept</h1>
+        <p>
+          Canonical ROC, calibration, precision-recall, gains, lift, and
+          performance table specifications rendered in the browser with shared
+          v2 semantics.
+        </p>
+      </header>
+      <section>
+        <h2>Browser and Python Plotly comparison</h2>
+        <p>
+          Each pair uses the same canonical v2 fixture. Small differences in
+          font rasterization and hover mechanics are renderer-specific.
+        </p>
+        <h3>ROC</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="roc-chart" class="chart"></div>
+          </div>
+          <div>
+            <p class="renderer-label">Python Plotly</p>
+            <iframe
+              title="ROC rendered by Python Plotly"
+              src="./python-plotly/roc.html"
+            ></iframe>
+          </div>
+        </div>
+        <h3>Calibration</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="calibration-chart" class="chart"></div>
+          </div>
+          <div>
+            <p class="renderer-label">Python Plotly</p>
+            <iframe
+              title="Calibration rendered by Python Plotly"
+              src="./python-plotly/calibration.html"
+            ></iframe>
+          </div>
+        </div>
+        <h3>Precision-recall</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="precision-recall-chart" class="chart"></div>
+          </div>
+          <div>
+            <p class="renderer-label">Python Plotly</p>
+            <iframe
+              title="Precision-recall rendered by Python Plotly"
+              src="./python-plotly/precision-recall.html"
+            ></iframe>
+          </div>
+        </div>
+        <h3>Gains</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="gains-chart" class="chart"></div>
+          </div>
+          <div>
+            <p class="renderer-label">Python Plotly</p>
+            <iframe
+              title="Gains rendered by Python Plotly"
+              src="./python-plotly/gains.html"
+            ></iframe>
+          </div>
+        </div>
+        <h3>Time-Dependent Gains</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="gains-time-chart" class="chart"></div>
+          </div>
+        </div>
+        <h3>Lift</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="lift-chart" class="chart"></div>
+          </div>
+        </div>
+        <h3>Time-Dependent Lift</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="lift-time-chart" class="chart"></div>
+          </div>
+        </div>
+        <h3>Performance table</h3>
+        <p>
+          Browser-rendered canonical PerformanceTableSpec fixture with multiple
+          evaluations, shared and distinct populations, operating points, zero,
+          missing values, and time-dependent context.
+        </p>
+        <div id="performance-table" class="table-preview"></div>
+      </section>
+      <section>
+        <h2>Standalone Python Plotly proofs</h2>
+        <div class="consumer-links">
+          <a href="./python-plotly/roc.html">Open ROC in Python Plotly</a>
+          <a href="./python-plotly/calibration.html"
+            >Open calibration in Python Plotly</a
+          >
+          <a href="./python-plotly/precision-recall.html"
+            >Open precision-recall in Python Plotly</a
+          >
+          <a href="./python-plotly/gains.html">Open gains in Python Plotly</a>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>
