@@ -59,6 +59,39 @@
       .chart > * {
         display: block;
       }
+      .table-preview {
+        max-width: 100%;
+        overflow-x: auto;
+        margin-bottom: 3rem;
+      }
+      .table-preview table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+      .table-preview th,
+      .table-preview td {
+        border-bottom: 1px solid #ddd;
+        padding: 0.5rem 0.625rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      .table-preview th {
+        color: #333;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .table-preview td {
+        color: #444;
+      }
+      .table-preview .rtichoke-performance-table__metric {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .table-preview .rtichoke-performance-table__title {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
       iframe {
         display: block;
         width: 600px;
@@ -87,8 +120,9 @@
       <header>
         <h1>rtichoke_viz proof of concept</h1>
         <p>
-          Canonical ROC, calibration, precision-recall, and gains specifications
-          rendered in the browser with shared v2 semantics.
+          Canonical ROC, calibration, precision-recall, gains, lift, and
+          performance table specifications rendered in the browser with shared
+          v2 semantics.
         </p>
       </header>
       <section>
@@ -174,6 +208,13 @@
             <div id="lift-time-chart" class="chart"></div>
           </div>
         </div>
+        <h3>Performance table</h3>
+        <p>
+          Browser-rendered canonical PerformanceTableSpec fixture with multiple
+          evaluations, shared and distinct populations, operating points, zero,
+          missing values, and time-dependent context.
+        </p>
+        <div id="performance-table" class="table-preview"></div>
       </section>
       <section>
         <h2>Standalone Python Plotly proofs</h2>
@@ -192,4 +233,3 @@
     <script type="module" src="./demo.js"></script>
   </body>
 </html>
-
