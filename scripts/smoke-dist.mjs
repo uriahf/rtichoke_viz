@@ -29,6 +29,7 @@ for (const name of [
   "renderLiftV2",
   "renderPerformanceTable",
   "renderPrecisionRecallV2",
+  "renderReport",
   "renderRoc",
   "renderRocV2",
   "rocSpecFromRtichokePython",
