@@ -19,10 +19,29 @@ jobs:
       - run: npm run build
       - run: node scripts/smoke-dist.mjs
       - run: npm run schema
-      - name: Verify release artifact
+      - name: Verify release artifact invariants
         run: |
-          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/package-release.sh
-          bash scripts/verify-release.sh
+          VERSION="$(node -p "require('./package.json').version")"
+          BUNDLE="rtichoke-viz-${VERSION}"
+
+          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/package-release.sh release-a
+          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/verify-release.sh release-a
+          test -f "release-a/${BUNDLE}.tar.gz"
+          test -f "release-a/${BUNDLE}.tar.gz.sha256"
+
+          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/package-release.sh release-b
+          SOURCE_COMMIT="${GITHUB_SHA}" bash scripts/verify-release.sh release-b
+
+          cmp "release-a/${BUNDLE}.tar.gz" "release-b/${BUNDLE}.tar.gz"
+          cmp "release-a/${BUNDLE}.tar.gz.sha256" "release-b/${BUNDLE}.tar.gz.sha256"
+
+      - name: Verify release workflow cannot clobber published assets
+        run: |
+          ! grep -q -- '--clobber' .github/workflows/release.yml
+          grep -q 'gh release view "${RELEASE_TAG}"' .github/workflows/release.yml
+          grep -q 'refusing to replace versioned assets' .github/workflows/release.yml
+          grep -q 'gh release create "${RELEASE_TAG}"' .github/workflows/release.yml
+
       - run: npm run build:demo
       - uses: actions/setup-python@v5
         with:

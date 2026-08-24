@@ -7,12 +7,16 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to rebuild
+        description: Release tag to publish
         required: true
         type: string
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -23,6 +27,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -35,10 +40,20 @@ jobs:
       - run: node scripts/smoke-dist.mjs
       - run: npm run schema
 
-      - name: Verify tag matches bundle version
+      - name: Verify release identity
         run: |
           VERSION="$(node -p "require('./package.json').version")"
           test "${RELEASE_TAG}" = "v${VERSION}"
+          test "$(git rev-list -n 1 "${RELEASE_TAG}")" = "$(git rev-parse HEAD)"
+
+      - name: Refuse to republish an existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; refusing to replace versioned assets." >&2
+            exit 1
+          fi
 
       - name: Package immutable bundle
         run: bash scripts/package-release.sh
@@ -46,21 +61,14 @@ jobs:
       - name: Verify packaged bundle
         run: bash scripts/verify-release.sh
 
-      - name: Publish GitHub release
+      - name: Publish GitHub release once
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="$(node -p "require('./package.json').version")"
           BUNDLE="rtichoke-viz-${VERSION}"
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            gh release upload "${RELEASE_TAG}" \
-              "release/${BUNDLE}.tar.gz" \
-              "release/${BUNDLE}.tar.gz.sha256" \
-              --clobber
-          else
-            gh release create "${RELEASE_TAG}" \
-              "release/${BUNDLE}.tar.gz" \
-              "release/${BUNDLE}.tar.gz.sha256" \
-              --title "rtichoke_viz ${VERSION}" \
-              --generate-notes
-          fi
+          gh release create "${RELEASE_TAG}" \
+            "release/${BUNDLE}.tar.gz" \
+            "release/${BUNDLE}.tar.gz.sha256" \
+            --title "rtichoke_viz ${VERSION}" \
+            --generate-notes

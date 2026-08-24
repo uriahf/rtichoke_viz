@@ -2,11 +2,19 @@
 set -euo pipefail
 
 VERSION="$(node -p "require('./package.json').version")"
+EXPECTED_COMMIT="${SOURCE_COMMIT:-$(git rev-parse HEAD)}"
 BUNDLE="rtichoke-viz-${VERSION}"
 OUTPUT_DIR="${1:-release}"
 ARCHIVE="${OUTPUT_DIR}/${BUNDLE}.tar.gz"
 
-sha256sum -c "${ARCHIVE}.sha256"
+git cat-file -e "${EXPECTED_COMMIT}^{commit}"
+
+test -f "${ARCHIVE}"
+test -f "${ARCHIVE}.sha256"
+(
+  cd "${OUTPUT_DIR}"
+  sha256sum -c "${BUNDLE}.tar.gz.sha256"
+)
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT
@@ -17,8 +25,8 @@ test -s "${tmp}/${BUNDLE}/rtichoke-viz.css"
 test -s "${tmp}/${BUNDLE}/rtichoke-viz.schema.json"
 test -s "${tmp}/${BUNDLE}/rtichoke-viz-v2.schema.json"
 test -s "${tmp}/${BUNDLE}/MANIFEST"
-grep -qx "version=${VERSION}" "${tmp}/${BUNDLE}/MANIFEST"
-grep -q '^commit=.' "${tmp}/${BUNDLE}/MANIFEST"
+grep -Fxq "version=${VERSION}" "${tmp}/${BUNDLE}/MANIFEST"
+grep -Fxq "commit=${EXPECTED_COMMIT}" "${tmp}/${BUNDLE}/MANIFEST"
 node -e '
   const fs = require("node:fs");
   const checks = [
