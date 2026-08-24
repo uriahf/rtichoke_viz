@@ -24,6 +24,7 @@ for (const name of [
   "renderCalibrationV2",
   "renderGainsV2",
   "renderLiftV2",
+  "renderPerformanceTable",
   "renderPrecisionRecallV2",
   "renderRoc",
   "renderRocV2",
