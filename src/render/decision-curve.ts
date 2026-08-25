@@ -1,10 +1,14 @@
 import * as Plot from "@observablehq/plot";
 import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
-import { resolveV2RenderOptions, type V2RenderOptions } from "./v2.js";
+import { renderWithHorizonSelection, resolveV2RenderOptions, type V2RenderOptions } from "./v2.js";
 
 export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
+  return renderWithHorizonSelection(spec, (selected) => renderDecisionCurveChart(selected, options));
+}
+
+function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOptions): SVGSVGElement | HTMLElement {
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups, options);
   const { theme } = resolved;

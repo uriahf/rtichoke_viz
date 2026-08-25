@@ -13,9 +13,13 @@
   ],
   "data": [
     { "seriesId": "series-1", "threshold": 0.1, "netBenefit": 0.18 },
+    { "seriesId": "series-1", "threshold": 0.2, "netBenefit": 0.1 },
     { "seriesId": "series-2", "threshold": 0.1, "netBenefit": 0.16 },
+    { "seriesId": "series-2", "threshold": 0.2, "netBenefit": 0.08 },
     { "seriesId": "series-3", "threshold": 0.1, "netBenefit": 0.22 },
-    { "seriesId": "series-4", "threshold": 0.1, "netBenefit": 0.2 }
+    { "seriesId": "series-3", "threshold": 0.2, "netBenefit": 0.14 },
+    { "seriesId": "series-4", "threshold": 0.1, "netBenefit": 0.2 },
+    { "seriesId": "series-4", "threshold": 0.2, "netBenefit": 0.12 }
   ],
   "x": "threshold",
   "y": "netBenefit",

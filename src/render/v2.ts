@@ -1,5 +1,6 @@
 import * as Plot from "@observablehq/plot";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
+import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import type { GainsV2Spec } from "../spec/v2/gains.js";
 import type { LiftV2Spec } from "../spec/v2/lift.js";
 import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
@@ -548,7 +549,13 @@ function renderLineChart(
   );
 }
 
-function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec) {
+type HorizonSpec =
+  | PrecisionRecallV2Spec
+  | GainsV2Spec
+  | LiftV2Spec
+  | DecisionCurveV2Spec;
+
+function horizons(spec: HorizonSpec) {
   return [
     ...new Set(
       spec.series
@@ -558,7 +565,7 @@ function horizons(spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec) {
   ];
 }
 
-export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec>(
+export function selectHorizonSpec<T extends HorizonSpec>(
   spec: T,
   horizon: number,
 ): T {
@@ -578,14 +585,12 @@ export function selectHorizonSpec<T extends PrecisionRecallV2Spec | GainsV2Spec 
   } as T;
 }
 
-function renderHorizonLineChart(
-  spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec,
-  options: V2RenderOptions,
-  x: "sensitivity" | "ppcr",
-  y: "ppv" | "sensitivity" | "lift",
-) {
+export function renderWithHorizonSelection<T extends HorizonSpec>(
+  spec: T,
+  render: (selected: T) => SVGSVGElement | HTMLElement,
+): SVGSVGElement | HTMLElement {
   const availableHorizons = horizons(spec);
-  if (availableHorizons.length <= 1) return renderLineChart(spec, options, x, y);
+  if (availableHorizons.length <= 1) return render(spec);
 
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
@@ -602,14 +607,23 @@ function renderHorizonLineChart(
   control.append(select);
   const chart = document.createElement("div");
   const draw = (horizon: number) => {
-    chart.replaceChildren(
-      renderLineChart(selectHorizonSpec(spec, horizon), options, x, y),
-    );
+    chart.replaceChildren(render(selectHorizonSpec(spec, horizon)));
   };
   select.addEventListener("change", () => draw(Number(select.value)));
   container.append(control, chart);
   draw(availableHorizons[0]);
   return container;
+}
+
+function renderHorizonLineChart(
+  spec: PrecisionRecallV2Spec | GainsV2Spec | LiftV2Spec,
+  options: V2RenderOptions,
+  x: "sensitivity" | "ppcr",
+  y: "ppv" | "sensitivity" | "lift",
+) {
+  return renderWithHorizonSelection(spec, (selected) =>
+    renderLineChart(selected, options, x, y),
+  );
 }
 
 export function renderPrecisionRecallV2(
