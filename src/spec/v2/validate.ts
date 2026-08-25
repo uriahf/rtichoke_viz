@@ -1,5 +1,6 @@
 import type { RtichokeChartSpecV2 } from "./chart.js";
 import type { DecisionCurveV2Reference, DecisionCurveV2Spec } from "./decision-curve.js";
+import type { InterventionsAvoidedV2Reference, InterventionsAvoidedV2Spec } from "./interventions-avoided.js";
 
 /** Validate cross-object identity references that JSON Schema cannot express. */
 export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
@@ -60,6 +61,44 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
     }
     if (treatAllPopulations.size !== populations.size || [...populations].some((population) => !treatAllPopulations.has(population))) {
       throw new Error("decision curve requires exactly one Treat All reference per population");
+    }
+  }
+
+  if (spec.type === "interventions_avoided") {
+    const interventionsAvoided = spec as InterventionsAvoidedV2Spec;
+    const references = interventionsAvoided.references as InterventionsAvoidedV2Reference[];
+    interventionsAvoided.evaluations.forEach((evaluation, index) => {
+      const expectedId = `evaluation-${index + 1}`;
+      if (evaluation.id !== expectedId) throw new Error(`interventions avoided evaluation ids must be ordinal: expected ${expectedId}`);
+      const expectedDisplay = evaluation.model ?? evaluation.population;
+      const expectedRole = evaluation.model === undefined ? "population" : "model";
+      const series = interventionsAvoided.series[index];
+      if (!series || series.id !== `series-${index + 1}` || series.evaluationId !== evaluation.id) {
+        throw new Error("interventions avoided series must map one-to-one in evaluation order");
+      }
+      if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
+        throw new Error("interventions avoided display must follow evaluation semantics");
+      }
+    });
+    if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length) throw new Error("interventions avoided requires exactly one series per evaluation");
+
+    const treatAll = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_all");
+    if (treatAll.length !== 1) throw new Error("interventions avoided requires exactly one Treat All reference");
+    if (treatAll[0].scope !== "global" || treatAll[0].type !== "horizontal" || treatAll[0].value !== 0) {
+      throw new Error("interventions avoided Treat All must be the global zero reference");
+    }
+
+    const treatNone = references.filter(
+      (reference): reference is Extract<InterventionsAvoidedV2Reference, { benchmark: "treat_none" }> =>
+        "benchmark" in reference && reference.benchmark === "treat_none",
+    );
+    const treatNonePopulations = new Set<string>();
+    for (const reference of treatNone) {
+      if (treatNonePopulations.has(reference.population)) throw new Error(`duplicate Treat None population: ${reference.population}`);
+      treatNonePopulations.add(reference.population);
+    }
+    if (treatNonePopulations.size !== populations.size || [...populations].some((population) => !treatNonePopulations.has(population))) {
+      throw new Error("interventions avoided requires exactly one Treat None reference per population");
     }
   }
 }
