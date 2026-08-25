@@ -1,4 +1,5 @@
 import type { RtichokeChartSpecV2 } from "./chart.js";
+import type { DecisionCurveV2Spec } from "./decision-curve.js";
 
 /** Validate cross-object identity references that JSON Schema cannot express. */
 export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
@@ -28,12 +29,13 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
   }
 
   if (spec.type === "decision_curve") {
-    spec.evaluations.forEach((evaluation, index) => {
+    const decisionCurve = spec as DecisionCurveV2Spec;
+    decisionCurve.evaluations.forEach((evaluation, index) => {
       const expectedId = `evaluation-${index + 1}`;
       if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
       const expectedDisplay = evaluation.model ?? evaluation.population;
       const expectedRole = evaluation.model === undefined ? "population" : "model";
-      const series = spec.series[index];
+      const series = decisionCurve.series[index];
       if (!series || series.id !== `series-${index + 1}` || series.evaluationId !== evaluation.id) {
         throw new Error("decision curve series must map one-to-one in evaluation order");
       }
@@ -41,14 +43,15 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
         throw new Error("decision curve display must follow evaluation semantics");
       }
     });
-    if (spec.series.length !== spec.evaluations.length) throw new Error("decision curve requires exactly one series per evaluation");
+    if (decisionCurve.series.length !== decisionCurve.evaluations.length) throw new Error("decision curve requires exactly one series per evaluation");
 
-    const treatNone = spec.references.filter((reference) => reference.benchmark === "treat_none");
+    const treatNone = decisionCurve.references.filter((reference) => reference.benchmark === "treat_none");
     if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
 
-    const treatAll = spec.references.filter((reference) => reference.benchmark === "treat_all");
+    const treatAll = decisionCurve.references.filter((reference) => reference.benchmark === "treat_all");
     const treatAllPopulations = new Set<string>();
     for (const reference of treatAll) {
+      if (reference.benchmark !== "treat_all") continue;
       if (treatAllPopulations.has(reference.population)) throw new Error(`duplicate Treat All population: ${reference.population}`);
       treatAllPopulations.add(reference.population);
     }
