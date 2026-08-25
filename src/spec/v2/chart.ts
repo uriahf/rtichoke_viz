@@ -2,6 +2,7 @@ import { Type, type Static } from "@sinclair/typebox";
 import { CalibrationV2SpecSchema } from "./calibration.js";
 import { DecisionCurveV2SpecSchema } from "./decision-curve.js";
 import { GainsV2SpecSchema } from "./gains.js";
+import { InterventionsAvoidedV2SpecSchema } from "./interventions-avoided.js";
 import { LiftV2SpecSchema } from "./lift.js";
 import { PrecisionRecallV2SpecSchema } from "./precision_recall.js";
 import { RocV2SpecSchema } from "./roc.js";
@@ -15,6 +16,7 @@ export const RtichokeChartSpecV2Schema = Type.Union(
     GainsV2SpecSchema,
     LiftV2SpecSchema,
     DecisionCurveV2SpecSchema,
+    InterventionsAvoidedV2SpecSchema,
   ],
   {
     $id: "https://rtichoke.dev/schema/viz/2.0.json",
