@@ -32,17 +32,29 @@ export const TreatNoneReferenceSchema = Type.Object({
   benchmark: Type.Literal("treat_none"),
 });
 
-export const TreatAllReferenceSchema = Type.Object({
-  type: Type.Literal("path"),
-  points: Type.Array(
-    Type.Object({ x: Type.Number(), y: Type.Number() }),
-    { minItems: 2 },
-  ),
-  label: Type.Optional(Type.String()),
-  scope: Type.Literal("population"),
-  population: Type.String(),
-  benchmark: Type.Literal("treat_all"),
-});
+const TreatAllGeometry = {
+    type: Type.Literal("path"),
+    points: Type.Array(
+      Type.Object({ x: Type.Number(), y: Type.Number() }),
+      { minItems: 2 },
+    ),
+    label: Type.Optional(Type.String()),
+    benchmark: Type.Literal("treat_all"),
+};
+
+export const TreatAllReferenceSchema = Type.Union([
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population"),
+    population: Type.String(),
+  }),
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 }),
+  }),
+]);
 
 export const DecisionCurveV2ReferenceSchema = Type.Union([
   TreatNoneReferenceSchema,
