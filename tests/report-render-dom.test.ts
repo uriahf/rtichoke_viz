@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import calibration from "../fixtures/v2/calibration.json" with { type: "json" };
+import decisionCurveTime from "../fixtures/v2/decision-curve-time-multi.json" with { type: "json" };
 import gains from "../fixtures/v2/gains-single.json" with { type: "json" };
 import lift from "../fixtures/v2/lift-single.json" with { type: "json" };
 import performanceTable from "../fixtures/v2/performance-table.json" with { type: "json" };
@@ -129,5 +130,19 @@ describe("renderReport", () => {
     expect(root.querySelector('[data-component-id="roc-a"] svg')).not.toBeNull();
     expect(root.querySelector('[data-component-id="roc-b"] svg')).not.toBeNull();
     expect(root.querySelectorAll(".rtichoke-report__component")).toHaveLength(2);
+  });
+
+  it("delegates time-dependent Decision Curves to independent local horizon controls", () => {
+    const root = renderReport(
+      report([
+        component("decision-a", decisionCurveTime),
+        component("decision-b", decisionCurveTime),
+      ]),
+    );
+    const first = root.querySelector<HTMLElement>('[data-component-id="decision-a"]')!;
+    const second = root.querySelector<HTMLElement>('[data-component-id="decision-b"]')!;
+    expect(first.querySelector('select[aria-label="Fixed Time Horizon"]')).not.toBeNull();
+    expect(second.querySelector('select[aria-label="Fixed Time Horizon"]')).not.toBeNull();
+    expect(root.querySelectorAll('select[aria-label="Fixed Time Horizon"]')).toHaveLength(2);
   });
 });
