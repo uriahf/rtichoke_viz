@@ -82,7 +82,10 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
     });
     if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length) throw new Error("interventions avoided requires exactly one series per evaluation");
 
-    const treatAll = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_all");
+    const treatAll = references.filter(
+      (reference): reference is Extract<InterventionsAvoidedV2Reference, { benchmark: "treat_all" }> =>
+        "benchmark" in reference && reference.benchmark === "treat_all",
+    );
     if (treatAll.length !== 1) throw new Error("interventions avoided requires exactly one Treat All reference");
     if (treatAll[0].scope !== "global" || treatAll[0].type !== "horizontal" || treatAll[0].value !== 0) {
       throw new Error("interventions avoided Treat All must be the global zero reference");
