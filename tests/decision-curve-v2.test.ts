@@ -73,7 +73,10 @@ describe("v2 decision curve semantics", () => {
   });
 
   it("is ReportSpec-eligible while evaluation ids remain component-local", () => {
-    const report = { schemaVersion: "1.0", type: "report", components: [{ id: "decision", spec: single }, { id: "roc", spec: roc }] };
+    const rocWithSameLocalId = structuredClone(roc);
+    rocWithSameLocalId.evaluations[0].id = "evaluation-1";
+    rocWithSameLocalId.series[0].evaluationId = "evaluation-1";
+    const report = { schemaVersion: "1.0", type: "report", components: [{ id: "decision", spec: single }, { id: "roc", spec: rocWithSameLocalId }] };
     expect(Value.Check(ReportSpecSchema, report)).toBe(true);
     expect(report.components[0].spec.evaluations[0].id).toBe("evaluation-1");
     expect(report.components[1].spec.evaluations[0].id).toBe("evaluation-1");
