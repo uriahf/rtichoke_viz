@@ -35,17 +35,38 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
     decisionCurve.evaluations.forEach((evaluation, index) => {
       const expectedId = `evaluation-${index + 1}`;
       if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
+    });
+
+    const horizonCount = decisionCurve.series.filter((series) => series.horizon !== undefined).length;
+    if (horizonCount !== 0 && horizonCount !== decisionCurve.series.length) {
+      throw new Error("decision curve cannot mix static and horizon-qualified series");
+    }
+    const isTimeDependent = horizonCount > 0;
+    const horizons = [...new Set(decisionCurve.series.map((series) => series.horizon).filter((horizon): horizon is number => horizon !== undefined))];
+    const seriesCoverage = new Set<string>();
+    decisionCurve.series.forEach((series, index) => {
+      if (series.id !== `series-${index + 1}`) throw new Error(`decision curve series ids must be ordinal: expected series-${index + 1}`);
+      const evaluation = decisionCurve.evaluations.find((candidate) => candidate.id === series.evaluationId)!;
       const expectedDisplay = evaluation.model ?? evaluation.population;
       const expectedRole = evaluation.model === undefined ? "population" : "model";
-      const series = decisionCurve.series[index];
-      if (!series || series.id !== `series-${index + 1}` || series.evaluationId !== evaluation.id) {
-        throw new Error("decision curve series must map one-to-one in evaluation order");
-      }
       if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
         throw new Error("decision curve display must follow evaluation semantics");
       }
+      const coverageKey = `${series.evaluationId}\u0000${series.horizon ?? "static"}`;
+      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate decision curve evaluation-horizon series: ${series.evaluationId}`);
+      seriesCoverage.add(coverageKey);
     });
-    if (decisionCurve.series.length !== decisionCurve.evaluations.length) throw new Error("decision curve requires exactly one series per evaluation");
+    if (isTimeDependent) {
+      const complete = decisionCurve.evaluations.every((evaluation) =>
+        horizons.every((horizon) => seriesCoverage.has(`${evaluation.id}\u0000${horizon}`)),
+      );
+      if (!complete || decisionCurve.series.length !== decisionCurve.evaluations.length * horizons.length) {
+        throw new Error("decision curve requires exactly one series per evaluation and horizon");
+      }
+    } else if (decisionCurve.series.length !== decisionCurve.evaluations.length ||
+      decisionCurve.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\u0000static`))) {
+      throw new Error("decision curve requires exactly one series per evaluation");
+    }
 
     const treatNone = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_none");
     if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
@@ -54,13 +75,27 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
       (reference): reference is Extract<DecisionCurveV2Reference, { benchmark: "treat_all" }> =>
         "benchmark" in reference && reference.benchmark === "treat_all",
     );
-    const treatAllPopulations = new Set<string>();
+    const treatAllOwners = new Set<string>();
     for (const reference of treatAll) {
-      if (treatAllPopulations.has(reference.population)) throw new Error(`duplicate Treat All population: ${reference.population}`);
-      treatAllPopulations.add(reference.population);
+      if (isTimeDependent && reference.scope !== "population_horizon") {
+        throw new Error("time-dependent decision curve Treat All must use population_horizon scope");
+      }
+      if (!isTimeDependent && reference.scope !== "population") {
+        throw new Error("static decision curve Treat All must use population scope");
+      }
+      const owner = reference.scope === "population_horizon"
+        ? `${reference.population}\u0000${reference.horizon}`
+        : reference.population;
+      if (treatAllOwners.has(owner)) throw new Error(`duplicate Treat All owner: ${reference.population}`);
+      treatAllOwners.add(owner);
     }
-    if (treatAllPopulations.size !== populations.size || [...populations].some((population) => !treatAllPopulations.has(population))) {
-      throw new Error("decision curve requires exactly one Treat All reference per population");
+    const expectedTreatAllOwners = isTimeDependent
+      ? [...populations].flatMap((population) => horizons.map((horizon) => `${population}\u0000${horizon}`))
+      : [...populations];
+    if (treatAllOwners.size !== expectedTreatAllOwners.length || expectedTreatAllOwners.some((owner) => !treatAllOwners.has(owner))) {
+      throw new Error(isTimeDependent
+        ? "decision curve requires exactly one Treat All reference per population and horizon"
+        : "decision curve requires exactly one Treat All reference per population");
     }
   }
 
