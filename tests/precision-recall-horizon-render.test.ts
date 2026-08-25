@@ -56,17 +56,21 @@ describe("horizon-aware Precision-Recall v2 rendering", () => {
       new Set(["series-a-5", "series-b-5", "series-c-5"]),
     );
     expect(horizon5.references).toHaveLength(2);
-    expect(horizon5.references?.map((reference) => reference.horizon)).toEqual([
-      5,
-      5,
-    ]);
-    expect(horizon5.references?.map((reference) => reference.population)).toEqual([
-      "Population X",
-      "Population Y",
-    ]);
-    expect(horizon5.references?.map((reference) => reference.value)).toEqual([
-      0.25,
-      0.25,
+    expect(horizon5.references).toMatchObject([
+      {
+        type: "horizontal",
+        value: 0.25,
+        scope: "population_horizon",
+        population: "Population X",
+        horizon: 5,
+      },
+      {
+        type: "horizontal",
+        value: 0.25,
+        scope: "population_horizon",
+        population: "Population Y",
+        horizon: 5,
+      },
     ]);
     expect(horizon5.evaluations.map((evaluation) => evaluation.id)).toEqual([
       "eval-a",
@@ -104,12 +108,21 @@ describe("horizon-aware Precision-Recall v2 rendering", () => {
   it("keeps equal-valued references distinct by semantic population-horizon owner", () => {
     const horizon5 = selectHorizonSpec(multi, 5);
     expect(horizon5.references).toHaveLength(2);
-    expect(new Set(horizon5.references?.map((reference) => reference.population))).toEqual(
-      new Set(["Population X", "Population Y"]),
-    );
-    expect(horizon5.references?.map((reference) => reference.value)).toEqual([
-      0.25,
-      0.25,
+    expect(horizon5.references).toMatchObject([
+      {
+        type: "horizontal",
+        value: 0.25,
+        scope: "population_horizon",
+        population: "Population X",
+        horizon: 5,
+      },
+      {
+        type: "horizontal",
+        value: 0.25,
+        scope: "population_horizon",
+        population: "Population Y",
+        horizon: 5,
+      },
     ]);
 
     const svg = svgOf(renderPrecisionRecallV2(horizon5));
