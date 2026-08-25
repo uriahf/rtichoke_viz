@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "2.0",
+  "type": "precision_recall",
+  "evaluations": [
+    {"id": "eval-a", "model": "Model A", "population": "Population X"},
+    {"id": "eval-b", "model": "Model B", "population": "Population X"},
+    {"id": "eval-c", "model": "Model C", "population": "Population Y"}
+  ],
+  "series": [
+    {"id": "series-a-5", "evaluationId": "eval-a", "horizon": 5, "display": {"label": "Model A", "group": "model-a", "role": "model"}},
+    {"id": "series-b-5", "evaluationId": "eval-b", "horizon": 5, "display": {"label": "Model B", "group": "model-b", "role": "model"}},
+    {"id": "series-c-5", "evaluationId": "eval-c", "horizon": 5, "display": {"label": "Model C", "group": "model-c", "role": "model"}},
+    {"id": "series-a-10", "evaluationId": "eval-a", "horizon": 10, "display": {"label": "Model A", "group": "model-a", "role": "model"}},
+    {"id": "series-b-10", "evaluationId": "eval-b", "horizon": 10, "display": {"label": "Model B", "group": "model-b", "role": "model"}},
+    {"id": "series-c-10", "evaluationId": "eval-c", "horizon": 10, "display": {"label": "Model C", "group": "model-c", "role": "model"}}
+  ],
+  "data": [
+    {"seriesId": "series-a-5", "cutoff": 0.7, "sensitivity": 0.55, "ppv": 0.72},
+    {"seriesId": "series-a-5", "cutoff": 0.3, "sensitivity": 0.82, "ppv": 0.48},
+    {"seriesId": "series-b-5", "cutoff": 0.7, "sensitivity": 0.50, "ppv": 0.68},
+    {"seriesId": "series-b-5", "cutoff": 0.3, "sensitivity": 0.78, "ppv": 0.45},
+    {"seriesId": "series-c-5", "cutoff": 0.7, "sensitivity": 0.52, "ppv": 0.70},
+    {"seriesId": "series-c-5", "cutoff": 0.3, "sensitivity": 0.80, "ppv": 0.46},
+    {"seriesId": "series-a-10", "cutoff": 0.7, "sensitivity": 0.60, "ppv": 0.78},
+    {"seriesId": "series-a-10", "cutoff": 0.3, "sensitivity": 0.86, "ppv": 0.58},
+    {"seriesId": "series-b-10", "cutoff": 0.7, "sensitivity": 0.56, "ppv": 0.74},
+    {"seriesId": "series-b-10", "cutoff": 0.3, "sensitivity": 0.83, "ppv": 0.54},
+    {"seriesId": "series-c-10", "cutoff": 0.7, "sensitivity": 0.58, "ppv": 0.76},
+    {"seriesId": "series-c-10", "cutoff": 0.3, "sensitivity": 0.84, "ppv": 0.55}
+  ],
+  "x": "sensitivity",
+  "y": "ppv",
+  "xAxis": {"label": "Sensitivity", "domain": [0, 1]},
+  "yAxis": {"label": "PPV", "domain": [0, 1]},
+  "references": [
+    {"type": "horizontal", "value": 0.25, "scope": "population_horizon", "population": "Population X", "horizon": 5, "label": "Population X prevalence"},
+    {"type": "horizontal", "value": 0.25, "scope": "population_horizon", "population": "Population Y", "horizon": 5, "label": "Population Y prevalence"},
+    {"type": "horizontal", "value": 0.4, "scope": "population_horizon", "population": "Population X", "horizon": 10, "label": "Population X prevalence"},
+    {"type": "horizontal", "value": 0.4, "scope": "population_horizon", "population": "Population Y", "horizon": 10, "label": "Population Y prevalence"}
+  ]
+}
