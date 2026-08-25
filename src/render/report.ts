@@ -3,6 +3,7 @@ import type { ReportSpec } from "../spec/report.js";
 import { ReportSpecSchema } from "../spec/report.js";
 import { assertReportReferentialIntegrity } from "../spec/validate-report.js";
 import { renderDecisionCurveV2 } from "./decision-curve.js";
+import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
 import { renderPerformanceTable } from "./performance-table.js";
 import {
   renderCalibrationV2,
@@ -44,6 +45,7 @@ export function renderReport(spec: ReportSpec): HTMLDivElement {
       case "gains": content.append(renderGainsV2(component.spec)); break;
       case "lift": content.append(renderLiftV2(component.spec)); break;
       case "decision_curve": content.append(renderDecisionCurveV2(component.spec)); break;
+      case "interventions_avoided": content.append(renderInterventionsAvoidedV2(component.spec)); break;
     }
     container.append(content);
     root.append(container);
