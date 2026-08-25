@@ -1,5 +1,5 @@
 import type { RtichokeChartSpecV2 } from "./chart.js";
-import type { DecisionCurveV2Spec } from "./decision-curve.js";
+import type { DecisionCurveV2Reference, DecisionCurveV2Spec } from "./decision-curve.js";
 
 /** Validate cross-object identity references that JSON Schema cannot express. */
 export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
@@ -30,6 +30,7 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
 
   if (spec.type === "decision_curve") {
     const decisionCurve = spec as DecisionCurveV2Spec;
+    const references = decisionCurve.references as DecisionCurveV2Reference[];
     decisionCurve.evaluations.forEach((evaluation, index) => {
       const expectedId = `evaluation-${index + 1}`;
       if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
@@ -45,13 +46,15 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
     });
     if (decisionCurve.series.length !== decisionCurve.evaluations.length) throw new Error("decision curve requires exactly one series per evaluation");
 
-    const treatNone = decisionCurve.references.filter((reference) => reference.benchmark === "treat_none");
+    const treatNone = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_none");
     if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
 
-    const treatAll = decisionCurve.references.filter((reference) => reference.benchmark === "treat_all");
+    const treatAll = references.filter(
+      (reference): reference is Extract<DecisionCurveV2Reference, { benchmark: "treat_all" }> =>
+        "benchmark" in reference && reference.benchmark === "treat_all",
+    );
     const treatAllPopulations = new Set<string>();
     for (const reference of treatAll) {
-      if (reference.benchmark !== "treat_all") continue;
       if (treatAllPopulations.has(reference.population)) throw new Error(`duplicate Treat All population: ${reference.population}`);
       treatAllPopulations.add(reference.population);
     }
