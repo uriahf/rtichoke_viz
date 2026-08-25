@@ -616,7 +616,7 @@ export function renderPrecisionRecallV2(
   spec: PrecisionRecallV2Spec,
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
-  return renderLineChart(spec, options, "sensitivity", "ppv");
+  return renderHorizonLineChart(spec, options, "sensitivity", "ppv");
 }
 export function renderGainsV2(
   spec: GainsV2Spec,
