@@ -19,9 +19,8 @@ describe("Decision Curve v2 browser rendering", () => {
 
   it("renders model geometry plus Treat None and Treat All", () => {
     const svg = renderDecisionCurveV2(single as DecisionCurveV2Spec);
-    expect(svg.querySelectorAll("path").length).toBeGreaterThan(1);
-    expect(svg.textContent).toContain("Treat None");
-    expect(svg.textContent).toContain("Treat All");
+    expect(svg.querySelector('[aria-label="rule"]')).not.toBeNull();
+    expect(svg.querySelectorAll('[aria-label="line"]')).toHaveLength(2);
   });
 
   it("renders two model series while sharing one Treat All reference", () => {
