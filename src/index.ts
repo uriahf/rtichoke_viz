@@ -20,6 +20,8 @@ export { LiftV2SpecSchema } from "./spec/v2/lift.js";
 export type { LiftV2Datum, LiftV2Spec } from "./spec/v2/lift.js";
 export { DecisionCurveV2DatumSchema, DecisionCurveV2EvaluationSchema, DecisionCurveV2ReferenceSchema, DecisionCurveV2SeriesSchema, DecisionCurveV2SpecSchema, TreatAllReferenceSchema, TreatNoneReferenceSchema } from "./spec/v2/decision-curve.js";
 export type { DecisionCurveV2Datum, DecisionCurveV2Evaluation, DecisionCurveV2Reference, DecisionCurveV2Series, DecisionCurveV2Spec } from "./spec/v2/decision-curve.js";
+export { InterventionsAvoidedTreatAllReferenceSchema, InterventionsAvoidedTreatNoneReferenceSchema, InterventionsAvoidedV2DatumSchema, InterventionsAvoidedV2EvaluationSchema, InterventionsAvoidedV2ReferenceSchema, InterventionsAvoidedV2SeriesSchema, InterventionsAvoidedV2SpecSchema } from "./spec/v2/interventions-avoided.js";
+export type { InterventionsAvoidedV2Datum, InterventionsAvoidedV2Evaluation, InterventionsAvoidedV2Reference, InterventionsAvoidedV2Series, InterventionsAvoidedV2Spec } from "./spec/v2/interventions-avoided.js";
 export { OperatingPointSchema, PerformanceEvaluationContextSchema, PerformanceMetricDefinitionSchema, PerformanceMetricIdSchema, PerformanceMetricValueSchema, PerformanceTableRowSchema, PerformanceTableSpecSchema } from "./spec/v2/performance-table.js";
 export type { OperatingPoint, PerformanceEvaluationContext, PerformanceMetricDefinition, PerformanceMetricId, PerformanceMetricValue, PerformanceTableRow, PerformanceTableSpec } from "./spec/v2/performance-table.js";
 export { ReportComponentSchema, ReportSpecSchema } from "./spec/report.js";
@@ -35,6 +37,7 @@ export { calibrationV2SpecFromRtichokeRows, rocV2SpecFromRtichokePython, rocV2Sp
 export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderDecisionCurveV2 } from "./render/decision-curve.js";
+export { renderInterventionsAvoidedV2 } from "./render/interventions-avoided.js";
 export { renderPerformanceTable } from "./render/performance-table.js";
 export { renderReport } from "./render/report.js";
 export { renderRoc } from "./render/roc.js";
