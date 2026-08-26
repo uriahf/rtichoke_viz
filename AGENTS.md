@@ -1,36 +1,84 @@
-# rtichoke_viz Agent Information
+# rtichoke_viz agent operating rules
 
-This document provides guidance for AI agents working on the `rtichoke_viz` repository.
+## Role and boundary
 
-## PR completion protocol
+This repository owns shared canonical visualization contracts, TypeScript renderers, referential-integrity validation, ReportSpec rendering infrastructure, packaged JS/CSS/schema artifacts, and immutable visualization release preparation. It consumes already-computed statistical geometry; it does not own R or Python statistical calculations.
 
-Do not consider an implementation task complete merely because code has been pushed or a pull request has been opened.
+Do not implement or alter R/Python statistical formulas, censoring estimators, Aalen-Johansen logic, competing-risk calculations, or cutoff classification rules.
 
-After creating or updating a pull request:
+## Start from fresh state
 
-1. Inspect all required GitHub Actions checks for the current PR head.
-2. If checks are still running, re-check them while the session is active rather than handing the PR back to the user for manual monitoring.
-3. If a required check fails, inspect the failing job and logs and determine whether the failure is caused by the PR.
-4. If the fix is within the stated task scope, make the fix, push it, and inspect CI again.
-5. Repeat the diagnose/fix/re-check loop until all required checks pass or a genuine blocker requires user input.
+Before modifying anything:
 
-Escalate to the user only when resolving the failure would require one or more of the following:
+1. Inspect actual current `main`.
+2. Inspect relevant open PRs and recent relevant merges.
+3. Inspect tags and releases when relevant.
+4. Check whether equivalent work already exists.
 
-- changing frozen statistical semantics, contracts, or architecture;
-- broadening the agreed task scope;
-- weakening or removing a meaningful test or quality gate;
-- changing a public API or backward-compatibility promise beyond the task;
-- making a product or technical decision with multiple legitimate choices;
-- resolving an external service, permissions, infrastructure, or credential problem that the agent cannot fix safely.
+Do not work from stale assumptions.
 
-Routine failures such as lint errors, formatting errors, test regressions caused by the PR, snapshots/fixtures that legitimately need updating, packaging errors, documentation-build errors, and similar mechanical issues should be fixed without asking the user to manually inspect GitHub Actions.
+## Scope and reuse
 
-The final handoff should include:
+Make the smallest change required. Do not opportunistically redesign unrelated contracts, modify consumers, add statistics, expand ReportSpec product behavior, or introduce global UI state. Stop and report when a task requires a materially broader architectural decision.
 
-- pull request link;
-- final PR head commit;
-- tests/checks run locally when applicable;
+Prefer existing generic v2 primitives, validation, horizon helpers, renderer infrastructure, and semantic metadata over duplication. Do not create a new time-dependent component spec when the existing canonical spec can represent the capability cleanly.
+
+## Canonical identity and reference ownership
+
+Preserve these distinct identity domains:
+
+- `component.id`: report-local component identity;
+- `evaluation.id`: semantic evaluation identity;
+- `seriesId`: rendered geometry identity;
+- `evaluation.id != seriesId`;
+- `series.horizon`: component-local horizon/context metadata.
+
+Do not introduce horizon IDs or place horizon inside `evaluation.id` merely to distinguish geometry. Do not infer semantic identity from numerical equality.
+
+Use explicit reference ownership: `global`, `population`, or `population_horizon`. Numerically identical references belonging to distinct semantic owners remain distinct.
+
+## Compatibility and ReportSpec
+
+Preserve existing valid static v2 behavior and preserve v1 unless explicitly changed. Do not bump schema versions without a real compatibility reason.
+
+Keep standalone component behavior and ReportSpec dispatch mechanically consistent. Do not automatically expand summary reports or introduce report-global selector coordination.
+
+## Validation
+
+Inspect the actual scripts and workflows before choosing commands. Run focused tests plus the complete relevant validation suite using the repository's current commands. Do not weaken tests or quality gates to obtain green CI.
+
+## Pull-request ownership
+
+For mutation tasks:
+
+1. Implement the focused change.
+2. Validate locally.
+3. Open one focused PR.
+4. Inspect GitHub Actions for the current PR head.
+5. Inspect failed job logs and determine whether failures are caused by the PR.
+6. Fix in-scope failures, push, and re-check until required checks are green or a genuine blocker requires user input.
+
+Do not ask the user to check CI manually. Do not merge unless explicitly instructed. Escalate only when resolution requires a broader contract, architecture, compatibility, product, or infrastructure decision; do not escalate routine lint, formatting, test, fixture, packaging, or documentation failures.
+
+## Immutable releases and consumers
+
+Preserve this one-to-one identity:
+
+`(package version, tag, exact source commit) -> one reproducible archive -> one checksum -> one MANIFEST/provenance identity -> publish once`
+
+Do not move historical tags, overwrite historical release assets, or weaken checksum/MANIFEST verification. Release-preparation tasks stop at an unmerged PR unless publication is explicitly requested.
+
+R and Python consumers must consume immutable `rtichoke_viz` releases. Never direct consumers to `rtichoke_viz/main` as a substitute for a release.
+
+## Completion report
+
+At the end of mutation work, report:
+
+- starting `main`;
+- branch and final head;
+- files changed;
+- semantic behavior changed;
+- local validation;
 - final GitHub Actions status;
-- any remaining caveats or blockers.
-
-Do not ask the user to manually check whether CI passed.
+- PR number, link, and state;
+- anything deliberately deferred.
