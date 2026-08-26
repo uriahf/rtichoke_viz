@@ -1,10 +1,14 @@
 import * as Plot from "@observablehq/plot";
 import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoided.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
-import { resolveV2RenderOptions, type V2RenderOptions } from "./v2.js";
+import { renderWithHorizonSelection, resolveV2RenderOptions, type V2RenderOptions } from "./v2.js";
 
 export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
+  return renderWithHorizonSelection(spec, (selected) => renderInterventionsAvoidedChart(selected, options));
+}
+
+function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions): SVGSVGElement | HTMLElement {
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups, options);
   const { theme } = resolved;
@@ -20,9 +24,9 @@ export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, o
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
     if (reference.benchmark === "treat_all") {
-      marks.push(Plot.ruleY([0], { ...referenceStyle, title: reference.label ?? "Treat All" }));
+      marks.push(Plot.ruleY([0], { ...referenceStyle, title: () => reference.label ?? "Treat All" }));
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...referenceStyle, title: reference.label ?? `Treat None — ${reference.population}` }));
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...referenceStyle, title: () => reference.label ?? `Treat None — ${reference.population}` }));
     }
   }
   marks.push(
