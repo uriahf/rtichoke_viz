@@ -105,17 +105,39 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
     interventionsAvoided.evaluations.forEach((evaluation, index) => {
       const expectedId = `evaluation-${index + 1}`;
       if (evaluation.id !== expectedId) throw new Error(`interventions avoided evaluation ids must be ordinal: expected ${expectedId}`);
+    });
+
+    const horizonCount = interventionsAvoided.series.filter((series) => series.horizon !== undefined).length;
+    if (horizonCount !== 0 && horizonCount !== interventionsAvoided.series.length) {
+      throw new Error("interventions avoided cannot mix static and horizon-qualified series");
+    }
+    const isTimeDependent = horizonCount > 0;
+    const horizons = [...new Set(interventionsAvoided.series.map((series) => series.horizon).filter((horizon): horizon is number => horizon !== undefined))];
+    const seriesCoverage = new Set<string>();
+    interventionsAvoided.series.forEach((series, index) => {
+      if (series.id !== `series-${index + 1}`) throw new Error(`interventions avoided series ids must be ordinal: expected series-${index + 1}`);
+      const evaluation = interventionsAvoided.evaluations.find((candidate) => candidate.id === series.evaluationId);
+      if (!evaluation) throw new Error(`unknown evaluation id: ${series.evaluationId}`);
       const expectedDisplay = evaluation.model ?? evaluation.population;
       const expectedRole = evaluation.model === undefined ? "population" : "model";
-      const series = interventionsAvoided.series[index];
-      if (!series || series.id !== `series-${index + 1}` || series.evaluationId !== evaluation.id) {
-        throw new Error("interventions avoided series must map one-to-one in evaluation order");
-      }
       if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
         throw new Error("interventions avoided display must follow evaluation semantics");
       }
+      const coverageKey = `${series.evaluationId}\u0000${series.horizon ?? "static"}`;
+      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate interventions avoided evaluation-horizon series: ${series.evaluationId}`);
+      seriesCoverage.add(coverageKey);
     });
-    if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length) throw new Error("interventions avoided requires exactly one series per evaluation");
+    if (isTimeDependent) {
+      const complete = interventionsAvoided.evaluations.every((evaluation) =>
+        horizons.every((horizon) => seriesCoverage.has(`${evaluation.id}\u0000${horizon}`)),
+      );
+      if (!complete || interventionsAvoided.series.length !== interventionsAvoided.evaluations.length * horizons.length) {
+        throw new Error("interventions avoided requires exactly one series per evaluation and horizon");
+      }
+    } else if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length ||
+      interventionsAvoided.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\u0000static`))) {
+      throw new Error("interventions avoided requires exactly one series per evaluation");
+    }
 
     const treatAll = references.filter(
       (reference): reference is Extract<InterventionsAvoidedV2Reference, { benchmark: "treat_all" }> =>
@@ -130,13 +152,27 @@ export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
       (reference): reference is Extract<InterventionsAvoidedV2Reference, { benchmark: "treat_none" }> =>
         "benchmark" in reference && reference.benchmark === "treat_none",
     );
-    const treatNonePopulations = new Set<string>();
+    const treatNoneOwners = new Set<string>();
     for (const reference of treatNone) {
-      if (treatNonePopulations.has(reference.population)) throw new Error(`duplicate Treat None population: ${reference.population}`);
-      treatNonePopulations.add(reference.population);
+      if (isTimeDependent && reference.scope !== "population_horizon") {
+        throw new Error("time-dependent interventions avoided Treat None must use population_horizon scope");
+      }
+      if (!isTimeDependent && reference.scope !== "population") {
+        throw new Error("static interventions avoided Treat None must use population scope");
+      }
+      const owner = reference.scope === "population_horizon"
+        ? `${reference.population}\u0000${reference.horizon}`
+        : reference.population;
+      if (treatNoneOwners.has(owner)) throw new Error(`duplicate Treat None owner: ${reference.population}`);
+      treatNoneOwners.add(owner);
     }
-    if (treatNonePopulations.size !== populations.size || [...populations].some((population) => !treatNonePopulations.has(population))) {
-      throw new Error("interventions avoided requires exactly one Treat None reference per population");
+    const expectedTreatNoneOwners = isTimeDependent
+      ? [...populations].flatMap((population) => horizons.map((horizon) => `${population}\u0000${horizon}`))
+      : [...populations];
+    if (treatNoneOwners.size !== expectedTreatNoneOwners.length || expectedTreatNoneOwners.some((owner) => !treatNoneOwners.has(owner))) {
+      throw new Error(isTimeDependent
+        ? "interventions avoided requires exactly one Treat None reference per population and horizon"
+        : "interventions avoided requires exactly one Treat None reference per population");
     }
   }
 }
