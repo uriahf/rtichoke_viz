@@ -24,9 +24,9 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
     if (reference.benchmark === "treat_none") {
-      marks.push(Plot.ruleY([0], { ...referenceStyle, title: reference.label ?? "Treat None" }));
+      marks.push(Plot.ruleY([0], { ...referenceStyle, title: () => reference.label ?? "Treat None" }));
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...referenceStyle, title: reference.label ?? `Treat All — ${reference.population}` }));
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...referenceStyle, title: () => reference.label ?? `Treat All — ${reference.population}` }));
     }
   }
   marks.push(

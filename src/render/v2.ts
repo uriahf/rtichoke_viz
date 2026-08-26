@@ -2,6 +2,7 @@ import * as Plot from "@observablehq/plot";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
 import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import type { GainsV2Spec } from "../spec/v2/gains.js";
+import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoided.js";
 import type { LiftV2Spec } from "../spec/v2/lift.js";
 import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
 import type { RocV2Spec } from "../spec/v2/roc.js";
@@ -553,7 +554,8 @@ type HorizonSpec =
   | PrecisionRecallV2Spec
   | GainsV2Spec
   | LiftV2Spec
-  | DecisionCurveV2Spec;
+  | DecisionCurveV2Spec
+  | InterventionsAvoidedV2Spec;
 
 function horizons(spec: HorizonSpec) {
   return [
