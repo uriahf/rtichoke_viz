@@ -32,17 +32,29 @@ export const InterventionsAvoidedTreatAllReferenceSchema = Type.Object({
   benchmark: Type.Literal("treat_all"),
 });
 
-export const InterventionsAvoidedTreatNoneReferenceSchema = Type.Object({
+const TreatNoneGeometry = {
   type: Type.Literal("path"),
   points: Type.Array(
     Type.Object({ x: Type.Number(), y: Type.Number() }),
     { minItems: 2 },
   ),
   label: Type.Optional(Type.String()),
-  scope: Type.Literal("population"),
-  population: Type.String(),
   benchmark: Type.Literal("treat_none"),
-});
+};
+
+export const InterventionsAvoidedTreatNoneReferenceSchema = Type.Union([
+  Type.Object({
+    ...TreatNoneGeometry,
+    scope: Type.Literal("population"),
+    population: Type.String(),
+  }),
+  Type.Object({
+    ...TreatNoneGeometry,
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 }),
+  }),
+]);
 
 export const InterventionsAvoidedV2ReferenceSchema = Type.Union([
   InterventionsAvoidedTreatAllReferenceSchema,
