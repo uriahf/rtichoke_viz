@@ -11,10 +11,10 @@ import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec
 import { PerformanceTableSpecSchema, type PerformanceTableSpec } from "../src/spec/v2/performance-table.js";
 import { assertPerformanceTableReferentialIntegrity } from "../src/spec/v2/validate-performance-table.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
-import { ReportSpecSchema, type ReportSpec } from "../src/spec/report.js";
+import { ReportSpecSchema, type ReportSpecV1_0 } from "../src/spec/report.js";
 import { assertReportReferentialIntegrity } from "../src/spec/validate-report.js";
 
-function report(components: ReportSpec["components"]): ReportSpec {
+function report(components: ReportSpecV1_0["components"]): ReportSpecV1_0 {
   return { schemaVersion: "1.0", type: "report", components };
 }
 
@@ -26,7 +26,7 @@ function table(): PerformanceTableSpec {
   return structuredClone(performanceTable) as PerformanceTableSpec;
 }
 
-function expectValid(value: ReportSpec): void {
+function expectValid(value: ReportSpecV1_0): void {
   expect(Value.Check(ReportSpecSchema, value)).toBe(true);
   expect(() => assertReportReferentialIntegrity(value)).not.toThrow();
 }

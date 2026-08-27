@@ -11,7 +11,7 @@ import type {
   GainsV2Spec,
   LiftV2Spec,
   PrecisionRecallV2Spec,
-  ReportSpec,
+  ReportSpecV1_0,
   RocV2Spec,
 } from "./index.js";
 import calibrationFixture from "../fixtures/v2/calibration.json" with { type: "json" };
@@ -45,7 +45,7 @@ if (
   throw new Error("Demo chart containers are missing");
 }
 
-const report: ReportSpec = {
+const report: ReportSpecV1_0 = {
   schemaVersion: "1.0",
   type: "report",
   title: "Canonical model performance report",
@@ -69,7 +69,7 @@ const report: ReportSpec = {
     { id: "gains", title: "Gains", spec: structuredClone(gainsFixture) },
     { id: "lift", title: "Lift", spec: structuredClone(liftFixture) },
   ],
-} as ReportSpec;
+} as ReportSpecV1_0;
 
 reportHost.append(renderReport(report));
 rocHost.append(renderRocV2(rocFixture as RocV2Spec));

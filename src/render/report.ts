@@ -1,6 +1,6 @@
 import { Value } from "@sinclair/typebox/value";
-import type { ReportSpec } from "../spec/report.js";
-import { ReportSpecSchema } from "../spec/report.js";
+import type { ReportSpecV1_0 } from "../spec/report.js";
+import { ReportSpecV1_0Schema } from "../spec/report.js";
 import { assertReportReferentialIntegrity } from "../spec/validate-report.js";
 import { renderDecisionCurveV2 } from "./decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
@@ -13,9 +13,12 @@ import {
   renderRocV2,
 } from "./v2.js";
 
-/** Render a canonical ReportSpec by composing standalone browser renderers. */
-export function renderReport(spec: ReportSpec): HTMLDivElement {
-  if (!Value.Check(ReportSpecSchema, spec)) throw new Error("Invalid ReportSpec");
+/** Render a flat ReportSpec v1.0 by composing standalone browser renderers. */
+export function renderReport(spec: ReportSpecV1_0): HTMLDivElement {
+  if ((spec as { schemaVersion?: unknown }).schemaVersion === "1.1") {
+    throw new Error("ReportSpec schemaVersion 1.1 is not renderable yet");
+  }
+  if (!Value.Check(ReportSpecV1_0Schema, spec)) throw new Error("Invalid ReportSpec");
   assertReportReferentialIntegrity(spec);
   const root = document.createElement("div");
   root.className = "rtichoke-report";

@@ -24,8 +24,8 @@ export { InterventionsAvoidedTreatAllReferenceSchema, InterventionsAvoidedTreatN
 export type { InterventionsAvoidedV2Datum, InterventionsAvoidedV2Evaluation, InterventionsAvoidedV2Reference, InterventionsAvoidedV2Series, InterventionsAvoidedV2Spec } from "./spec/v2/interventions-avoided.js";
 export { OperatingPointSchema, PerformanceEvaluationContextSchema, PerformanceMetricDefinitionSchema, PerformanceMetricIdSchema, PerformanceMetricValueSchema, PerformanceTableRowSchema, PerformanceTableSpecSchema } from "./spec/v2/performance-table.js";
 export type { OperatingPoint, PerformanceEvaluationContext, PerformanceMetricDefinition, PerformanceMetricId, PerformanceMetricValue, PerformanceTableRow, PerformanceTableSpec } from "./spec/v2/performance-table.js";
-export { ReportComponentSchema, ReportSpecSchema } from "./spec/report.js";
-export type { ReportComponent, ReportSpec } from "./spec/report.js";
+export { ReportComponentSchema, ReportComponentV1_1Schema, ReportGroupSchema, ReportSectionSchema, ReportSpecSchema, ReportSpecV1_0Schema, ReportSpecV1_1Schema, StandaloneCanonicalSpecSchema } from "./spec/report.js";
+export type { ReportComponent, ReportComponentV1_1, ReportGroup, ReportSection, ReportSpec, ReportSpecV1_0, ReportSpecV1_1, StandaloneCanonicalSpec } from "./spec/report.js";
 export { assertReportReferentialIntegrity } from "./spec/validate-report.js";
 export { assertPerformanceTableReferentialIntegrity } from "./spec/v2/validate-performance-table.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";

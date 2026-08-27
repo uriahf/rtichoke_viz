@@ -6,7 +6,8 @@ for (const name of [
   "CalibrationSpecSchema", "CalibrationV2SpecSchema", "DecisionCurveV2SpecSchema",
   "EvaluationSpecSchema", "GainsV2SpecSchema", "LiftV2SpecSchema",
   "PerformanceTableSpecSchema", "PrecisionRecallV2SpecSchema", "ReferenceLineV2SpecSchema",
-  "ReportComponentSchema", "ReportSpecSchema", "RocSpecSchema", "RocV2SpecSchema",
+  "ReportComponentSchema", "ReportComponentV1_1Schema", "ReportGroupSchema", "ReportSectionSchema",
+  "ReportSpecSchema", "ReportSpecV1_0Schema", "ReportSpecV1_1Schema", "RocSpecSchema", "RocV2SpecSchema",
   "RtichokeChartSpecSchema", "RtichokeChartSpecV2Schema", "SeriesSpecSchema",
   "TreatAllReferenceSchema", "TreatNoneReferenceSchema",
   "assertPerformanceTableReferentialIntegrity", "assertReportReferentialIntegrity", "assertV2ReferentialIntegrity",
@@ -18,4 +19,4 @@ for (const name of [
 
 assert.equal(viz.RtichokeChartSpecSchema.$id, "https://rtichoke.dev/schema/viz/1.0.json");
 assert.equal(viz.RtichokeChartSpecV2Schema.$id, "https://rtichoke.dev/schema/viz/2.0.json");
-assert.equal(viz.ReportSpecSchema.$id, undefined);
+assert.equal(viz.ReportSpecSchema.$id, "https://rtichoke.dev/schema/viz/report.json");
