@@ -116,16 +116,30 @@ export const structuredReportFixture: ReportSpecV1_1 = {
       title: "Performance Table",
       items: [
         {
-          type: "component",
-          id: "perf-table-thresh",
-          title: "Performance Summary (by Probability Threshold)",
-          spec: performanceTable as StandaloneCanonicalSpec,
+          type: "group",
+          id: "performance-probability-threshold",
+          title: "By Probability Threshold",
+          components: [
+            {
+              type: "component",
+              id: "perf-table-thresh",
+              title: "Performance Summary (by Probability Threshold)",
+              spec: performanceTable as StandaloneCanonicalSpec,
+            },
+          ],
         },
         {
-          type: "component",
-          id: "perf-table-ppcr",
-          title: "Performance Summary (by PPCR)",
-          spec: performanceTable as StandaloneCanonicalSpec,
+          type: "group",
+          id: "performance-ppcr",
+          title: "By PPCR",
+          components: [
+            {
+              type: "component",
+              id: "perf-table-ppcr",
+              title: "Performance Summary (by PPCR)",
+              spec: performanceTable as StandaloneCanonicalSpec,
+            },
+          ],
         },
       ],
     },

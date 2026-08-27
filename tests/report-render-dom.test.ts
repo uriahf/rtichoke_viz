@@ -499,7 +499,7 @@ describe("renderReport", () => {
       expect(root).not.toBeNull();
       expect(root.querySelector(".rtichoke-report__nav")).not.toBeNull();
       expect(root.querySelectorAll(".rtichoke-report__section")).toHaveLength(4);
-      expect(root.querySelectorAll(".rtichoke-report__group")).toHaveLength(2);
+      expect(root.querySelectorAll(".rtichoke-report__group")).toHaveLength(4);
       expect(root.querySelectorAll(".rtichoke-report__component")).toHaveLength(13);
     });
 
@@ -835,7 +835,208 @@ describe("renderReport", () => {
     it("renders acceptance fixture with tabbed presentation without errors", () => {
       const root = renderReport(structuredReportFixture, { groupPresentation: "tabs" });
       expect(root).not.toBeNull();
-      expect(root.querySelectorAll('[role="tablist"]').length).toBe(2);
+      expect(root.querySelectorAll('[role="tablist"]').length).toBe(4);
+    });
+  });
+
+  describe("ReportSpec v1.1 section group presentation", () => {
+    const renderFixture = () =>
+      renderReport(structuredReportFixture, {
+        sectionGroupPresentation: "tabs",
+      });
+
+    it("creates section-level tabs from sibling group titles", () => {
+      const root = renderFixture();
+      const discrimination = root.querySelector(
+        '[data-section-id="discrimination"]',
+      )!;
+      const tablist = discrimination.querySelector(
+        ":scope > .rtichoke-report__section-group-tablist",
+      )!;
+      const tabs = tablist.querySelectorAll<HTMLButtonElement>(
+        ':scope > [role="tab"]',
+      );
+
+      expect([...tabs].map((tab) => tab.textContent)).toEqual([
+        "By Probability Threshold",
+        "By PPCR",
+      ]);
+      expect(discrimination.querySelectorAll('[role="tablist"]')).toHaveLength(1);
+      expect(
+        discrimination.querySelectorAll(".rtichoke-report__component-title"),
+      ).toHaveLength(8);
+    });
+
+    it("keeps exactly one group panel active with valid ARIA relationships", () => {
+      const root = renderFixture();
+      const section = root.querySelector('[data-section-id="discrimination"]')!;
+      const tabs = section.querySelectorAll<HTMLButtonElement>(
+        ':scope > [role="tablist"] > [role="tab"]',
+      );
+      const panels = section.querySelectorAll<HTMLElement>(
+        ':scope > [role="tabpanel"]',
+      );
+
+      expect([...tabs].filter((tab) => tab.getAttribute("aria-selected") === "true")).toHaveLength(1);
+      expect([...panels].filter((panel) => !panel.hidden)).toHaveLength(1);
+      tabs.forEach((tab, index) => {
+        expect(tab.getAttribute("aria-controls")).toBe(panels[index].id);
+        expect(panels[index].getAttribute("aria-labelledby")).toBe(tab.id);
+      });
+    });
+
+    it("preserves group component order and mounted DOM across switches", () => {
+      const root = renderFixture();
+      const section = root.querySelector('[data-section-id="discrimination"]')!;
+      const tabs = section.querySelectorAll<HTMLButtonElement>(
+        ':scope > [role="tablist"] > [role="tab"]',
+      );
+      const ppcr = section.querySelector<HTMLElement>('[data-group-id="ppcr"]')!;
+      const roc = ppcr.querySelector('[data-component-id="roc-ppcr"]')!;
+
+      expect(
+        [...ppcr.querySelectorAll<HTMLElement>(".rtichoke-report__component")].map(
+          (component) => component.dataset.componentId,
+        ),
+      ).toEqual(["roc-ppcr", "pr-ppcr", "gains-ppcr", "lift-ppcr"]);
+      tabs[1].click();
+      tabs[0].click();
+      tabs[1].click();
+      expect(ppcr.querySelector('[data-component-id="roc-ppcr"]')).toBe(roc);
+    });
+
+    it("supports roving Left/Right/Home/End keyboard focus", () => {
+      const root = renderFixture();
+      document.body.append(root);
+      const tabs = root.querySelectorAll<HTMLButtonElement>(
+        '[data-section-id="discrimination"] > [role="tablist"] > [role="tab"]',
+      );
+
+      tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+      expect(document.activeElement).toBe(tabs[1]);
+      tabs[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+      expect(document.activeElement).toBe(tabs[0]);
+      tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+      expect(document.activeElement).toBe(tabs[1]);
+      tabs[1].dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+      expect(document.activeElement).toBe(tabs[0]);
+      root.remove();
+    });
+
+    it("keeps direct components visible outside the group tabset", () => {
+      const mixed: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        sections: [
+          {
+            id: "mixed",
+            title: "Mixed",
+            items: [
+              { type: "component", id: "before", spec: structuredClone(roc) as StandaloneCanonicalSpec },
+              { type: "group", id: "a", title: "A", components: [{ type: "component", id: "a-roc", spec: structuredClone(roc) as StandaloneCanonicalSpec }] },
+              { type: "component", id: "between", spec: structuredClone(roc) as StandaloneCanonicalSpec },
+              { type: "group", id: "b", title: "B", components: [{ type: "component", id: "b-roc", spec: structuredClone(roc) as StandaloneCanonicalSpec }] },
+            ],
+          },
+        ],
+      };
+      const root = renderReport(mixed, { sectionGroupPresentation: "tabs" });
+      const before = root.querySelector<HTMLElement>('[data-component-id="before"]')!;
+      const between = root.querySelector<HTMLElement>('[data-component-id="between"]')!;
+
+      expect(before.closest('[role="tabpanel"]')).toBeNull();
+      expect(between.closest('[role="tabpanel"]')).toBeNull();
+      expect(before.hidden).toBe(false);
+      expect(between.hidden).toBe(false);
+    });
+
+    it("does not create a tablist for a section with one group", () => {
+      const oneGroup: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        sections: [{
+          id: "one",
+          title: "One",
+          items: [{ type: "group", id: "only", title: "Only", components: [{ type: "component", id: "roc-only", spec: structuredClone(roc) as StandaloneCanonicalSpec }] }],
+        }],
+      };
+      const root = renderReport(oneGroup, { sectionGroupPresentation: "tabs" });
+      expect(root.querySelector('[role="tablist"]')).toBeNull();
+    });
+
+    it("preserves component-local horizon state between group switches", () => {
+      const horizonReport: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        sections: [{
+          id: "time",
+          title: "Time",
+          items: [
+            { type: "group", id: "time-a", title: "Time A", components: [{ type: "component", id: "time-dca", spec: structuredClone(decisionCurveTime) as StandaloneCanonicalSpec }] },
+            { type: "group", id: "time-b", title: "Time B", components: [{ type: "component", id: "time-roc", spec: structuredClone(roc) as StandaloneCanonicalSpec }] },
+          ],
+        }],
+      };
+      const root = renderReport(horizonReport, { sectionGroupPresentation: "tabs" });
+      const tabs = root.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const select = root.querySelector<HTMLSelectElement>('select[aria-label="Fixed Time Horizon"]')!;
+      select.value = "10";
+      select.dispatchEvent(new Event("change"));
+      tabs[1].click();
+      tabs[0].click();
+      expect(select.value).toBe("10");
+      expect(root.querySelectorAll('select[aria-label="Fixed Time Horizon"]')).toHaveLength(1);
+    });
+
+    it("creates independent tabsets for multiple eligible sections", () => {
+      const root = renderFixture();
+      const tablists = root.querySelectorAll(
+        ".rtichoke-report__section-group-tablist",
+      );
+      expect(tablists).toHaveLength(2);
+      expect(root.querySelector('[data-section-id="utility"] [role="tablist"]')).toBeNull();
+      expect(root.querySelector('[data-component-id="decision-curve-time"]')).not.toBeNull();
+      expect(root.querySelector('[data-component-id="interventions-avoided"]')).not.toBeNull();
+    });
+
+    it("uses unique DOM ids and retains hidden semantic group headings", () => {
+      const root = renderFixture();
+      const ids = [...root.querySelectorAll<HTMLElement>("[id]")].map((element) => element.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(
+        root.querySelectorAll(".rtichoke-report__group-title--tab-panel"),
+      ).toHaveLength(4);
+    });
+
+    it("keeps existing groupPresentation behavior orthogonal", () => {
+      const root = renderReport(structuredReportFixture, {
+        groupPresentation: "tabs",
+      });
+      expect(root.querySelectorAll(".rtichoke-report__section-group-tablist")).toHaveLength(0);
+      expect(root.querySelectorAll('[role="tablist"]')).toHaveLength(4);
+    });
+
+    it("supports explicitly requested nested presentation", () => {
+      const root = renderReport(structuredReportFixture, {
+        groupPresentation: "tabs",
+        sectionGroupPresentation: "tabs",
+      });
+      expect(root.querySelectorAll(".rtichoke-report__section-group-tablist")).toHaveLength(2);
+      expect(root.querySelectorAll('[role="tablist"]')).toHaveLength(6);
+    });
+
+    it("leaves v1.0 rendering unchanged and rejects invalid new options", () => {
+      const v1Root = renderReport(report([component("roc", roc)]), {
+        sectionGroupPresentation: "tabs",
+      });
+      expect(v1Root.querySelector('[role="tablist"]')).toBeNull();
+      expect(() =>
+        renderReport(structuredReportFixture, {
+          sectionGroupPresentation: "invalid" as any,
+        }),
+      ).toThrow(
+        "Invalid render options: sectionGroupPresentation must be 'stacked' or 'tabs'",
+      );
     });
   });
 });
