@@ -97,7 +97,10 @@ function renderReportV1_0(spec: ReportSpecV1_0): HTMLDivElement {
   return root;
 }
 
-function renderReportV1_1(spec: ReportSpecV1_1): HTMLElement {
+function renderReportV1_1(
+  spec: ReportSpecV1_1,
+  options: { groupPresentation: "stacked" | "tabs" },
+): HTMLElement {
   if (!Value.Check(ReportSpecV1_1Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
@@ -284,8 +287,101 @@ function renderReportV1_1(spec: ReportSpecV1_1): HTMLElement {
         grpSection.setAttribute("aria-labelledby", grpHeadingDomId);
         grpSection.append(grpHeading);
 
-        for (const comp of item.components) {
-          grpSection.append(renderComponent(comp, groupCompHeadingTag));
+        if (options.groupPresentation === "tabs") {
+          const tablist = document.createElement("div");
+          tablist.className = "rtichoke-report__tablist";
+          tablist.setAttribute("role", "tablist");
+          tablist.setAttribute("aria-labelledby", grpHeadingDomId);
+
+          const tabs: HTMLButtonElement[] = [];
+          const panels: HTMLElement[] = [];
+
+          item.components.forEach((comp, compIdx) => {
+            const tabDomId = generateUniqueDomId(
+              `tab-${item.id}-${comp.id}`,
+              usedDomIds,
+            );
+            const panelDomId = generateUniqueDomId(
+              `panel-${item.id}-${comp.id}`,
+              usedDomIds,
+            );
+
+            const tab = document.createElement("button");
+            tab.className = "rtichoke-report__tab";
+            tab.type = "button";
+            tab.id = tabDomId;
+            tab.setAttribute("role", "tab");
+            tab.setAttribute("aria-controls", panelDomId);
+            tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
+            tab.tabIndex = compIdx === 0 ? 0 : -1;
+            tab.textContent = comp.title || comp.id;
+
+            const panel = document.createElement("section");
+            panel.className =
+              "rtichoke-report__component rtichoke-report__tabpanel";
+            panel.id = panelDomId;
+            panel.setAttribute("role", "tabpanel");
+            panel.setAttribute("aria-labelledby", tabDomId);
+            panel.tabIndex = 0;
+            panel.dataset.componentId = comp.id;
+            if (compIdx !== 0) {
+              panel.hidden = true;
+            }
+
+            const content = document.createElement("div");
+            content.className = "rtichoke-report__component-content";
+            content.append(renderStandaloneComponentContent(comp.spec));
+            panel.append(content);
+
+            tabs.push(tab);
+            panels.push(panel);
+            tablist.append(tab);
+          });
+
+          const activateTab = (index: number, setFocus = true) => {
+            tabs.forEach((t, i) => {
+              const isSelected = i === index;
+              t.setAttribute("aria-selected", isSelected ? "true" : "false");
+              t.tabIndex = isSelected ? 0 : -1;
+              if (panels[i]) {
+                panels[i].hidden = !isSelected;
+              }
+            });
+            if (setFocus && tabs[index]) {
+              tabs[index].focus();
+            }
+          };
+
+          tabs.forEach((tab, index) => {
+            tab.addEventListener("click", () => {
+              activateTab(index, false);
+            });
+
+            tab.addEventListener("keydown", (event: KeyboardEvent) => {
+              let targetIndex: number | null = null;
+              if (event.key === "ArrowRight") {
+                targetIndex = (index + 1) % tabs.length;
+              } else if (event.key === "ArrowLeft") {
+                targetIndex = (index - 1 + tabs.length) % tabs.length;
+              } else if (event.key === "Home") {
+                targetIndex = 0;
+              } else if (event.key === "End") {
+                targetIndex = tabs.length - 1;
+              }
+
+              if (targetIndex !== null) {
+                event.preventDefault();
+                activateTab(targetIndex, true);
+              }
+            });
+          });
+
+          grpSection.append(tablist);
+          panels.forEach((p) => grpSection.append(p));
+        } else {
+          for (const comp of item.components) {
+            grpSection.append(renderComponent(comp, groupCompHeadingTag));
+          }
         }
 
         secSection.append(grpSection);
@@ -298,16 +394,38 @@ function renderReportV1_1(spec: ReportSpecV1_1): HTMLElement {
   return root;
 }
 
+export interface ReportRenderOptions {
+  groupPresentation?: "stacked" | "tabs";
+}
+
 /** Render a ReportSpec document (v1.0 flat or v1.1 structured). */
-export function renderReport(spec: ReportSpec): HTMLElement {
+export function renderReport(
+  spec: ReportSpec,
+  options?: ReportRenderOptions,
+): HTMLElement {
   if (!spec || typeof spec !== "object") {
     throw new Error("Invalid ReportSpec");
   }
+
+  const groupPresentation = options?.groupPresentation ?? "stacked";
+  if (
+    options !== undefined &&
+    (typeof options !== "object" ||
+      options === null ||
+      (options.groupPresentation !== undefined &&
+        options.groupPresentation !== "stacked" &&
+        options.groupPresentation !== "tabs"))
+  ) {
+    throw new Error(
+      "Invalid render options: groupPresentation must be 'stacked' or 'tabs'",
+    );
+  }
+
   if (spec.schemaVersion === "1.0") {
     return renderReportV1_0(spec);
   }
   if (spec.schemaVersion === "1.1") {
-    return renderReportV1_1(spec);
+    return renderReportV1_1(spec, { groupPresentation });
   }
   throw new Error("Invalid ReportSpec");
 }

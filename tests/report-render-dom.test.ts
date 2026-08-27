@@ -536,4 +536,306 @@ describe("renderReport", () => {
       expect(() => renderReport(invalidSection)).toThrow("duplicate section id: dup");
     });
   });
+
+  describe("ReportSpec v1.1 tabbed group presentation", () => {
+    const createTabbedReportSpec = (): ReportSpecV1_1 => ({
+      schemaVersion: "1.1",
+      type: "report",
+      title: "Tabbed Summary Report",
+      sections: [
+        {
+          id: "discrimination",
+          title: "Discrimination",
+          items: [
+            {
+              type: "group",
+              id: "by-threshold",
+              title: "By Probability Threshold",
+              components: [
+                {
+                  type: "component",
+                  id: "roc-thresh",
+                  title: "ROC",
+                  spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                },
+                {
+                  type: "component",
+                  id: "pr-thresh",
+                  title: "Precision-Recall",
+                  spec: structuredClone(precisionRecall) as StandaloneCanonicalSpec,
+                },
+                {
+                  type: "component",
+                  id: "gains-thresh",
+                  title: "Gains",
+                  spec: structuredClone(gains) as StandaloneCanonicalSpec,
+                },
+                {
+                  type: "component",
+                  id: "lift-thresh",
+                  title: "Lift",
+                  spec: structuredClone(lift) as StandaloneCanonicalSpec,
+                },
+              ],
+            },
+            {
+              type: "group",
+              id: "by-ppcr",
+              title: "By PPCR",
+              components: [
+                {
+                  type: "component",
+                  id: "roc-ppcr",
+                  title: "ROC",
+                  spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                },
+                {
+                  type: "component",
+                  id: "dca-ppcr",
+                  title: "Horizon DCA",
+                  spec: structuredClone(decisionCurveTime) as StandaloneCanonicalSpec,
+                },
+                {
+                  type: "component",
+                  id: "perf-ppcr",
+                  title: "Performance Table",
+                  spec: structuredClone(performanceTable) as StandaloneCanonicalSpec,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    it("1. Default structured report remains stacked", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec);
+      expect(root.querySelector('[role="tablist"]')).toBeNull();
+      expect(root.querySelectorAll(".rtichoke-report__component-title").length).toBeGreaterThan(0);
+    });
+
+    it("2. v1.0 report rendering unchanged with tab options", () => {
+      const v1Spec = report([component("roc", roc, "ROC Title")]);
+      const root = renderReport(v1Spec, { groupPresentation: "tabs" });
+      expect(root.querySelector('[role="tablist"]')).toBeNull();
+      expect(root.querySelector(".rtichoke-report__component-title")?.textContent).toBe("ROC Title");
+    });
+
+    it("3. Optional tab mode renders a valid tablist", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const tablists = root.querySelectorAll('[role="tablist"]');
+      expect(tablists.length).toBe(2);
+    });
+
+    it("4. Correct number/order of tabs", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      expect(tabs).toHaveLength(4);
+      expect([...tabs].map((t) => t.textContent)).toEqual([
+        "ROC",
+        "Precision-Recall",
+        "Gains",
+        "Lift",
+      ]);
+    });
+
+    it("5. First tab active deterministically", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+      expect(tabs[0].tabIndex).toBe(0);
+      expect(tabs[1].getAttribute("aria-selected")).toBe("false");
+      expect(tabs[1].tabIndex).toBe(-1);
+    });
+
+    it("6. Inactive panels hidden correctly", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const panels = group1.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+      expect(panels[0].hidden).toBe(false);
+      expect(panels[1].hidden).toBe(true);
+      expect(panels[2].hidden).toBe(true);
+      expect(panels[3].hidden).toBe(true);
+    });
+
+    it("7. ARIA relationships valid", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const panels = group1.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+
+      tabs.forEach((tab, i) => {
+        const controls = tab.getAttribute("aria-controls");
+        const panel = panels[i];
+        expect(controls).toBe(panel.id);
+        expect(panel.getAttribute("aria-labelledby")).toBe(tab.id);
+      });
+    });
+
+    it("8. Left/Right keyboard behavior", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const panels = group1.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+
+      tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+      expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+      expect(panels[1].hidden).toBe(false);
+      expect(panels[0].hidden).toBe(true);
+
+      tabs[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+      expect(panels[0].hidden).toBe(false);
+    });
+
+    it("9. Home/End keyboard behavior", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const panels = group1.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+
+      tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+      expect(tabs[3].getAttribute("aria-selected")).toBe("true");
+      expect(panels[3].hidden).toBe(false);
+
+      tabs[3].dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+      expect(panels[0].hidden).toBe(false);
+    });
+
+    it("10. Focus follows active tab", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      document.body.append(root);
+
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const tabs = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+
+      tabs[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+      expect(document.activeElement).toBe(tabs[1]);
+
+      root.remove();
+    });
+
+    it("11. No duplicate DOM IDs", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const allElementsWithId = [...root.querySelectorAll("[id]")];
+      const ids = allElementsWithId.map((el) => el.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it("12. Original canonical IDs remain in data attributes", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      expect(root.querySelector('[data-section-id="discrimination"]')).not.toBeNull();
+      expect(root.querySelector('[data-group-id="by-threshold"]')).not.toBeNull();
+      expect(root.querySelector('[data-component-id="roc-thresh"]')).not.toBeNull();
+      expect(root.querySelector('[data-component-id="pr-thresh"]')).not.toBeNull();
+    });
+
+    it("13. Navigation still resolves", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const navLinks = root.querySelectorAll<HTMLAnchorElement>(".rtichoke-report__nav-link");
+      navLinks.forEach((link) => {
+        const targetId = link.getAttribute("href")?.slice(1);
+        expect(root.querySelector(`#${targetId}`)).not.toBeNull();
+      });
+    });
+
+    it("14. Static chart renders in tab panel", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const rocPanel = root.querySelector('[data-component-id="roc-thresh"]')!;
+      expect(rocPanel.querySelector("svg")).not.toBeNull();
+    });
+
+    it("15. Performance table renders in tab panel", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const tablePanel = root.querySelector('[data-component-id="perf-ppcr"]')!;
+      expect(tablePanel.querySelector(".rtichoke-performance-table")).not.toBeNull();
+    });
+
+    it("16. Horizon-aware chart renders in tab panel", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const dcaPanel = root.querySelector('[data-component-id="dca-ppcr"]')!;
+      expect(dcaPanel.querySelector('select[aria-label="Fixed Time Horizon"]')).not.toBeNull();
+    });
+
+    it("17. Horizon selector remains functional after tab switches", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group2 = root.querySelector('[data-group-id="by-ppcr"]')!;
+      const tabs = group2.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const dcaPanel = group2.querySelector<HTMLElement>('[data-component-id="dca-ppcr"]')!;
+
+      // Switch to DCA tab (index 1)
+      tabs[1].click();
+      expect(dcaPanel.hidden).toBe(false);
+
+      const select = dcaPanel.querySelector<HTMLSelectElement>('select[aria-label="Fixed Time Horizon"]')!;
+      select.value = "10";
+      select.dispatchEvent(new Event("change"));
+      expect(select.value).toBe("10");
+
+      // Switch to Performance Table tab (index 2) and back to DCA tab (index 1)
+      tabs[2].click();
+      expect(dcaPanel.hidden).toBe(true);
+
+      tabs[1].click();
+      expect(dcaPanel.hidden).toBe(false);
+      expect(select.value).toBe("10");
+    });
+
+    it("18. Multiple independent tablists do not interfere with each other", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const group1 = root.querySelector('[data-group-id="by-threshold"]')!;
+      const group2 = root.querySelector('[data-group-id="by-ppcr"]')!;
+
+      const tabs1 = group1.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const tabs2 = group2.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+
+      tabs1[2].click();
+      expect(tabs1[2].getAttribute("aria-selected")).toBe("true");
+      expect(tabs2[0].getAttribute("aria-selected")).toBe("true");
+    });
+
+    it("19. No nested tabs introduced", () => {
+      const spec = createTabbedReportSpec();
+      const root = renderReport(spec, { groupPresentation: "tabs" });
+      const tablists = root.querySelectorAll('[role="tablist"]');
+      tablists.forEach((tablist) => {
+        expect(tablist.querySelector('[role="tablist"]')).toBeNull();
+      });
+    });
+
+    it("20. Invalid render option fails clearly if applicable", () => {
+      const spec = createTabbedReportSpec();
+      expect(() =>
+        renderReport(spec, { groupPresentation: "invalid" as any }),
+      ).toThrow(
+        "Invalid render options: groupPresentation must be 'stacked' or 'tabs'",
+      );
+    });
+
+    it("renders acceptance fixture with tabbed presentation without errors", () => {
+      const root = renderReport(structuredReportFixture, { groupPresentation: "tabs" });
+      expect(root).not.toBeNull();
+      expect(root.querySelectorAll('[role="tablist"]').length).toBe(2);
+    });
+  });
 });

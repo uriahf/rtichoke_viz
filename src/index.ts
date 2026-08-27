@@ -40,6 +40,7 @@ export { renderDecisionCurveV2 } from "./render/decision-curve.js";
 export { renderInterventionsAvoidedV2 } from "./render/interventions-avoided.js";
 export { renderPerformanceTable } from "./render/performance-table.js";
 export { renderReport } from "./render/report.js";
+export type { ReportRenderOptions } from "./render/report.js";
 export { renderRoc } from "./render/roc.js";
 export { RTICHOKE_BROWSER_THEME, RTICHOKE_COLORS, renderCalibrationV2, renderGainsV2, renderLiftV2, renderPrecisionRecallV2, renderRocV2, resolveV2RenderOptions } from "./render/v2.js";
 export type { ResolvedV2RenderOptions, V2RendererTheme, V2RenderOptions, V2ThemeOptions } from "./render/v2.js";
