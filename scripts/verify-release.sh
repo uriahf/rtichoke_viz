@@ -24,6 +24,7 @@ test -s "${tmp}/${BUNDLE}/rtichoke-viz.js"
 test -s "${tmp}/${BUNDLE}/rtichoke-viz.css"
 test -s "${tmp}/${BUNDLE}/rtichoke-viz.schema.json"
 test -s "${tmp}/${BUNDLE}/rtichoke-viz-v2.schema.json"
+test -s "${tmp}/${BUNDLE}/rtichoke-viz-report.schema.json"
 test -s "${tmp}/${BUNDLE}/MANIFEST"
 grep -Fxq "version=${VERSION}" "${tmp}/${BUNDLE}/MANIFEST"
 grep -Fxq "commit=${EXPECTED_COMMIT}" "${tmp}/${BUNDLE}/MANIFEST"
@@ -32,6 +33,7 @@ node -e '
   const checks = [
     [process.argv[1], "https://rtichoke.dev/schema/viz/1.0.json"],
     [process.argv[2], "https://rtichoke.dev/schema/viz/2.0.json"],
+    [process.argv[3], "https://rtichoke.dev/schema/viz/report.json"],
   ];
   for (const [path, expectedId] of checks) {
     const schema = JSON.parse(fs.readFileSync(path, "utf8"));
@@ -41,4 +43,5 @@ node -e '
   }
 ' \
   "${tmp}/${BUNDLE}/rtichoke-viz.schema.json" \
-  "${tmp}/${BUNDLE}/rtichoke-viz-v2.schema.json"
+  "${tmp}/${BUNDLE}/rtichoke-viz-v2.schema.json" \
+  "${tmp}/${BUNDLE}/rtichoke-viz-report.schema.json"

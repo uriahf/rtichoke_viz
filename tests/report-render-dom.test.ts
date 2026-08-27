@@ -8,13 +8,17 @@ import lift from "../fixtures/v2/lift-single.json" with { type: "json" };
 import performanceTable from "../fixtures/v2/performance-table.json" with { type: "json" };
 import precisionRecall from "../fixtures/v2/precision-recall-single.json" with { type: "json" };
 import roc from "../fixtures/v2/roc.json" with { type: "json" };
-import type { ReportSpec } from "../src/spec/report.js";
+import type {
+  ReportSpecV1_0,
+  ReportSpecV1_1,
+  StandaloneCanonicalSpec,
+} from "../src/spec/report.js";
 import { renderReport } from "../src/render/report.js";
 
 function report(
-  components: ReportSpec["components"],
+  components: ReportSpecV1_0["components"],
   title?: string,
-): ReportSpec {
+): ReportSpecV1_0 {
   return { schemaVersion: "1.0", type: "report", title, components };
 }
 
@@ -23,10 +27,30 @@ function component(id: string, spec: object, title?: string) {
     id,
     title,
     spec: structuredClone(spec),
-  } as ReportSpec["components"][number];
+  } as ReportSpecV1_0["components"][number];
 }
 
 describe("renderReport", () => {
+  it("rejects structured ReportSpec v1.1 until its renderer is implemented", () => {
+    const structured: ReportSpecV1_1 = {
+      schemaVersion: "1.1",
+      type: "report",
+      sections: [{
+        id: "section",
+        title: "Section",
+        items: [{
+          type: "component",
+          id: "roc",
+          spec: structuredClone(roc) as StandaloneCanonicalSpec,
+        }],
+      }],
+    };
+
+    expect(() => renderReport(structured as unknown as ReportSpecV1_0)).toThrow(
+      "ReportSpec schemaVersion 1.1 is not renderable yet",
+    );
+  });
+
   it("renders the optional report title", () => {
     const root = renderReport(report([component("roc", roc)], "Model report"));
     expect(root.querySelector(".rtichoke-report__title")?.textContent).toBe(
