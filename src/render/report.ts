@@ -15,6 +15,7 @@ import { assertReportReferentialIntegrity } from "../spec/validate-report.js";
 import { renderDecisionCurveV2 } from "./decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
 import { renderPerformanceTable } from "./performance-table.js";
+import { renderSummaryMetrics } from "./summary-metrics.js";
 import {
   renderCalibrationV2,
   renderGainsV2,
@@ -27,6 +28,8 @@ function renderStandaloneComponentContent(
   spec: StandaloneCanonicalSpec,
 ): Element {
   switch (spec.type) {
+    case "summary_metrics":
+      return renderSummaryMetrics(spec);
     case "performance_table":
       return renderPerformanceTable(spec);
     case "roc":
