@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "type": "summary_metrics",
+  "title": "Model Performance & Prevalence Summary",
+  "populations": [
+    { "id": "pop-1", "label": "Validation cohort" },
+    { "id": "pop-2", "label": "External cohort" }
+  ],
+  "evaluations": [
+    { "id": "eval-1", "model": "Model A", "population": "Validation" },
+    { "id": "eval-2", "model": "Model B", "population": "Validation" },
+    { "id": "eval-3", "model": "Model A", "population": "External" }
+  ],
+  "metrics": [
+    {
+      "metric": "auroc",
+      "owner": { "type": "evaluation", "evaluationId": "eval-1" },
+      "estimate": 0.8234
+    },
+    {
+      "metric": "auroc",
+      "owner": { "type": "evaluation", "evaluationId": "eval-2" },
+      "estimate": 0.7612
+    },
+    {
+      "metric": "auroc",
+      "owner": { "type": "evaluation", "evaluationId": "eval-3" },
+      "estimate": null
+    },
+    {
+      "metric": "prevalence",
+      "owner": { "type": "population", "populationId": "pop-1" },
+      "estimate": 0.2317
+    },
+    {
+      "metric": "prevalence",
+      "owner": { "type": "population", "populationId": "pop-2" },
+      "estimate": 0.1042
+    }
+  ]
+}
