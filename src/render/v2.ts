@@ -420,6 +420,11 @@ export function renderCalibrationV2(
   const mainHeight = hasDistribution
     ? Math.round(theme.height * 0.8)
     : theme.height;
+  const observedValues = data.map((datum) => datum.observed).filter(Number.isFinite);
+  const yDomain = spec.yAxis.domain ?? [
+    Math.min(0, ...observedValues),
+    Math.max(1, ...observedValues),
+  ];
   const calibration = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
@@ -432,7 +437,7 @@ export function renderCalibrationV2(
             label: null,
           }
         : axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
-      y: axisOptions(theme, spec.yAxis.label, spec.yAxis.domain),
+      y: axisOptions(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks, theme),
     },
     theme,

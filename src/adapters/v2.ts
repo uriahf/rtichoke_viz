@@ -90,6 +90,9 @@ export function calibrationV2SpecFromRtichokeRows(
   distributionRows?: RtichokeCalibrationDistributionRow[],
 ): CalibrationV2Spec {
   const byGroup = identities(rows.map((row) => row.reference_group), context);
+  const observedValues = rows.map((row) => row.y).filter(Number.isFinite);
+  const minY = Math.min(0, ...observedValues);
+  const maxY = Math.max(1, ...observedValues);
   return {
     schemaVersion: "2.0",
     type: "calibration",
@@ -118,7 +121,7 @@ export function calibrationV2SpecFromRtichokeRows(
     x: "predicted",
     y: "observed",
     xAxis: { label: "Predicted probability", domain: [0, 1] },
-    yAxis: { label: "Observed probability", domain: [0, 1] },
+    yAxis: { label: "Observed probability", domain: [minY, maxY] },
     references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }],
   };
 }
