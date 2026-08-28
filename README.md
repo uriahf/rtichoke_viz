@@ -60,6 +60,28 @@ renderRocV2(spec, {
 
 Display groups receive colors in their first explicit series order. A single display group remains black and has no legend, preserving the existing renderer behavior.
 
+### Structured report layout options
+
+ReportSpec v1.1 layout is controlled by renderer options and does not change the
+canonical report contract. Both options default to `"stacked"`:
+
+```ts
+renderReport(spec, {
+  // Present sibling groups in each section as tabs.
+  sectionGroupPresentation: "tabs",
+
+  // Independently present components inside each group as tabs.
+  groupPresentation: "stacked",
+});
+```
+
+`sectionGroupPresentation: "tabs"` applies only when a section has at least two
+groups. Group titles become tab labels, group components retain their own
+presentation, and direct section components remain visible outside the tabset.
+The tabset is inserted at the first group position, so direct components before
+it remain before it and all later direct components remain after it. Setting both
+options to `"tabs"` explicitly enables nested group and component tabsets.
+
 ## Distribution
 
 `rtichoke_viz` GitHub Releases are the language-neutral distribution boundary for the compiled browser bundle. A `vX.Y.Z` tag matching the version in `package.json` publishes `rtichoke-viz-X.Y.Z.tar.gz` plus its SHA-256 checksum. The archive contains the compiled JavaScript, CSS, JSON Schema, and a manifest recording the version and source commit.

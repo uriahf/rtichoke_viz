@@ -6,20 +6,20 @@ import {
   renderReport,
   renderRocV2,
 } from "./index.js";
+import "./rtichoke-viz.css";
 import type {
   CalibrationV2Spec,
   GainsV2Spec,
   LiftV2Spec,
   PrecisionRecallV2Spec,
-  ReportSpecV1_0,
   RocV2Spec,
 } from "./index.js";
+import { structuredReportFixture } from "../fixtures/v2/structured-report-v1_1.js";
 import calibrationFixture from "../fixtures/v2/calibration.json" with { type: "json" };
 import gainsFixture from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
 import gainsTimeFixture from "../fixtures/v2/gains-time.json" with { type: "json" };
 import liftFixture from "../fixtures/v2/lift-shared-population.json" with { type: "json" };
 import liftTimeFixture from "../fixtures/v2/lift-time.json" with { type: "json" };
-import performanceTableFixture from "../fixtures/v2/performance-table.json" with { type: "json" };
 import precisionRecallFixture from "../fixtures/v2/precision-recall-shared-population.json" with { type: "json" };
 import rocFixture from "../fixtures/v2/roc.json" with { type: "json" };
 
@@ -45,33 +45,11 @@ if (
   throw new Error("Demo chart containers are missing");
 }
 
-const report: ReportSpecV1_0 = {
-  schemaVersion: "1.0",
-  type: "report",
-  title: "Canonical model performance report",
-  components: [
-    {
-      id: "performance",
-      title: "Performance table",
-      spec: structuredClone(performanceTableFixture),
-    },
-    { id: "roc", title: "ROC", spec: structuredClone(rocFixture) },
-    {
-      id: "calibration",
-      title: "Calibration",
-      spec: structuredClone(calibrationFixture),
-    },
-    {
-      id: "precision-recall",
-      title: "Precision-recall",
-      spec: structuredClone(precisionRecallFixture),
-    },
-    { id: "gains", title: "Gains", spec: structuredClone(gainsFixture) },
-    { id: "lift", title: "Lift", spec: structuredClone(liftFixture) },
-  ],
-} as ReportSpecV1_0;
-
-reportHost.append(renderReport(report));
+reportHost.append(
+  renderReport(structuredReportFixture, {
+    sectionGroupPresentation: "tabs",
+  }),
+);
 rocHost.append(renderRocV2(rocFixture as RocV2Spec));
 calibrationHost.append(renderCalibrationV2(calibrationFixture as CalibrationV2Spec));
 precisionRecallHost.append(
