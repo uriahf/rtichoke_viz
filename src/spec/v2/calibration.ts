@@ -1,14 +1,28 @@
 import { Type, type Static } from "@sinclair/typebox";
 import { BaseChartV2SpecSchema } from "./common.js";
 
-export const CalibrationV2DatumSchema = Type.Object({
+export const DiscreteCalibrationV2DatumSchema = Type.Object({
   seriesId: Type.String(),
   predicted: Type.Number({ minimum: 0, maximum: 1 }),
   observed: Type.Number({ minimum: 0, maximum: 1 }),
-  method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
+  method: Type.Literal("discrete"),
   events: Type.Optional(Type.Number({ minimum: 0 })),
   total: Type.Optional(Type.Number({ minimum: 0 })),
 });
+
+export const SmoothCalibrationV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number(),
+  method: Type.Literal("smooth"),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 })),
+});
+
+export const CalibrationV2DatumSchema = Type.Union([
+  DiscreteCalibrationV2DatumSchema,
+  SmoothCalibrationV2DatumSchema,
+]);
 
 export const CalibrationV2DistributionDatumSchema = Type.Object({
   seriesId: Type.String(),

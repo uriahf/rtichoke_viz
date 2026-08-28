@@ -10,7 +10,7 @@ export { DisplayGroupingSpecSchema, DisplayRoleSchema, EvaluationSpecSchema, Ref
 export type { DisplayGroupingSpec, DisplayRole, EvaluationSpec, ReferenceLineV2Spec, SeriesSpec } from "./spec/v2/common.js";
 export { RocV2SpecSchema } from "./spec/v2/roc.js";
 export type { RocV2Datum, RocV2Spec } from "./spec/v2/roc.js";
-export { CalibrationV2SpecSchema } from "./spec/v2/calibration.js";
+export { CalibrationV2DatumSchema, CalibrationV2SpecSchema, DiscreteCalibrationV2DatumSchema, SmoothCalibrationV2DatumSchema } from "./spec/v2/calibration.js";
 export type { CalibrationV2Datum, CalibrationV2DistributionDatum, CalibrationV2Spec } from "./spec/v2/calibration.js";
 export { PrecisionRecallV2SpecSchema } from "./spec/v2/precision_recall.js";
 export type { PrecisionRecallV2Datum, PrecisionRecallV2Spec } from "./spec/v2/precision_recall.js";
