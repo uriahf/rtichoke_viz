@@ -1039,4 +1039,278 @@ describe("renderReport", () => {
       );
     });
   });
+
+  describe("ReportSpec v1.1 section component presentation", () => {
+    const createSectionComponentReportSpec = (): ReportSpecV1_1 => ({
+      schemaVersion: "1.1",
+      type: "report",
+      title: "Section Component Tabs Report",
+      sections: [
+        {
+          id: "calibration",
+          title: "Calibration",
+          items: [
+            {
+              type: "component",
+              id: "cal-smooth",
+              title: "Smooth",
+              spec: structuredClone(calibration) as StandaloneCanonicalSpec,
+            },
+            {
+              type: "component",
+              id: "cal-discrete",
+              title: "Discrete",
+              spec: structuredClone(calibration) as StandaloneCanonicalSpec,
+            },
+          ],
+        },
+        {
+          id: "utility",
+          title: "Utility",
+          items: [
+            {
+              type: "component",
+              id: "dca",
+              title: "Decision Curve",
+              spec: structuredClone(decisionCurveTime) as StandaloneCanonicalSpec,
+            },
+            {
+              type: "component",
+              id: "ia",
+              title: "Interventions Avoided",
+              spec: structuredClone(decisionCurveTime) as StandaloneCanonicalSpec,
+            },
+          ],
+        },
+      ],
+    });
+
+    it("preserves default stacked rendering without sectionComponentPresentation", () => {
+      const spec = createSectionComponentReportSpec();
+      const root = renderReport(spec);
+      expect(root.querySelector('[role="tablist"]')).toBeNull();
+      expect(
+        root.querySelectorAll(".rtichoke-report__component"),
+      ).toHaveLength(4);
+    });
+
+    it("renders direct component tabs when sectionComponentPresentation is 'tabs'", () => {
+      const spec = createSectionComponentReportSpec();
+      const root = renderReport(spec, {
+        sectionComponentPresentation: "tabs",
+      });
+      const calSec = root.querySelector('[data-section-id="calibration"]')!;
+      const tablist = calSec.querySelector('[role="tablist"]');
+      expect(tablist).not.toBeNull();
+
+      const tabs = tablist!.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      expect([...tabs].map((t) => t.textContent)).toEqual(["Smooth", "Discrete"]);
+
+      const panels = calSec.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+      expect(panels).toHaveLength(2);
+
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+      expect(tabs[0].tabIndex).toBe(0);
+      expect(panels[0].hidden).toBe(false);
+
+      expect(tabs[1].getAttribute("aria-selected")).toBe("false");
+      expect(tabs[1].tabIndex).toBe(-1);
+      expect(panels[1].hidden).toBe(true);
+
+      tabs.forEach((tab, index) => {
+        expect(tab.getAttribute("aria-controls")).toBe(panels[index].id);
+        expect(panels[index].getAttribute("aria-labelledby")).toBe(tab.id);
+      });
+    });
+
+    it("supports click and roving keyboard navigation for direct component tabs", () => {
+      const spec = createSectionComponentReportSpec();
+      const root = renderReport(spec, {
+        sectionComponentPresentation: "tabs",
+      });
+      document.body.append(root);
+
+      const calSec = root.querySelector('[data-section-id="calibration"]')!;
+      const tabs = calSec.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      const panels = calSec.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+
+      tabs[1].click();
+      expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+      expect(panels[1].hidden).toBe(false);
+      expect(panels[0].hidden).toBe(true);
+
+      tabs[1].dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+      );
+      expect(document.activeElement).toBe(tabs[0]);
+      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+      expect(panels[0].hidden).toBe(false);
+
+      tabs[0].dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+      );
+      expect(document.activeElement).toBe(tabs[1]);
+
+      tabs[1].dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+      );
+      expect(document.activeElement).toBe(tabs[0]);
+
+      tabs[0].dispatchEvent(
+        new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+      );
+      expect(document.activeElement).toBe(tabs[1]);
+
+      root.remove();
+    });
+
+    it("does not create a tab interface for a section with only one direct component", () => {
+      const singleCompSpec: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        sections: [
+          {
+            id: "single",
+            title: "Single Component",
+            items: [
+              {
+                type: "component",
+                id: "roc-single",
+                title: "ROC",
+                spec: structuredClone(roc) as StandaloneCanonicalSpec,
+              },
+            ],
+          },
+        ],
+      };
+      const root = renderReport(singleCompSpec, {
+        sectionComponentPresentation: "tabs",
+      });
+      expect(root.querySelector('[role="tablist"]')).toBeNull();
+      expect(
+        root.querySelector('[data-component-id="roc-single"]'),
+      ).not.toBeNull();
+    });
+
+    it("handles mixed section composition correctly without interference", () => {
+      const mixedSpec: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        title: "Mixed Report",
+        sections: [
+          {
+            id: "discrimination",
+            title: "Discrimination",
+            items: [
+              {
+                type: "component",
+                id: "auroc",
+                title: "AUROC",
+                spec: structuredClone(roc) as StandaloneCanonicalSpec,
+              },
+              {
+                type: "group",
+                id: "grp-1",
+                title: "Threshold Group",
+                components: [
+                  {
+                    type: "component",
+                    id: "roc-1",
+                    title: "ROC 1",
+                    spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                  },
+                ],
+              },
+              {
+                type: "group",
+                id: "grp-2",
+                title: "PPCR Group",
+                components: [
+                  {
+                    type: "component",
+                    id: "roc-2",
+                    title: "ROC 2",
+                    spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const root = renderReport(mixedSpec, {
+        sectionComponentPresentation: "tabs",
+        sectionGroupPresentation: "tabs",
+      });
+
+      const discSec = root.querySelector('[data-section-id="discrimination"]')!;
+
+      const aurocComp = discSec.querySelector('[data-component-id="auroc"]')!;
+      expect(aurocComp.closest('[role="tabpanel"]')).toBeNull();
+
+      const groupTablist = discSec.querySelector(
+        ".rtichoke-report__section-group-tablist",
+      )!;
+      expect(groupTablist).not.toBeNull();
+      const groupTabs = groupTablist.querySelectorAll('[role="tab"]');
+      expect([...groupTabs].map((t) => t.textContent)).toEqual([
+        "Threshold Group",
+        "PPCR Group",
+      ]);
+    });
+
+    it("verifies groupPresentation: 'tabs' still functions for group components", () => {
+      const spec: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        sections: [
+          {
+            id: "sec",
+            title: "Section",
+            items: [
+              {
+                type: "group",
+                id: "grp",
+                title: "Group",
+                components: [
+                  {
+                    type: "component",
+                    id: "c1",
+                    title: "Comp 1",
+                    spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                  },
+                  {
+                    type: "component",
+                    id: "c2",
+                    title: "Comp 2",
+                    spec: structuredClone(roc) as StandaloneCanonicalSpec,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const root = renderReport(spec, {
+        groupPresentation: "tabs",
+        sectionComponentPresentation: "tabs",
+      });
+
+      const grp = root.querySelector('[data-group-id="grp"]')!;
+      const tabs = grp.querySelectorAll('[role="tab"]');
+      expect([...tabs].map((t) => t.textContent)).toEqual(["Comp 1", "Comp 2"]);
+    });
+
+    it("rejects invalid sectionComponentPresentation option", () => {
+      expect(() =>
+        renderReport(createSectionComponentReportSpec(), {
+          sectionComponentPresentation: "invalid" as any,
+        }),
+      ).toThrow(
+        "Invalid render options: sectionComponentPresentation must be 'stacked' or 'tabs'",
+      );
+    });
+  });
 });
