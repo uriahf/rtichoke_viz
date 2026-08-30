@@ -331,7 +331,7 @@ function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   return plot;
 }
 
-export function renderRocV2(
+function renderRocChart(
   spec: RocV2Spec,
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
@@ -369,6 +369,15 @@ export function renderRocV2(
       marks: finishMarks(marks, theme),
     },
     theme,
+  );
+}
+
+export function renderRocV2(
+  spec: RocV2Spec,
+  options: V2RenderOptions = {},
+): SVGSVGElement | HTMLElement {
+  return renderWithHorizonSelection(spec, (selected) =>
+    renderRocChart(selected, options),
   );
 }
 
@@ -556,6 +565,7 @@ function renderLineChart(
 }
 
 type HorizonSpec =
+  | RocV2Spec
   | PrecisionRecallV2Spec
   | GainsV2Spec
   | LiftV2Spec
