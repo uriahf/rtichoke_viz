@@ -68,7 +68,29 @@ const singleRocOpSpec: RocV2Spec = {
 };
 
 const multiRocOpSpec: RocV2Spec = {
-  ...(rocFixture as RocV2Spec),
+  schemaVersion: "2.0",
+  type: "roc",
+  evaluations: [
+    { id: "eval-1", model: "Model A", population: "Pop 1", label: "Model A" },
+    { id: "eval-2", model: "Model B", population: "Pop 1", label: "Model B" },
+  ],
+  series: [
+    { id: "series-1", evaluationId: "eval-1", display: { label: "Model A", group: "Model A", role: "model" } },
+    { id: "series-2", evaluationId: "eval-2", display: { label: "Model B", group: "Model B", role: "model" } },
+  ],
+  data: [
+    { seriesId: "series-1", cutoff: 0.2, sensitivity: 0.9, specificity: 0.35, ppcr: 0.8 },
+    { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.75, specificity: 0.7, ppcr: 0.5 },
+    { seriesId: "series-1", cutoff: 0.8, sensitivity: 0.4, specificity: 0.9, ppcr: 0.2 },
+    { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.8, specificity: 0.45, ppcr: 0.75 },
+    { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.6, specificity: 0.8, ppcr: 0.45 },
+    { seriesId: "series-2", cutoff: 0.8, sensitivity: 0.3, specificity: 0.92, ppcr: 0.15 },
+  ],
+  x: "false_positive_rate",
+  y: "sensitivity",
+  xAxis: { label: "1 - Specificity", domain: [0, 1] },
+  yAxis: { label: "Sensitivity", domain: [0, 1] },
+  references: [{ type: "identity", scope: "global", label: "Random Guess" }],
   operatingPoint: { dimension: "probability_threshold" },
 };
 
