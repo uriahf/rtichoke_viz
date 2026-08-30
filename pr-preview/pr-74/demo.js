@@ -24046,6 +24046,9 @@ var structuredReportFixture = {
   ]
 };
 
+// fixtures/v2/decision-curve-single.json
+var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.1, y: 0.222222 }, { x: 0.2, y: 0.125 }, { x: 0.4, y: -0.166667 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
+
 // fixtures/v2/gains-shared-population.json
 var gains_shared_population_default = {
   schemaVersion: "2.0",
@@ -24232,26 +24235,98 @@ var precision_recall_shared_population_default = {
 // src/demo.ts
 var reportHost = document.querySelector("#report-demo");
 var rocHost = document.querySelector("#roc-chart");
+var rocOpHost = document.querySelector("#roc-op-chart");
 var calibrationHost = document.querySelector("#calibration-chart");
 var gainsHost = document.querySelector("#gains-chart");
 var gainsTimeHost = document.querySelector("#gains-time-chart");
 var liftHost = document.querySelector("#lift-chart");
 var liftTimeHost = document.querySelector("#lift-time-chart");
 var precisionRecallHost = document.querySelector("#precision-recall-chart");
-if (!reportHost || !rocHost || !calibrationHost || !precisionRecallHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost) {
+var dcOpHost = document.querySelector("#dc-op-chart");
+var iaOpHost = document.querySelector("#ia-op-chart");
+if (!reportHost || !rocHost || !rocOpHost || !calibrationHost || !precisionRecallHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost) {
   throw new Error("Demo chart containers are missing");
 }
+var singleRocOpSpec = {
+  ...roc_default,
+  evaluations: [roc_default.evaluations[0]],
+  series: [roc_default.series[0]],
+  data: roc_default.data.filter(
+    (datum2) => datum2.seriesId === roc_default.series[0].id
+  ),
+  operatingPoint: { dimension: "probability_threshold" }
+};
+var multiRocOpSpec = {
+  ...roc_default,
+  operatingPoint: { dimension: "probability_threshold" }
+};
+var prPpcrOpSpec = {
+  ...precision_recall_shared_population_default,
+  operatingPoint: { dimension: "ppcr" }
+};
+var dcOpSpec = {
+  ...decision_curve_single_default,
+  operatingPoint: { dimension: "probability_threshold" }
+};
+var iaOpSpec = {
+  ...interventions_avoided_single_default,
+  operatingPoint: { dimension: "probability_threshold" }
+};
+var reportWithOp = {
+  ...structuredReportFixture,
+  sections: structuredReportFixture.sections.map((section) => {
+    if (section.id !== "discrimination") return section;
+    return {
+      ...section,
+      items: section.items.map((item) => {
+        if (item.type !== "group") return item;
+        if (item.id === "probability-threshold") {
+          return {
+            ...item,
+            components: item.components.map((comp) => ({
+              ...comp,
+              spec: {
+                ...comp.spec,
+                operatingPoint: { dimension: "probability_threshold" }
+              }
+            }))
+          };
+        }
+        if (item.id === "ppcr") {
+          return {
+            ...item,
+            components: item.components.map((comp) => ({
+              ...comp,
+              spec: {
+                ...comp.spec,
+                operatingPoint: { dimension: "ppcr" }
+              }
+            }))
+          };
+        }
+        return item;
+      })
+    };
+  })
+};
 reportHost.append(
-  renderReport(structuredReportFixture, {
-    sectionGroupPresentation: "tabs"
+  renderReport(reportWithOp, {
+    sectionGroupPresentation: "tabs",
+    groupPresentation: "tabs"
   })
 );
-rocHost.append(renderRocV2(roc_default));
+rocHost.append(renderRocV2(singleRocOpSpec));
+rocOpHost.append(renderRocV2(multiRocOpSpec));
 calibrationHost.append(renderCalibrationV2(calibration_default));
-precisionRecallHost.append(
-  renderPrecisionRecallV2(precision_recall_shared_population_default)
-);
+precisionRecallHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(renderGainsV2(gains_shared_population_default));
-gainsTimeHost.append(renderGainsV2(gains_time_default));
+gainsTimeHost.append(
+  renderGainsV2({
+    ...gains_time_default,
+    operatingPoint: { dimension: "probability_threshold" }
+  })
+);
 liftHost.append(renderLiftV2(lift_shared_population_default));
 liftTimeHost.append(renderLiftV2(lift_time_default));
+dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
+iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));

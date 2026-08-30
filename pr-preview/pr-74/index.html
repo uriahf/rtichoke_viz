@@ -135,11 +135,19 @@
           Each pair uses the same canonical v2 fixture. Small differences in
           font rasterization and hover mechanics are renderer-specific.
         </p>
-        <h3>ROC</h3>
+        <h3>Single-Series ROC (Probability Threshold Slider)</h3>
         <div class="comparison">
           <div>
             <p class="renderer-label">TypeScript / Observable Plot</p>
             <div id="roc-chart" class="chart"></div>
+          </div>
+        </div>
+
+        <h3>Multi-Series ROC (Probability Threshold Slider)</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="roc-op-chart" class="chart"></div>
           </div>
           <div>
             <p class="renderer-label">Python Plotly</p>
@@ -147,6 +155,37 @@
               title="ROC rendered by Python Plotly"
               src="./python-plotly/roc.html"
             ></iframe>
+          </div>
+        </div>
+
+        <h3>Precision-Recall (PPCR Slider)</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="precision-recall-chart" class="chart"></div>
+          </div>
+          <div>
+            <p class="renderer-label">Python Plotly</p>
+            <iframe
+              title="Precision-recall rendered by Python Plotly"
+              src="./python-plotly/precision-recall.html"
+            ></iframe>
+          </div>
+        </div>
+
+        <h3>Decision Curve Analysis (Probability Threshold Slider)</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="dc-op-chart" class="chart"></div>
+          </div>
+        </div>
+
+        <h3>Net Interventions Avoided (Probability Threshold Slider)</h3>
+        <div class="comparison">
+          <div>
+            <p class="renderer-label">TypeScript / Observable Plot</p>
+            <div id="ia-op-chart" class="chart"></div>
           </div>
         </div>
         <h3>Calibration</h3>
@@ -160,20 +199,6 @@
             <iframe
               title="Calibration rendered by Python Plotly"
               src="./python-plotly/calibration.html"
-            ></iframe>
-          </div>
-        </div>
-        <h3>Precision-recall</h3>
-        <div class="comparison">
-          <div>
-            <p class="renderer-label">TypeScript / Observable Plot</p>
-            <div id="precision-recall-chart" class="chart"></div>
-          </div>
-          <div>
-            <p class="renderer-label">Python Plotly</p>
-            <iframe
-              title="Precision-recall rendered by Python Plotly"
-              src="./python-plotly/precision-recall.html"
             ></iframe>
           </div>
         </div>
