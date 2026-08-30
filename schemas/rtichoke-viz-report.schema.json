@@ -3508,16 +3508,8 @@
                                 ],
                                 "properties": {
                                   "dimension": {
-                                    "anyOf": [
-                                      {
-                                        "const": "probability_threshold",
-                                        "type": "string"
-                                      },
-                                      {
-                                        "const": "ppcr",
-                                        "type": "string"
-                                      }
-                                    ]
+                                    "const": "probability_threshold",
+                                    "type": "string"
                                   }
                                 }
                               }
@@ -4339,6 +4331,23 @@
                                       ]
                                     }
                                   ]
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "operatingPoint": {
+                                "type": "object",
+                                "required": [
+                                  "dimension"
+                                ],
+                                "properties": {
+                                  "dimension": {
+                                    "const": "probability_threshold",
+                                    "type": "string"
+                                  }
                                 }
                               }
                             }
@@ -8650,16 +8659,8 @@
                                           ],
                                           "properties": {
                                             "dimension": {
-                                              "anyOf": [
-                                                {
-                                                  "const": "probability_threshold",
-                                                  "type": "string"
-                                                },
-                                                {
-                                                  "const": "ppcr",
-                                                  "type": "string"
-                                                }
-                                              ]
+                                              "const": "probability_threshold",
+                                              "type": "string"
                                             }
                                           }
                                         }
@@ -9481,6 +9482,23 @@
                                                 ]
                                               }
                                             ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "operatingPoint": {
+                                          "type": "object",
+                                          "required": [
+                                            "dimension"
+                                          ],
+                                          "properties": {
+                                            "dimension": {
+                                              "const": "probability_threshold",
+                                              "type": "string"
+                                            }
                                           }
                                         }
                                       }
@@ -13770,16 +13788,8 @@
                                                 ],
                                                 "properties": {
                                                   "dimension": {
-                                                    "anyOf": [
-                                                      {
-                                                        "const": "probability_threshold",
-                                                        "type": "string"
-                                                      },
-                                                      {
-                                                        "const": "ppcr",
-                                                        "type": "string"
-                                                      }
-                                                    ]
+                                                    "const": "probability_threshold",
+                                                    "type": "string"
                                                   }
                                                 }
                                               }
@@ -14601,6 +14611,23 @@
                                                       ]
                                                     }
                                                   ]
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "operatingPoint": {
+                                                "type": "object",
+                                                "required": [
+                                                  "dimension"
+                                                ],
+                                                "properties": {
+                                                  "dimension": {
+                                                    "const": "probability_threshold",
+                                                    "type": "string"
+                                                  }
                                                 }
                                               }
                                             }

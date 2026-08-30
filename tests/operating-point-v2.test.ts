@@ -239,9 +239,9 @@ describe("Operating Point Selection for Performance Curves", () => {
           { seriesId: "series-1", threshold: 0.1, netBenefit: 0.2 },
           { seriesId: "series-1", threshold: 0.5, netBenefit: 0.1 },
           { seriesId: "series-1", threshold: 0.9, netBenefit: 0.01 },
-          { seriesId: "series-2", threshold: 0.2, netBenefit: 0.18 },
+          { seriesId: "series-2", threshold: 0.1, netBenefit: 0.19 },
           { seriesId: "series-2", threshold: 0.5, netBenefit: 0.08 },
-          { seriesId: "series-2", threshold: 0.8, netBenefit: 0.02 },
+          { seriesId: "series-2", threshold: 0.9, netBenefit: 0.02 },
         ],
         operatingPoint: { dimension: "probability_threshold" },
       };
@@ -261,19 +261,17 @@ describe("Operating Point Selection for Performance Curves", () => {
       expect(ruleY.length).toBeGreaterThanOrEqual(1);
 
       // Verify NO vertical guide rule mark (ruleX) is present
-      const ruleX = el.querySelectorAll('[aria-label="rule"] line[x1=x2]');
-      // Ensure no vertical guide line was created for operating point
       const verticalRules = [...el.querySelectorAll('[aria-label="rule"] line')].filter(
         (line) => line.getAttribute("x1") !== null && line.getAttribute("x1") === line.getAttribute("x2"),
       );
       expect(verticalRules).toHaveLength(0);
 
-      // Check default selected threshold = 0.1 (only Model A has 0.1)
+      // Check default selected threshold = 0.1 (common to both Model A and Model B)
       let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
-      expect(dots.length).toBe(1);
+      expect(dots.length).toBe(2);
 
-      // Select threshold = 0.5 (common to both Model A and Model B)
-      slider.value = "2"; // 0.1, 0.2, 0.5 is index 2
+      // Select threshold = 0.5 (index 1)
+      slider.value = "1";
       slider.dispatchEvent(new Event("input"));
       dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
       expect(dots.length).toBe(2);
@@ -337,7 +335,7 @@ describe("Operating Point Selection for Performance Curves", () => {
   });
 
   describe("4. Multi-series matching semantics", () => {
-    const multiSeriesRoc: RocV2Spec = {
+    const multiSeriesThresholdRoc: RocV2Spec = {
       schemaVersion: "2.0",
       type: "roc",
       evaluations: [
@@ -353,7 +351,7 @@ describe("Operating Point Selection for Performance Curves", () => {
         { seriesId: "series-1", cutoff: 0.1, sensitivity: 0.9, specificity: 0.3 },
         { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.7, specificity: 0.7 },
         { seriesId: "series-1", cutoff: 0.9, sensitivity: 0.2, specificity: 0.95 },
-        // Model B has cutoffs 0.2, 0.5, 0.8 (0.5 is common, 0.1 is missing in Model B)
+        // Model B has cutoffs 0.2, 0.5, 0.8 (0.5 is common to both)
         { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.85, specificity: 0.4 },
         { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75 },
         { seriesId: "series-2", cutoff: 0.8, sensitivity: 0.3, specificity: 0.9 },
@@ -365,29 +363,47 @@ describe("Operating Point Selection for Performance Curves", () => {
       operatingPoint: { dimension: "probability_threshold" },
     };
 
-    it("derives discrete domain from union of finite values across active series", () => {
-      const values = extractOperatingPointValues(multiSeriesRoc);
+    const multiSeriesPpcrRoc: RocV2Spec = {
+      ...multiSeriesThresholdRoc,
+      data: [
+        { seriesId: "series-1", cutoff: 0.1, sensitivity: 0.9, specificity: 0.3, ppcr: 0.1 },
+        { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.7, specificity: 0.7, ppcr: 0.5 },
+        { seriesId: "series-1", cutoff: 0.9, sensitivity: 0.2, specificity: 0.95, ppcr: 0.9 },
+        { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.85, specificity: 0.4, ppcr: 0.2 },
+        { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75, ppcr: 0.5 },
+        { seriesId: "series-2", cutoff: 0.8, sensitivity: 0.3, specificity: 0.9, ppcr: 0.8 },
+      ],
+      operatingPoint: { dimension: "ppcr" },
+    };
+
+    it("probability_threshold derives exact common intersection domain across all active series", () => {
+      const values = extractOperatingPointValues(multiSeriesThresholdRoc);
+      expect(values).toEqual([0.5]);
+    });
+
+    it("ppcr retains exact union domain across active series", () => {
+      const values = extractOperatingPointValues(multiSeriesPpcrRoc);
       expect(values).toEqual([0.1, 0.2, 0.5, 0.8, 0.9]);
     });
 
-    it("highlights exact matching points; shows no marker for series missing selected value", () => {
-      const el = renderRocV2(multiSeriesRoc);
+    it("highlights exact matching points for PPCR union values; shows no marker for series missing selected value", () => {
+      const el = renderRocV2(multiSeriesPpcrRoc);
       const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
       const valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
 
-      // Default selected value is 0.1 (index 0). Only Model A has 0.1.
+      // Default selected value is 0.1 (index 0). Only Model A has PPCR 0.1.
       expect(valueSpan.textContent).toBe("0.100");
       let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
       expect(dots.length).toBe(1);
 
-      // Select index 2 -> cutoff 0.5 (common to both Model A and Model B).
+      // Select index 2 -> PPCR 0.5 (common to both Model A and Model B).
       slider.value = "2";
       slider.dispatchEvent(new Event("input"));
       expect(valueSpan.textContent).toBe("0.500");
       dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
       expect(dots.length).toBe(2);
 
-      // Select index 1 -> cutoff 0.2 (only Model B has 0.2).
+      // Select index 1 -> PPCR 0.2 (only Model B has 0.2).
       slider.value = "1";
       slider.dispatchEvent(new Event("input"));
       expect(valueSpan.textContent).toBe("0.200");

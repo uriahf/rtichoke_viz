@@ -110,7 +110,16 @@ export const OperatingPointSpecSchema = Type.Object({
   ),
 });
 
+export const ThresholdOperatingPointSpecSchema = Type.Object({
+  operatingPoint: Type.Optional(
+    Type.Object({
+      dimension: Type.Literal("probability_threshold"),
+    }),
+  ),
+});
+
 export type OperatingPointDimension = Static<typeof OperatingPointDimensionSchema>;
 export type OperatingPointSpec = Static<typeof OperatingPointSpecSchema>;
+export type ThresholdOperatingPointSpec = Static<typeof ThresholdOperatingPointSpecSchema>;
 export type ReferencePoint = Static<typeof ReferencePointSchema>;
 export type ReferenceLineV2Spec = Static<typeof ReferenceLineV2SpecSchema>;

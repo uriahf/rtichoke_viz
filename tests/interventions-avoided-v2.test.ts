@@ -186,4 +186,12 @@ describe("v2 interventions avoided semantics", () => {
     duplicate.references.push(structuredClone(tdSharedPopulation.references[1]));
     expect(() => assertV2ReferentialIntegrity(duplicate as RtichokeChartSpecV2)).toThrow("duplicate Treat None owner");
   });
+
+  it("accepts dimension 'probability_threshold' and rejects dimension 'ppcr'", () => {
+    const valid = { ...single, operatingPoint: { dimension: "probability_threshold" } };
+    expect(Value.Check(InterventionsAvoidedV2SpecSchema, valid)).toBe(true);
+
+    const invalid = { ...single, operatingPoint: { dimension: "ppcr" } };
+    expect(Value.Check(InterventionsAvoidedV2SpecSchema, invalid)).toBe(false);
+  });
 });
