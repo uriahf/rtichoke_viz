@@ -1,5 +1,5 @@
 import { Type, type Static } from "@sinclair/typebox";
-import { BaseChartV2SpecSchema } from "./common.js";
+import { BaseChartV2SpecSchema, OperatingPointSpecSchema } from "./common.js";
 
 export const LiftV2DatumSchema = Type.Object({
   seriesId: Type.String(),
@@ -10,6 +10,7 @@ export const LiftV2DatumSchema = Type.Object({
 
 export const LiftV2SpecSchema = Type.Intersect([
   BaseChartV2SpecSchema,
+  OperatingPointSpecSchema,
   Type.Object({
     type: Type.Literal("lift"),
     data: Type.Array(LiftV2DatumSchema),

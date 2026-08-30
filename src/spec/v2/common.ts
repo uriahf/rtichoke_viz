@@ -97,5 +97,20 @@ export type EvaluationSpec = Static<typeof EvaluationSpecSchema>;
 export type DisplayRole = Static<typeof DisplayRoleSchema>;
 export type DisplayGroupingSpec = Static<typeof DisplayGroupingSpecSchema>;
 export type SeriesSpec = Static<typeof SeriesSpecSchema>;
+export const OperatingPointDimensionSchema = Type.Union([
+  Type.Literal("probability_threshold"),
+  Type.Literal("ppcr"),
+]);
+
+export const OperatingPointSpecSchema = Type.Object({
+  operatingPoint: Type.Optional(
+    Type.Object({
+      dimension: OperatingPointDimensionSchema,
+    }),
+  ),
+});
+
+export type OperatingPointDimension = Static<typeof OperatingPointDimensionSchema>;
+export type OperatingPointSpec = Static<typeof OperatingPointSpecSchema>;
 export type ReferencePoint = Static<typeof ReferencePointSchema>;
 export type ReferenceLineV2Spec = Static<typeof ReferenceLineV2SpecSchema>;
