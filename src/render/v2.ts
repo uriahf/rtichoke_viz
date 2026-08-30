@@ -181,6 +181,125 @@ type SeriesChartSpec =
   | GainsV2Spec
   | LiftV2Spec;
 
+export type OperatingPointSupportedSpec = (
+  | RocV2Spec
+  | PrecisionRecallV2Spec
+  | GainsV2Spec
+  | LiftV2Spec
+  | DecisionCurveV2Spec
+) & {
+  operatingPoint?: {
+    dimension: "probability_threshold" | "ppcr";
+  };
+};
+
+export function extractOperatingPointValues(
+  spec: OperatingPointSupportedSpec,
+): number[] {
+  if (!spec.operatingPoint) return [];
+  const dim = spec.operatingPoint.dimension;
+  const key =
+    dim === "probability_threshold"
+      ? spec.type === "decision_curve"
+        ? "threshold"
+        : "cutoff"
+      : "ppcr";
+  const rawValues = spec.data
+    .map((datum) => (datum as Record<string, unknown>)[key])
+    .filter(
+      (val): val is number => typeof val === "number" && Number.isFinite(val),
+    );
+  const uniqueSorted = [...new Set(rawValues)].sort((a, b) => a - b);
+  return uniqueSorted;
+}
+
+export function renderWithOperatingPointSelection<
+  T extends OperatingPointSupportedSpec,
+>(
+  spec: T,
+  options: V2RenderOptions,
+  render: (
+    selectedSpec: T,
+    selectedValue?: number,
+  ) => SVGSVGElement | HTMLElement,
+  preferredValue?: number,
+  onValueChange?: (val: number) => void,
+): SVGSVGElement | HTMLElement {
+  if (!spec.operatingPoint) return render(spec, undefined);
+
+  const values = extractOperatingPointValues(spec);
+  if (values.length === 0) return render(spec, undefined);
+
+  const resolved = resolveV2RenderOptions(displayGroups(spec as any), options);
+  const { theme } = resolved;
+
+  const container = document.createElement("div");
+  container.className = "rtichoke-operating-point-chart";
+
+  const control = document.createElement("div");
+  control.className = "rtichoke-operating-point-control";
+
+  const labelText =
+    spec.operatingPoint.dimension === "probability_threshold"
+      ? "Probability threshold"
+      : "Predicted positives condition rate (PPCR)";
+
+  const label = document.createElement("label");
+  label.className = "rtichoke-operating-point-label";
+
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = `${labelText}: `;
+
+  const valueSpan = document.createElement("span");
+  valueSpan.className = "rtichoke-operating-point-value";
+
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = "0";
+  slider.max = String(values.length - 1);
+  slider.step = "1";
+  slider.setAttribute("aria-label", labelText);
+
+  let selectedIndex = 0;
+  if (preferredValue !== undefined) {
+    const matchIdx = values.indexOf(preferredValue);
+    if (matchIdx !== -1) {
+      selectedIndex = matchIdx;
+    }
+  }
+
+  const selectedValue = values[selectedIndex];
+  slider.value = String(selectedIndex);
+  valueSpan.textContent = selectedValue.toFixed(theme.tip.digits);
+  if (onValueChange) {
+    onValueChange(selectedValue);
+  }
+
+  label.append(labelSpan, valueSpan);
+  control.append(label, slider);
+
+  const chart = document.createElement("div");
+  chart.className = "rtichoke-operating-point-content";
+
+  const draw = (val: number) => {
+    chart.replaceChildren(render(spec, val));
+  };
+
+  slider.addEventListener("input", () => {
+    const idx = Number(slider.value);
+    const val = values[idx];
+    valueSpan.textContent = val.toFixed(theme.tip.digits);
+    if (onValueChange) {
+      onValueChange(val);
+    }
+    draw(val);
+  });
+
+  container.append(control, chart);
+  draw(selectedValue);
+  return container;
+}
+
 function displayBySeries(spec: SeriesChartSpec) {
   return new Map(spec.series.map((series) => [series.id, series.display]));
 }
@@ -334,6 +453,7 @@ function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
 function renderRocChart(
   spec: RocV2Spec,
   options: V2RenderOptions = {},
+  selectedOperatingPointValue?: number,
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -361,6 +481,24 @@ function renderRocChart(
       tip: true,
     }),
   );
+  if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
+    const dimField = spec.operatingPoint.dimension === "probability_threshold" ? "cutoff" : "ppcr";
+    const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
+    if (selectedPoints.length > 0) {
+      marks.push(
+        Plot.dot(selectedPoints, {
+          x: "false_positive_rate",
+          y: "sensitivity",
+          fill: theme.marker.fill ?? "group",
+          stroke: theme.marker.stroke,
+          strokeWidth: theme.marker.strokeWidth,
+          r: theme.marker.radius,
+          title: "title",
+          tip: true,
+        }),
+      );
+    }
+  }
   return themedPlot(
     {
       ...basePlotOptions(resolved, spec),
@@ -376,8 +514,14 @@ export function renderRocV2(
   spec: RocV2Spec,
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
-  return renderWithHorizonSelection(spec, (selected) =>
-    renderRocChart(selected, options),
+  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
+    renderWithOperatingPointSelection(
+      selected,
+      options,
+      (specWithOp, activeOpVal) => renderRocChart(specWithOp, options, activeOpVal),
+      preferredOpVal,
+      onOpValChange,
+    ),
   );
 }
 
@@ -507,6 +651,7 @@ function renderLineChart(
   options: V2RenderOptions,
   x: "sensitivity" | "ppcr",
   y: "ppv" | "sensitivity" | "lift",
+  selectedOperatingPointValue?: number,
 ) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -553,6 +698,25 @@ function renderLineChart(
       tip: true,
     }),
   );
+  if (selectedOperatingPointValue !== undefined && (spec as OperatingPointSupportedSpec).operatingPoint) {
+    const dim = (spec as OperatingPointSupportedSpec).operatingPoint!.dimension;
+    const dimField = dim === "probability_threshold" ? "cutoff" : "ppcr";
+    const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
+    if (selectedPoints.length > 0) {
+      marks.push(
+        Plot.dot(selectedPoints, {
+          x,
+          y,
+          fill: theme.marker.fill ?? "group",
+          stroke: theme.marker.stroke,
+          strokeWidth: theme.marker.strokeWidth,
+          r: theme.marker.radius,
+          title: "title",
+          tip: true,
+        }),
+      );
+    }
+  }
   return themedPlot(
     {
       ...basePlotOptions(resolved, spec),
@@ -604,10 +768,12 @@ export function selectHorizonSpec<T extends HorizonSpec>(
 
 export function renderWithHorizonSelection<T extends HorizonSpec>(
   spec: T,
-  render: (selected: T) => SVGSVGElement | HTMLElement,
+  render: (selected: T, preferredOpValue?: number, onOpValueChange?: (val: number) => void) => SVGSVGElement | HTMLElement,
 ): SVGSVGElement | HTMLElement {
   const availableHorizons = horizons(spec);
   if (availableHorizons.length <= 1) return render(spec);
+
+  let currentOpValue: number | undefined;
 
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
@@ -624,7 +790,15 @@ export function renderWithHorizonSelection<T extends HorizonSpec>(
   control.append(select);
   const chart = document.createElement("div");
   const draw = (horizon: number) => {
-    chart.replaceChildren(render(selectHorizonSpec(spec, horizon)));
+    chart.replaceChildren(
+      render(
+        selectHorizonSpec(spec, horizon),
+        currentOpValue,
+        (val) => {
+          currentOpValue = val;
+        },
+      ),
+    );
   };
   select.addEventListener("change", () => draw(Number(select.value)));
   container.append(control, chart);
@@ -638,8 +812,15 @@ function renderHorizonLineChart(
   x: "sensitivity" | "ppcr",
   y: "ppv" | "sensitivity" | "lift",
 ) {
-  return renderWithHorizonSelection(spec, (selected) =>
-    renderLineChart(selected, options, x, y),
+  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
+    renderWithOperatingPointSelection(
+      selected as OperatingPointSupportedSpec,
+      options,
+      (specWithOp, activeOpVal) =>
+        renderLineChart(specWithOp as any, options, x, y, activeOpVal),
+      preferredOpVal,
+      onOpValChange,
+    ),
   );
 }
 
