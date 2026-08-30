@@ -187,6 +187,7 @@ export type OperatingPointSupportedSpec = (
   | GainsV2Spec
   | LiftV2Spec
   | DecisionCurveV2Spec
+  | InterventionsAvoidedV2Spec
 ) & {
   operatingPoint?: {
     dimension: "probability_threshold" | "ppcr";
@@ -200,17 +201,49 @@ export function extractOperatingPointValues(
   const dim = spec.operatingPoint.dimension;
   const key =
     dim === "probability_threshold"
-      ? spec.type === "decision_curve"
+      ? spec.type === "decision_curve" || spec.type === "interventions_avoided"
         ? "threshold"
         : "cutoff"
       : "ppcr";
-  const rawValues = spec.data
-    .map((datum) => (datum as Record<string, unknown>)[key])
-    .filter(
-      (val): val is number => typeof val === "number" && Number.isFinite(val),
-    );
-  const uniqueSorted = [...new Set(rawValues)].sort((a, b) => a - b);
-  return uniqueSorted;
+
+  if (dim === "probability_threshold") {
+    // Probability threshold domain policy: exact common/intersection domain across all active series.
+    // Consumers generate aligned threshold grids, so taking exact intersection guarantees that
+    // every selectable threshold exists in every active series.
+    const seriesIds = spec.series.map((s) => s.id);
+    if (seriesIds.length === 0) return [];
+
+    let intersectionSet: Set<number> | null = null;
+    for (const id of seriesIds) {
+      const sData = spec.data.filter((datum) => datum.seriesId === id);
+      const sValues = sData
+        .map((datum) => (datum as Record<string, unknown>)[key])
+        .filter(
+          (val): val is number => typeof val === "number" && Number.isFinite(val),
+        );
+      const sSet = new Set(sValues);
+      if (intersectionSet === null) {
+        intersectionSet = sSet;
+      } else {
+        const currentIntersection: Set<number> = intersectionSet;
+        intersectionSet = new Set(
+          Array.from(currentIntersection).filter((val: number) => sSet.has(val)),
+        );
+      }
+    }
+    return Array.from(intersectionSet ?? []).sort((a, b) => a - b);
+  } else {
+    // PPCR domain policy: retain exact supplied union domain.
+    // PPCR values naturally differ across models/populations, so exact intersection would frequently
+    // collapse to 0 or 1 point. Selecting a PPCR value highlights matching points for series containing it.
+    const rawValues = spec.data
+      .map((datum) => (datum as Record<string, unknown>)[key])
+      .filter(
+        (val): val is number => typeof val === "number" && Number.isFinite(val),
+      );
+    const uniqueSorted = [...new Set(rawValues)].sort((a, b) => a - b);
+    return uniqueSorted;
+  }
 }
 
 export function renderWithOperatingPointSelection<
@@ -270,7 +303,9 @@ export function renderWithOperatingPointSelection<
 
   const selectedValue = values[selectedIndex];
   slider.value = String(selectedIndex);
-  valueSpan.textContent = selectedValue.toFixed(theme.tip.digits);
+  const formattedVal = selectedValue.toFixed(theme.tip.digits);
+  valueSpan.textContent = formattedVal;
+  slider.setAttribute("aria-valuetext", formattedVal);
   if (onValueChange) {
     onValueChange(selectedValue);
   }
@@ -288,7 +323,9 @@ export function renderWithOperatingPointSelection<
   slider.addEventListener("input", () => {
     const idx = Number(slider.value);
     const val = values[idx];
-    valueSpan.textContent = val.toFixed(theme.tip.digits);
+    const valFormatted = val.toFixed(theme.tip.digits);
+    valueSpan.textContent = valFormatted;
+    slider.setAttribute("aria-valuetext", valFormatted);
     if (onValueChange) {
       onValueChange(val);
     }

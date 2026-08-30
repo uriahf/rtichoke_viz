@@ -146,4 +146,12 @@ describe("v2 decision curve semantics", () => {
     expect(report.components[0].spec.evaluations[0].id).toBe("evaluation-1");
     expect(report.components[1].spec.evaluations[0].id).toBe("evaluation-1");
   });
+
+  it("accepts dimension 'probability_threshold' and rejects dimension 'ppcr'", () => {
+    const valid = { ...single, operatingPoint: { dimension: "probability_threshold" } };
+    expect(Value.Check(DecisionCurveV2SpecSchema, valid)).toBe(true);
+
+    const invalid = { ...single, operatingPoint: { dimension: "ppcr" } };
+    expect(Value.Check(DecisionCurveV2SpecSchema, invalid)).toBe(false);
+  });
 });

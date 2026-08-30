@@ -1,14 +1,28 @@
 import * as Plot from "@observablehq/plot";
 import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoided.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
-import { renderWithHorizonSelection, resolveV2RenderOptions, type V2RenderOptions } from "./v2.js";
+import {
+  renderWithHorizonSelection,
+  renderWithOperatingPointSelection,
+  resolveV2RenderOptions,
+  type OperatingPointSupportedSpec,
+  type V2RenderOptions,
+} from "./v2.js";
 
 export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  return renderWithHorizonSelection(spec, (selected) => renderInterventionsAvoidedChart(selected, options));
+  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
+    renderWithOperatingPointSelection(
+      selected as OperatingPointSupportedSpec,
+      options,
+      (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, options, activeOpVal),
+      preferredOpVal,
+      onOpValChange,
+    ),
+  );
 }
 
-function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions): SVGSVGElement | HTMLElement {
+function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions, selectedOperatingPointValue?: number): SVGSVGElement | HTMLElement {
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups, options);
   const { theme } = resolved;
@@ -31,6 +45,25 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
   }
   marks.push(
     Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, title: "title", tip: true }),
+  );
+  if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
+    const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
+    if (selectedPoints.length > 0) {
+      marks.push(
+        Plot.dot(selectedPoints, {
+          x: "threshold",
+          y: "interventionsAvoided",
+          fill: theme.marker.fill ?? "group",
+          stroke: theme.marker.stroke,
+          strokeWidth: theme.marker.strokeWidth,
+          r: theme.marker.radius,
+          title: "title",
+          tip: true,
+        }),
+      );
+    }
+  }
+  marks.push(
     Plot.frame({ stroke: theme.frame.color, strokeWidth: theme.frame.width }),
   );
   const axis = (label: string, domain: [number, number] | undefined) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });

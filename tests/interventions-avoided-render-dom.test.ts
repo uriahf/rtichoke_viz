@@ -230,4 +230,88 @@ describe("Interventions Avoided v2 browser rendering", () => {
     expect(new Set(horizon5.data.map((d) => d.seriesId))).toEqual(new Set(["series-1", "series-2"]));
     expect(new Set(horizon10.data.map((d) => d.seriesId))).toEqual(new Set(["series-3", "series-4"]));
   });
+
+  describe("operating point selection in Interventions Avoided", () => {
+    const iaOpSpec: InterventionsAvoidedV2Spec = {
+      schemaVersion: "2.0",
+      type: "interventions_avoided",
+      evaluations: [
+        { id: "evaluation-1", population: "Pop 1", model: "Model A" },
+        { id: "evaluation-2", population: "Pop 1", model: "Model B" },
+      ],
+      series: [
+        { id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } },
+        { id: "series-2", evaluationId: "evaluation-2", display: { label: "Model B", group: "Model B", role: "model" } },
+      ],
+      data: [
+        { seriesId: "series-1", threshold: 0.1, interventionsAvoided: 14 },
+        { seriesId: "series-1", threshold: 0.2, interventionsAvoided: 24 },
+        { seriesId: "series-1", threshold: 0.3, interventionsAvoided: 30 },
+        { seriesId: "series-2", threshold: 0.1, interventionsAvoided: 10 },
+        { seriesId: "series-2", threshold: 0.2, interventionsAvoided: 20 },
+        { seriesId: "series-2", threshold: 0.3, interventionsAvoided: 28 },
+      ],
+      x: "threshold",
+      y: "interventionsAvoided",
+      xAxis: { label: "Probability Threshold", domain: [0, 0.5] },
+      yAxis: { label: "Interventions Avoided (per 100)" },
+      references: [
+        { type: "horizontal", value: 0, label: "Treat All", scope: "global", benchmark: "treat_all" },
+        { type: "path", points: [{ x: 0.1, y: -100 }, { x: 0.3, y: 0 }], label: "Treat None", scope: "population", population: "Pop 1", benchmark: "treat_none" },
+      ],
+      operatingPoint: { dimension: "probability_threshold" },
+    };
+
+    it("renders threshold slider and aria-valuetext for Interventions Avoided", () => {
+      const el = renderInterventionsAvoidedV2(iaOpSpec);
+      const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
+      const valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
+
+      expect(slider).not.toBeNull();
+      expect(slider.getAttribute("aria-label")).toBe("Probability threshold");
+      expect(slider.getAttribute("aria-valuetext")).toBe("0.100");
+      expect(valueSpan.textContent).toBe("0.100");
+
+      // Verify persistent dot markers are present for matching active series
+      let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      expect(dots.length).toBe(2);
+
+      // Move slider to index 1 (threshold 0.2)
+      slider.value = "1";
+      slider.dispatchEvent(new Event("input"));
+      expect(slider.getAttribute("aria-valuetext")).toBe("0.200");
+      expect(valueSpan.textContent).toBe("0.200");
+      dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      expect(dots.length).toBe(2);
+    });
+
+    it("works with horizons in Interventions Avoided operating point selection", () => {
+      const iaTdOpSpec: InterventionsAvoidedV2Spec = {
+        ...tdSharedPopulation,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+
+      const el = renderInterventionsAvoidedV2(iaTdOpSpec);
+      const horizonSelect = el.querySelector<HTMLSelectElement>('select[aria-label="Fixed Time Horizon"]')!;
+      let slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
+      let valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
+
+      expect(horizonSelect).not.toBeNull();
+      expect(slider).not.toBeNull();
+      expect(valueSpan.textContent).toBe("0.100");
+
+      // Change operating point to 0.2 (index 1)
+      slider.value = "1";
+      slider.dispatchEvent(new Event("input"));
+      expect(valueSpan.textContent).toBe("0.200");
+
+      // Switch horizon to 10y (threshold 0.2 exists in 10y, so it is preserved)
+      horizonSelect.value = "10";
+      horizonSelect.dispatchEvent(new Event("change"));
+
+      slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
+      valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
+      expect(valueSpan.textContent).toBe("0.200");
+    });
+  });
 });

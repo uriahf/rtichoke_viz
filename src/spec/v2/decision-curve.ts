@@ -2,7 +2,7 @@ import { Type, type Static } from "@sinclair/typebox";
 import {
   BaseChartV2SpecSchema,
   EvaluationSpecSchema,
-  OperatingPointSpecSchema,
+  ThresholdOperatingPointSpecSchema,
   SeriesSpecSchema,
 } from "./common.js";
 
@@ -64,7 +64,7 @@ export const DecisionCurveV2ReferenceSchema = Type.Union([
 
 export const DecisionCurveV2SpecSchema = Type.Intersect([
   BaseChartV2SpecSchema,
-  OperatingPointSpecSchema,
+  ThresholdOperatingPointSpecSchema,
   Type.Object({
     type: Type.Literal("decision_curve"),
     evaluations: Type.Array(DecisionCurveV2EvaluationSchema, { minItems: 1 }),
