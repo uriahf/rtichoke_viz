@@ -24236,15 +24236,17 @@ var precision_recall_shared_population_default = {
 var reportHost = document.querySelector("#report-demo");
 var rocHost = document.querySelector("#roc-chart");
 var rocOpHost = document.querySelector("#roc-op-chart");
+var rocPpcrHost = document.querySelector("#roc-ppcr-chart");
 var calibrationHost = document.querySelector("#calibration-chart");
 var gainsHost = document.querySelector("#gains-chart");
 var gainsTimeHost = document.querySelector("#gains-time-chart");
 var liftHost = document.querySelector("#lift-chart");
 var liftTimeHost = document.querySelector("#lift-time-chart");
 var precisionRecallHost = document.querySelector("#precision-recall-chart");
+var prPpcrHost = document.querySelector("#pr-ppcr-chart");
 var dcOpHost = document.querySelector("#dc-op-chart");
 var iaOpHost = document.querySelector("#ia-op-chart");
-if (!reportHost || !rocHost || !rocOpHost || !calibrationHost || !precisionRecallHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost) {
+if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost) {
   throw new Error("Demo chart containers are missing");
 }
 var singleRocOpSpec = {
@@ -24280,6 +24282,14 @@ var multiRocOpSpec = {
   xAxis: { label: "1 - Specificity", domain: [0, 1] },
   yAxis: { label: "Sensitivity", domain: [0, 1] },
   references: [{ type: "identity", scope: "global", label: "Random Guess" }],
+  operatingPoint: { dimension: "probability_threshold" }
+};
+var rocPpcrOpSpec = {
+  ...multiRocOpSpec,
+  operatingPoint: { dimension: "ppcr" }
+};
+var prThreshOpSpec = {
+  ...precision_recall_shared_population_default,
   operatingPoint: { dimension: "probability_threshold" }
 };
 var prPpcrOpSpec = {
@@ -24339,8 +24349,10 @@ reportHost.append(
 );
 rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
+rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibration_default));
-precisionRecallHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
+precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
+prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(renderGainsV2(gains_shared_population_default));
 gainsTimeHost.append(
   renderGainsV2({
