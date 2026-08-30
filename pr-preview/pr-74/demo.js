@@ -23894,9 +23894,9 @@ var roc_default = {
     }
   ],
   data: [
-    { seriesId: "series-model-a", cutoff: 0.8, sensitivity: 0.45, specificity: 0.92 },
-    { seriesId: "series-model-a", cutoff: 0.5, sensitivity: 0.78, specificity: 0.74 },
-    { seriesId: "series-model-a", cutoff: 0.2, sensitivity: 0.95, specificity: 0.31 }
+    { seriesId: "series-model-a", cutoff: 0.8, sensitivity: 0.45, specificity: 0.92, ppcr: 0.15 },
+    { seriesId: "series-model-a", cutoff: 0.5, sensitivity: 0.78, specificity: 0.74, ppcr: 0.45 },
+    { seriesId: "series-model-a", cutoff: 0.2, sensitivity: 0.95, specificity: 0.31, ppcr: 0.82 }
   ],
   x: "false_positive_rate",
   y: "sensitivity",
@@ -24216,12 +24216,12 @@ var precision_recall_shared_population_default = {
     { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
   ],
   data: [
-    { seriesId: "series-a", cutoff: 0.9, sensitivity: 0.2, ppv: 0.9 },
-    { seriesId: "series-a", cutoff: 0.5, sensitivity: 0.8, ppv: 0.6 },
-    { seriesId: "series-a", cutoff: 0.1, sensitivity: 1, ppv: 0.3 },
-    { seriesId: "series-b", cutoff: 0.9, sensitivity: 0.15, ppv: 0.82 },
-    { seriesId: "series-b", cutoff: 0.5, sensitivity: 0.75, ppv: 0.58 },
-    { seriesId: "series-b", cutoff: 0.1, sensitivity: 1, ppv: 0.3 }
+    { seriesId: "series-a", cutoff: 0.9, sensitivity: 0.2, ppv: 0.9, ppcr: 0.1 },
+    { seriesId: "series-a", cutoff: 0.5, sensitivity: 0.8, ppv: 0.6, ppcr: 0.5 },
+    { seriesId: "series-a", cutoff: 0.1, sensitivity: 1, ppv: 0.3, ppcr: 0.9 },
+    { seriesId: "series-b", cutoff: 0.9, sensitivity: 0.15, ppv: 0.82, ppcr: 0.1 },
+    { seriesId: "series-b", cutoff: 0.5, sensitivity: 0.75, ppv: 0.58, ppcr: 0.5 },
+    { seriesId: "series-b", cutoff: 0.1, sensitivity: 1, ppv: 0.3, ppcr: 0.9 }
   ],
   x: "sensitivity",
   y: "ppv",
