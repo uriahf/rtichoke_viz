@@ -32,12 +32,14 @@ import rocFixture from "../fixtures/v2/roc.json" with { type: "json" };
 const reportHost = document.querySelector<HTMLElement>("#report-demo");
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
 const rocOpHost = document.querySelector<HTMLElement>("#roc-op-chart");
+const rocPpcrHost = document.querySelector<HTMLElement>("#roc-ppcr-chart");
 const calibrationHost = document.querySelector<HTMLElement>("#calibration-chart");
 const gainsHost = document.querySelector<HTMLElement>("#gains-chart");
 const gainsTimeHost = document.querySelector<HTMLElement>("#gains-time-chart");
 const liftHost = document.querySelector<HTMLElement>("#lift-chart");
 const liftTimeHost = document.querySelector<HTMLElement>("#lift-time-chart");
 const precisionRecallHost = document.querySelector<HTMLElement>("#precision-recall-chart");
+const prPpcrHost = document.querySelector<HTMLElement>("#pr-ppcr-chart");
 const dcOpHost = document.querySelector<HTMLElement>("#dc-op-chart");
 const iaOpHost = document.querySelector<HTMLElement>("#ia-op-chart");
 
@@ -45,8 +47,10 @@ if (
   !reportHost ||
   !rocHost ||
   !rocOpHost ||
+  !rocPpcrHost ||
   !calibrationHost ||
   !precisionRecallHost ||
+  !prPpcrHost ||
   !gainsHost ||
   !gainsTimeHost ||
   !liftHost ||
@@ -91,6 +95,16 @@ const multiRocOpSpec: RocV2Spec = {
   xAxis: { label: "1 - Specificity", domain: [0, 1] },
   yAxis: { label: "Sensitivity", domain: [0, 1] },
   references: [{ type: "identity", scope: "global", label: "Random Guess" }],
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
+const rocPpcrOpSpec: RocV2Spec = {
+  ...multiRocOpSpec,
+  operatingPoint: { dimension: "ppcr" },
+};
+
+const prThreshOpSpec: PrecisionRecallV2Spec = {
+  ...(precisionRecallFixture as PrecisionRecallV2Spec),
   operatingPoint: { dimension: "probability_threshold" },
 };
 
@@ -155,8 +169,10 @@ reportHost.append(
 );
 rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
+rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibrationFixture as CalibrationV2Spec));
-precisionRecallHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
+precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
+prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(renderGainsV2(gainsFixture as GainsV2Spec));
 gainsTimeHost.append(
   renderGainsV2({
