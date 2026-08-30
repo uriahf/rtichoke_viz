@@ -21,9 +21,9 @@
     }
   ],
   "data": [
-    {"seriesId":"series-model-a","cutoff":0.8,"sensitivity":0.45,"specificity":0.92},
-    {"seriesId":"series-model-a","cutoff":0.5,"sensitivity":0.78,"specificity":0.74},
-    {"seriesId":"series-model-a","cutoff":0.2,"sensitivity":0.95,"specificity":0.31}
+    {"seriesId":"series-model-a","cutoff":0.8,"sensitivity":0.45,"specificity":0.92,"ppcr":0.15},
+    {"seriesId":"series-model-a","cutoff":0.5,"sensitivity":0.78,"specificity":0.74,"ppcr":0.45},
+    {"seriesId":"series-model-a","cutoff":0.2,"sensitivity":0.95,"specificity":0.31,"ppcr":0.82}
   ],
   "x": "false_positive_rate",
   "y": "sensitivity",
