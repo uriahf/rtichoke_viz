@@ -7,6 +7,67 @@
   display: block;
 }
 
+.rtichoke-operating-point-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rtichoke-operating-point-content {
+  overflow-x: auto;
+}
+
+.rtichoke-operating-point-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-sizing: border-box;
+}
+
+.rtichoke-operating-point-label {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.rtichoke-operating-point-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.rtichoke-operating-point-slider {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.rtichoke-horizon-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rtichoke-horizon-control {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.rtichoke-horizon-select {
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #111827;
+  margin-left: 0.5rem;
+}
+
 .rtichoke-report {
   display: flex;
   flex-direction: column;

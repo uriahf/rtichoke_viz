@@ -268,30 +268,39 @@ export function renderWithOperatingPointSelection<
 
   const container = document.createElement("div");
   container.className = "rtichoke-operating-point-chart";
+  container.style.maxWidth = `${theme.width}px`;
 
   const control = document.createElement("div");
   control.className = "rtichoke-operating-point-control";
+  control.style.marginLeft = `${theme.margins.left}px`;
+  control.style.marginRight = `${theme.margins.right}px`;
 
-  const labelText =
+  const ariaLabelText =
     spec.operatingPoint.dimension === "probability_threshold"
       ? "Probability threshold"
       : "Predicted positives condition rate (PPCR)";
+
+  const visibleLabelText =
+    spec.operatingPoint.dimension === "probability_threshold"
+      ? "Probability threshold"
+      : "PPCR";
 
   const label = document.createElement("label");
   label.className = "rtichoke-operating-point-label";
 
   const labelSpan = document.createElement("span");
-  labelSpan.textContent = `${labelText}: `;
+  labelSpan.textContent = `${visibleLabelText}: `;
 
   const valueSpan = document.createElement("span");
   valueSpan.className = "rtichoke-operating-point-value";
 
   const slider = document.createElement("input");
   slider.type = "range";
+  slider.className = "rtichoke-operating-point-slider";
   slider.min = "0";
   slider.max = String(values.length - 1);
   slider.step = "1";
-  slider.setAttribute("aria-label", labelText);
+  slider.setAttribute("aria-label", ariaLabelText);
 
   let selectedIndex = 0;
   if (preferredValue !== undefined) {
@@ -332,7 +341,7 @@ export function renderWithOperatingPointSelection<
     draw(val);
   });
 
-  container.append(control, chart);
+  container.append(chart, control);
   draw(selectedValue);
   return container;
 }
@@ -463,6 +472,31 @@ function finishMarks(marks: Plot.Markish[], theme: V2RendererTheme) {
   return marks;
 }
 
+export function operatingPointDotMark(
+  data: any[],
+  x: string,
+  y: string,
+  resolved: ResolvedV2RenderOptions,
+  customTheme?: V2ThemeOptions,
+): Plot.Markish {
+  const isMultiSeries = resolved.groups.length > 1;
+  const fill = customTheme?.marker?.fill ?? (isMultiSeries ? "group" : "#f6e3be");
+  const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
+  const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
+  const r = customTheme?.marker?.radius ?? 7.5;
+
+  return Plot.dot(data, {
+    x,
+    y,
+    fill,
+    stroke,
+    strokeWidth,
+    r,
+    title: "title",
+    tip: true,
+  });
+}
+
 function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   const plot = Plot.plot(options);
   for (const label of plot.querySelectorAll<SVGTextElement>(
@@ -523,16 +557,7 @@ function renderRocChart(
     const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        Plot.dot(selectedPoints, {
-          x: "false_positive_rate",
-          y: "sensitivity",
-          fill: theme.marker.fill ?? "group",
-          stroke: theme.marker.stroke,
-          strokeWidth: theme.marker.strokeWidth,
-          r: theme.marker.radius,
-          title: "title",
-          tip: true,
-        }),
+        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme),
       );
     }
   }
@@ -741,16 +766,7 @@ function renderLineChart(
     const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        Plot.dot(selectedPoints, {
-          x,
-          y,
-          fill: theme.marker.fill ?? "group",
-          stroke: theme.marker.stroke,
-          strokeWidth: theme.marker.strokeWidth,
-          r: theme.marker.radius,
-          title: "title",
-          tip: true,
-        }),
+        operatingPointDotMark(selectedPoints, x, y, resolved, options.theme),
       );
     }
   }
@@ -815,8 +831,10 @@ export function renderWithHorizonSelection<T extends HorizonSpec>(
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
   const control = document.createElement("label");
+  control.className = "rtichoke-horizon-control";
   control.textContent = "Fixed Time Horizon: ";
   const select = document.createElement("select");
+  select.className = "rtichoke-horizon-select";
   select.setAttribute("aria-label", "Fixed Time Horizon");
   for (const horizon of availableHorizons) {
     const option = document.createElement("option");

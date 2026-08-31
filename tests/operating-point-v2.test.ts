@@ -6,10 +6,14 @@ import {
   extractOperatingPointValues,
   renderDecisionCurveV2,
   renderGainsV2,
+  renderInterventionsAvoidedV2,
   renderLiftV2,
   renderPrecisionRecallV2,
+  renderReport,
   renderRocV2,
 } from "../src/index.js";
+import type { InterventionsAvoidedV2Spec } from "../src/spec/v2/interventions-avoided.js";
+import type { ReportSpecV1_1 } from "../src/spec/report.js";
 import { DecisionCurveV2SpecSchema, type DecisionCurveV2Spec } from "../src/spec/v2/decision-curve.js";
 import { GainsV2SpecSchema, type GainsV2Spec } from "../src/spec/v2/gains.js";
 import { LiftV2SpecSchema, type LiftV2Spec } from "../src/spec/v2/lift.js";
@@ -151,6 +155,167 @@ describe("Operating Point Selection for Performance Curves", () => {
       expect(Value.Check(DecisionCurveV2SpecSchema, baseDC)).toBe(true);
       const el = renderDecisionCurveV2(baseDC);
       expect(el.querySelector('input[type="range"]')).toBeNull();
+    });
+  });
+
+  describe("6. Stylings & ReportSpec integration", () => {
+    it("renders operating point control below plot and sets margin alignment", () => {
+      const spec: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(spec) as HTMLElement;
+      expect(el.children[0].className).toBe("rtichoke-operating-point-content");
+      expect(el.children[1].className).toBe("rtichoke-operating-point-control");
+
+      const control = el.querySelector<HTMLElement>(".rtichoke-operating-point-control")!;
+      expect(control.style.marginLeft).toBe("66px");
+      expect(control.style.marginRight).toBe("28px");
+    });
+
+    it("single-series selected marker uses #f6e3be fill and dark stroke #1a1a1a", () => {
+      const spec: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(spec);
+      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      expect(dotMarkGroup).not.toBeNull();
+      const circleOrPath = dotMarkGroup!.querySelector('circle, path');
+      expect(circleOrPath).not.toBeNull();
+      // Single-series color resolved is #000000 by default in basePlotOptions/Plot, or dot uses custom fill
+      // In Plot, fill can be direct on circle or on parent mark container g
+      const fill = circleOrPath!.getAttribute("fill") || dotMarkGroup!.getAttribute("fill");
+      expect(fill).toBe("#f6e3be");
+      const stroke = circleOrPath!.getAttribute("stroke") || dotMarkGroup!.getAttribute("stroke");
+      expect(stroke).toBe("#1a1a1a");
+      const strokeWidth = circleOrPath!.getAttribute("stroke-width") || dotMarkGroup!.getAttribute("stroke-width");
+      expect(strokeWidth).toBe("2.5");
+    });
+
+    it("multi-series selected marker uses series/group fill and dark stroke #1a1a1a", () => {
+      const multiRoc: RocV2Spec = {
+        ...baseRoc,
+        evaluations: [
+          { id: "eval-1", model: "Model A", population: "Pop 1", label: "Model A" },
+          { id: "eval-2", model: "Model B", population: "Pop 1", label: "Model B" },
+        ],
+        series: [
+          { id: "series-1", evaluationId: "eval-1", display: { label: "Model A", group: "Model A", role: "model" } },
+          { id: "series-2", evaluationId: "eval-2", display: { label: "Model B", group: "Model B", role: "model" } },
+        ],
+        data: [
+          { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.7, specificity: 0.7 },
+          { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.6, specificity: 0.8 },
+        ],
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(multiRoc);
+      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      expect(dotMarkGroup).not.toBeNull();
+      const circles = dotMarkGroup!.querySelectorAll('circle, path');
+      expect(circles.length).toBeGreaterThanOrEqual(2);
+      expect(circles[0].getAttribute("stroke") || dotMarkGroup!.getAttribute("stroke")).toBe("#1a1a1a");
+    });
+
+    it("Interventions Avoided receives operating point visual convention", () => {
+      const iaSpec: InterventionsAvoidedV2Spec = {
+        schemaVersion: "2.0",
+        type: "interventions_avoided",
+        evaluations: [{ id: "evaluation-1", model: "Model A", population: "Pop 1", label: "Model A" }],
+        series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }],
+        data: [
+          { seriesId: "series-1", threshold: 0.1, interventionsAvoided: 5 },
+          { seriesId: "series-1", threshold: 0.5, interventionsAvoided: 15 },
+        ],
+        x: "threshold",
+        y: "interventionsAvoided",
+        xAxis: { label: "Threshold", domain: [0, 1] },
+        yAxis: { label: "Interventions Avoided", domain: [0, 20] },
+        references: [
+          { type: "horizontal", value: 0, scope: "global", benchmark: "treat_all", label: "Treat All" },
+          { type: "path", points: [{ x: 0, y: 0 }, { x: 1, y: 1 }], scope: "population", population: "Pop 1", benchmark: "treat_none", label: "Treat None — Pop 1" },
+        ],
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderInterventionsAvoidedV2(iaSpec);
+      const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
+      expect(slider).not.toBeNull();
+      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      expect(dotMarkGroup).not.toBeNull();
+      const circleOrPath = dotMarkGroup!.querySelector('circle, path');
+      expect(circleOrPath!.getAttribute("fill") || dotMarkGroup!.getAttribute("fill")).toBe("#f6e3be");
+    });
+
+    it("embeds operating point controls correctly in ReportSpec tab panels and survives tab switching", () => {
+      const rocWithOp: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const reportSpec: ReportSpecV1_1 = {
+        schemaVersion: "1.1",
+        type: "report",
+        title: "Test Report",
+        sections: [
+          {
+            id: "sec-1",
+            title: "Performance Section",
+            items: [
+              {
+                type: "group",
+                id: "grp-1",
+                title: "Group 1",
+                components: [
+                  {
+                    type: "component",
+                    id: "comp-roc-1",
+                    title: "ROC 1",
+                    spec: rocWithOp,
+                  },
+                  {
+                    type: "component",
+                    id: "comp-roc-2",
+                    title: "ROC 2",
+                    spec: rocWithOp,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const reportEl = renderReport(reportSpec, { groupPresentation: "tabs" });
+      const tabs = reportEl.querySelectorAll<HTMLButtonElement>('button[role="tab"]');
+      const tabpanels = reportEl.querySelectorAll<HTMLElement>('[role="tabpanel"]');
+      expect(tabs).toHaveLength(2);
+
+      // Initially panel 2 is hidden
+      expect(tabpanels[0].hidden).toBe(false);
+      expect(tabpanels[1].hidden).toBe(true);
+
+      // Panel 2 has the slider rendered correctly inside its content
+      const slider2 = tabpanels[1].querySelector<HTMLInputElement>('input[type="range"]')!;
+      expect(slider2).not.toBeNull();
+      expect(slider2.value).toBe("0");
+
+      // Switch to tab 2
+      tabs[1].click();
+      expect(tabpanels[0].hidden).toBe(true);
+      expect(tabpanels[1].hidden).toBe(false);
+
+      // Change slider value on tab 2
+      slider2.value = "1";
+      slider2.dispatchEvent(new Event("input"));
+      const valueSpan2 = tabpanels[1].querySelector(".rtichoke-operating-point-value")!;
+      expect(valueSpan2.textContent).toBe("0.500");
+
+      // Switch back to tab 1 and return to tab 2
+      tabs[0].click();
+      expect(tabpanels[1].hidden).toBe(true);
+      tabs[1].click();
+      expect(tabpanels[1].hidden).toBe(false);
+      expect(valueSpan2.textContent).toBe("0.500");
     });
   });
 

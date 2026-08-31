@@ -2,6 +2,7 @@ import * as Plot from "@observablehq/plot";
 import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoided.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import {
+  operatingPointDotMark,
   renderWithHorizonSelection,
   renderWithOperatingPointSelection,
   resolveV2RenderOptions,
@@ -50,16 +51,7 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
     const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        Plot.dot(selectedPoints, {
-          x: "threshold",
-          y: "interventionsAvoided",
-          fill: theme.marker.fill ?? "group",
-          stroke: theme.marker.stroke,
-          strokeWidth: theme.marker.strokeWidth,
-          r: theme.marker.radius,
-          title: "title",
-          tip: true,
-        }),
+        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme),
       );
     }
   }
