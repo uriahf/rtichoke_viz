@@ -19094,6 +19094,7 @@ function renderWithLegendFiltering(spec, options, render) {
   container.style.maxWidth = `${theme.width}px`;
   const legendNav = document.createElement("div");
   legendNav.className = "rtichoke-legend";
+  legendNav.style.paddingLeft = `${theme.margins.left}px`;
   legendNav.setAttribute("aria-label", "Chart legend");
   const buttonsByGroup = /* @__PURE__ */ new Map();
   allGroups.forEach((group2) => {
@@ -19105,7 +19106,10 @@ function renderWithLegendFiltering(spec, options, render) {
     btn.setAttribute("aria-label", `Toggle series ${groupLabel}`);
     const swatch = document.createElement("span");
     swatch.className = "rtichoke-legend-swatch";
-    swatch.style.backgroundColor = colorByGroup.get(group2) ?? "#000000";
+    const lineSpan = document.createElement("span");
+    lineSpan.className = "rtichoke-legend-line";
+    lineSpan.style.backgroundColor = colorByGroup.get(group2) ?? "#000000";
+    swatch.append(lineSpan);
     const labelSpan = document.createElement("span");
     labelSpan.className = "rtichoke-legend-label";
     labelSpan.textContent = groupLabel;
