@@ -3,6 +3,7 @@ import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import {
   operatingPointDotMark,
+  ordinaryPointDotMark,
   renderWithHorizonSelection,
   renderWithOperatingPointSelection,
   resolveV2RenderOptions,
@@ -46,6 +47,7 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   }
   marks.push(
     Plot.line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, title: "title", tip: true }),
+    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
@@ -55,9 +57,6 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
       );
     }
   }
-  marks.push(
-    Plot.frame({ stroke: theme.frame.color, strokeWidth: theme.frame.width }),
-  );
   const axis = (label: string, domain: [number, number] | undefined) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });
   const plot = Plot.plot({
     width: theme.width, height: theme.height,

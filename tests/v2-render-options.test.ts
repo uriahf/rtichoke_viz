@@ -4,7 +4,7 @@ import { resolveV2RenderOptions } from "../src/render/v2.js";
 describe("v2 renderer options", () => {
   it("uses stable default dimensions and colors", () => {
     expect(resolveV2RenderOptions(["model-a", "model-b"])).toMatchObject({
-      theme: { width: 600, height: 600 },
+      theme: { width: 600, height: 500 },
       groups: ["model-a", "model-b"],
       colors: ["#1b9e77", "#d95f02"],
       showLegend: true,
