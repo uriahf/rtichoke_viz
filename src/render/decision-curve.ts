@@ -5,7 +5,7 @@ import {
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
-  renderWithOperatingPointSelection,
+  renderWithLegendFiltering,
   resolveV2RenderOptions,
   themedPlot,
   tooltip,
@@ -16,7 +16,7 @@ import {
 export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithOperatingPointSelection(
+    renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
       (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, options, activeOpVal),

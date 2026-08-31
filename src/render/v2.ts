@@ -72,6 +72,8 @@ export interface V2RenderOptions {
   height?: number;
   colors?: readonly string[];
   theme?: V2ThemeOptions;
+  allGroups?: readonly string[];
+  showLegend?: boolean;
 }
 
 export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
@@ -135,12 +137,13 @@ export function resolveV2RenderOptions(
   options: V2RenderOptions = {},
 ): ResolvedV2RenderOptions {
   const groups =
-    typeof groupsOrCount === "number"
+    options.allGroups ??
+    (typeof groupsOrCount === "number"
       ? Array.from(
           { length: groupsOrCount },
           (_, index) => `group-${index + 1}`,
         )
-      : [...groupsOrCount];
+      : [...groupsOrCount]);
   const theme = mergeTheme(options);
   if (
     !Number.isFinite(theme.width) ||
@@ -163,6 +166,7 @@ export function resolveV2RenderOptions(
       "Renderer colors must contain at least one color per display group",
     );
   const assigned = colors.slice(0, Math.max(groups.length, 1));
+  const showLegend = options.showLegend ?? groups.length > 1;
   return {
     theme: { ...theme, colors: assigned },
     groups,
@@ -170,7 +174,7 @@ export function resolveV2RenderOptions(
     colorByGroup: new Map(
       groups.map((group, index) => [group, assigned[index]]),
     ),
-    showLegend: groups.length > 1,
+    showLegend,
   };
 }
 
@@ -246,6 +250,162 @@ export function extractOperatingPointValues(
   }
 }
 
+export function selectClosestOperatingPointValue(
+  values: number[],
+  preferredValue?: number,
+): number | undefined {
+  if (values.length === 0) return undefined;
+  if (preferredValue === undefined) return values[0];
+  if (values.includes(preferredValue)) return preferredValue;
+
+  let bestVal = values[0];
+  let minDiff = Math.abs(values[0] - preferredValue);
+
+  for (let i = 1; i < values.length; i++) {
+    const val = values[i];
+    const diff = Math.abs(val - preferredValue);
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestVal = val;
+    } else if (diff === minDiff) {
+      if (val < bestVal) {
+        bestVal = val;
+      }
+    }
+  }
+
+  return bestVal;
+}
+
+export function filterSpecByGroups<T extends OperatingPointSupportedSpec>(
+  spec: T,
+  activeGroups: Set<string>,
+): T {
+  const visibleSeries = spec.series.filter((s) => activeGroups.has(s.display.group));
+  const visibleSeriesIds = new Set(visibleSeries.map((s) => s.id));
+  return {
+    ...spec,
+    series: visibleSeries,
+    data: spec.data.filter((d) => visibleSeriesIds.has(d.seriesId)),
+  } as T;
+}
+
+export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>(
+  spec: T,
+  options: V2RenderOptions,
+  render: (
+    filteredSpec: T,
+    selectedValue?: number,
+  ) => SVGSVGElement | HTMLElement,
+  preferredValue?: number,
+  onValueChange?: (val: number) => void,
+): SVGSVGElement | HTMLElement {
+  const allGroups = displayGroups(spec as any);
+
+  // If single-series or no groups, delegate directly to operating-point selection without legend UI
+  if (allGroups.length <= 1) {
+    return renderWithOperatingPointSelection(spec, options, render, preferredValue, onValueChange);
+  }
+
+  // Multi-series: build custom HTML legend
+  const resolved = resolveV2RenderOptions(allGroups, { ...options, showLegend: false });
+  const { theme, colorByGroup } = resolved;
+  const labelByGroup = new Map(spec.series.map((s) => [s.display.group, s.display.label]));
+
+  // Track active visible groups
+  const activeGroups = new Set(allGroups);
+
+  const container = document.createElement("div");
+  container.className = "rtichoke-legend-chart";
+  container.style.maxWidth = `${theme.width}px`;
+
+  const legendNav = document.createElement("div");
+  legendNav.className = "rtichoke-legend";
+  legendNav.setAttribute("aria-label", "Chart legend");
+
+  const buttonsByGroup = new Map<string, HTMLButtonElement>();
+
+  allGroups.forEach((group) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "rtichoke-legend-item";
+    btn.setAttribute("aria-pressed", "true");
+    const groupLabel = labelByGroup.get(group) ?? group;
+    btn.setAttribute("aria-label", `Toggle series ${groupLabel}`);
+
+    const swatch = document.createElement("span");
+    swatch.className = "rtichoke-legend-swatch";
+    swatch.style.backgroundColor = colorByGroup.get(group) ?? "#000000";
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "rtichoke-legend-label";
+    labelSpan.textContent = groupLabel;
+
+    btn.append(swatch, labelSpan);
+    legendNav.append(btn);
+    buttonsByGroup.set(group, btn);
+  });
+
+  const contentArea = document.createElement("div");
+  contentArea.className = "rtichoke-legend-content";
+
+  let activePreferredVal = preferredValue;
+
+  const updateChart = () => {
+    const filteredSpec = filterSpecByGroups(spec, activeGroups);
+    const childOptions: V2RenderOptions = {
+      ...options,
+      allGroups,
+      showLegend: false,
+    };
+    const chartContent = renderWithOperatingPointSelection(
+      filteredSpec,
+      childOptions,
+      (fSpec, activeOpVal) => render(fSpec, activeOpVal),
+      activePreferredVal,
+      (val) => {
+        activePreferredVal = val;
+        if (onValueChange) {
+          onValueChange(val);
+        }
+      },
+    );
+    contentArea.replaceChildren(chartContent);
+  };
+
+  allGroups.forEach((group) => {
+    const btn = buttonsByGroup.get(group)!;
+    btn.addEventListener("click", () => {
+      const isCurrentlyActive = activeGroups.has(group);
+      if (isCurrentlyActive) {
+        // Zero-visible-series rule: prevent hiding the final visible series
+        if (activeGroups.size <= 1) {
+          return;
+        }
+        activeGroups.delete(group);
+        btn.setAttribute("aria-pressed", "false");
+      } else {
+        activeGroups.add(group);
+        btn.setAttribute("aria-pressed", "true");
+      }
+
+      // Recalculate operating point domain on visibility change & pick fallback if needed
+      if (spec.operatingPoint) {
+        const filteredSpec = filterSpecByGroups(spec, activeGroups);
+        const newDomain = extractOperatingPointValues(filteredSpec);
+        const fallback = selectClosestOperatingPointValue(newDomain, activePreferredVal);
+        activePreferredVal = fallback;
+      }
+
+      updateChart();
+    });
+  });
+
+  container.append(legendNav, contentArea);
+  updateChart();
+  return container;
+}
+
 export function renderWithOperatingPointSelection<
   T extends OperatingPointSupportedSpec,
 >(
@@ -302,16 +462,10 @@ export function renderWithOperatingPointSelection<
   slider.step = "1";
   slider.setAttribute("aria-label", ariaLabelText);
 
-  let selectedIndex = 0;
-  if (preferredValue !== undefined) {
-    const matchIdx = values.indexOf(preferredValue);
-    if (matchIdx !== -1) {
-      selectedIndex = matchIdx;
-    }
-  }
+  const selectedValue = selectClosestOperatingPointValue(values, preferredValue) ?? values[0];
+  const selectedIndex = values.indexOf(selectedValue);
 
-  const selectedValue = values[selectedIndex];
-  slider.value = String(selectedIndex);
+  slider.value = String(selectedIndex !== -1 ? selectedIndex : 0);
   const formattedVal = selectedValue.toFixed(theme.tip.digits);
   valueSpan.textContent = formattedVal;
   slider.setAttribute("aria-valuetext", formattedVal);
@@ -658,10 +812,8 @@ export function renderRocV2(
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
   return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithOperatingPointSelection(
-      selected,
-      options,
-      (specWithOp, activeOpVal) => renderRocChart(specWithOp, options, activeOpVal),
+    renderWithLegendFiltering(selected, options, (filteredSpec, activeOpVal) =>
+      renderRocChart(filteredSpec, options, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),
@@ -980,11 +1132,11 @@ function renderHorizonLineChart(
   y: "ppv" | "sensitivity" | "lift",
 ) {
   return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithOperatingPointSelection(
+    renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
-      (specWithOp, activeOpVal) =>
-        renderLineChart(specWithOp as any, options, x, y, activeOpVal),
+      (filteredSpec, activeOpVal) =>
+        renderLineChart(filteredSpec as any, options, x, y, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),

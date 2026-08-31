@@ -5,7 +5,7 @@ import {
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
-  renderWithOperatingPointSelection,
+  renderWithLegendFiltering,
   resolveV2RenderOptions,
   themedPlot,
   tooltip,
@@ -16,7 +16,7 @@ import {
 export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithOperatingPointSelection(
+    renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
       (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, options, activeOpVal),
