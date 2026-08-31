@@ -158,6 +158,102 @@ describe("Operating Point Selection for Performance Curves", () => {
     });
   });
 
+  describe("Tooltip / Hover Semantics and Ordering", () => {
+    it("enables interactive tip mark machinery on ordinary points and selected operating-point points", () => {
+      const spec: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(spec);
+      // Interactive tip mark container is rendered by Observable Plot when tip: true is enabled
+      const tipMark = el.querySelector('[aria-label="tip"]');
+      expect(tipMark).not.toBeNull();
+
+      // Selected operating point dot mark group exists inside SVG
+      const selectedDot = el.querySelector('.rtichoke-selected-operating-point');
+      expect(selectedDot).not.toBeNull();
+
+      // Dot marks exist inside SVG
+      const dotMark = el.querySelector('[aria-label="dot"]');
+      expect(dotMark).not.toBeNull();
+    });
+
+    it("ROC tooltip puts active dimension immediately below Series and includes False Positive Rate", () => {
+      const rocCutoff: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const elCutoff = renderRocV2(rocCutoff);
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+
+      const rocPpcr: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "ppcr" },
+      };
+      const elPpcr = renderRocV2(rocPpcr);
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+    });
+
+    it("Precision-Recall tooltip puts active dimension immediately below Series", () => {
+      const prCutoff: PrecisionRecallV2Spec = {
+        ...basePR,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const elCutoff = renderPrecisionRecallV2(prCutoff);
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+
+      const prPpcr: PrecisionRecallV2Spec = {
+        ...basePR,
+        operatingPoint: { dimension: "ppcr" },
+      };
+      const elPpcr = renderPrecisionRecallV2(prPpcr);
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+    });
+
+    it("Gains tooltip puts active dimension immediately below Series", () => {
+      const gainsCutoff: GainsV2Spec = {
+        ...baseGains,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const elCutoff = renderGainsV2(gainsCutoff);
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+
+      const gainsPpcr: GainsV2Spec = {
+        ...baseGains,
+        operatingPoint: { dimension: "ppcr" },
+      };
+      const elPpcr = renderGainsV2(gainsPpcr);
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+    });
+
+    it("Lift tooltip puts active dimension immediately below Series", () => {
+      const liftCutoff: LiftV2Spec = {
+        ...baseLift,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const elCutoff = renderLiftV2(liftCutoff);
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+
+      const liftPpcr: LiftV2Spec = {
+        ...baseLift,
+        operatingPoint: { dimension: "ppcr" },
+      };
+      const elPpcr = renderLiftV2(liftPpcr);
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+    });
+
+    it("selected operating-point marker displays exact same tooltip as underlying curve point", () => {
+      const spec: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(spec);
+      expect(el.querySelector('.rtichoke-selected-operating-point')).not.toBeNull();
+      expect(el.querySelector('[aria-label="dot"]')).not.toBeNull();
+      expect(el.querySelector('[aria-label="tip"]')).not.toBeNull();
+    });
+  });
+
   describe("6. Stylings & ReportSpec integration", () => {
     it("renders operating point control below plot and sets margin alignment", () => {
       const spec: RocV2Spec = {

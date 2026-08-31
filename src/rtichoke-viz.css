@@ -7,6 +7,33 @@
   display: block;
 }
 
+/* Compact multi-series legend styling */
+div[class*="-swatches"] {
+  font-family: inherit;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  min-height: auto !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+span[class*="-swatch"] {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0 !important;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+span[class*="-swatch"] svg {
+  margin-right: 0 !important;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
 .rtichoke-operating-point-chart {
   display: flex;
   flex-direction: column;

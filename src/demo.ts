@@ -173,14 +173,24 @@ rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibrationFixture as CalibrationV2Spec));
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
-gainsHost.append(renderGainsV2(gainsFixture as GainsV2Spec));
+gainsHost.append(
+  renderGainsV2({
+    ...(gainsFixture as GainsV2Spec),
+    operatingPoint: { dimension: "ppcr" },
+  }),
+);
 gainsTimeHost.append(
   renderGainsV2({
     ...(gainsTimeFixture as GainsV2Spec),
     operatingPoint: { dimension: "probability_threshold" },
   }),
 );
-liftHost.append(renderLiftV2(liftFixture as LiftV2Spec));
+liftHost.append(
+  renderLiftV2({
+    ...(liftFixture as LiftV2Spec),
+    operatingPoint: { dimension: "ppcr" },
+  }),
+);
 liftTimeHost.append(renderLiftV2(liftTimeFixture as LiftV2Spec));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));

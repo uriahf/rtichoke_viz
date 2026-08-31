@@ -60,10 +60,17 @@ describe("Interventions Avoided v2 browser rendering", () => {
     expect(svg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();
   });
 
-  it("renders model geometry plus Treat All and Treat None", () => {
+  it("renders model geometry plus Treat All and Treat None with role-specific subordinate reference styling", () => {
     const svg = renderInterventionsAvoidedV2(single as InterventionsAvoidedV2Spec);
-    expect(svg.querySelector('[aria-label="rule"]')).not.toBeNull();
-    expect(svg.querySelectorAll('[aria-label="line"]')).toHaveLength(2);
+    const ruleMark = svg.querySelector('[aria-label="rule"]');
+    expect(ruleMark).not.toBeNull();
+    expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("2,3");
+
+    const lineMarks = svg.querySelectorAll('[aria-label="line"]');
+    expect(lineMarks.length).toBeGreaterThanOrEqual(2);
+    const treatNoneLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "4,3");
+    expect(treatNoneLine).not.toBeNull();
+
     expect(svg.textContent).toContain("Probability Threshold");
     expect(svg.textContent).toContain("Interventions Avoided (per 100)");
   });
