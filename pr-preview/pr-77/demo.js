@@ -19006,10 +19006,10 @@ function mergeTheme(options) {
   };
 }
 function resolveV2RenderOptions(groupsOrCount, options = {}) {
-  const groups2 = typeof groupsOrCount === "number" ? Array.from(
+  const allGroups = options.allGroups ?? (typeof groupsOrCount === "number" ? Array.from(
     { length: groupsOrCount },
     (_, index2) => `group-${index2 + 1}`
-  ) : [...groupsOrCount];
+  ) : [...groupsOrCount]);
   const theme = mergeTheme(options);
   if (!Number.isFinite(theme.width) || theme.width <= 0 || !Number.isFinite(theme.height) || theme.height <= 0)
     throw new Error(
@@ -19017,20 +19017,21 @@ function resolveV2RenderOptions(groupsOrCount, options = {}) {
     );
   if (!Number.isInteger(theme.tip.digits) || theme.tip.digits < 0 || theme.tip.digits > 20)
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-  const colors = groups2.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < groups2.length)
+  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < allGroups.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group"
     );
-  const assigned = colors.slice(0, Math.max(groups2.length, 1));
+  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
+  const showLegend = options.showLegend ?? allGroups.length > 1;
   return {
     theme: { ...theme, colors: assigned },
-    groups: groups2,
+    groups: allGroups,
     colors: assigned,
     colorByGroup: new Map(
-      groups2.map((group2, index2) => [group2, assigned[index2]])
+      allGroups.map((group2, index2) => [group2, assigned[index2]])
     ),
-    showLegend: groups2.length > 1
+    showLegend
   };
 }
 function extractOperatingPointValues(spec) {
@@ -19769,7 +19770,7 @@ function renderDecisionCurveV2(spec, options = {}) {
 }
 function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
-  const resolved = resolveV2RenderOptions(groups2, options);
+  const resolved = resolveV2RenderOptions(groups2, { ...options, showLegend: false });
   const { theme } = resolved;
   const displayBySeries2 = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
@@ -19841,7 +19842,7 @@ function renderInterventionsAvoidedV2(spec, options = {}) {
 }
 function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointValue) {
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
-  const resolved = resolveV2RenderOptions(groups2, options);
+  const resolved = resolveV2RenderOptions(groups2, { ...options, showLegend: false });
   const { theme } = resolved;
   const displayBySeries2 = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
