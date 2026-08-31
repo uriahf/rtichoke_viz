@@ -19006,11 +19006,7 @@ function mergeTheme(options) {
   };
 }
 function resolveV2RenderOptions(groupsOrCount, options = {}) {
-  const allGroups = options.allGroups ?? (typeof groupsOrCount === "number" ? Array.from(
-    { length: groupsOrCount },
-    (_, index2) => `group-${index2 + 1}`
-  ) : [...groupsOrCount]);
-  const activeGroups = typeof groupsOrCount === "number" ? Array.from(
+  const groups2 = typeof groupsOrCount === "number" ? Array.from(
     { length: groupsOrCount },
     (_, index2) => `group-${index2 + 1}`
   ) : [...groupsOrCount];
@@ -19021,22 +19017,20 @@ function resolveV2RenderOptions(groupsOrCount, options = {}) {
     );
   if (!Number.isInteger(theme.tip.digits) || theme.tip.digits < 0 || theme.tip.digits > 20)
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < allGroups.length)
+  const colors = groups2.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < groups2.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group"
     );
-  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
-  const showLegend = options.showLegend ?? allGroups.length > 1;
+  const assigned = colors.slice(0, Math.max(groups2.length, 1));
   return {
     theme: { ...theme, colors: assigned },
-    groups: allGroups,
-    activeGroups,
+    groups: groups2,
     colors: assigned,
     colorByGroup: new Map(
-      allGroups.map((group2, index2) => [group2, assigned[index2]])
+      groups2.map((group2, index2) => [group2, assigned[index2]])
     ),
-    showLegend
+    showLegend: groups2.length > 1
   };
 }
 function extractOperatingPointValues(spec) {
@@ -19071,26 +19065,6 @@ function extractOperatingPointValues(spec) {
     return uniqueSorted;
   }
 }
-function selectClosestOperatingPointValue(values2, preferredValue) {
-  if (values2.length === 0) return void 0;
-  if (preferredValue === void 0) return values2[0];
-  if (values2.includes(preferredValue)) return preferredValue;
-  let bestVal = values2[0];
-  let minDiff = Math.abs(values2[0] - preferredValue);
-  for (let i = 1; i < values2.length; i++) {
-    const val = values2[i];
-    const diff = Math.abs(val - preferredValue);
-    if (diff < minDiff) {
-      minDiff = diff;
-      bestVal = val;
-    } else if (diff === minDiff) {
-      if (val < bestVal) {
-        bestVal = val;
-      }
-    }
-  }
-  return bestVal;
-}
 function filterSpecByGroups(spec, activeGroups) {
   const visibleSeries = spec.series.filter((s2) => activeGroups.has(s2.display.group));
   const visibleSeriesIds = new Set(visibleSeries.map((s2) => s2.id));
@@ -19100,16 +19074,10 @@ function filterSpecByGroups(spec, activeGroups) {
     data: spec.data.filter((d) => visibleSeriesIds.has(d.seriesId))
   };
 }
-function renderWithLegendFiltering(spec, options, render, preferredValue, onValueChange) {
+function renderWithLegendFiltering(spec, options, render) {
   const allGroups = displayGroups(spec);
   if (allGroups.length <= 1) {
-    return renderWithOperatingPointSelection(
-      spec,
-      options,
-      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
-      preferredValue,
-      onValueChange
-    );
+    return render(spec, options);
   }
   const childOptions = {
     ...options,
@@ -19146,21 +19114,9 @@ function renderWithLegendFiltering(spec, options, render, preferredValue, onValu
   });
   const contentArea = document.createElement("div");
   contentArea.className = "rtichoke-legend-content";
-  let activePreferredVal = preferredValue;
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const chartContent = renderWithOperatingPointSelection(
-      filteredSpec,
-      childOptions,
-      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
-      activePreferredVal,
-      (val) => {
-        activePreferredVal = val;
-        if (onValueChange) {
-          onValueChange(val);
-        }
-      }
-    );
+    const chartContent = render(filteredSpec, childOptions);
     contentArea.replaceChildren(chartContent);
   };
   allGroups.forEach((group2) => {
@@ -19177,12 +19133,6 @@ function renderWithLegendFiltering(spec, options, render, preferredValue, onValu
         activeGroups.add(group2);
         btn.setAttribute("aria-pressed", "true");
       }
-      if (spec.operatingPoint) {
-        const filteredSpec = filterSpecByGroups(spec, activeGroups);
-        const newDomain = extractOperatingPointValues(filteredSpec);
-        const fallback = selectClosestOperatingPointValue(newDomain, activePreferredVal);
-        activePreferredVal = fallback;
-      }
       updateChart();
     });
   });
@@ -19191,9 +19141,9 @@ function renderWithLegendFiltering(spec, options, render, preferredValue, onValu
   return container;
 }
 function renderWithOperatingPointSelection(spec, options, render, preferredValue, onValueChange) {
-  if (!spec.operatingPoint) return render(spec, options, void 0);
+  if (!spec.operatingPoint) return render(spec, void 0);
   const values2 = extractOperatingPointValues(spec);
-  if (values2.length === 0) return render(spec, options, void 0);
+  if (values2.length === 0) return render(spec, void 0);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme } = resolved;
   const container = document.createElement("div");
@@ -19218,9 +19168,15 @@ function renderWithOperatingPointSelection(spec, options, render, preferredValue
   slider.max = String(values2.length - 1);
   slider.step = "1";
   slider.setAttribute("aria-label", ariaLabelText);
-  const selectedValue = selectClosestOperatingPointValue(values2, preferredValue) ?? values2[0];
-  const selectedIndex = values2.indexOf(selectedValue);
-  slider.value = String(selectedIndex !== -1 ? selectedIndex : 0);
+  let selectedIndex = 0;
+  if (preferredValue !== void 0) {
+    const matchIdx = values2.indexOf(preferredValue);
+    if (matchIdx !== -1) {
+      selectedIndex = matchIdx;
+    }
+  }
+  const selectedValue = values2[selectedIndex];
+  slider.value = String(selectedIndex);
   const formattedVal = selectedValue.toFixed(theme.tip.digits);
   valueSpan.textContent = formattedVal;
   slider.setAttribute("aria-valuetext", formattedVal);
@@ -19232,7 +19188,7 @@ function renderWithOperatingPointSelection(spec, options, render, preferredValue
   const chart = document.createElement("div");
   chart.className = "rtichoke-operating-point-content";
   const draw = (val) => {
-    chart.replaceChildren(render(spec, options, val));
+    chart.replaceChildren(render(spec, val));
   };
   slider.addEventListener("input", () => {
     const idx = Number(slider.value);
@@ -19498,14 +19454,18 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
   );
 }
 function renderRocV2(spec, options = {}) {
-  return renderWithHorizonSelection(
+  return renderWithLegendFiltering(
     spec,
-    (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
-      selected,
-      options,
-      (filteredSpec, opts, activeOpVal) => renderRocChart(filteredSpec, opts, activeOpVal),
-      preferredOpVal,
-      onOpValChange
+    options,
+    (filteredSpec, opts) => renderWithHorizonSelection(
+      filteredSpec,
+      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+        selected,
+        opts,
+        (specWithOp, activeOpVal) => renderRocChart(specWithOp, opts, activeOpVal),
+        preferredOpVal,
+        onOpValChange
+      )
     )
   );
 }
@@ -19764,14 +19724,18 @@ function renderWithHorizonSelection(spec, render) {
   return container;
 }
 function renderHorizonLineChart(spec, options, x2, y2) {
-  return renderWithHorizonSelection(
+  return renderWithLegendFiltering(
     spec,
-    (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
-      selected,
-      options,
-      (filteredSpec, opts, activeOpVal) => renderLineChart(filteredSpec, opts, x2, y2, activeOpVal),
-      preferredOpVal,
-      onOpValChange
+    options,
+    (filteredSpec, opts) => renderWithHorizonSelection(
+      filteredSpec,
+      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+        selected,
+        opts,
+        (specWithOp, activeOpVal) => renderLineChart(specWithOp, opts, x2, y2, activeOpVal),
+        preferredOpVal,
+        onOpValChange
+      )
     )
   );
 }
@@ -19788,14 +19752,18 @@ function renderLiftV2(spec, options = {}) {
 // src/render/decision-curve.ts
 function renderDecisionCurveV2(spec, options = {}) {
   assertV2ReferentialIntegrity(spec);
-  return renderWithHorizonSelection(
+  return renderWithLegendFiltering(
     spec,
-    (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
-      selected,
-      options,
-      (specWithOp, opts, activeOpVal) => renderDecisionCurveChart(specWithOp, opts, activeOpVal),
-      preferredOpVal,
-      onOpValChange
+    options,
+    (filteredSpec, opts) => renderWithHorizonSelection(
+      filteredSpec,
+      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+        selected,
+        opts,
+        (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp, opts, activeOpVal),
+        preferredOpVal,
+        onOpValChange
+      )
     )
   );
 }
@@ -19856,14 +19824,18 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
 // src/render/interventions-avoided.ts
 function renderInterventionsAvoidedV2(spec, options = {}) {
   assertV2ReferentialIntegrity(spec);
-  return renderWithHorizonSelection(
+  return renderWithLegendFiltering(
     spec,
-    (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
-      selected,
-      options,
-      (specWithOp, opts, activeOpVal) => renderInterventionsAvoidedChart(specWithOp, opts, activeOpVal),
-      preferredOpVal,
-      onOpValChange
+    options,
+    (filteredSpec, opts) => renderWithHorizonSelection(
+      filteredSpec,
+      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+        selected,
+        opts,
+        (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp, opts, activeOpVal),
+        preferredOpVal,
+        onOpValChange
+      )
     )
   );
 }
