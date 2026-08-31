@@ -7,31 +7,68 @@
   display: block;
 }
 
-/* Compact multi-series legend styling */
-div[class*="-swatches"] {
-  font-family: inherit;
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
-  min-height: auto !important;
+/* Plotly-like interactive legend styling */
+.rtichoke-legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
 }
 
-span[class*="-swatch"] {
+.rtichoke-legend-item {
   display: inline-flex;
   align-items: center;
-  margin-right: 0 !important;
-  gap: 0.35rem;
-  font-size: 0.75rem;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  padding: 2px 4px;
+  margin: 0;
+  font-family: inherit;
+  font-size: 12px;
   line-height: 1;
+  color: #2a2a2a;
+  cursor: pointer;
+  border-radius: 2px;
+  user-select: none;
+  transition: opacity 0.15s ease, color 0.15s ease;
 }
 
-span[class*="-swatch"] svg {
-  margin-right: 0 !important;
-  border-radius: 2px;
+.rtichoke-legend-item:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.rtichoke-legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 12px;
   flex-shrink: 0;
+}
+
+.rtichoke-legend-line {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  transition: background-color 0.15s ease;
+}
+
+.rtichoke-legend-label {
+  font-size: 12px;
+}
+
+/* Hidden / disabled state matching Plotly legend muted appearance */
+.rtichoke-legend-item[aria-pressed="false"] {
+  color: #a0a0a0;
+}
+
+.rtichoke-legend-item[aria-pressed="false"] .rtichoke-legend-line {
+  background-color: #a0a0a0 !important;
 }
 
 .rtichoke-operating-point-chart {

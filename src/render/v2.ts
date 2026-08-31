@@ -312,6 +312,7 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
 
   const legendNav = document.createElement("div");
   legendNav.className = "rtichoke-legend";
+  legendNav.style.paddingLeft = `${theme.margins.left}px`;
   legendNav.setAttribute("aria-label", "Chart legend");
 
   const buttonsByGroup = new Map<string, HTMLButtonElement>();
@@ -326,7 +327,12 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
 
     const swatch = document.createElement("span");
     swatch.className = "rtichoke-legend-swatch";
-    swatch.style.backgroundColor = colorByGroup.get(group) ?? "#000000";
+
+  const lineSpan = document.createElement("span");
+  lineSpan.className = "rtichoke-legend-line";
+  lineSpan.style.backgroundColor = colorByGroup.get(group) ?? "#000000";
+
+  swatch.append(lineSpan);
 
     const labelSpan = document.createElement("span");
     labelSpan.className = "rtichoke-legend-label";
