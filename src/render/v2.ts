@@ -136,13 +136,15 @@ export function resolveV2RenderOptions(
   groupsOrCount: readonly string[] | number,
   options: V2RenderOptions = {},
 ): ResolvedV2RenderOptions {
-  const groups =
-    typeof groupsOrCount === "number"
+  const allGroups =
+    options.allGroups ??
+    (typeof groupsOrCount === "number"
       ? Array.from(
           { length: groupsOrCount },
           (_, index) => `group-${index + 1}`,
         )
-      : [...groupsOrCount];
+      : [...groupsOrCount]);
+
   const theme = mergeTheme(options);
   if (
     !Number.isFinite(theme.width) ||
@@ -159,20 +161,23 @@ export function resolveV2RenderOptions(
     theme.tip.digits > 20
   )
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-  const colors = groups.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < groups.length)
+
+  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < allGroups.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group",
     );
-  const assigned = colors.slice(0, Math.max(groups.length, 1));
+  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
+  const showLegend = options.showLegend ?? allGroups.length > 1;
+
   return {
     theme: { ...theme, colors: assigned },
-    groups,
+    groups: allGroups,
     colors: assigned,
     colorByGroup: new Map(
-      groups.map((group, index) => [group, assigned[index]]),
+      allGroups.map((group, index) => [group, assigned[index]]),
     ),
-    showLegend: groups.length > 1,
+    showLegend,
   };
 }
 

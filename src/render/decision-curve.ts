@@ -34,7 +34,7 @@ export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2Rend
 
 function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOptions, selectedOperatingPointValue?: number): SVGSVGElement | HTMLElement {
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
-  const resolved = resolveV2RenderOptions(groups, options);
+  const resolved = resolveV2RenderOptions(groups, { ...options, showLegend: false });
   const { theme } = resolved;
   const displayBySeries = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
