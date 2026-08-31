@@ -6,6 +6,7 @@ import {
   ordinaryPointDotMark,
   renderWithHorizonSelection,
   renderWithLegendFiltering,
+  renderWithOperatingPointSelection,
   resolveV2RenderOptions,
   themedPlot,
   tooltip,
@@ -15,14 +16,19 @@ import {
 
 export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithLegendFiltering(
-      selected as OperatingPointSupportedSpec,
-      options,
-      (specWithOp, opts, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, opts, activeOpVal),
-      preferredOpVal,
-      onOpValChange,
-    ),
+  return renderWithLegendFiltering(
+    spec as OperatingPointSupportedSpec,
+    options,
+    (filteredSpec, opts) =>
+      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
+        renderWithOperatingPointSelection(
+          selected as OperatingPointSupportedSpec,
+          opts,
+          (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, opts, activeOpVal),
+          preferredOpVal,
+          onOpValChange,
+        ),
+      ),
   );
 }
 

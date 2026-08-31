@@ -7,61 +7,31 @@
   display: block;
 }
 
-/* Interactive multi-series legend styling */
-.rtichoke-legend {
+/* Compact multi-series legend styling */
+div[class*="-swatches"] {
+  font-family: inherit;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  min-height: auto !important;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
-  font-family: inherit;
-  font-size: 0.75rem;
 }
 
-.rtichoke-legend-item {
+span[class*="-swatch"] {
   display: inline-flex;
   align-items: center;
+  margin-right: 0 !important;
   gap: 0.35rem;
-  background: transparent;
-  border: none;
-  padding: 2px 4px;
-  margin: 0;
-  font-family: inherit;
   font-size: 0.75rem;
   line-height: 1;
-  color: #374151;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
 }
 
-.rtichoke-legend-item:hover {
-  background-color: #f3f4f6;
-}
-
-.rtichoke-legend-item:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 1px;
-}
-
-.rtichoke-legend-item[aria-pressed="false"] {
-  opacity: 0.45;
-}
-
-.rtichoke-legend-item[aria-pressed="false"]:hover {
-  opacity: 0.65;
-}
-
-.rtichoke-legend-swatch {
-  width: 12px;
-  height: 10px;
+span[class*="-swatch"] svg {
+  margin-right: 0 !important;
   border-radius: 2px;
   flex-shrink: 0;
-  display: inline-block;
-}
-
-.rtichoke-legend-label {
-  user-select: none;
 }
 
 .rtichoke-operating-point-chart {

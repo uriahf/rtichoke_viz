@@ -110,7 +110,6 @@ export interface ResolvedV2RenderOptions {
   colors: readonly string[];
   colorByGroup: ReadonlyMap<string, string>;
   showLegend: boolean;
-  activeGroups: readonly string[];
 }
 
 function mergeTheme(options: V2RenderOptions): V2RendererTheme {
@@ -137,23 +136,13 @@ export function resolveV2RenderOptions(
   groupsOrCount: readonly string[] | number,
   options: V2RenderOptions = {},
 ): ResolvedV2RenderOptions {
-  const allGroups =
-    options.allGroups ??
-    (typeof groupsOrCount === "number"
-      ? Array.from(
-          { length: groupsOrCount },
-          (_, index) => `group-${index + 1}`,
-        )
-      : [...groupsOrCount]);
-
-  const activeGroups =
+  const groups =
     typeof groupsOrCount === "number"
       ? Array.from(
           { length: groupsOrCount },
           (_, index) => `group-${index + 1}`,
         )
       : [...groupsOrCount];
-
   const theme = mergeTheme(options);
   if (
     !Number.isFinite(theme.width) ||
@@ -170,24 +159,20 @@ export function resolveV2RenderOptions(
     theme.tip.digits > 20
   )
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-
-  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < allGroups.length)
+  const colors = groups.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < groups.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group",
     );
-  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
-  const showLegend = options.showLegend ?? allGroups.length > 1;
-
+  const assigned = colors.slice(0, Math.max(groups.length, 1));
   return {
     theme: { ...theme, colors: assigned },
-    groups: allGroups,
-    activeGroups,
+    groups,
     colors: assigned,
     colorByGroup: new Map(
-      allGroups.map((group, index) => [group, assigned[index]]),
+      groups.map((group, index) => [group, assigned[index]]),
     ),
-    showLegend,
+    showLegend: groups.length > 1,
   };
 }
 
@@ -263,31 +248,15 @@ export function extractOperatingPointValues(
   }
 }
 
-export function selectClosestOperatingPointValue(
+export function selectOperatingPointValue(
   values: number[],
   preferredValue?: number,
 ): number | undefined {
   if (values.length === 0) return undefined;
-  if (preferredValue === undefined) return values[0];
-  if (values.includes(preferredValue)) return preferredValue;
-
-  let bestVal = values[0];
-  let minDiff = Math.abs(values[0] - preferredValue);
-
-  for (let i = 1; i < values.length; i++) {
-    const val = values[i];
-    const diff = Math.abs(val - preferredValue);
-    if (diff < minDiff) {
-      minDiff = diff;
-      bestVal = val;
-    } else if (diff === minDiff) {
-      if (val < bestVal) {
-        bestVal = val;
-      }
-    }
+  if (preferredValue !== undefined && values.includes(preferredValue)) {
+    return preferredValue;
   }
-
-  return bestVal;
+  return values[0];
 }
 
 export function filterSpecByGroups<T extends OperatingPointSupportedSpec>(
@@ -309,22 +278,13 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
   render: (
     filteredSpec: T,
     opts: V2RenderOptions,
-    selectedValue?: number,
   ) => SVGSVGElement | HTMLElement,
-  preferredValue?: number,
-  onValueChange?: (val: number) => void,
 ): SVGSVGElement | HTMLElement {
   const allGroups = displayGroups(spec as any);
 
-  // If single-series or no groups, delegate directly to operating-point selection without legend UI
+  // If single-series or no groups, delegate directly to child render without legend UI
   if (allGroups.length <= 1) {
-    return renderWithOperatingPointSelection(
-      spec,
-      options,
-      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
-      preferredValue,
-      onValueChange,
-    );
+    return render(spec, options);
   }
 
   // Multi-series: build custom HTML legend
@@ -375,22 +335,9 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
   const contentArea = document.createElement("div");
   contentArea.className = "rtichoke-legend-content";
 
-  let activePreferredVal = preferredValue;
-
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const chartContent = renderWithOperatingPointSelection(
-      filteredSpec,
-      childOptions,
-      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
-      activePreferredVal,
-      (val) => {
-        activePreferredVal = val;
-        if (onValueChange) {
-          onValueChange(val);
-        }
-      },
-    );
+    const chartContent = render(filteredSpec, childOptions);
     contentArea.replaceChildren(chartContent);
   };
 
@@ -410,14 +357,6 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
         btn.setAttribute("aria-pressed", "true");
       }
 
-      // Recalculate operating point domain on visibility change & pick fallback if needed
-      if (spec.operatingPoint) {
-        const filteredSpec = filterSpecByGroups(spec, activeGroups);
-        const newDomain = extractOperatingPointValues(filteredSpec);
-        const fallback = selectClosestOperatingPointValue(newDomain, activePreferredVal);
-        activePreferredVal = fallback;
-      }
-
       updateChart();
     });
   });
@@ -434,16 +373,15 @@ export function renderWithOperatingPointSelection<
   options: V2RenderOptions,
   render: (
     selectedSpec: T,
-    opts: V2RenderOptions,
     selectedValue?: number,
   ) => SVGSVGElement | HTMLElement,
   preferredValue?: number,
   onValueChange?: (val: number) => void,
 ): SVGSVGElement | HTMLElement {
-  if (!spec.operatingPoint) return render(spec, options, undefined);
+  if (!spec.operatingPoint) return render(spec, undefined);
 
   const values = extractOperatingPointValues(spec);
-  if (values.length === 0) return render(spec, options, undefined);
+  if (values.length === 0) return render(spec, undefined);
 
   const resolved = resolveV2RenderOptions(displayGroups(spec as any), options);
   const { theme } = resolved;
@@ -484,10 +422,16 @@ export function renderWithOperatingPointSelection<
   slider.step = "1";
   slider.setAttribute("aria-label", ariaLabelText);
 
-  const selectedValue = selectClosestOperatingPointValue(values, preferredValue) ?? values[0];
-  const selectedIndex = values.indexOf(selectedValue);
+  let selectedIndex = 0;
+  if (preferredValue !== undefined) {
+    const matchIdx = values.indexOf(preferredValue);
+    if (matchIdx !== -1) {
+      selectedIndex = matchIdx;
+    }
+  }
 
-  slider.value = String(selectedIndex !== -1 ? selectedIndex : 0);
+  const selectedValue = values[selectedIndex];
+  slider.value = String(selectedIndex);
   const formattedVal = selectedValue.toFixed(theme.tip.digits);
   valueSpan.textContent = formattedVal;
   slider.setAttribute("aria-valuetext", formattedVal);
@@ -502,7 +446,7 @@ export function renderWithOperatingPointSelection<
   chart.className = "rtichoke-operating-point-content";
 
   const draw = (val: number) => {
-    chart.replaceChildren(render(spec, options, val));
+    chart.replaceChildren(render(spec, val));
   };
 
   slider.addEventListener("input", () => {
@@ -833,15 +777,19 @@ export function renderRocV2(
   spec: RocV2Spec,
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
-  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithLegendFiltering(
-      selected,
-      options,
-      (filteredSpec, opts, activeOpVal) =>
-        renderRocChart(filteredSpec, opts, activeOpVal),
-      preferredOpVal,
-      onOpValChange,
-    ),
+  return renderWithLegendFiltering(
+    spec,
+    options,
+    (filteredSpec, opts) =>
+      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
+        renderWithOperatingPointSelection(
+          selected,
+          opts,
+          (specWithOp, activeOpVal) => renderRocChart(specWithOp, opts, activeOpVal),
+          preferredOpVal,
+          onOpValChange,
+        ),
+      ),
   );
 }
 
@@ -1156,15 +1104,20 @@ function renderHorizonLineChart(
   x: "sensitivity" | "ppcr",
   y: "ppv" | "sensitivity" | "lift",
 ) {
-  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithLegendFiltering(
-      selected as OperatingPointSupportedSpec,
-      options,
-      (filteredSpec, opts, activeOpVal) =>
-        renderLineChart(filteredSpec as any, opts, x, y, activeOpVal),
-      preferredOpVal,
-      onOpValChange,
-    ),
+  return renderWithLegendFiltering(
+    spec as OperatingPointSupportedSpec,
+    options,
+    (filteredSpec, opts) =>
+      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
+        renderWithOperatingPointSelection(
+          selected as OperatingPointSupportedSpec,
+          opts,
+          (specWithOp, activeOpVal) =>
+            renderLineChart(specWithOp as any, opts, x, y, activeOpVal),
+          preferredOpVal,
+          onOpValChange,
+        ),
+      ),
   );
 }
 

@@ -144,12 +144,12 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     expect(valueSpan.textContent).toBe("0.500");
 
     // Hide Model B -> Model A alone active: domain expands to [0.1, 0.5, 0.9]
-    // Previous value 0.5 is still valid, so it is preserved!
+    // Default fallback selects first exact value (0.1) when re-evaluated
     buttons[1].click();
     slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
     expect(slider.max).toBe("2");
-    expect(valueSpan.textContent).toBe("0.500");
+    expect(valueSpan.textContent).toBe("0.100");
 
     // Select cutoff 0.1 (index 0)
     slider.value = "0";
@@ -210,33 +210,59 @@ describe("Interactive Multi-Series Legend Filtering", () => {
         { id: "series-2-10", evaluationId: "evaluation-2", horizon: 10, display: { label: "Model B", group: "Model B", role: "model" } },
       ],
       data: [
+        // Horizon 5y
+        { seriesId: "series-1-5", cutoff: 0.1, sensitivity: 0.9, specificity: 0.3 },
         { seriesId: "series-1-5", cutoff: 0.5, sensitivity: 0.7, specificity: 0.7 },
-        { seriesId: "series-2-5", cutoff: 0.5, sensitivity: 0.6, specificity: 0.8 },
+        { seriesId: "series-2-5", cutoff: 0.2, sensitivity: 0.85, specificity: 0.4 },
+        { seriesId: "series-2-5", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75 },
+        // Horizon 10y
+        { seriesId: "series-1-10", cutoff: 0.2, sensitivity: 0.8, specificity: 0.4 },
         { seriesId: "series-1-10", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75 },
+        { seriesId: "series-2-10", cutoff: 0.3, sensitivity: 0.75, specificity: 0.5 },
         { seriesId: "series-2-10", cutoff: 0.5, sensitivity: 0.55, specificity: 0.85 },
       ],
       x: "false_positive_rate",
       y: "sensitivity",
       xAxis: { label: "1 - Specificity", domain: [0, 1] },
       yAxis: { label: "Sensitivity", domain: [0, 1] },
+      operatingPoint: { dimension: "probability_threshold" },
     };
 
     const el = renderRocV2(multiHorizonRoc);
     const horizonSelect = el.querySelector<HTMLSelectElement>('select[aria-label="Fixed Time Horizon"]')!;
-    const buttons = el.querySelectorAll<HTMLButtonElement>(".rtichoke-legend button");
+    let buttons = el.querySelectorAll<HTMLButtonElement>(".rtichoke-legend button");
 
     // Hide Model A at horizon 5
     buttons[0].click();
     expect(buttons[0].getAttribute("aria-pressed")).toBe("false");
+    expect(buttons[1].getAttribute("aria-pressed")).toBe("true");
+
+    // Line geometry for Model A is gone, only 1 line mark rendered (Model B)
     expect(el.querySelectorAll('[aria-label="line"] path')).toHaveLength(1);
+
+    // Selected operating point dot exists only for visible Model B
+    let selectedDots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
+    expect(selectedDots).toHaveLength(1);
 
     // Switch horizon to 10
     horizonSelect.value = "10";
     horizonSelect.dispatchEvent(new Event("change"));
 
-    // At horizon 10, renderWithHorizonSelection re-evaluates the inner renderer.
-    // Spec has horizon-specific series IDs.
-    expect(el.querySelectorAll('[aria-label="line"] path')).toBeDefined();
+    buttons = el.querySelectorAll<HTMLButtonElement>(".rtichoke-legend button");
+
+    // 1. Model A remains hidden (aria-pressed="false") at horizon 10
+    expect(buttons[0].getAttribute("aria-pressed")).toBe("false");
+    expect(buttons[1].getAttribute("aria-pressed")).toBe("true");
+
+    // 2. Only visible series line/points/selected marker are rendered (1 line, 1 selected dot for Model B)
+    expect(el.querySelectorAll('[aria-label="line"] path')).toHaveLength(1);
+    selectedDots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
+    expect(selectedDots).toHaveLength(1);
+
+    // 3. Operating-point domain is recomputed from visible series at horizon 10 (Model B: [0.2, 0.3, 0.5])
+    const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
+    expect(valueSpan.textContent).toBe("0.200"); // first exact value of Model B at 10y
   });
 
   it("works seamlessly when embedded inside ReportSpec", () => {

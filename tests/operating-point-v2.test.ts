@@ -701,7 +701,7 @@ describe("Operating Point Selection for Performance Curves", () => {
       operatingPoint: { dimension: "probability_threshold" },
     };
 
-    it("updates available operating point domain on horizon change and preserves value if present, else selects closest exact value", () => {
+    it("updates available operating point domain on horizon change and preserves value if present, else resets to min", () => {
       const el = renderRocV2(multiHorizonRoc);
       const horizonSelect = el.querySelector<HTMLSelectElement>('select[aria-label="Fixed Time Horizon"]')!;
       expect(horizonSelect).not.toBeNull();
@@ -729,13 +729,13 @@ describe("Operating Point Selection for Performance Curves", () => {
       slider.dispatchEvent(new Event("input"));
       expect(valueSpan.textContent).toBe("0.900");
 
-      // Switch horizon back to 5y. 0.9 does NOT exist in 5y [0.1, 0.5, 0.8], so it falls back to the closest exact value (0.8).
+      // Switch horizon back to 5y. 0.9 does NOT exist in 5y [0.1, 0.5, 0.8], so it should reset to default (min value = 0.1).
       horizonSelect.value = "5";
       horizonSelect.dispatchEvent(new Event("change"));
 
       slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
       valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
-      expect(valueSpan.textContent).toBe("0.800");
+      expect(valueSpan.textContent).toBe("0.100");
     });
   });
 });
