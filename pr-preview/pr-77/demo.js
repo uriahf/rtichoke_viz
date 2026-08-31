@@ -19006,10 +19006,14 @@ function mergeTheme(options) {
   };
 }
 function resolveV2RenderOptions(groupsOrCount, options = {}) {
-  const groups2 = options.allGroups ?? (typeof groupsOrCount === "number" ? Array.from(
+  const allGroups = options.allGroups ?? (typeof groupsOrCount === "number" ? Array.from(
     { length: groupsOrCount },
     (_, index2) => `group-${index2 + 1}`
   ) : [...groupsOrCount]);
+  const activeGroups = typeof groupsOrCount === "number" ? Array.from(
+    { length: groupsOrCount },
+    (_, index2) => `group-${index2 + 1}`
+  ) : [...groupsOrCount];
   const theme = mergeTheme(options);
   if (!Number.isFinite(theme.width) || theme.width <= 0 || !Number.isFinite(theme.height) || theme.height <= 0)
     throw new Error(
@@ -19017,19 +19021,20 @@ function resolveV2RenderOptions(groupsOrCount, options = {}) {
     );
   if (!Number.isInteger(theme.tip.digits) || theme.tip.digits < 0 || theme.tip.digits > 20)
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-  const colors = groups2.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < groups2.length)
+  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < allGroups.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group"
     );
-  const assigned = colors.slice(0, Math.max(groups2.length, 1));
-  const showLegend = options.showLegend ?? groups2.length > 1;
+  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
+  const showLegend = options.showLegend ?? allGroups.length > 1;
   return {
     theme: { ...theme, colors: assigned },
-    groups: groups2,
+    groups: allGroups,
+    activeGroups,
     colors: assigned,
     colorByGroup: new Map(
-      groups2.map((group2, index2) => [group2, assigned[index2]])
+      allGroups.map((group2, index2) => [group2, assigned[index2]])
     ),
     showLegend
   };
@@ -19098,9 +19103,20 @@ function filterSpecByGroups(spec, activeGroups) {
 function renderWithLegendFiltering(spec, options, render, preferredValue, onValueChange) {
   const allGroups = displayGroups(spec);
   if (allGroups.length <= 1) {
-    return renderWithOperatingPointSelection(spec, options, render, preferredValue, onValueChange);
+    return renderWithOperatingPointSelection(
+      spec,
+      options,
+      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
+      preferredValue,
+      onValueChange
+    );
   }
-  const resolved = resolveV2RenderOptions(allGroups, { ...options, showLegend: false });
+  const childOptions = {
+    ...options,
+    allGroups,
+    showLegend: false
+  };
+  const resolved = resolveV2RenderOptions(allGroups, childOptions);
   const { theme, colorByGroup } = resolved;
   const labelByGroup = new Map(spec.series.map((s2) => [s2.display.group, s2.display.label]));
   const activeGroups = new Set(allGroups);
@@ -19133,15 +19149,10 @@ function renderWithLegendFiltering(spec, options, render, preferredValue, onValu
   let activePreferredVal = preferredValue;
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const childOptions = {
-      ...options,
-      allGroups,
-      showLegend: false
-    };
     const chartContent = renderWithOperatingPointSelection(
       filteredSpec,
       childOptions,
-      (fSpec, activeOpVal) => render(fSpec, activeOpVal),
+      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
       activePreferredVal,
       (val) => {
         activePreferredVal = val;
@@ -19180,9 +19191,9 @@ function renderWithLegendFiltering(spec, options, render, preferredValue, onValu
   return container;
 }
 function renderWithOperatingPointSelection(spec, options, render, preferredValue, onValueChange) {
-  if (!spec.operatingPoint) return render(spec, void 0);
+  if (!spec.operatingPoint) return render(spec, options, void 0);
   const values2 = extractOperatingPointValues(spec);
-  if (values2.length === 0) return render(spec, void 0);
+  if (values2.length === 0) return render(spec, options, void 0);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme } = resolved;
   const container = document.createElement("div");
@@ -19221,7 +19232,7 @@ function renderWithOperatingPointSelection(spec, options, render, preferredValue
   const chart = document.createElement("div");
   chart.className = "rtichoke-operating-point-content";
   const draw = (val) => {
-    chart.replaceChildren(render(spec, val));
+    chart.replaceChildren(render(spec, options, val));
   };
   slider.addEventListener("input", () => {
     const idx = Number(slider.value);
@@ -19492,7 +19503,7 @@ function renderRocV2(spec, options = {}) {
     (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
       selected,
       options,
-      (filteredSpec, activeOpVal) => renderRocChart(filteredSpec, options, activeOpVal),
+      (filteredSpec, opts, activeOpVal) => renderRocChart(filteredSpec, opts, activeOpVal),
       preferredOpVal,
       onOpValChange
     )
@@ -19758,7 +19769,7 @@ function renderHorizonLineChart(spec, options, x2, y2) {
     (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
       selected,
       options,
-      (filteredSpec, activeOpVal) => renderLineChart(filteredSpec, options, x2, y2, activeOpVal),
+      (filteredSpec, opts, activeOpVal) => renderLineChart(filteredSpec, opts, x2, y2, activeOpVal),
       preferredOpVal,
       onOpValChange
     )
@@ -19782,7 +19793,7 @@ function renderDecisionCurveV2(spec, options = {}) {
     (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
       selected,
       options,
-      (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp, options, activeOpVal),
+      (specWithOp, opts, activeOpVal) => renderDecisionCurveChart(specWithOp, opts, activeOpVal),
       preferredOpVal,
       onOpValChange
     )
@@ -19850,7 +19861,7 @@ function renderInterventionsAvoidedV2(spec, options = {}) {
     (selected, preferredOpVal, onOpValChange) => renderWithLegendFiltering(
       selected,
       options,
-      (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp, options, activeOpVal),
+      (specWithOp, opts, activeOpVal) => renderInterventionsAvoidedChart(specWithOp, opts, activeOpVal),
       preferredOpVal,
       onOpValChange
     )
