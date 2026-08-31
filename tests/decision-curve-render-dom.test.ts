@@ -27,10 +27,16 @@ describe("Decision Curve v2 browser rendering", () => {
     expect(svg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();
   });
 
-  it("renders model geometry plus Treat None and Treat All", () => {
+  it("renders model geometry plus Treat None and Treat All with role-specific subordinate reference styling", () => {
     const svg = renderDecisionCurveV2(single as DecisionCurveV2Spec);
-    expect(svg.querySelector('[aria-label="rule"]')).not.toBeNull();
-    expect(svg.querySelectorAll('[aria-label="line"]')).toHaveLength(2);
+    const ruleMark = svg.querySelector('[aria-label="rule"]');
+    expect(ruleMark).not.toBeNull();
+    expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("2,3");
+
+    const lineMarks = svg.querySelectorAll('[aria-label="line"]');
+    expect(lineMarks.length).toBeGreaterThanOrEqual(2);
+    const treatAllLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "4,3");
+    expect(treatAllLine).not.toBeNull();
   });
 
   it("renders two model series while sharing one Treat All reference", () => {

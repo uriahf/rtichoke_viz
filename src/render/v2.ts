@@ -98,7 +98,7 @@ export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
   line: { width: 2, dash: null },
   marker: { radius: 2.5, fill: null, stroke: "#ffffff", strokeWidth: 0.5 },
   reference: { color: "#BEBEBE", width: 1.5, dash: "2,3" },
-  legend: { position: "top", swatchWidth: 15, columns: null },
+  legend: { position: "top", swatchWidth: 12, columns: null },
   tip: { digits: 3 },
 };
 
@@ -365,7 +365,7 @@ export function seriesRenderData<T extends { seriesId: string }>(
   }));
 }
 
-function tooltip(digits: number, fields: Array<[string, unknown]>) {
+export function tooltip(digits: number, fields: Array<[string, unknown]>) {
   return fields
     .filter(([, value]) => value !== undefined)
     .map(
@@ -528,7 +528,6 @@ export function ordinaryPointDotMark<T extends { seriesId: string }>(
     strokeWidth,
     r,
     title: "title",
-    tip: true,
   });
 }
 
@@ -554,11 +553,10 @@ export function operatingPointDotMark(
     strokeWidth,
     r,
     title: "title",
-    tip: true,
   });
 }
 
-function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
+export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   const plot = Plot.plot(options);
   for (const label of plot.querySelectorAll<SVGTextElement>(
     '[aria-label$="axis label"] text',
@@ -574,9 +572,10 @@ function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   if (plot instanceof HTMLElement) {
     plot.style.fontSize = `${theme.typography.legendSize}px`;
     for (const swatch of plot.querySelectorAll<SVGSVGElement>(
-      'svg[width="15"]',
+      'svg[width="15"], div[class*="-swatches"] svg',
     )) {
       swatch.setAttribute("width", String(theme.legend.swatchWidth));
+      swatch.setAttribute("height", "10");
     }
   }
   return plot;
@@ -590,16 +589,28 @@ function renderRocChart(
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme } = resolved;
-  const data = seriesRenderData(spec, spec.data).map((datum) => ({
-    ...datum,
-    false_positive_rate: 1 - datum.specificity,
-    title: tooltip(theme.tip.digits, [
-      ["Series", datum.label],
-      ["Cutoff", datum.cutoff],
+  const opDim = spec.operatingPoint?.dimension;
+  const data = seriesRenderData(spec, spec.data).map((datum) => {
+    const fpr = 1 - datum.specificity;
+    const fields: Array<[string, unknown]> = [["Series", datum.label]];
+    if (opDim === "ppcr") {
+      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
+      fields.push(["Cutoff", datum.cutoff]);
+    } else {
+      fields.push(["Cutoff", datum.cutoff]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
+    }
+    fields.push(
       ["Sensitivity", datum.sensitivity],
       ["Specificity", datum.specificity],
-    ]),
-  }));
+      ["False Positive Rate", fpr],
+    );
+    return {
+      ...datum,
+      false_positive_rate: fpr,
+      title: tooltip(theme.tip.digits, fields),
+    };
+  });
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -609,8 +620,6 @@ function renderRocChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: "title",
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,
@@ -681,8 +690,6 @@ export function renderCalibrationV2(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: "title",
-      tip: true,
     }),
   );
   const discrete = data.filter((datum) => datum.method === "discrete");
@@ -695,8 +702,7 @@ export function renderCalibrationV2(
         stroke: theme.marker.stroke,
         strokeWidth: theme.marker.strokeWidth,
         r: theme.marker.radius,
-        title: "title",
-        tip: true,
+        title: (d: any) => d.title,
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
@@ -759,8 +765,7 @@ export function renderCalibrationV2(
             y: "count",
             fill: "group",
             fillOpacity: 1 / Math.max(resolved.groups.length, 1),
-            title: "title",
-            tip: true,
+            title: (d: any) => d.title,
           }),
         ],
         theme,
@@ -786,6 +791,7 @@ function renderLineChart(
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme } = resolved;
+  const opDim = (spec as OperatingPointSupportedSpec).operatingPoint?.dimension;
   const data = seriesRenderData(
     spec,
     spec.data as Array<{
@@ -804,15 +810,38 @@ function renderLineChart(
       ppv?: number;
       lift?: number;
     };
-    const yLabel = y === "ppv" ? "PPV" : y === "sensitivity" ? "Sensitivity" : "Lift";
+    const fields: Array<[string, unknown]> = [["Series", datum.label]];
+    if (spec.type === "precision_recall") {
+      if (opDim === "ppcr") {
+        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", values.cutoff]);
+      } else {
+        fields.push(["Cutoff", values.cutoff]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
+      }
+      fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
+    } else if (spec.type === "gains") {
+      if (opDim === "probability_threshold") {
+        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", values.ppcr]);
+      } else {
+        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", values.cutoff]);
+      }
+      fields.push(["Sensitivity", values.sensitivity]);
+    } else if (spec.type === "lift") {
+      if (opDim === "probability_threshold") {
+        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", values.ppcr]);
+      } else {
+        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", values.cutoff]);
+      }
+      fields.push(["Lift", values.lift]);
+    }
     return {
       ...datum,
-      title: tooltip(theme.tip.digits, [
-        ["Series", datum.label],
-        ["Cutoff", values.cutoff],
-        [x === "ppcr" ? "PPCR" : "Sensitivity", values[x]],
-        [yLabel, values[y]],
-      ]),
+      title: tooltip(theme.tip.digits, fields),
     };
   });
   const marks = referenceMarks(spec, theme);
@@ -824,8 +853,6 @@ function renderLineChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: "title",
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,

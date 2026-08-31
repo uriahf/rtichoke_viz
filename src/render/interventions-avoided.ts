@@ -7,6 +7,8 @@ import {
   renderWithHorizonSelection,
   renderWithOperatingPointSelection,
   resolveV2RenderOptions,
+  themedPlot,
+  tooltip,
   type OperatingPointSupportedSpec,
   type V2RenderOptions,
 } from "./v2.js";
@@ -34,19 +36,24 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
     ...datum,
     group: displayBySeries.get(datum.seriesId)!.group,
     label: displayBySeries.get(datum.seriesId)!.label,
-    title: `Series: ${displayBySeries.get(datum.seriesId)!.label}\nThreshold: ${datum.threshold.toFixed(theme.tip.digits)}\nInterventions Avoided: ${datum.interventionsAvoided.toFixed(theme.tip.digits)}`,
+    title: tooltip(theme.tip.digits, [
+      ["Series", displayBySeries.get(datum.seriesId)!.label],
+      ["Threshold", datum.threshold],
+      ["Interventions Avoided", datum.interventionsAvoided],
+    ]),
   }));
-  const referenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
+  const defaultZeroStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
+  const defaultPathStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: "4,3" };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
     if (reference.benchmark === "treat_all") {
-      marks.push(Plot.ruleY([0], { ...referenceStyle, title: () => reference.label ?? "Treat All" }));
+      marks.push(Plot.ruleY([0], { ...defaultZeroStyle, title: () => reference.label ?? "Treat All" }));
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...referenceStyle, title: () => reference.label ?? `Treat None — ${reference.population}` }));
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultPathStyle, title: () => reference.label ?? `Treat None — ${reference.population}` }));
     }
   }
   marks.push(
-    Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, title: "title", tip: true }),
+    Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined }),
     ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
@@ -58,16 +65,11 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
     }
   }
   const axis = (label: string, domain: [number, number] | undefined) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });
-  const plot = Plot.plot({
+  return themedPlot({
     width: theme.width, height: theme.height,
     marginTop: theme.margins.top, marginRight: theme.margins.right, marginBottom: theme.margins.bottom, marginLeft: theme.margins.left,
     style: { background: theme.background, color: theme.axis.color, fontFamily: theme.typography.fontFamily, fontSize: `${theme.typography.fontSize}px` },
     color: { legend: resolved.showLegend, domain: resolved.groups, range: resolved.colors, tickFormat: (group: string) => labelByGroup.get(group) ?? group },
     x: axis(spec.xAxis.label, spec.xAxis.domain), y: axis(spec.yAxis.label, spec.yAxis.domain), marks,
-  });
-  for (const label of plot.querySelectorAll<SVGTextElement>('[aria-label$="axis label"] text')) {
-    label.style.fontSize = `${theme.typography.axisTitleSize}px`;
-    label.style.fontWeight = String(theme.typography.axisTitleWeight);
-  }
-  return plot;
+  }, theme);
 }
