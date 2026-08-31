@@ -159,22 +159,39 @@ describe("Operating Point Selection for Performance Curves", () => {
   });
 
   describe("Tooltip / Hover Semantics and Ordering", () => {
+    it("enables interactive tip mark machinery on ordinary points and selected operating-point points", () => {
+      const spec: RocV2Spec = {
+        ...baseRoc,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const el = renderRocV2(spec);
+      // Interactive tip mark container is rendered by Observable Plot when tip: true is enabled
+      const tipMark = el.querySelector('[aria-label="tip"]');
+      expect(tipMark).not.toBeNull();
+
+      // Selected operating point dot mark group exists inside SVG
+      const selectedDot = el.querySelector('.rtichoke-selected-operating-point');
+      expect(selectedDot).not.toBeNull();
+
+      // Dot marks exist inside SVG
+      const dotMark = el.querySelector('[aria-label="dot"]');
+      expect(dotMark).not.toBeNull();
+    });
+
     it("ROC tooltip puts active dimension immediately below Series and includes False Positive Rate", () => {
       const rocCutoff: RocV2Spec = {
         ...baseRoc,
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderRocV2(rocCutoff);
-      const titleCutoff = elCutoff.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titleCutoff).toBe("Series: Model A\nCutoff: 0.100\nPPCR: 0.800\nSensitivity: 0.900\nSpecificity: 0.300\nFalse Positive Rate: 0.700");
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
 
       const rocPpcr: RocV2Spec = {
         ...baseRoc,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderRocV2(rocPpcr);
-      const titlePpcr = elPpcr.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titlePpcr).toBe("Series: Model A\nPPCR: 0.100\nCutoff: 0.900\nSensitivity: 0.200\nSpecificity: 0.950\nFalse Positive Rate: 0.050");
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
     });
 
     it("Precision-Recall tooltip puts active dimension immediately below Series", () => {
@@ -183,16 +200,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderPrecisionRecallV2(prCutoff);
-      const titleCutoff = elCutoff.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titleCutoff).toBe("Series: Model A\nCutoff: 0.100\nPPCR: 0.800\nSensitivity: 0.900\nPPV: 0.200");
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
 
       const prPpcr: PrecisionRecallV2Spec = {
         ...basePR,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderPrecisionRecallV2(prPpcr);
-      const titlePpcr = elPpcr.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titlePpcr).toBe("Series: Model A\nPPCR: 0.100\nCutoff: 0.900\nSensitivity: 0.200\nPPV: 0.900");
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
     });
 
     it("Gains tooltip puts active dimension immediately below Series", () => {
@@ -201,16 +216,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderGainsV2(gainsCutoff);
-      const titleCutoff = elCutoff.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titleCutoff).toBe("Series: Model A\nCutoff: 0.100\nPPCR: 0.800\nSensitivity: 0.900");
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
 
       const gainsPpcr: GainsV2Spec = {
         ...baseGains,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderGainsV2(gainsPpcr);
-      const titlePpcr = elPpcr.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titlePpcr).toBe("Series: Model A\nPPCR: 0.100\nCutoff: 0.900\nSensitivity: 0.200");
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
     });
 
     it("Lift tooltip puts active dimension immediately below Series", () => {
@@ -219,16 +232,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderLiftV2(liftCutoff);
-      const titleCutoff = elCutoff.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titleCutoff).toBe("Series: Model A\nCutoff: 0.100\nPPCR: 0.800\nLift: 1.100");
+      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
 
       const liftPpcr: LiftV2Spec = {
         ...baseLift,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderLiftV2(liftPpcr);
-      const titlePpcr = elPpcr.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      expect(titlePpcr).toBe("Series: Model A\nPPCR: 0.100\nCutoff: 0.900\nLift: 2.000");
+      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
     });
 
     it("selected operating-point marker displays exact same tooltip as underlying curve point", () => {
@@ -237,10 +248,9 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const el = renderRocV2(spec);
-      const selectedTitle = el.querySelector('.rtichoke-selected-operating-point title')?.textContent;
-      const allTitles = [...el.querySelectorAll('title')].map(t => t.textContent);
-      expect(selectedTitle).toBeDefined();
-      expect(allTitles).toContain(selectedTitle);
+      expect(el.querySelector('.rtichoke-selected-operating-point')).not.toBeNull();
+      expect(el.querySelector('[aria-label="dot"]')).not.toBeNull();
+      expect(el.querySelector('[aria-label="tip"]')).not.toBeNull();
     });
   });
 

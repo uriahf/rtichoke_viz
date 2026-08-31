@@ -527,7 +527,8 @@ export function ordinaryPointDotMark<T extends { seriesId: string }>(
     stroke,
     strokeWidth,
     r,
-    title: "title",
+    title: (d: any) => d.title,
+    tip: true,
   });
 }
 
@@ -552,7 +553,8 @@ export function operatingPointDotMark(
     stroke,
     strokeWidth,
     r,
-    title: "title",
+    title: (d: any) => d.title,
+    tip: true,
   });
 }
 
@@ -620,6 +622,8 @@ function renderRocChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
+      title: (d: any) => d.title,
+      tip: true,
     }),
     ordinaryPointDotMark(
       data,
@@ -690,6 +694,8 @@ export function renderCalibrationV2(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
+      title: (d: any) => d.title,
+      tip: true,
     }),
   );
   const discrete = data.filter((datum) => datum.method === "discrete");
@@ -703,6 +709,7 @@ export function renderCalibrationV2(
         strokeWidth: theme.marker.strokeWidth,
         r: theme.marker.radius,
         title: (d: any) => d.title,
+        tip: true,
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
@@ -766,6 +773,7 @@ export function renderCalibrationV2(
             fill: "group",
             fillOpacity: 1 / Math.max(resolved.groups.length, 1),
             title: (d: any) => d.title,
+            tip: true,
           }),
         ],
         theme,
@@ -853,6 +861,8 @@ function renderLineChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
+      title: (d: any) => d.title,
+      tip: true,
     }),
     ordinaryPointDotMark(
       data,
