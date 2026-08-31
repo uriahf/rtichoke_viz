@@ -3,6 +3,7 @@ import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoide
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import {
   operatingPointDotMark,
+  ordinaryPointDotMark,
   renderWithHorizonSelection,
   renderWithOperatingPointSelection,
   resolveV2RenderOptions,
@@ -46,6 +47,7 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
   }
   marks.push(
     Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, title: "title", tip: true }),
+    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
@@ -55,9 +57,6 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
       );
     }
   }
-  marks.push(
-    Plot.frame({ stroke: theme.frame.color, strokeWidth: theme.frame.width }),
-  );
   const axis = (label: string, domain: [number, number] | undefined) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });
   const plot = Plot.plot({
     width: theme.width, height: theme.height,

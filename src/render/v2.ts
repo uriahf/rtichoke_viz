@@ -76,7 +76,7 @@ export interface V2RenderOptions {
 
 export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
   width: 600,
-  height: 600,
+  height: 500,
   margins: { top: 28, right: 28, bottom: 58, left: 66 },
   background: "#ffffff",
   frame: { color: "#444444", width: 1 },
@@ -96,8 +96,8 @@ export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
   },
   colors: RTICHOKE_COLORS,
   line: { width: 2, dash: null },
-  marker: { radius: 5, fill: null, stroke: "#ffffff", strokeWidth: 1.5 },
-  reference: { color: "#BEBEBE", width: 2, dash: "4,4" },
+  marker: { radius: 2.5, fill: null, stroke: "#ffffff", strokeWidth: 0.5 },
+  reference: { color: "#BEBEBE", width: 1.5, dash: "2,3" },
   legend: { position: "top", swatchWidth: 15, columns: null },
   tip: { digits: 3 },
 };
@@ -468,8 +468,68 @@ function referenceMarks(
 }
 
 function finishMarks(marks: Plot.Markish[], theme: V2RendererTheme) {
-  marks.push(frameMark(theme));
   return marks;
+}
+
+export function thinOrdinaryPoints<T>(
+  data: T[],
+  getSeriesId: (item: T) => string,
+  targetMax = 40,
+): T[] {
+  const bySeries = new Map<string, T[]>();
+  for (const item of data) {
+    const id = getSeriesId(item);
+    let list = bySeries.get(id);
+    if (!list) {
+      list = [];
+      bySeries.set(id, list);
+    }
+    list.push(item);
+  }
+
+  const result: T[] = [];
+  for (const list of bySeries.values()) {
+    const n = list.length;
+    if (n <= targetMax) {
+      result.push(...list);
+    } else {
+      const selectedIndices = new Set<number>();
+      for (let k = 0; k < targetMax; k++) {
+        const idx = Math.round((k * (n - 1)) / (targetMax - 1));
+        selectedIndices.add(idx);
+      }
+      for (const idx of selectedIndices) {
+        result.push(list[idx]);
+      }
+    }
+  }
+  return result;
+}
+
+export function ordinaryPointDotMark<T extends { seriesId: string }>(
+  data: T[],
+  x: string,
+  y: string,
+  resolved: ResolvedV2RenderOptions,
+  customTheme?: V2ThemeOptions,
+): Plot.Markish {
+  const thinned = thinOrdinaryPoints(data, (d) => d.seriesId, 40);
+  const theme = resolved.theme;
+  const r = customTheme?.marker?.radius ?? theme.marker.radius;
+  const stroke = customTheme?.marker?.stroke ?? theme.marker.stroke;
+  const strokeWidth = customTheme?.marker?.strokeWidth ?? theme.marker.strokeWidth;
+
+  return Plot.dot(thinned, {
+    ariaLabel: "ordinary-point",
+    x,
+    y,
+    fill: "group",
+    stroke,
+    strokeWidth,
+    r,
+    title: "title",
+    tip: true,
+  });
 }
 
 export function operatingPointDotMark(
@@ -486,6 +546,7 @@ export function operatingPointDotMark(
   const r = customTheme?.marker?.radius ?? 7.5;
 
   return Plot.dot(data, {
+    className: "rtichoke-selected-operating-point",
     x,
     y,
     fill,
@@ -551,6 +612,13 @@ function renderRocChart(
       title: "title",
       tip: true,
     }),
+    ordinaryPointDotMark(
+      data,
+      "false_positive_rate",
+      "sensitivity",
+      resolved,
+      options.theme,
+    ),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const dimField = spec.operatingPoint.dimension === "probability_threshold" ? "cutoff" : "ppcr";
@@ -759,6 +827,13 @@ function renderLineChart(
       title: "title",
       tip: true,
     }),
+    ordinaryPointDotMark(
+      data,
+      x,
+      y,
+      resolved,
+      options.theme,
+    ),
   );
   if (selectedOperatingPointValue !== undefined && (spec as OperatingPointSupportedSpec).operatingPoint) {
     const dim = (spec as OperatingPointSupportedSpec).operatingPoint!.dimension;

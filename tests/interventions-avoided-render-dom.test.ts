@@ -273,7 +273,7 @@ describe("Interventions Avoided v2 browser rendering", () => {
       expect(valueSpan.textContent).toBe("0.100");
 
       // Verify persistent dot markers are present for matching active series
-      let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      let dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(2);
 
       // Move slider to index 1 (threshold 0.2)
@@ -281,7 +281,7 @@ describe("Interventions Avoided v2 browser rendering", () => {
       slider.dispatchEvent(new Event("input"));
       expect(slider.getAttribute("aria-valuetext")).toBe("0.200");
       expect(valueSpan.textContent).toBe("0.200");
-      dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(2);
     });
 

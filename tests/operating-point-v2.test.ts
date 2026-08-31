@@ -179,7 +179,7 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const el = renderRocV2(spec);
-      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      const dotMarkGroup = el.querySelector(".rtichoke-selected-operating-point");
       expect(dotMarkGroup).not.toBeNull();
       const circleOrPath = dotMarkGroup!.querySelector('circle, path');
       expect(circleOrPath).not.toBeNull();
@@ -211,7 +211,7 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const el = renderRocV2(multiRoc);
-      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      const dotMarkGroup = el.querySelector(".rtichoke-selected-operating-point");
       expect(dotMarkGroup).not.toBeNull();
       const circles = dotMarkGroup!.querySelectorAll('circle, path');
       expect(circles.length).toBeGreaterThanOrEqual(2);
@@ -241,7 +241,7 @@ describe("Operating Point Selection for Performance Curves", () => {
       const el = renderInterventionsAvoidedV2(iaSpec);
       const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
       expect(slider).not.toBeNull();
-      const dotMarkGroup = el.querySelector('[aria-label="dot"]');
+      const dotMarkGroup = el.querySelector(".rtichoke-selected-operating-point");
       expect(dotMarkGroup).not.toBeNull();
       const circleOrPath = dotMarkGroup!.querySelector('circle, path');
       expect(circleOrPath!.getAttribute("fill") || dotMarkGroup!.getAttribute("fill")).toBe("#f6e3be");
@@ -432,13 +432,13 @@ describe("Operating Point Selection for Performance Curves", () => {
       expect(verticalRules).toHaveLength(0);
 
       // Check default selected threshold = 0.1 (common to both Model A and Model B)
-      let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      let dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(2);
 
       // Select threshold = 0.5 (index 1)
       slider.value = "1";
       slider.dispatchEvent(new Event("input"));
-      dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(2);
 
       // Full curve lines and references remain present when slider moves
@@ -558,21 +558,21 @@ describe("Operating Point Selection for Performance Curves", () => {
 
       // Default selected value is 0.1 (index 0). Only Model A has PPCR 0.1.
       expect(valueSpan.textContent).toBe("0.100");
-      let dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      let dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(1);
 
       // Select index 2 -> PPCR 0.5 (common to both Model A and Model B).
       slider.value = "2";
       slider.dispatchEvent(new Event("input"));
       expect(valueSpan.textContent).toBe("0.500");
-      dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(2);
 
       // Select index 1 -> PPCR 0.2 (only Model B has 0.2).
       slider.value = "1";
       slider.dispatchEvent(new Event("input"));
       expect(valueSpan.textContent).toBe("0.200");
-      dots = el.querySelectorAll('[aria-label="dot"] circle, [aria-label="symbol"] path');
+      dots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
       expect(dots.length).toBe(1);
     });
   });
