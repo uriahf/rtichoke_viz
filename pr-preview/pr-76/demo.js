@@ -19267,7 +19267,8 @@ function ordinaryPointDotMark(data, x2, y2, resolved, customTheme) {
     stroke,
     strokeWidth,
     r,
-    title: "title"
+    title: (d) => d.title,
+    tip: true
   });
 }
 function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
@@ -19284,7 +19285,8 @@ function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
     stroke,
     strokeWidth,
     r,
-    title: "title"
+    title: (d) => d.title,
+    tip: true
   });
 }
 function themedPlot(options, theme) {
@@ -19345,7 +19347,9 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0
+      strokeDasharray: theme.line.dash ?? void 0,
+      title: (d) => d.title,
+      tip: true
     }),
     ordinaryPointDotMark(
       data,
@@ -19408,7 +19412,9 @@ function renderCalibrationV2(spec, options = {}) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0
+      strokeDasharray: theme.line.dash ?? void 0,
+      title: (d) => d.title,
+      tip: true
     })
   );
   const discrete = data.filter((datum2) => datum2.method === "discrete");
@@ -19421,7 +19427,8 @@ function renderCalibrationV2(spec, options = {}) {
         stroke: theme.marker.stroke,
         strokeWidth: theme.marker.strokeWidth,
         r: theme.marker.radius,
-        title: (d) => d.title
+        title: (d) => d.title,
+        tip: true
       })
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
@@ -19480,7 +19487,8 @@ function renderCalibrationV2(spec, options = {}) {
             y: "count",
             fill: "group",
             fillOpacity: 1 / Math.max(resolved.groups.length, 1),
-            title: (d) => d.title
+            title: (d) => d.title,
+            tip: true
           })
         ],
         theme
@@ -19547,7 +19555,9 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0
+      strokeDasharray: theme.line.dash ?? void 0,
+      title: (d) => d.title,
+      tip: true
     }),
     ordinaryPointDotMark(
       data,
