@@ -19,7 +19,7 @@ export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, o
     renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
-      (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, options, activeOpVal),
+      (specWithOp, opts, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, opts, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),

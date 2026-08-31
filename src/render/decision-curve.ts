@@ -19,7 +19,7 @@ export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2Rend
     renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
-      (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, options, activeOpVal),
+      (specWithOp, opts, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, opts, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),

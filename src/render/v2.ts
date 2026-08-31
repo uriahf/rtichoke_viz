@@ -110,6 +110,7 @@ export interface ResolvedV2RenderOptions {
   colors: readonly string[];
   colorByGroup: ReadonlyMap<string, string>;
   showLegend: boolean;
+  activeGroups: readonly string[];
 }
 
 function mergeTheme(options: V2RenderOptions): V2RendererTheme {
@@ -136,7 +137,7 @@ export function resolveV2RenderOptions(
   groupsOrCount: readonly string[] | number,
   options: V2RenderOptions = {},
 ): ResolvedV2RenderOptions {
-  const groups =
+  const allGroups =
     options.allGroups ??
     (typeof groupsOrCount === "number"
       ? Array.from(
@@ -144,6 +145,15 @@ export function resolveV2RenderOptions(
           (_, index) => `group-${index + 1}`,
         )
       : [...groupsOrCount]);
+
+  const activeGroups =
+    typeof groupsOrCount === "number"
+      ? Array.from(
+          { length: groupsOrCount },
+          (_, index) => `group-${index + 1}`,
+        )
+      : [...groupsOrCount];
+
   const theme = mergeTheme(options);
   if (
     !Number.isFinite(theme.width) ||
@@ -160,19 +170,22 @@ export function resolveV2RenderOptions(
     theme.tip.digits > 20
   )
     throw new Error("Renderer tip digits must be an integer between 0 and 20");
-  const colors = groups.length <= 1 ? ["#000000"] : [...theme.colors];
-  if (colors.length < groups.length)
+
+  const colors = allGroups.length <= 1 ? ["#000000"] : [...theme.colors];
+  if (colors.length < allGroups.length)
     throw new Error(
       "Renderer colors must contain at least one color per display group",
     );
-  const assigned = colors.slice(0, Math.max(groups.length, 1));
-  const showLegend = options.showLegend ?? groups.length > 1;
+  const assigned = colors.slice(0, Math.max(allGroups.length, 1));
+  const showLegend = options.showLegend ?? allGroups.length > 1;
+
   return {
     theme: { ...theme, colors: assigned },
-    groups,
+    groups: allGroups,
+    activeGroups,
     colors: assigned,
     colorByGroup: new Map(
-      groups.map((group, index) => [group, assigned[index]]),
+      allGroups.map((group, index) => [group, assigned[index]]),
     ),
     showLegend,
   };
@@ -295,6 +308,7 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
   options: V2RenderOptions,
   render: (
     filteredSpec: T,
+    opts: V2RenderOptions,
     selectedValue?: number,
   ) => SVGSVGElement | HTMLElement,
   preferredValue?: number,
@@ -304,11 +318,23 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
 
   // If single-series or no groups, delegate directly to operating-point selection without legend UI
   if (allGroups.length <= 1) {
-    return renderWithOperatingPointSelection(spec, options, render, preferredValue, onValueChange);
+    return renderWithOperatingPointSelection(
+      spec,
+      options,
+      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
+      preferredValue,
+      onValueChange,
+    );
   }
 
   // Multi-series: build custom HTML legend
-  const resolved = resolveV2RenderOptions(allGroups, { ...options, showLegend: false });
+  const childOptions: V2RenderOptions = {
+    ...options,
+    allGroups,
+    showLegend: false,
+  };
+
+  const resolved = resolveV2RenderOptions(allGroups, childOptions);
   const { theme, colorByGroup } = resolved;
   const labelByGroup = new Map(spec.series.map((s) => [s.display.group, s.display.label]));
 
@@ -353,15 +379,10 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
 
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const childOptions: V2RenderOptions = {
-      ...options,
-      allGroups,
-      showLegend: false,
-    };
     const chartContent = renderWithOperatingPointSelection(
       filteredSpec,
       childOptions,
-      (fSpec, activeOpVal) => render(fSpec, activeOpVal),
+      (fSpec, childOpts, activeOpVal) => render(fSpec, childOpts, activeOpVal),
       activePreferredVal,
       (val) => {
         activePreferredVal = val;
@@ -413,15 +434,16 @@ export function renderWithOperatingPointSelection<
   options: V2RenderOptions,
   render: (
     selectedSpec: T,
+    opts: V2RenderOptions,
     selectedValue?: number,
   ) => SVGSVGElement | HTMLElement,
   preferredValue?: number,
   onValueChange?: (val: number) => void,
 ): SVGSVGElement | HTMLElement {
-  if (!spec.operatingPoint) return render(spec, undefined);
+  if (!spec.operatingPoint) return render(spec, options, undefined);
 
   const values = extractOperatingPointValues(spec);
-  if (values.length === 0) return render(spec, undefined);
+  if (values.length === 0) return render(spec, options, undefined);
 
   const resolved = resolveV2RenderOptions(displayGroups(spec as any), options);
   const { theme } = resolved;
@@ -480,7 +502,7 @@ export function renderWithOperatingPointSelection<
   chart.className = "rtichoke-operating-point-content";
 
   const draw = (val: number) => {
-    chart.replaceChildren(render(spec, val));
+    chart.replaceChildren(render(spec, options, val));
   };
 
   slider.addEventListener("input", () => {
@@ -812,8 +834,11 @@ export function renderRocV2(
   options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
   return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithLegendFiltering(selected, options, (filteredSpec, activeOpVal) =>
-      renderRocChart(filteredSpec, options, activeOpVal),
+    renderWithLegendFiltering(
+      selected,
+      options,
+      (filteredSpec, opts, activeOpVal) =>
+        renderRocChart(filteredSpec, opts, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),
@@ -1135,8 +1160,8 @@ function renderHorizonLineChart(
     renderWithLegendFiltering(
       selected as OperatingPointSupportedSpec,
       options,
-      (filteredSpec, activeOpVal) =>
-        renderLineChart(filteredSpec as any, options, x, y, activeOpVal),
+      (filteredSpec, opts, activeOpVal) =>
+        renderLineChart(filteredSpec as any, opts, x, y, activeOpVal),
       preferredOpVal,
       onOpValChange,
     ),
