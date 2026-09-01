@@ -157,7 +157,7 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     expect(valueSpan.textContent).toBe("0.100");
 
     // Restore Model B -> intersection collapses back to [0.5].
-    // Previous value 0.1 is no longer valid, so fallback picks closest exact value in domain (0.5).
+    // Previous value 0.1 is no longer valid, so fallback picks first exact value in domain (values[0] = 0.5).
     buttons[1].click();
     slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
@@ -165,14 +165,14 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     expect(valueSpan.textContent).toBe("0.500");
   });
 
-  it("recomputes PPCR domain as union of active series", () => {
+  it("recomputes PPCR domain as union of active series and falls back to first exact value when active value is invalid", () => {
     const spec: RocV2Spec = {
       ...multiSeriesRocSpec,
       data: [
         { seriesId: "series-1", cutoff: 0.1, sensitivity: 0.9, specificity: 0.3, ppcr: 0.1 },
         { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.7, specificity: 0.7, ppcr: 0.5 },
-        { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.85, specificity: 0.4, ppcr: 0.2 },
-        { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75, ppcr: 0.5 },
+        { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.85, specificity: 0.4, ppcr: 0.8 },
+        { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.65, specificity: 0.75, ppcr: 0.2 },
       ],
       operatingPoint: { dimension: "ppcr" },
     };
@@ -182,12 +182,18 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     let slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     let valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
 
-    // Initial union: [0.1, 0.2, 0.5] (length 3, max index 2)
-    expect(slider.max).toBe("2");
+    // Initial union: [0.1, 0.2, 0.5, 0.8] (length 4, max index 3)
+    expect(slider.max).toBe("3");
     expect(valueSpan.textContent).toBe("0.100");
 
-    // Hide Model A -> Model B active: domain [0.2, 0.5]
-    // Fallback for 0.1 is closest value 0.2!
+    // Select active PPCR = 0.5 (index 2)
+    slider.value = "2";
+    slider.dispatchEvent(new Event("input"));
+    expect(valueSpan.textContent).toBe("0.500");
+
+    // Hide Model A -> Model B active: domain is [0.2, 0.8]
+    // 0.5 is invalid for Model B.
+    // Explicit test for first-value fallback: values[0] is 0.2 (even though 0.5 is numerically closer to 0.8 / 0.2, values[0] is explicitly selected).
     buttons[0].click();
     slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
