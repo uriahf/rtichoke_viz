@@ -5,6 +5,7 @@ import {
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
+  renderWithLegendFiltering,
   renderWithOperatingPointSelection,
   resolveV2RenderOptions,
   themedPlot,
@@ -15,20 +16,29 @@ import {
 
 export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
-  return renderWithHorizonSelection(spec, (selected, preferredOpVal, onOpValChange) =>
-    renderWithOperatingPointSelection(
-      selected as OperatingPointSupportedSpec,
-      options,
-      (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, options, activeOpVal),
-      preferredOpVal,
-      onOpValChange,
-    ),
+  return renderWithLegendFiltering(
+    spec as OperatingPointSupportedSpec,
+    options,
+    (filteredSpec, opts, preferredOpVal, onOpValChange) =>
+      renderWithHorizonSelection(
+        filteredSpec,
+        (selected, pOpVal, onOpChange) =>
+          renderWithOperatingPointSelection(
+            selected as OperatingPointSupportedSpec,
+            opts,
+            (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, opts, activeOpVal),
+            pOpVal,
+            onOpChange,
+          ),
+        preferredOpVal,
+        onOpValChange,
+      ),
   );
 }
 
 function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, options: V2RenderOptions, selectedOperatingPointValue?: number): SVGSVGElement | HTMLElement {
   const groups = [...new Set(spec.series.map((series) => series.display.group))];
-  const resolved = resolveV2RenderOptions(groups, options);
+  const resolved = resolveV2RenderOptions(groups, { ...options, showLegend: false });
   const { theme } = resolved;
   const displayBySeries = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
