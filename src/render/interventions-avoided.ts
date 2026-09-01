@@ -19,15 +19,19 @@ export function renderInterventionsAvoidedV2(spec: InterventionsAvoidedV2Spec, o
   return renderWithLegendFiltering(
     spec as OperatingPointSupportedSpec,
     options,
-    (filteredSpec, opts) =>
-      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
-        renderWithOperatingPointSelection(
-          selected as OperatingPointSupportedSpec,
-          opts,
-          (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, opts, activeOpVal),
-          preferredOpVal,
-          onOpValChange,
-        ),
+    (filteredSpec, opts, preferredOpVal, onOpValChange) =>
+      renderWithHorizonSelection(
+        filteredSpec,
+        (selected, pOpVal, onOpChange) =>
+          renderWithOperatingPointSelection(
+            selected as OperatingPointSupportedSpec,
+            opts,
+            (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp as InterventionsAvoidedV2Spec, opts, activeOpVal),
+            pOpVal,
+            onOpChange,
+          ),
+        preferredOpVal,
+        onOpValChange,
       ),
   );
 }

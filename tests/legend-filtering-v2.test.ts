@@ -144,12 +144,12 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     expect(valueSpan.textContent).toBe("0.500");
 
     // Hide Model B -> Model A alone active: domain expands to [0.1, 0.5, 0.9]
-    // Default fallback selects first exact value (0.1) when re-evaluated
+    // Active preferred value 0.5 remains valid in Model A, so it is preserved!
     buttons[1].click();
     slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
     expect(slider.max).toBe("2");
-    expect(valueSpan.textContent).toBe("0.100");
+    expect(valueSpan.textContent).toBe("0.500");
 
     // Select cutoff 0.1 (index 0)
     slider.value = "0";
@@ -259,10 +259,10 @@ describe("Interactive Multi-Series Legend Filtering", () => {
     selectedDots = el.querySelectorAll('.rtichoke-selected-operating-point circle, .rtichoke-selected-operating-point path');
     expect(selectedDots).toHaveLength(1);
 
-    // 3. Operating-point domain is recomputed from visible series at horizon 10 (Model B: [0.2, 0.3, 0.5])
+    // 3. Operating-point domain is recomputed from visible series at horizon 10 (Model B: [0.2, 0.5])
     const slider = el.querySelector<HTMLInputElement>('input[type="range"]')!;
     const valueSpan = el.querySelector(".rtichoke-operating-point-value")!;
-    expect(valueSpan.textContent).toBe("0.200"); // first exact value of Model B at 10y
+    expect(valueSpan.textContent).toBe("0.500"); // 0.5 preserved at horizon 10
   });
 
   it("works seamlessly when embedded inside ReportSpec", () => {

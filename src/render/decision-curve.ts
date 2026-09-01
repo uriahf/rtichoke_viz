@@ -19,15 +19,19 @@ export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2Rend
   return renderWithLegendFiltering(
     spec as OperatingPointSupportedSpec,
     options,
-    (filteredSpec, opts) =>
-      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
-        renderWithOperatingPointSelection(
-          selected as OperatingPointSupportedSpec,
-          opts,
-          (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, opts, activeOpVal),
-          preferredOpVal,
-          onOpValChange,
-        ),
+    (filteredSpec, opts, preferredOpVal, onOpValChange) =>
+      renderWithHorizonSelection(
+        filteredSpec,
+        (selected, pOpVal, onOpChange) =>
+          renderWithOperatingPointSelection(
+            selected as OperatingPointSupportedSpec,
+            opts,
+            (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp as DecisionCurveV2Spec, opts, activeOpVal),
+            pOpVal,
+            onOpChange,
+          ),
+        preferredOpVal,
+        onOpValChange,
       ),
   );
 }

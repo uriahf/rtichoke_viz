@@ -283,13 +283,21 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
   render: (
     filteredSpec: T,
     opts: V2RenderOptions,
+    preferredOpVal?: number,
+    onOpValChange?: (val: number) => void,
   ) => SVGSVGElement | HTMLElement,
+  preferredValue?: number,
+  onValueChange?: (val: number) => void,
 ): SVGSVGElement | HTMLElement {
   const allGroups = displayGroups(spec as any);
+  let currentOpVal = preferredValue;
 
   // If single-series or no groups, delegate directly to child render without legend UI
   if (allGroups.length <= 1) {
-    return render(spec, options);
+    return render(spec, options, currentOpVal, (val) => {
+      currentOpVal = val;
+      if (onValueChange) onValueChange(val);
+    });
   }
 
   // Multi-series: build custom HTML legend
@@ -328,11 +336,11 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
     const swatch = document.createElement("span");
     swatch.className = "rtichoke-legend-swatch";
 
-  const lineSpan = document.createElement("span");
-  lineSpan.className = "rtichoke-legend-line";
-  lineSpan.style.backgroundColor = colorByGroup.get(group) ?? "#000000";
+    const lineSpan = document.createElement("span");
+    lineSpan.className = "rtichoke-legend-line";
+    lineSpan.style.backgroundColor = colorByGroup.get(group) ?? "#000000";
 
-  swatch.append(lineSpan);
+    swatch.append(lineSpan);
 
     const labelSpan = document.createElement("span");
     labelSpan.className = "rtichoke-legend-label";
@@ -348,7 +356,10 @@ export function renderWithLegendFiltering<T extends OperatingPointSupportedSpec>
 
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const chartContent = render(filteredSpec, childOptions);
+    const chartContent = render(filteredSpec, childOptions, currentOpVal, (val) => {
+      currentOpVal = val;
+      if (onValueChange) onValueChange(val);
+    });
     contentArea.replaceChildren(chartContent);
   };
 
@@ -791,15 +802,19 @@ export function renderRocV2(
   return renderWithLegendFiltering(
     spec,
     options,
-    (filteredSpec, opts) =>
-      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
-        renderWithOperatingPointSelection(
-          selected,
-          opts,
-          (specWithOp, activeOpVal) => renderRocChart(specWithOp, opts, activeOpVal),
-          preferredOpVal,
-          onOpValChange,
-        ),
+    (filteredSpec, opts, preferredOpVal, onOpValChange) =>
+      renderWithHorizonSelection(
+        filteredSpec,
+        (selected, pOpVal, onOpChange) =>
+          renderWithOperatingPointSelection(
+            selected,
+            opts,
+            (specWithOp, activeOpVal) => renderRocChart(specWithOp, opts, activeOpVal),
+            pOpVal,
+            onOpChange,
+          ),
+        preferredOpVal,
+        onOpValChange,
       ),
   );
 }
@@ -1070,11 +1085,13 @@ export function selectHorizonSpec<T extends HorizonSpec>(
 export function renderWithHorizonSelection<T extends HorizonSpec>(
   spec: T,
   render: (selected: T, preferredOpValue?: number, onOpValueChange?: (val: number) => void) => SVGSVGElement | HTMLElement,
+  preferredValue?: number,
+  onValueChange?: (val: number) => void,
 ): SVGSVGElement | HTMLElement {
   const availableHorizons = horizons(spec);
-  if (availableHorizons.length <= 1) return render(spec);
+  if (availableHorizons.length <= 1) return render(spec, preferredValue, onValueChange);
 
-  let currentOpValue: number | undefined;
+  let currentOpValue: number | undefined = preferredValue;
 
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
@@ -1099,6 +1116,7 @@ export function renderWithHorizonSelection<T extends HorizonSpec>(
         currentOpValue,
         (val) => {
           currentOpValue = val;
+          if (onValueChange) onValueChange(val);
         },
       ),
     );
@@ -1118,16 +1136,20 @@ function renderHorizonLineChart(
   return renderWithLegendFiltering(
     spec as OperatingPointSupportedSpec,
     options,
-    (filteredSpec, opts) =>
-      renderWithHorizonSelection(filteredSpec, (selected, preferredOpVal, onOpValChange) =>
-        renderWithOperatingPointSelection(
-          selected as OperatingPointSupportedSpec,
-          opts,
-          (specWithOp, activeOpVal) =>
-            renderLineChart(specWithOp as any, opts, x, y, activeOpVal),
-          preferredOpVal,
-          onOpValChange,
-        ),
+    (filteredSpec, opts, preferredOpVal, onOpValChange) =>
+      renderWithHorizonSelection(
+        filteredSpec,
+        (selected, pOpVal, onOpChange) =>
+          renderWithOperatingPointSelection(
+            selected as OperatingPointSupportedSpec,
+            opts,
+            (specWithOp, activeOpVal) =>
+              renderLineChart(specWithOp as any, opts, x, y, activeOpVal),
+            pOpVal,
+            onOpChange,
+          ),
+        preferredOpVal,
+        onOpValChange,
       ),
   );
 }
