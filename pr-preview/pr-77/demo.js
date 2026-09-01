@@ -19075,10 +19075,14 @@ function filterSpecByGroups(spec, activeGroups) {
     data: spec.data.filter((d) => visibleSeriesIds.has(d.seriesId))
   };
 }
-function renderWithLegendFiltering(spec, options, render) {
+function renderWithLegendFiltering(spec, options, render, preferredValue, onValueChange) {
   const allGroups = displayGroups(spec);
+  let currentOpVal = preferredValue;
   if (allGroups.length <= 1) {
-    return render(spec, options);
+    return render(spec, options, currentOpVal, (val) => {
+      currentOpVal = val;
+      if (onValueChange) onValueChange(val);
+    });
   }
   const childOptions = {
     ...options,
@@ -19121,7 +19125,10 @@ function renderWithLegendFiltering(spec, options, render) {
   contentArea.className = "rtichoke-legend-content";
   const updateChart = () => {
     const filteredSpec = filterSpecByGroups(spec, activeGroups);
-    const chartContent = render(filteredSpec, childOptions);
+    const chartContent = render(filteredSpec, childOptions, currentOpVal, (val) => {
+      currentOpVal = val;
+      if (onValueChange) onValueChange(val);
+    });
     contentArea.replaceChildren(chartContent);
   };
   allGroups.forEach((group2) => {
@@ -19462,15 +19469,17 @@ function renderRocV2(spec, options = {}) {
   return renderWithLegendFiltering(
     spec,
     options,
-    (filteredSpec, opts) => renderWithHorizonSelection(
+    (filteredSpec, opts, preferredOpVal, onOpValChange) => renderWithHorizonSelection(
       filteredSpec,
-      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+      (selected, pOpVal, onOpChange) => renderWithOperatingPointSelection(
         selected,
         opts,
         (specWithOp, activeOpVal) => renderRocChart(specWithOp, opts, activeOpVal),
-        preferredOpVal,
-        onOpValChange
-      )
+        pOpVal,
+        onOpChange
+      ),
+      preferredOpVal,
+      onOpValChange
     )
   );
 }
@@ -19692,10 +19701,10 @@ function selectHorizonSpec(spec, horizon) {
     )
   };
 }
-function renderWithHorizonSelection(spec, render) {
+function renderWithHorizonSelection(spec, render, preferredValue, onValueChange) {
   const availableHorizons = horizons(spec);
-  if (availableHorizons.length <= 1) return render(spec);
-  let currentOpValue;
+  if (availableHorizons.length <= 1) return render(spec, preferredValue, onValueChange);
+  let currentOpValue = preferredValue;
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
   const control = document.createElement("label");
@@ -19719,6 +19728,7 @@ function renderWithHorizonSelection(spec, render) {
         currentOpValue,
         (val) => {
           currentOpValue = val;
+          if (onValueChange) onValueChange(val);
         }
       )
     );
@@ -19732,15 +19742,17 @@ function renderHorizonLineChart(spec, options, x2, y2) {
   return renderWithLegendFiltering(
     spec,
     options,
-    (filteredSpec, opts) => renderWithHorizonSelection(
+    (filteredSpec, opts, preferredOpVal, onOpValChange) => renderWithHorizonSelection(
       filteredSpec,
-      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+      (selected, pOpVal, onOpChange) => renderWithOperatingPointSelection(
         selected,
         opts,
         (specWithOp, activeOpVal) => renderLineChart(specWithOp, opts, x2, y2, activeOpVal),
-        preferredOpVal,
-        onOpValChange
-      )
+        pOpVal,
+        onOpChange
+      ),
+      preferredOpVal,
+      onOpValChange
     )
   );
 }
@@ -19760,15 +19772,17 @@ function renderDecisionCurveV2(spec, options = {}) {
   return renderWithLegendFiltering(
     spec,
     options,
-    (filteredSpec, opts) => renderWithHorizonSelection(
+    (filteredSpec, opts, preferredOpVal, onOpValChange) => renderWithHorizonSelection(
       filteredSpec,
-      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+      (selected, pOpVal, onOpChange) => renderWithOperatingPointSelection(
         selected,
         opts,
         (specWithOp, activeOpVal) => renderDecisionCurveChart(specWithOp, opts, activeOpVal),
-        preferredOpVal,
-        onOpValChange
-      )
+        pOpVal,
+        onOpChange
+      ),
+      preferredOpVal,
+      onOpValChange
     )
   );
 }
@@ -19832,15 +19846,17 @@ function renderInterventionsAvoidedV2(spec, options = {}) {
   return renderWithLegendFiltering(
     spec,
     options,
-    (filteredSpec, opts) => renderWithHorizonSelection(
+    (filteredSpec, opts, preferredOpVal, onOpValChange) => renderWithHorizonSelection(
       filteredSpec,
-      (selected, preferredOpVal, onOpValChange) => renderWithOperatingPointSelection(
+      (selected, pOpVal, onOpChange) => renderWithOperatingPointSelection(
         selected,
         opts,
         (specWithOp, activeOpVal) => renderInterventionsAvoidedChart(specWithOp, opts, activeOpVal),
-        preferredOpVal,
-        onOpValChange
-      )
+        pOpVal,
+        onOpChange
+      ),
+      preferredOpVal,
+      onOpValChange
     )
   );
 }
