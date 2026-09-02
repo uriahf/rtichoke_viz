@@ -254,8 +254,6 @@ function renderReportV1_1(
   }
 
   // Heading depth resolution
-  // With title: section h2, group h3, component in group h4, direct component h3
-  // Without title: section h1, group h2, component in group h3, direct component h2
   const sectionHeadingTag = hasTitle ? "h2" : "h1";
   const groupHeadingTag = hasTitle ? "h3" : "h2";
   const directCompHeadingTag = hasTitle ? "h3" : "h2";
