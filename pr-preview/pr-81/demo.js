@@ -20023,7 +20023,7 @@ function formatMetricValue(value, formatter) {
   const upper = value.upper === void 0 || value.upper === null || isNaN(value.upper) ? MISSING : formatter(value.upper);
   return `${est} [${lower2}, ${upper}]`;
 }
-function appendInCellBar(td, document2, percent, isDiverging = false, isNegative = false) {
+function appendInCellBar(td, document2, percent, isDiverging = false, isNegative = false, barStyle = "positive") {
   if (isNaN(percent) || !isFinite(percent)) return;
   const bar = document2.createElement("div");
   bar.className = "rtichoke-performance-table__bar";
@@ -20044,7 +20044,11 @@ function appendInCellBar(td, document2, percent, isDiverging = false, isNegative
   } else {
     const width = Math.min(Math.max(percent, 0), 100);
     fill.style.width = `${width}%`;
-    fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+    if (barStyle === "neutral") {
+      fill.classList.add("rtichoke-performance-table__bar-fill--neutral");
+    } else {
+      fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+    }
   }
   bar.append(fill);
   td.append(bar);
@@ -20084,9 +20088,13 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
   const isPureThreshold = operatingTypes.size === 1 && operatingTypes.has("probability_threshold");
   const isPurePpcr = operatingTypes.size === 1 && operatingTypes.has("ppcr");
   const specMetricIds = new Set(spec.metrics.map((m) => m.id));
-  const hasPredictedPositives = specMetricIds.has("predicted_positives");
+  const hasPredictedPositivesMetric = specMetricIds.has("predicted_positives");
   const hasPpcrMetric = specMetricIds.has("ppcr");
-  const useCompositePredictedPositives = isPurePpcr || hasPredictedPositives && hasPpcrMetric;
+  const canConstructComposite = hasPredictedPositivesMetric && (hasPpcrMetric || isPurePpcr);
+  const renderThresholdCol = isPureThreshold || !isPurePpcr && operatingTypes.has("probability_threshold");
+  const renderCompositePredPosCol = canConstructComposite;
+  const renderPpcrFallbackCol = isPurePpcr && !canConstructComposite;
+  const renderGenericOpCol = !isPureThreshold && !isPurePpcr && !canConstructComposite;
   const thresholdValues = spec.rows.filter((r) => r.operatingPoint.type === "probability_threshold").map((r) => r.operatingPoint.value);
   const thresholdPrecision = determineThresholdPrecision(thresholdValues);
   const primaryMetricSpecs = PRIMARY_METRIC_ORDER.map((p) => {
@@ -20129,13 +20137,19 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
     nonMetricColCount++;
     bottomRow.append(header(document2, "Evaluation"));
   }
-  if (isPureThreshold) {
+  if (renderThresholdCol) {
     nonMetricColCount++;
     bottomRow.append(header(document2, "Probability Threshold"));
-  } else if (useCompositePredictedPositives) {
+  }
+  if (renderCompositePredPosCol) {
     nonMetricColCount++;
     bottomRow.append(header(document2, "Predicted Positives"));
-  } else {
+  }
+  if (renderPpcrFallbackCol) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "PPCR"));
+  }
+  if (renderGenericOpCol) {
     nonMetricColCount++;
     bottomRow.append(header(document2, "Operating Point"));
   }
@@ -20183,10 +20197,12 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
       tr.append(cell(document2, evaluation?.label ?? evaluation?.id ?? MISSING, "rtichoke-performance-table__evaluation"));
     }
     const valueMap = new Map(row.values.map((v) => [v.metricId, v]));
-    if (isPureThreshold) {
-      const formattedTh = row.operatingPoint.value.toFixed(thresholdPrecision);
+    if (renderThresholdCol) {
+      const thVal = row.operatingPoint.type === "probability_threshold" ? row.operatingPoint.value : void 0;
+      const formattedTh = thVal !== void 0 ? thVal.toFixed(thresholdPrecision) : MISSING;
       tr.append(cell(document2, formattedTh, "rtichoke-performance-table__op"));
-    } else if (useCompositePredictedPositives) {
+    }
+    if (renderCompositePredPosCol) {
       const predPosVal = valueMap.get("predicted_positives")?.estimate;
       const ppcrVal = valueMap.get("ppcr")?.estimate ?? (row.operatingPoint.type === "ppcr" ? row.operatingPoint.value : void 0);
       let text2 = MISSING;
@@ -20203,10 +20219,20 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
       }
       const td = cell(document2, text2, "rtichoke-performance-table__op");
       if (!isNaN(ppcrPercent)) {
-        appendInCellBar(td, document2, ppcrPercent);
+        appendInCellBar(td, document2, ppcrPercent, false, false, "neutral");
       }
       tr.append(td);
-    } else {
+    }
+    if (renderPpcrFallbackCol) {
+      const ppcrVal = row.operatingPoint.type === "ppcr" ? row.operatingPoint.value : valueMap.get("ppcr")?.estimate;
+      const text2 = ppcrVal !== void 0 && ppcrVal !== null ? `PPCR ${ppcrVal.toFixed(2)}` : MISSING;
+      const td = cell(document2, text2, "rtichoke-performance-table__op");
+      if (ppcrVal !== void 0 && ppcrVal !== null) {
+        appendInCellBar(td, document2, ppcrVal * 100, false, false, "neutral");
+      }
+      tr.append(td);
+    }
+    if (renderGenericOpCol) {
       const opText = row.operatingPoint.type === "ppcr" ? `PPCR ${row.operatingPoint.value.toFixed(2)}` : `Threshold ${row.operatingPoint.value.toFixed(thresholdPrecision)}`;
       tr.append(cell(document2, opText, "rtichoke-performance-table__op"));
     }
@@ -23720,12 +23746,12 @@ __export(value_exports2, {
 });
 
 // src/render/report.ts
-function renderStandaloneComponentContent(spec, document2 = globalThis.document) {
+function renderStandaloneComponentContent(spec) {
   switch (spec.type) {
     case "summary_metrics":
-      return renderSummaryMetrics(spec, document2);
+      return renderSummaryMetrics(spec);
     case "performance_table":
-      return renderPerformanceTable(spec, document2);
+      return renderPerformanceTable(spec);
     case "roc":
       return renderRocV2(spec);
     case "calibration":
@@ -23790,50 +23816,50 @@ function wireTabInteraction(tabs, panels) {
     });
   });
 }
-function renderReportV1_0(spec, document2) {
+function renderReportV1_0(spec) {
   if (!value_exports2.Check(ReportSpecV1_0Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
   assertReportReferentialIntegrity(spec);
-  const root2 = document2.createElement("div");
+  const root2 = document.createElement("div");
   root2.className = "rtichoke-report";
   if (spec.title) {
-    const title = document2.createElement("h1");
+    const title = document.createElement("h1");
     title.className = "rtichoke-report__title";
     title.textContent = spec.title;
     root2.append(title);
   }
   for (const component of spec.components) {
-    const container = document2.createElement("section");
+    const container = document.createElement("section");
     container.className = "rtichoke-report__component";
     container.dataset.componentId = component.id;
     if (component.title) {
-      const title = document2.createElement("h2");
+      const title = document.createElement("h2");
       title.className = "rtichoke-report__component-title";
       title.textContent = component.title;
       container.append(title);
     }
-    const content = document2.createElement("div");
+    const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(component.spec, document2));
+    content.append(renderStandaloneComponentContent(component.spec));
     container.append(content);
     root2.append(container);
   }
   return root2;
 }
-function renderReportV1_1(spec, options, document2) {
+function renderReportV1_1(spec, options) {
   if (!value_exports2.Check(ReportSpecV1_1Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
   assertReportReferentialIntegrity(spec);
   const hasTitle = Boolean(spec.title);
   const usedDomIds = /* @__PURE__ */ new Set();
-  const root2 = document2.createElement("article");
+  const root2 = document.createElement("article");
   root2.className = "rtichoke-report";
   if (spec.title) {
-    const header3 = document2.createElement("header");
+    const header3 = document.createElement("header");
     header3.className = "rtichoke-report__header";
-    const title = document2.createElement("h1");
+    const title = document.createElement("h1");
     title.className = "rtichoke-report__title";
     title.textContent = spec.title;
     header3.append(title);
@@ -23864,26 +23890,26 @@ function renderReportV1_1(spec, options, document2) {
     });
   }
   if (totalNavigableTargets > 1) {
-    const nav = document2.createElement("nav");
+    const nav = document.createElement("nav");
     nav.className = "rtichoke-report__nav";
     nav.setAttribute("aria-label", "Report sections");
-    const navList = document2.createElement("ul");
+    const navList = document.createElement("ul");
     navList.className = "rtichoke-report__nav-list";
     for (const sec of navSections) {
-      const navItem = document2.createElement("li");
+      const navItem = document.createElement("li");
       navItem.className = "rtichoke-report__nav-item";
-      const navLink = document2.createElement("a");
+      const navLink = document.createElement("a");
       navLink.className = "rtichoke-report__nav-link";
       navLink.href = `#${sec.domId}`;
       navLink.textContent = sec.title;
       navItem.append(navLink);
       if (sec.groups.length > 0) {
-        const subList = document2.createElement("ul");
+        const subList = document.createElement("ul");
         subList.className = "rtichoke-report__nav-sublist";
         for (const grp of sec.groups) {
-          const subItem = document2.createElement("li");
+          const subItem = document.createElement("li");
           subItem.className = "rtichoke-report__nav-subitem";
-          const subLink = document2.createElement("a");
+          const subLink = document.createElement("a");
           subLink.className = "rtichoke-report__nav-link";
           subLink.href = `#${grp.domId}`;
           subLink.textContent = grp.title;
@@ -23902,7 +23928,7 @@ function renderReportV1_1(spec, options, document2) {
   const directCompHeadingTag = hasTitle ? "h3" : "h2";
   const groupCompHeadingTag = hasTitle ? "h4" : "h3";
   const renderComponent = (comp, headingTag) => {
-    const container = document2.createElement("section");
+    const container = document.createElement("section");
     container.className = "rtichoke-report__component";
     container.dataset.componentId = comp.id;
     if (comp.title) {
@@ -23910,21 +23936,21 @@ function renderReportV1_1(spec, options, document2) {
         `heading-${comp.id}`,
         usedDomIds
       );
-      const titleEl = document2.createElement(headingTag);
+      const titleEl = document.createElement(headingTag);
       titleEl.className = "rtichoke-report__component-title";
       titleEl.id = compHeadingDomId;
       titleEl.textContent = comp.title;
       container.setAttribute("aria-labelledby", compHeadingDomId);
       container.append(titleEl);
     }
-    const content = document2.createElement("div");
+    const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(comp.spec, document2));
+    content.append(renderStandaloneComponentContent(comp.spec));
     container.append(content);
     return container;
   };
   const renderGroup = (item, grpNav, sectionPanelTabId) => {
-    const grpSection = document2.createElement("section");
+    const grpSection = document.createElement("section");
     grpSection.className = "rtichoke-report__group";
     grpSection.id = grpNav.domId;
     grpSection.dataset.groupId = item.id;
@@ -23932,7 +23958,7 @@ function renderReportV1_1(spec, options, document2) {
       `heading-${item.id}`,
       usedDomIds
     );
-    const grpHeading = document2.createElement(groupHeadingTag);
+    const grpHeading = document.createElement(groupHeadingTag);
     grpHeading.className = "rtichoke-report__group-title";
     if (sectionPanelTabId) {
       grpHeading.classList.add("rtichoke-report__group-title--tab-panel");
@@ -23945,7 +23971,7 @@ function renderReportV1_1(spec, options, document2) {
     );
     grpSection.append(grpHeading);
     if (options.groupPresentation === "tabs") {
-      const tablist = document2.createElement("div");
+      const tablist = document.createElement("div");
       tablist.className = "rtichoke-report__tablist";
       tablist.setAttribute("role", "tablist");
       tablist.setAttribute("aria-labelledby", grpHeadingDomId);
@@ -23960,7 +23986,7 @@ function renderReportV1_1(spec, options, document2) {
           `panel-${item.id}-${comp.id}`,
           usedDomIds
         );
-        const tab = document2.createElement("button");
+        const tab = document.createElement("button");
         tab.className = "rtichoke-report__tab";
         tab.type = "button";
         tab.id = tabDomId;
@@ -23969,7 +23995,7 @@ function renderReportV1_1(spec, options, document2) {
         tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
         tab.tabIndex = compIdx === 0 ? 0 : -1;
         tab.textContent = comp.title || comp.id;
-        const panel = document2.createElement("section");
+        const panel = document.createElement("section");
         panel.className = "rtichoke-report__component rtichoke-report__tabpanel";
         panel.id = panelDomId;
         panel.setAttribute("role", "tabpanel");
@@ -23977,9 +24003,9 @@ function renderReportV1_1(spec, options, document2) {
         panel.tabIndex = 0;
         panel.dataset.componentId = comp.id;
         panel.hidden = compIdx !== 0;
-        const content = document2.createElement("div");
+        const content = document.createElement("div");
         content.className = "rtichoke-report__component-content";
-        content.append(renderStandaloneComponentContent(comp.spec, document2));
+        content.append(renderStandaloneComponentContent(comp.spec));
         panel.append(content);
         tabs.push(tab);
         panels.push(panel);
@@ -23997,7 +24023,7 @@ function renderReportV1_1(spec, options, document2) {
   for (let i = 0; i < spec.sections.length; i++) {
     const sectionSpec = spec.sections[i];
     const secNav = navSections[i];
-    const secSection = document2.createElement("section");
+    const secSection = document.createElement("section");
     secSection.className = "rtichoke-report__section";
     secSection.id = secNav.domId;
     secSection.dataset.sectionId = sectionSpec.id;
@@ -24005,7 +24031,7 @@ function renderReportV1_1(spec, options, document2) {
       `heading-${sectionSpec.id}`,
       usedDomIds
     );
-    const secHeading = document2.createElement(sectionHeadingTag);
+    const secHeading = document.createElement(sectionHeadingTag);
     secHeading.className = "rtichoke-report__section-title";
     secHeading.id = secHeadingDomId;
     secHeading.textContent = sectionSpec.title;
@@ -24031,7 +24057,7 @@ function renderReportV1_1(spec, options, document2) {
         );
         const useComponentTabs = options.sectionComponentPresentation === "tabs" && compRun.length > 1;
         if (useComponentTabs) {
-          const tablist = document2.createElement("div");
+          const tablist = document.createElement("div");
           tablist.className = "rtichoke-report__tablist";
           tablist.setAttribute("role", "tablist");
           tablist.setAttribute("aria-labelledby", secHeadingDomId);
@@ -24046,7 +24072,7 @@ function renderReportV1_1(spec, options, document2) {
               `panel-${sectionSpec.id}-${comp.id}`,
               usedDomIds
             );
-            const tab = document2.createElement("button");
+            const tab = document.createElement("button");
             tab.className = "rtichoke-report__tab";
             tab.type = "button";
             tab.id = tabDomId;
@@ -24055,7 +24081,7 @@ function renderReportV1_1(spec, options, document2) {
             tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
             tab.tabIndex = compIdx === 0 ? 0 : -1;
             tab.textContent = comp.title || comp.id;
-            const panel = document2.createElement("section");
+            const panel = document.createElement("section");
             panel.className = "rtichoke-report__component rtichoke-report__tabpanel";
             panel.id = panelDomId;
             panel.setAttribute("role", "tabpanel");
@@ -24063,9 +24089,9 @@ function renderReportV1_1(spec, options, document2) {
             panel.tabIndex = 0;
             panel.dataset.componentId = comp.id;
             panel.hidden = compIdx !== 0;
-            const content = document2.createElement("div");
+            const content = document.createElement("div");
             content.className = "rtichoke-report__component-content";
-            content.append(renderStandaloneComponentContent(comp.spec, document2));
+            content.append(renderStandaloneComponentContent(comp.spec));
             panel.append(content);
             tabs.push(tab);
             panels.push(panel);
@@ -24082,7 +24108,7 @@ function renderReportV1_1(spec, options, document2) {
         if (useSectionGroupTabs) {
           if (!renderedSectionGroupTabs) {
             renderedSectionGroupTabs = true;
-            const tablist = document2.createElement("div");
+            const tablist = document.createElement("div");
             tablist.className = "rtichoke-report__tablist rtichoke-report__section-group-tablist";
             tablist.setAttribute("role", "tablist");
             tablist.setAttribute("aria-labelledby", secHeadingDomId);
@@ -24094,7 +24120,7 @@ function renderReportV1_1(spec, options, document2) {
                 `section-group-tab-${sectionSpec.id}-${group2.id}`,
                 usedDomIds
               );
-              const tab = document2.createElement("button");
+              const tab = document.createElement("button");
               tab.className = "rtichoke-report__tab";
               tab.type = "button";
               tab.id = tabDomId;
@@ -24126,7 +24152,7 @@ function renderReportV1_1(spec, options, document2) {
   }
   return root2;
 }
-function renderReport(spec, options, document2 = globalThis.document) {
+function renderReport(spec, options) {
   if (!spec || typeof spec !== "object") {
     throw new Error("Invalid ReportSpec");
   }
@@ -24149,14 +24175,14 @@ function renderReport(spec, options, document2 = globalThis.document) {
     );
   }
   if (spec.schemaVersion === "1.0") {
-    return renderReportV1_0(spec, document2);
+    return renderReportV1_0(spec);
   }
   if (spec.schemaVersion === "1.1") {
     return renderReportV1_1(spec, {
       groupPresentation,
       sectionGroupPresentation,
       sectionComponentPresentation
-    }, document2);
+    });
   }
   throw new Error("Invalid ReportSpec");
 }

@@ -220,6 +220,9 @@
 .rtichoke-performance-table__bar-fill--negative {
   background-color: #dc2626;
 }
+.rtichoke-performance-table__bar-fill--neutral {
+  background-color: #6b7280;
+}
 .rtichoke-report {
   display: flex;
   flex-direction: column;
