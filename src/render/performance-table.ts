@@ -24,15 +24,74 @@ function cell(document: Document, text: string, className?: string): HTMLTableCe
   return element;
 }
 
-function header(document: Document, text: string, options?: { colSpan?: number; rowSpan?: number; scope?: string; className?: string }): HTMLTableCellElement {
+function header(
+  document: Document,
+  text: string,
+  options?: { colSpan?: number; rowSpan?: number; scope?: string; className?: string; ariaLabel?: string }
+): HTMLTableCellElement {
   const element = document.createElement("th");
   element.scope = options?.scope ?? "col";
   if (options?.colSpan) element.colSpan = options.colSpan;
   if (options?.rowSpan) element.rowSpan = options.rowSpan;
   element.textContent = text;
   if (options?.className) element.className = options.className;
+  if (options?.ariaLabel) element.setAttribute("aria-label", options.ariaLabel);
   return element;
 }
+
+interface ConfusionCounts {
+  tp: number;
+  tn: number;
+  fp: number;
+  fn: number;
+}
+
+function extractConfusionCounts(rowValues: PerformanceMetricValue[]): ConfusionCounts | null {
+  const map = new Map(rowValues.map((v) => [v.metricId, v.estimate]));
+  const tp = map.get("true_positives");
+  const tn = map.get("true_negatives");
+  const fp = map.get("false_positives");
+  const fn = map.get("false_negatives");
+
+  if (
+    tp === undefined || tp === null || isNaN(tp) ||
+    tn === undefined || tn === null || isNaN(tn) ||
+    fp === undefined || fp === null || isNaN(fp) ||
+    fn === undefined || fn === null || isNaN(fn)
+  ) {
+    return null;
+  }
+
+  return { tp, tn, fp, fn };
+}
+
+function renderConfusionCell(
+  document: Document,
+  val: number,
+  n: number,
+  className: string
+): HTMLTableCellElement {
+  const td = document.createElement("td");
+  td.className = className;
+
+  const valSpan = document.createElement("span");
+  valSpan.className = "rtichoke-performance-table__confusion-val";
+  valSpan.textContent = formatCount(val);
+
+  const pctSpan = document.createElement("span");
+  pctSpan.className = "rtichoke-performance-table__confusion-pct";
+  if (n > 0 && !isNaN(val) && !isNaN(n)) {
+    const pct = (val / n) * 100;
+    pctSpan.textContent = `${pct.toFixed(2)}%`;
+  } else {
+    pctSpan.textContent = MISSING;
+  }
+
+  td.append(valSpan, pctSpan);
+  return td;
+}
+
+let tableInstanceCounter = 0;
 
 export function humanizeContextValue(val: string): string {
   return val
@@ -217,6 +276,8 @@ export function renderPerformanceTable(
     }
   }
 
+  const currentTableInstance = ++tableInstanceCounter;
+
   // Build 2-Tier Header
   const head = document.createElement("thead");
   head.className = "rtichoke-performance-table__header";
@@ -224,7 +285,9 @@ export function renderPerformanceTable(
   const topRow = document.createElement("tr");
   const bottomRow = document.createElement("tr");
 
-  let nonMetricColCount = 0;
+  // Always include the first disclosure column
+  let nonMetricColCount = 1;
+  bottomRow.append(header(document, "", { ariaLabel: "Row details", className: "rtichoke-performance-table__toggle-header" }));
 
   if (renderModelCol) {
     nonMetricColCount++;
@@ -269,7 +332,7 @@ export function renderPerformanceTable(
     bottomRow.append(header(document, "Competing Event"));
   }
 
-  if (nonMetricColCount > 0) {
+  if (activePrimaryMetrics.length > 0) {
     const emptySpanner = header(document, "", { colSpan: nonMetricColCount, className: "rtichoke-performance-table__spanner--empty" });
     topRow.append(emptySpanner);
   }
@@ -290,13 +353,158 @@ export function renderPerformanceTable(
   head.append(bottomRow);
   table.append(head);
 
+  // Calculate total columns for colSpan in detail row
+  const totalColumns = nonMetricColCount + activePrimaryMetrics.length;
+
   // Build Body Rows
   const body = document.createElement("tbody");
 
-  for (const row of spec.rows) {
+  for (let rowIndex = 0; rowIndex < spec.rows.length; rowIndex++) {
+    const row = spec.rows[rowIndex];
     const evaluation = evaluationsMap.get(row.evaluationId);
     const tr = document.createElement("tr");
     tr.dataset.evaluationId = row.evaluationId;
+
+    const confusion = extractConfusionCounts(row.values);
+    const detailId = `rtichoke-confusion-detail-${currentTableInstance}-${rowIndex}`;
+
+    // Disclosure column
+    const toggleTd = document.createElement("td");
+    toggleTd.className = "rtichoke-performance-table__toggle-cell";
+
+    let detailTr: HTMLTableRowElement | null = null;
+
+    if (confusion) {
+      const toggleBtn = document.createElement("button");
+      toggleBtn.type = "button";
+      toggleBtn.className = "rtichoke-performance-table__toggle-btn";
+      toggleBtn.setAttribute("aria-expanded", "false");
+      toggleBtn.setAttribute("aria-controls", detailId);
+      toggleBtn.setAttribute("aria-label", "Toggle confusion matrix detail");
+      toggleBtn.textContent = "▸";
+
+      toggleTd.append(toggleBtn);
+
+      // Create subordinate detail row
+      detailTr = document.createElement("tr");
+      detailTr.className = "rtichoke-performance-table__detail-row";
+      detailTr.hidden = true;
+
+      const detailTd = document.createElement("td");
+      detailTd.colSpan = totalColumns;
+      detailTd.className = "rtichoke-performance-table__detail-cell";
+
+      const detailContainer = document.createElement("div");
+      detailContainer.id = detailId;
+      detailContainer.className = "rtichoke-performance-table__confusion-container";
+
+      // Semantic identity attributes
+      if (row.evaluationId) {
+        detailContainer.setAttribute("data-evaluation-id", row.evaluationId);
+        detailContainer.setAttribute("data-confusion-detail-for", row.evaluationId);
+      }
+      detailContainer.setAttribute("data-operating-point-type", row.operatingPoint.type);
+      detailContainer.setAttribute("data-operating-point-value", row.operatingPoint.value.toString());
+
+      // Header title & caption
+      const isHorizon = row.horizon !== undefined;
+      const titleDiv = document.createElement("div");
+      titleDiv.className = "rtichoke-performance-table__confusion-title";
+      titleDiv.textContent = isHorizon ? "Estimated Confusion Matrix" : "Confusion Matrix";
+      detailContainer.append(titleDiv);
+
+      if (isHorizon) {
+        const captionDiv = document.createElement("div");
+        captionDiv.className = "rtichoke-performance-table__confusion-caption";
+        captionDiv.textContent = "Estimated classification quantities at the displayed time horizon.";
+        detailContainer.append(captionDiv);
+      }
+
+      // Matrix table
+      const matrixTable = document.createElement("table");
+      matrixTable.className = "rtichoke-performance-table__confusion-table";
+
+      const mHead = document.createElement("thead");
+      const mTopRow = document.createElement("tr");
+      mTopRow.append(
+        header(document, "", { className: "rtichoke-performance-table__confusion-header-empty" }),
+        header(document, "Predicted", { colSpan: 3, className: "rtichoke-performance-table__confusion-spanner" })
+      );
+
+      const mSubRow = document.createElement("tr");
+      mSubRow.append(
+        header(document, "", { className: "rtichoke-performance-table__confusion-header-empty" }),
+        header(document, "Positive"),
+        header(document, "Negative"),
+        header(document, "Total")
+      );
+
+      mHead.append(mTopRow, mSubRow);
+      matrixTable.append(mHead);
+
+      const mBody = document.createElement("tbody");
+
+      const n = confusion.tp + confusion.tn + confusion.fp + confusion.fn;
+      const actualPosTotal = confusion.tp + confusion.fn;
+      const actualNegTotal = confusion.fp + confusion.tn;
+      const predPosTotal = confusion.tp + confusion.fp;
+      const predNegTotal = confusion.tn + confusion.fn;
+
+      // Actual Positive Row
+      const rPos = document.createElement("tr");
+      rPos.append(header(document, "Actual Positive", { scope: "row" }));
+      rPos.append(renderConfusionCell(document, confusion.tp, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--favorable"));
+      rPos.append(renderConfusionCell(document, confusion.fn, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--unfavorable"));
+      rPos.append(renderConfusionCell(document, actualPosTotal, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--total"));
+      mBody.append(rPos);
+
+      // Actual Negative Row
+      const rNeg = document.createElement("tr");
+      rNeg.append(header(document, "Actual Negative", { scope: "row" }));
+      rNeg.append(renderConfusionCell(document, confusion.fp, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--unfavorable"));
+      rNeg.append(renderConfusionCell(document, confusion.tn, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--favorable"));
+      rNeg.append(renderConfusionCell(document, actualNegTotal, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--total"));
+      mBody.append(rNeg);
+
+      // Total Row
+      const rTot = document.createElement("tr");
+      rTot.append(header(document, "Total", { scope: "row" }));
+      rTot.append(renderConfusionCell(document, predPosTotal, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--total"));
+      rTot.append(renderConfusionCell(document, predNegTotal, n, "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--total"));
+
+      // Grand Total Cell
+      const grandTotalTd = document.createElement("td");
+      grandTotalTd.className = "rtichoke-performance-table__confusion-cell rtichoke-performance-table__confusion-cell--total";
+
+      const grandValSpan = document.createElement("span");
+      grandValSpan.className = "rtichoke-performance-table__confusion-val";
+      grandValSpan.textContent = formatCount(n);
+
+      const grandPctSpan = document.createElement("span");
+      grandPctSpan.className = "rtichoke-performance-table__confusion-pct";
+      grandPctSpan.textContent = n > 0 ? "100.00%" : MISSING;
+
+      grandTotalTd.append(grandValSpan, grandPctSpan);
+      rTot.append(grandTotalTd);
+
+      mBody.append(rTot);
+      matrixTable.append(mBody);
+
+      detailContainer.append(matrixTable);
+      detailTd.append(detailContainer);
+      detailTr.append(detailTd);
+
+      // Interaction Handler
+      toggleBtn.addEventListener("click", () => {
+        if (!detailTr) return;
+        const isExpanded = toggleBtn.getAttribute("aria-expanded") === "true";
+        toggleBtn.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+        toggleBtn.textContent = isExpanded ? "▸" : "▾";
+        detailTr.hidden = isExpanded;
+      });
+    }
+
+    tr.append(toggleTd);
 
     if (renderModelCol) {
       tr.append(cell(document, evaluation?.model ?? MISSING, "rtichoke-performance-table__model"));
@@ -402,6 +610,9 @@ export function renderPerformanceTable(
     }
 
     body.append(tr);
+    if (detailTr) {
+      body.append(detailTr);
+    }
   }
 
   table.append(body);
