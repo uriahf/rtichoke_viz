@@ -60,8 +60,8 @@ describe("performance table browser renderer parity", () => {
     expect(singleRoot.querySelector(".rtichoke-performance-table__evaluation")).toBeNull();
   });
 
-  it("renders composite Predicted Positives presentation when operating points use PPCR or count", () => {
-    const ppcrSpec: PerformanceTableSpec = {
+  it("renders threshold AND composite Predicted Positives when available", () => {
+    const threshWithPredPosSpec: PerformanceTableSpec = {
       schemaVersion: "2.0",
       type: "performance_table",
       evaluations: [{ id: "eval-1", model: "Model A", population: "Pop A" }],
@@ -73,7 +73,7 @@ describe("performance table browser renderer parity", () => {
       rows: [
         {
           evaluationId: "eval-1",
-          operatingPoint: { type: "ppcr", value: 0.2 },
+          operatingPoint: { type: "probability_threshold", value: 0.25 },
           values: [
             { metricId: "sensitivity", estimate: 0.8 },
             { metricId: "predicted_positives", estimate: 123 },
@@ -83,13 +83,53 @@ describe("performance table browser renderer parity", () => {
       ]
     };
     const dom = new JSDOM("", { url: "http://localhost/" });
-    const root = renderPerformanceTable(ppcrSpec, dom.window.document);
+    const root = renderPerformanceTable(threshWithPredPosSpec, dom.window.document);
+    const ths = [...root.querySelectorAll("th")].map((node) => node.textContent?.trim());
+
+    expect(ths).toContain("Probability Threshold");
+    expect(ths).toContain("Predicted Positives");
+
+    const tds = [...root.querySelectorAll("tbody tr td")].map((node) => node.textContent?.trim());
+    expect(tds).toContain("0.25");
+    expect(tds).toContain("123 (20.00%)");
+
+    // Predicted Positives bar fill should be neutral grey
+    const opCells = root.querySelectorAll(".rtichoke-performance-table__op");
+    const predPosCell = opCells[1]; // Second op cell is Predicted Positives
+    const barFill = predPosCell?.querySelector(".rtichoke-performance-table__bar-fill");
+    expect(barFill?.classList.contains("rtichoke-performance-table__bar-fill--neutral")).toBe(true);
+  });
+
+  it("falls back to dedicated PPCR column when composite supporting values are missing in PPCR table", () => {
+    const ppcrMissingCompositeSpec: PerformanceTableSpec = {
+      schemaVersion: "2.0",
+      type: "performance_table",
+      evaluations: [{ id: "eval-1", model: "Model A", population: "Pop A" }],
+      metrics: [
+        { id: "sensitivity", label: "Sensitivity" }
+      ],
+      rows: [
+        {
+          evaluationId: "eval-1",
+          operatingPoint: { type: "ppcr", value: 0.20 },
+          values: [
+            { metricId: "sensitivity", estimate: 0.8 }
+          ]
+        }
+      ]
+    };
+    const dom = new JSDOM("", { url: "http://localhost/" });
+    const root = renderPerformanceTable(ppcrMissingCompositeSpec, dom.window.document);
+    const ths = [...root.querySelectorAll("th")].map((node) => node.textContent?.trim());
+
+    expect(ths).toContain("PPCR");
+    expect(ths).not.toContain("Predicted Positives");
+
     const opCell = root.querySelector(".rtichoke-performance-table__op");
-    expect(opCell?.textContent).toContain("123 (20.00%)");
+    expect(opCell?.textContent).toBe("PPCR 0.20");
 
     const barFill = opCell?.querySelector(".rtichoke-performance-table__bar-fill");
-    expect(barFill).not.toBeNull();
-    expect(barFill?.classList.contains("rtichoke-performance-table__bar-fill--positive")).toBe(true);
+    expect(barFill?.classList.contains("rtichoke-performance-table__bar-fill--neutral")).toBe(true);
   });
 
   it("determines threshold precision dynamically to avoid collision", () => {
@@ -170,9 +210,16 @@ describe("performance table browser renderer parity", () => {
         }
       ]
     };
-    const reportEl = renderReport(reportSpec, {}, dom.window.document);
-    expect(reportEl.querySelector(".rtichoke-performance-table")).not.toBeNull();
-    expect(reportEl.querySelector(".rtichoke-performance-table__scroll")).not.toBeNull();
+    // Global document fallback inside JSDOM environment
+    const previousDocument = globalThis.document;
+    globalThis.document = dom.window.document;
+    try {
+      const reportEl = renderReport(reportSpec);
+      expect(reportEl.querySelector(".rtichoke-performance-table")).not.toBeNull();
+      expect(reportEl.querySelector(".rtichoke-performance-table__scroll")).not.toBeNull();
+    } finally {
+      globalThis.document = previousDocument;
+    }
   });
 
   it("rejects referential-integrity failures before rendering", () => {

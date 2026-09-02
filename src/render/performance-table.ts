@@ -73,7 +73,14 @@ function formatMetricValue(value: PerformanceMetricValue | undefined, formatter:
   return `${est} [${lower}, ${upper}]`;
 }
 
-function appendInCellBar(td: HTMLTableCellElement, document: Document, percent: number, isDiverging: boolean = false, isNegative: boolean = false): void {
+function appendInCellBar(
+  td: HTMLTableCellElement,
+  document: Document,
+  percent: number,
+  isDiverging: boolean = false,
+  isNegative: boolean = false,
+  barStyle: "positive" | "negative" | "neutral" = "positive",
+): void {
   if (isNaN(percent) || !isFinite(percent)) return;
   const bar = document.createElement("div");
   bar.className = "rtichoke-performance-table__bar";
@@ -96,7 +103,11 @@ function appendInCellBar(td: HTMLTableCellElement, document: Document, percent: 
   } else {
     const width = Math.min(Math.max(percent, 0), 100);
     fill.style.width = `${width}%`;
-    fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+    if (barStyle === "neutral") {
+      fill.classList.add("rtichoke-performance-table__bar-fill--neutral");
+    } else {
+      fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+    }
   }
 
   bar.append(fill);
@@ -157,9 +168,17 @@ export function renderPerformanceTable(
   const isPurePpcr = operatingTypes.size === 1 && operatingTypes.has("ppcr");
 
   const specMetricIds = new Set(spec.metrics.map((m) => m.id));
-  const hasPredictedPositives = specMetricIds.has("predicted_positives");
+  const hasPredictedPositivesMetric = specMetricIds.has("predicted_positives");
   const hasPpcrMetric = specMetricIds.has("ppcr");
-  const useCompositePredictedPositives = isPurePpcr || (hasPredictedPositives && hasPpcrMetric);
+  const canConstructComposite = hasPredictedPositivesMetric && (hasPpcrMetric || isPurePpcr);
+
+  // Column policy:
+  // - Probability Threshold tables: keep "Probability Threshold" column. If composite predicted_positives + ppcr available, additionally show "Predicted Positives" column.
+  // - PPCR tables: show "Predicted Positives" column if composite can be constructed. Otherwise fall back to dedicated "PPCR" column.
+  const renderThresholdCol = isPureThreshold || (!isPurePpcr && operatingTypes.has("probability_threshold"));
+  const renderCompositePredPosCol = canConstructComposite;
+  const renderPpcrFallbackCol = isPurePpcr && !canConstructComposite;
+  const renderGenericOpCol = !isPureThreshold && !isPurePpcr && !canConstructComposite;
 
   // Determine Threshold Precision
   const thresholdValues = spec.rows
@@ -220,13 +239,19 @@ export function renderPerformanceTable(
     bottomRow.append(header(document, "Evaluation"));
   }
 
-  if (isPureThreshold) {
+  if (renderThresholdCol) {
     nonMetricColCount++;
     bottomRow.append(header(document, "Probability Threshold"));
-  } else if (useCompositePredictedPositives) {
+  }
+  if (renderCompositePredPosCol) {
     nonMetricColCount++;
     bottomRow.append(header(document, "Predicted Positives"));
-  } else {
+  }
+  if (renderPpcrFallbackCol) {
+    nonMetricColCount++;
+    bottomRow.append(header(document, "PPCR"));
+  }
+  if (renderGenericOpCol) {
     nonMetricColCount++;
     bottomRow.append(header(document, "Operating Point"));
   }
@@ -285,11 +310,15 @@ export function renderPerformanceTable(
 
     const valueMap = new Map(row.values.map((v) => [v.metricId, v]));
 
-    // Operating Point column cell
-    if (isPureThreshold) {
-      const formattedTh = row.operatingPoint.value.toFixed(thresholdPrecision);
+    // Probability Threshold column
+    if (renderThresholdCol) {
+      const thVal = row.operatingPoint.type === "probability_threshold" ? row.operatingPoint.value : undefined;
+      const formattedTh = thVal !== undefined ? thVal.toFixed(thresholdPrecision) : MISSING;
       tr.append(cell(document, formattedTh, "rtichoke-performance-table__op"));
-    } else if (useCompositePredictedPositives) {
+    }
+
+    // Composite Predicted Positives column
+    if (renderCompositePredPosCol) {
       const predPosVal = valueMap.get("predicted_positives")?.estimate;
       const ppcrVal = valueMap.get("ppcr")?.estimate ?? (row.operatingPoint.type === "ppcr" ? row.operatingPoint.value : undefined);
 
@@ -309,10 +338,24 @@ export function renderPerformanceTable(
 
       const td = cell(document, text, "rtichoke-performance-table__op");
       if (!isNaN(ppcrPercent)) {
-        appendInCellBar(td, document, ppcrPercent);
+        appendInCellBar(td, document, ppcrPercent, false, false, "neutral");
       }
       tr.append(td);
-    } else {
+    }
+
+    // Dedicated PPCR Fallback column
+    if (renderPpcrFallbackCol) {
+      const ppcrVal = row.operatingPoint.type === "ppcr" ? row.operatingPoint.value : valueMap.get("ppcr")?.estimate;
+      const text = ppcrVal !== undefined && ppcrVal !== null ? `PPCR ${ppcrVal.toFixed(2)}` : MISSING;
+      const td = cell(document, text, "rtichoke-performance-table__op");
+      if (ppcrVal !== undefined && ppcrVal !== null) {
+        appendInCellBar(td, document, ppcrVal * 100, false, false, "neutral");
+      }
+      tr.append(td);
+    }
+
+    // Generic Operating Point column
+    if (renderGenericOpCol) {
       const opText =
         row.operatingPoint.type === "ppcr"
           ? `PPCR ${row.operatingPoint.value.toFixed(2)}`
