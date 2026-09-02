@@ -19969,38 +19969,85 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
 
 // src/render/performance-table.ts
 var MISSING = "\u2014";
+var PRIMARY_METRIC_ORDER = [
+  { id: "sensitivity", defaultLabel: "Sensitivity" },
+  { id: "specificity", defaultLabel: "Specificity" },
+  { id: "ppv", defaultLabel: "PPV" },
+  { id: "npv", defaultLabel: "NPV" },
+  { id: "lift", defaultLabel: "Lift" },
+  { id: "net_benefit", defaultLabel: "Net Benefit" }
+];
 function cell(document2, text2, className) {
   const element = document2.createElement("td");
   element.textContent = text2;
   if (className) element.className = className;
   return element;
 }
-function header(document2, text2) {
+function header(document2, text2, options) {
   const element = document2.createElement("th");
-  element.scope = "col";
+  element.scope = options?.scope ?? "col";
+  if (options?.colSpan) element.colSpan = options.colSpan;
+  if (options?.rowSpan) element.rowSpan = options.rowSpan;
   element.textContent = text2;
+  if (options?.className) element.className = options.className;
   return element;
 }
-function formatNumber2(value) {
-  return new Intl.NumberFormat("en-US", { maximumSignificantDigits: 6 }).format(value);
+function humanizeContextValue(val) {
+  return val.split("_").map((w, i) => i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
 }
-function formatMetric(value) {
-  if (!value || value.estimate === null) return MISSING;
-  const estimate = formatNumber2(value.estimate);
-  if (value.lower === void 0 && value.upper === void 0) return estimate;
-  const lower2 = value.lower === void 0 || value.lower === null ? MISSING : formatNumber2(value.lower);
-  const upper = value.upper === void 0 || value.upper === null ? MISSING : formatNumber2(value.upper);
-  return `${estimate} [${lower2}, ${upper}]`;
+function formatCount(val) {
+  if (Number.isInteger(val)) return val.toString();
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(val);
 }
-function formatOperatingPoint(type2, value) {
-  return type2 === "ppcr" ? `PPCR ${formatNumber2(value)}` : `Threshold ${formatNumber2(value)}`;
+function format2Decimals(val) {
+  return val.toFixed(2);
 }
-function formatContext(context) {
-  if (!context) return MISSING;
-  const parts = [];
-  if (context.censoringHeuristic) parts.push(`censoring: ${context.censoringHeuristic}`);
-  if (context.competingEventHeuristic) parts.push(`competing event: ${context.competingEventHeuristic}`);
-  return parts.length ? parts.join("; ") : MISSING;
+function determineThresholdPrecision(values2) {
+  if (values2.length <= 1) return 2;
+  let decimals = 2;
+  while (decimals <= 6) {
+    const formatted = values2.map((v) => v.toFixed(decimals));
+    const uniqueFormatted = new Set(formatted);
+    if (uniqueFormatted.size === new Set(values2).size) {
+      return decimals;
+    }
+    decimals++;
+  }
+  return decimals;
+}
+function formatMetricValue(value, formatter) {
+  if (!value || value.estimate === null || value.estimate === void 0 || isNaN(value.estimate)) return MISSING;
+  const est = formatter(value.estimate);
+  if (value.lower === void 0 && value.upper === void 0) return est;
+  const lower2 = value.lower === void 0 || value.lower === null || isNaN(value.lower) ? MISSING : formatter(value.lower);
+  const upper = value.upper === void 0 || value.upper === null || isNaN(value.upper) ? MISSING : formatter(value.upper);
+  return `${est} [${lower2}, ${upper}]`;
+}
+function appendInCellBar(td, document2, percent, isDiverging = false, isNegative = false) {
+  if (isNaN(percent) || !isFinite(percent)) return;
+  const bar = document2.createElement("div");
+  bar.className = "rtichoke-performance-table__bar";
+  const fill = document2.createElement("div");
+  fill.className = "rtichoke-performance-table__bar-fill";
+  if (isDiverging) {
+    const width = Math.min(Math.max(percent, 0), 50);
+    fill.style.width = `${width}%`;
+    if (isNegative) {
+      fill.classList.add("rtichoke-performance-table__bar-fill--negative");
+      fill.style.right = "50%";
+      fill.style.left = "auto";
+    } else {
+      fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+      fill.style.left = "50%";
+      fill.style.right = "auto";
+    }
+  } else {
+    const width = Math.min(Math.max(percent, 0), 100);
+    fill.style.width = `${width}%`;
+    fill.classList.add("rtichoke-performance-table__bar-fill--positive");
+  }
+  bar.append(fill);
+  td.append(bar);
 }
 function renderPerformanceTable(spec, document2 = globalThis.document) {
   assertPerformanceTableReferentialIntegrity(spec);
@@ -20012,38 +20059,195 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
     title.textContent = spec.title;
     root2.append(title);
   }
+  const scrollWrapper = document2.createElement("div");
+  scrollWrapper.className = "rtichoke-performance-table__scroll";
   const table = document2.createElement("table");
   table.className = "rtichoke-performance-table__table";
-  const head = document2.createElement("thead");
-  const headRow = document2.createElement("tr");
-  for (const label of ["Model", "Population", "Evaluation", "Operating point", "Horizon", "Context"]) {
-    headRow.append(header(document2, label));
+  const evaluationsMap = new Map(spec.evaluations.map((ev) => [ev.id, ev]));
+  const distinctModels = new Set(spec.evaluations.map((e) => e.model).filter(Boolean));
+  const distinctPopulations = new Set(spec.evaluations.map((e) => e.population).filter(Boolean));
+  const showModel = distinctModels.size > 1;
+  const showPopulation = distinctPopulations.size > 1;
+  const renderModelCol = showModel;
+  const renderPopulationCol = showPopulation || !showModel && distinctModels.size === 0 && distinctPopulations.size > 1;
+  const showEvaluationLabel = spec.evaluations.some((e) => {
+    if (!e.label) return false;
+    if (showModel && e.label !== e.model) return true;
+    if (showPopulation && e.label !== e.population) return true;
+    if (!showModel && !showPopulation && e.label !== e.model && e.label !== e.population) return true;
+    return false;
+  });
+  const hasHorizon = spec.rows.some((r) => r.horizon !== void 0);
+  const hasCensoring = spec.rows.some((r) => r.context?.censoringHeuristic !== void 0);
+  const hasCompetingEvent = spec.rows.some((r) => r.context?.competingEventHeuristic !== void 0);
+  const operatingTypes = new Set(spec.rows.map((r) => r.operatingPoint.type));
+  const isPureThreshold = operatingTypes.size === 1 && operatingTypes.has("probability_threshold");
+  const isPurePpcr = operatingTypes.size === 1 && operatingTypes.has("ppcr");
+  const specMetricIds = new Set(spec.metrics.map((m) => m.id));
+  const hasPredictedPositives = specMetricIds.has("predicted_positives");
+  const hasPpcrMetric = specMetricIds.has("ppcr");
+  const useCompositePredictedPositives = isPurePpcr || hasPredictedPositives && hasPpcrMetric;
+  const thresholdValues = spec.rows.filter((r) => r.operatingPoint.type === "probability_threshold").map((r) => r.operatingPoint.value);
+  const thresholdPrecision = determineThresholdPrecision(thresholdValues);
+  const primaryMetricSpecs = PRIMARY_METRIC_ORDER.map((p) => {
+    const match = spec.metrics.find((m) => m.id === p.id);
+    return match ? { id: match.id, label: match.label || p.defaultLabel } : null;
+  }).filter((m) => m !== null);
+  const seenLabels = /* @__PURE__ */ new Set();
+  const activePrimaryMetrics = primaryMetricSpecs.filter((m) => {
+    if (seenLabels.has(m.label)) return false;
+    seenLabels.add(m.label);
+    return true;
+  });
+  let maxLift = 0;
+  let maxAbsNB = 0;
+  for (const row of spec.rows) {
+    for (const val of row.values) {
+      if (val.metricId === "lift" && val.estimate !== null && val.estimate !== void 0 && isFinite(val.estimate)) {
+        if (val.estimate > maxLift) maxLift = val.estimate;
+      }
+      if (val.metricId === "net_benefit" && val.estimate !== null && val.estimate !== void 0 && isFinite(val.estimate)) {
+        const absVal = Math.abs(val.estimate);
+        if (absVal > maxAbsNB) maxAbsNB = absVal;
+      }
+    }
   }
-  for (const metric of spec.metrics) headRow.append(header(document2, metric.label));
-  head.append(headRow);
+  const head = document2.createElement("thead");
+  head.className = "rtichoke-performance-table__header";
+  const topRow = document2.createElement("tr");
+  const bottomRow = document2.createElement("tr");
+  let nonMetricColCount = 0;
+  if (renderModelCol) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Model"));
+  }
+  if (renderPopulationCol) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Population"));
+  }
+  if (showEvaluationLabel) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Evaluation"));
+  }
+  if (isPureThreshold) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Probability Threshold"));
+  } else if (useCompositePredictedPositives) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Predicted Positives"));
+  } else {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Operating Point"));
+  }
+  if (hasHorizon) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Time Horizon"));
+  }
+  if (hasCensoring) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Censoring"));
+  }
+  if (hasCompetingEvent) {
+    nonMetricColCount++;
+    bottomRow.append(header(document2, "Competing Event"));
+  }
+  if (nonMetricColCount > 0) {
+    const emptySpanner = header(document2, "", { colSpan: nonMetricColCount, className: "rtichoke-performance-table__spanner--empty" });
+    topRow.append(emptySpanner);
+  }
+  if (activePrimaryMetrics.length > 0) {
+    const metricsSpanner = header(document2, "Performance Metrics", {
+      colSpan: activePrimaryMetrics.length,
+      className: "rtichoke-performance-table__spanner"
+    });
+    topRow.append(metricsSpanner);
+    for (const metric of activePrimaryMetrics) {
+      bottomRow.append(header(document2, metric.label, { className: "rtichoke-performance-table__metric-header" }));
+    }
+  }
+  head.append(topRow);
+  head.append(bottomRow);
   table.append(head);
-  const evaluations = new Map(spec.evaluations.map((evaluation) => [evaluation.id, evaluation]));
   const body = document2.createElement("tbody");
   for (const row of spec.rows) {
-    const evaluation = evaluations.get(row.evaluationId);
+    const evaluation = evaluationsMap.get(row.evaluationId);
     const tr = document2.createElement("tr");
     tr.dataset.evaluationId = row.evaluationId;
-    tr.append(cell(document2, evaluation.model ?? MISSING, "rtichoke-performance-table__model"));
-    tr.append(cell(document2, evaluation.population, "rtichoke-performance-table__population"));
-    tr.append(cell(document2, evaluation.label ?? evaluation.id, "rtichoke-performance-table__evaluation"));
-    tr.append(cell(document2, formatOperatingPoint(row.operatingPoint.type, row.operatingPoint.value)));
-    tr.append(cell(document2, row.horizon === void 0 ? MISSING : formatNumber2(row.horizon)));
-    tr.append(cell(document2, formatContext(row.context)));
-    const values2 = new Map(row.values.map((value) => [value.metricId, value]));
-    for (const metric of spec.metrics) {
-      const td = cell(document2, formatMetric(values2.get(metric.id)), "rtichoke-performance-table__metric");
+    if (renderModelCol) {
+      tr.append(cell(document2, evaluation?.model ?? MISSING, "rtichoke-performance-table__model"));
+    }
+    if (renderPopulationCol) {
+      tr.append(cell(document2, evaluation?.population ?? MISSING, "rtichoke-performance-table__population"));
+    }
+    if (showEvaluationLabel) {
+      tr.append(cell(document2, evaluation?.label ?? evaluation?.id ?? MISSING, "rtichoke-performance-table__evaluation"));
+    }
+    const valueMap = new Map(row.values.map((v) => [v.metricId, v]));
+    if (isPureThreshold) {
+      const formattedTh = row.operatingPoint.value.toFixed(thresholdPrecision);
+      tr.append(cell(document2, formattedTh, "rtichoke-performance-table__op"));
+    } else if (useCompositePredictedPositives) {
+      const predPosVal = valueMap.get("predicted_positives")?.estimate;
+      const ppcrVal = valueMap.get("ppcr")?.estimate ?? (row.operatingPoint.type === "ppcr" ? row.operatingPoint.value : void 0);
+      let text2 = MISSING;
+      let ppcrPercent = NaN;
+      if (predPosVal !== void 0 && predPosVal !== null && ppcrVal !== void 0 && ppcrVal !== null) {
+        const formattedCount = formatCount(predPosVal);
+        const formattedPct = (ppcrVal * 100).toFixed(2);
+        text2 = `${formattedCount} (${formattedPct}%)`;
+        ppcrPercent = ppcrVal * 100;
+      } else if (ppcrVal !== void 0 && ppcrVal !== null) {
+        const formattedPct = (ppcrVal * 100).toFixed(2);
+        text2 = `${formattedPct}%`;
+        ppcrPercent = ppcrVal * 100;
+      }
+      const td = cell(document2, text2, "rtichoke-performance-table__op");
+      if (!isNaN(ppcrPercent)) {
+        appendInCellBar(td, document2, ppcrPercent);
+      }
+      tr.append(td);
+    } else {
+      const opText = row.operatingPoint.type === "ppcr" ? `PPCR ${row.operatingPoint.value.toFixed(2)}` : `Threshold ${row.operatingPoint.value.toFixed(thresholdPrecision)}`;
+      tr.append(cell(document2, opText, "rtichoke-performance-table__op"));
+    }
+    if (hasHorizon) {
+      tr.append(cell(document2, row.horizon !== void 0 ? formatCount(row.horizon) : MISSING, "rtichoke-performance-table__horizon"));
+    }
+    if (hasCensoring) {
+      const c4 = row.context?.censoringHeuristic;
+      tr.append(cell(document2, c4 ? humanizeContextValue(c4) : MISSING, "rtichoke-performance-table__context"));
+    }
+    if (hasCompetingEvent) {
+      const ce = row.context?.competingEventHeuristic;
+      tr.append(cell(document2, ce ? humanizeContextValue(ce) : MISSING, "rtichoke-performance-table__context"));
+    }
+    for (const metric of activePrimaryMetrics) {
+      const val = valueMap.get(metric.id);
+      const formattedText = formatMetricValue(val, format2Decimals);
+      const td = cell(document2, formattedText, "rtichoke-performance-table__metric");
       td.dataset.metricId = metric.id;
+      if (val && val.estimate !== null && val.estimate !== void 0 && isFinite(val.estimate)) {
+        const est = val.estimate;
+        if (["sensitivity", "specificity", "ppv", "npv"].includes(metric.id)) {
+          appendInCellBar(td, document2, est * 100);
+        } else if (metric.id === "lift") {
+          const pct = maxLift > 0 ? est / maxLift * 100 : 0;
+          appendInCellBar(td, document2, pct);
+        } else if (metric.id === "net_benefit") {
+          if (maxAbsNB > 0) {
+            const isNeg = est < 0;
+            const barWidth = Math.abs(est) / maxAbsNB * 50;
+            appendInCellBar(td, document2, barWidth, true, isNeg);
+          }
+        }
+      }
       tr.append(td);
     }
     body.append(tr);
   }
   table.append(body);
-  root2.append(table);
+  scrollWrapper.append(table);
+  root2.append(scrollWrapper);
   return root2;
 }
 
@@ -23516,12 +23720,12 @@ __export(value_exports2, {
 });
 
 // src/render/report.ts
-function renderStandaloneComponentContent(spec) {
+function renderStandaloneComponentContent(spec, document2 = globalThis.document) {
   switch (spec.type) {
     case "summary_metrics":
-      return renderSummaryMetrics(spec);
+      return renderSummaryMetrics(spec, document2);
     case "performance_table":
-      return renderPerformanceTable(spec);
+      return renderPerformanceTable(spec, document2);
     case "roc":
       return renderRocV2(spec);
     case "calibration":
@@ -23586,50 +23790,50 @@ function wireTabInteraction(tabs, panels) {
     });
   });
 }
-function renderReportV1_0(spec) {
+function renderReportV1_0(spec, document2) {
   if (!value_exports2.Check(ReportSpecV1_0Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
   assertReportReferentialIntegrity(spec);
-  const root2 = document.createElement("div");
+  const root2 = document2.createElement("div");
   root2.className = "rtichoke-report";
   if (spec.title) {
-    const title = document.createElement("h1");
+    const title = document2.createElement("h1");
     title.className = "rtichoke-report__title";
     title.textContent = spec.title;
     root2.append(title);
   }
   for (const component of spec.components) {
-    const container = document.createElement("section");
+    const container = document2.createElement("section");
     container.className = "rtichoke-report__component";
     container.dataset.componentId = component.id;
     if (component.title) {
-      const title = document.createElement("h2");
+      const title = document2.createElement("h2");
       title.className = "rtichoke-report__component-title";
       title.textContent = component.title;
       container.append(title);
     }
-    const content = document.createElement("div");
+    const content = document2.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(component.spec));
+    content.append(renderStandaloneComponentContent(component.spec, document2));
     container.append(content);
     root2.append(container);
   }
   return root2;
 }
-function renderReportV1_1(spec, options) {
+function renderReportV1_1(spec, options, document2) {
   if (!value_exports2.Check(ReportSpecV1_1Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
   assertReportReferentialIntegrity(spec);
   const hasTitle = Boolean(spec.title);
   const usedDomIds = /* @__PURE__ */ new Set();
-  const root2 = document.createElement("article");
+  const root2 = document2.createElement("article");
   root2.className = "rtichoke-report";
   if (spec.title) {
-    const header3 = document.createElement("header");
+    const header3 = document2.createElement("header");
     header3.className = "rtichoke-report__header";
-    const title = document.createElement("h1");
+    const title = document2.createElement("h1");
     title.className = "rtichoke-report__title";
     title.textContent = spec.title;
     header3.append(title);
@@ -23660,26 +23864,26 @@ function renderReportV1_1(spec, options) {
     });
   }
   if (totalNavigableTargets > 1) {
-    const nav = document.createElement("nav");
+    const nav = document2.createElement("nav");
     nav.className = "rtichoke-report__nav";
     nav.setAttribute("aria-label", "Report sections");
-    const navList = document.createElement("ul");
+    const navList = document2.createElement("ul");
     navList.className = "rtichoke-report__nav-list";
     for (const sec of navSections) {
-      const navItem = document.createElement("li");
+      const navItem = document2.createElement("li");
       navItem.className = "rtichoke-report__nav-item";
-      const navLink = document.createElement("a");
+      const navLink = document2.createElement("a");
       navLink.className = "rtichoke-report__nav-link";
       navLink.href = `#${sec.domId}`;
       navLink.textContent = sec.title;
       navItem.append(navLink);
       if (sec.groups.length > 0) {
-        const subList = document.createElement("ul");
+        const subList = document2.createElement("ul");
         subList.className = "rtichoke-report__nav-sublist";
         for (const grp of sec.groups) {
-          const subItem = document.createElement("li");
+          const subItem = document2.createElement("li");
           subItem.className = "rtichoke-report__nav-subitem";
-          const subLink = document.createElement("a");
+          const subLink = document2.createElement("a");
           subLink.className = "rtichoke-report__nav-link";
           subLink.href = `#${grp.domId}`;
           subLink.textContent = grp.title;
@@ -23698,7 +23902,7 @@ function renderReportV1_1(spec, options) {
   const directCompHeadingTag = hasTitle ? "h3" : "h2";
   const groupCompHeadingTag = hasTitle ? "h4" : "h3";
   const renderComponent = (comp, headingTag) => {
-    const container = document.createElement("section");
+    const container = document2.createElement("section");
     container.className = "rtichoke-report__component";
     container.dataset.componentId = comp.id;
     if (comp.title) {
@@ -23706,21 +23910,21 @@ function renderReportV1_1(spec, options) {
         `heading-${comp.id}`,
         usedDomIds
       );
-      const titleEl = document.createElement(headingTag);
+      const titleEl = document2.createElement(headingTag);
       titleEl.className = "rtichoke-report__component-title";
       titleEl.id = compHeadingDomId;
       titleEl.textContent = comp.title;
       container.setAttribute("aria-labelledby", compHeadingDomId);
       container.append(titleEl);
     }
-    const content = document.createElement("div");
+    const content = document2.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(comp.spec));
+    content.append(renderStandaloneComponentContent(comp.spec, document2));
     container.append(content);
     return container;
   };
   const renderGroup = (item, grpNav, sectionPanelTabId) => {
-    const grpSection = document.createElement("section");
+    const grpSection = document2.createElement("section");
     grpSection.className = "rtichoke-report__group";
     grpSection.id = grpNav.domId;
     grpSection.dataset.groupId = item.id;
@@ -23728,7 +23932,7 @@ function renderReportV1_1(spec, options) {
       `heading-${item.id}`,
       usedDomIds
     );
-    const grpHeading = document.createElement(groupHeadingTag);
+    const grpHeading = document2.createElement(groupHeadingTag);
     grpHeading.className = "rtichoke-report__group-title";
     if (sectionPanelTabId) {
       grpHeading.classList.add("rtichoke-report__group-title--tab-panel");
@@ -23741,7 +23945,7 @@ function renderReportV1_1(spec, options) {
     );
     grpSection.append(grpHeading);
     if (options.groupPresentation === "tabs") {
-      const tablist = document.createElement("div");
+      const tablist = document2.createElement("div");
       tablist.className = "rtichoke-report__tablist";
       tablist.setAttribute("role", "tablist");
       tablist.setAttribute("aria-labelledby", grpHeadingDomId);
@@ -23756,7 +23960,7 @@ function renderReportV1_1(spec, options) {
           `panel-${item.id}-${comp.id}`,
           usedDomIds
         );
-        const tab = document.createElement("button");
+        const tab = document2.createElement("button");
         tab.className = "rtichoke-report__tab";
         tab.type = "button";
         tab.id = tabDomId;
@@ -23765,7 +23969,7 @@ function renderReportV1_1(spec, options) {
         tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
         tab.tabIndex = compIdx === 0 ? 0 : -1;
         tab.textContent = comp.title || comp.id;
-        const panel = document.createElement("section");
+        const panel = document2.createElement("section");
         panel.className = "rtichoke-report__component rtichoke-report__tabpanel";
         panel.id = panelDomId;
         panel.setAttribute("role", "tabpanel");
@@ -23773,9 +23977,9 @@ function renderReportV1_1(spec, options) {
         panel.tabIndex = 0;
         panel.dataset.componentId = comp.id;
         panel.hidden = compIdx !== 0;
-        const content = document.createElement("div");
+        const content = document2.createElement("div");
         content.className = "rtichoke-report__component-content";
-        content.append(renderStandaloneComponentContent(comp.spec));
+        content.append(renderStandaloneComponentContent(comp.spec, document2));
         panel.append(content);
         tabs.push(tab);
         panels.push(panel);
@@ -23793,7 +23997,7 @@ function renderReportV1_1(spec, options) {
   for (let i = 0; i < spec.sections.length; i++) {
     const sectionSpec = spec.sections[i];
     const secNav = navSections[i];
-    const secSection = document.createElement("section");
+    const secSection = document2.createElement("section");
     secSection.className = "rtichoke-report__section";
     secSection.id = secNav.domId;
     secSection.dataset.sectionId = sectionSpec.id;
@@ -23801,7 +24005,7 @@ function renderReportV1_1(spec, options) {
       `heading-${sectionSpec.id}`,
       usedDomIds
     );
-    const secHeading = document.createElement(sectionHeadingTag);
+    const secHeading = document2.createElement(sectionHeadingTag);
     secHeading.className = "rtichoke-report__section-title";
     secHeading.id = secHeadingDomId;
     secHeading.textContent = sectionSpec.title;
@@ -23827,7 +24031,7 @@ function renderReportV1_1(spec, options) {
         );
         const useComponentTabs = options.sectionComponentPresentation === "tabs" && compRun.length > 1;
         if (useComponentTabs) {
-          const tablist = document.createElement("div");
+          const tablist = document2.createElement("div");
           tablist.className = "rtichoke-report__tablist";
           tablist.setAttribute("role", "tablist");
           tablist.setAttribute("aria-labelledby", secHeadingDomId);
@@ -23842,7 +24046,7 @@ function renderReportV1_1(spec, options) {
               `panel-${sectionSpec.id}-${comp.id}`,
               usedDomIds
             );
-            const tab = document.createElement("button");
+            const tab = document2.createElement("button");
             tab.className = "rtichoke-report__tab";
             tab.type = "button";
             tab.id = tabDomId;
@@ -23851,7 +24055,7 @@ function renderReportV1_1(spec, options) {
             tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
             tab.tabIndex = compIdx === 0 ? 0 : -1;
             tab.textContent = comp.title || comp.id;
-            const panel = document.createElement("section");
+            const panel = document2.createElement("section");
             panel.className = "rtichoke-report__component rtichoke-report__tabpanel";
             panel.id = panelDomId;
             panel.setAttribute("role", "tabpanel");
@@ -23859,9 +24063,9 @@ function renderReportV1_1(spec, options) {
             panel.tabIndex = 0;
             panel.dataset.componentId = comp.id;
             panel.hidden = compIdx !== 0;
-            const content = document.createElement("div");
+            const content = document2.createElement("div");
             content.className = "rtichoke-report__component-content";
-            content.append(renderStandaloneComponentContent(comp.spec));
+            content.append(renderStandaloneComponentContent(comp.spec, document2));
             panel.append(content);
             tabs.push(tab);
             panels.push(panel);
@@ -23878,7 +24082,7 @@ function renderReportV1_1(spec, options) {
         if (useSectionGroupTabs) {
           if (!renderedSectionGroupTabs) {
             renderedSectionGroupTabs = true;
-            const tablist = document.createElement("div");
+            const tablist = document2.createElement("div");
             tablist.className = "rtichoke-report__tablist rtichoke-report__section-group-tablist";
             tablist.setAttribute("role", "tablist");
             tablist.setAttribute("aria-labelledby", secHeadingDomId);
@@ -23890,7 +24094,7 @@ function renderReportV1_1(spec, options) {
                 `section-group-tab-${sectionSpec.id}-${group2.id}`,
                 usedDomIds
               );
-              const tab = document.createElement("button");
+              const tab = document2.createElement("button");
               tab.className = "rtichoke-report__tab";
               tab.type = "button";
               tab.id = tabDomId;
@@ -23922,7 +24126,7 @@ function renderReportV1_1(spec, options) {
   }
   return root2;
 }
-function renderReport(spec, options) {
+function renderReport(spec, options, document2 = globalThis.document) {
   if (!spec || typeof spec !== "object") {
     throw new Error("Invalid ReportSpec");
   }
@@ -23945,14 +24149,14 @@ function renderReport(spec, options) {
     );
   }
   if (spec.schemaVersion === "1.0") {
-    return renderReportV1_0(spec);
+    return renderReportV1_0(spec, document2);
   }
   if (spec.schemaVersion === "1.1") {
     return renderReportV1_1(spec, {
       groupPresentation,
       sectionGroupPresentation,
       sectionComponentPresentation
-    });
+    }, document2);
   }
   throw new Error("Invalid ReportSpec");
 }
