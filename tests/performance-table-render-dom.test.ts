@@ -328,7 +328,7 @@ describe("performance table browser renderer parity", () => {
 
       const container = root.querySelector(".rtichoke-performance-table__confusion-container") as HTMLDivElement;
       expect(container.getAttribute("data-evaluation-id")).toBe("eval-1");
-      expect(container.getAttribute("data-confusion-detail-for")).toBe("eval-1");
+      expect(container.getAttribute("data-confusion-detail-for")).toBeNull();
       expect(container.getAttribute("data-operating-point-type")).toBe("probability_threshold");
       expect(container.getAttribute("data-operating-point-value")).toBe("0.35");
 
@@ -486,18 +486,25 @@ describe("performance table browser renderer parity", () => {
       expect(toggleBtns[1].getAttribute("aria-expanded")).toBe("false");
       expect(detailRows[1].hidden).toBe(true);
 
+      // Initial aria-labels
+      expect(toggleBtns[0].getAttribute("aria-label")).toBe("Show confusion matrix detail");
+      expect(toggleBtns[1].getAttribute("aria-label")).toBe("Show confusion matrix detail");
+
       // Expand row 0
       toggleBtns[0].click();
       expect(toggleBtns[0].getAttribute("aria-expanded")).toBe("true");
+      expect(toggleBtns[0].getAttribute("aria-label")).toBe("Hide confusion matrix detail");
       expect(toggleBtns[0].textContent).toBe("▾");
       expect(detailRows[0].hidden).toBe(false);
       // Row 1 remains collapsed
       expect(toggleBtns[1].getAttribute("aria-expanded")).toBe("false");
+      expect(toggleBtns[1].getAttribute("aria-label")).toBe("Show confusion matrix detail");
       expect(detailRows[1].hidden).toBe(true);
 
       // Collapse row 0 again
       toggleBtns[0].click();
       expect(toggleBtns[0].getAttribute("aria-expanded")).toBe("false");
+      expect(toggleBtns[0].getAttribute("aria-label")).toBe("Show confusion matrix detail");
       expect(toggleBtns[0].textContent).toBe("▸");
       expect(detailRows[0].hidden).toBe(true);
     });
