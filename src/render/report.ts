@@ -26,12 +26,13 @@ import {
 
 function renderStandaloneComponentContent(
   spec: StandaloneCanonicalSpec,
+  document: Document = globalThis.document,
 ): Element {
   switch (spec.type) {
     case "summary_metrics":
-      return renderSummaryMetrics(spec);
+      return renderSummaryMetrics(spec, document);
     case "performance_table":
-      return renderPerformanceTable(spec);
+      return renderPerformanceTable(spec, document);
     case "roc":
       return renderRocV2(spec);
     case "calibration":
@@ -109,7 +110,7 @@ function wireTabInteraction(
   });
 }
 
-function renderReportV1_0(spec: ReportSpecV1_0): HTMLDivElement {
+function renderReportV1_0(spec: ReportSpecV1_0, document: Document): HTMLDivElement {
   if (!Value.Check(ReportSpecV1_0Schema, spec)) {
     throw new Error("Invalid ReportSpec");
   }
@@ -135,7 +136,7 @@ function renderReportV1_0(spec: ReportSpecV1_0): HTMLDivElement {
     }
     const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(component.spec));
+    content.append(renderStandaloneComponentContent(component.spec, document));
     container.append(content);
     root.append(container);
   }
@@ -145,6 +146,7 @@ function renderReportV1_0(spec: ReportSpecV1_0): HTMLDivElement {
 function renderReportV1_1(
   spec: ReportSpecV1_1,
   options: Required<ReportRenderOptions>,
+  document: Document,
 ): HTMLElement {
   if (!Value.Check(ReportSpecV1_1Schema, spec)) {
     throw new Error("Invalid ReportSpec");
@@ -254,8 +256,6 @@ function renderReportV1_1(
   }
 
   // Heading depth resolution
-  // With title: section h2, group h3, component in group h4, direct component h3
-  // Without title: section h1, group h2, component in group h3, direct component h2
   const sectionHeadingTag = hasTitle ? "h2" : "h1";
   const groupHeadingTag = hasTitle ? "h3" : "h2";
   const directCompHeadingTag = hasTitle ? "h3" : "h2";
@@ -284,7 +284,7 @@ function renderReportV1_1(
 
     const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(comp.spec));
+    content.append(renderStandaloneComponentContent(comp.spec, document));
     container.append(content);
 
     return container;
@@ -358,7 +358,7 @@ function renderReportV1_1(
 
         const content = document.createElement("div");
         content.className = "rtichoke-report__component-content";
-        content.append(renderStandaloneComponentContent(comp.spec));
+        content.append(renderStandaloneComponentContent(comp.spec, document));
         panel.append(content);
 
         tabs.push(tab);
@@ -464,7 +464,7 @@ function renderReportV1_1(
 
             const content = document.createElement("div");
             content.className = "rtichoke-report__component-content";
-            content.append(renderStandaloneComponentContent(comp.spec));
+            content.append(renderStandaloneComponentContent(comp.spec, document));
             panel.append(content);
 
             tabs.push(tab);
@@ -546,6 +546,7 @@ export interface ReportRenderOptions {
 export function renderReport(
   spec: ReportSpec,
   options?: ReportRenderOptions,
+  document: Document = globalThis.document,
 ): HTMLElement {
   if (!spec || typeof spec !== "object") {
     throw new Error("Invalid ReportSpec");
@@ -590,14 +591,14 @@ export function renderReport(
   }
 
   if (spec.schemaVersion === "1.0") {
-    return renderReportV1_0(spec);
+    return renderReportV1_0(spec, document);
   }
   if (spec.schemaVersion === "1.1") {
     return renderReportV1_1(spec, {
       groupPresentation,
       sectionGroupPresentation,
       sectionComponentPresentation,
-    });
+    }, document);
   }
   throw new Error("Invalid ReportSpec");
 }
