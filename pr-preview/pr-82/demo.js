@@ -20232,7 +20232,7 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
       toggleBtn.className = "rtichoke-performance-table__toggle-btn";
       toggleBtn.setAttribute("aria-expanded", "false");
       toggleBtn.setAttribute("aria-controls", detailId);
-      toggleBtn.setAttribute("aria-label", "Toggle confusion matrix detail");
+      toggleBtn.setAttribute("aria-label", "Show confusion matrix detail");
       toggleBtn.textContent = "\u25B8";
       toggleTd.append(toggleBtn);
       detailTr = document2.createElement("tr");
@@ -20246,7 +20246,6 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
       detailContainer.className = "rtichoke-performance-table__confusion-container";
       if (row.evaluationId) {
         detailContainer.setAttribute("data-evaluation-id", row.evaluationId);
-        detailContainer.setAttribute("data-confusion-detail-for", row.evaluationId);
       }
       detailContainer.setAttribute("data-operating-point-type", row.operatingPoint.type);
       detailContainer.setAttribute("data-operating-point-value", row.operatingPoint.value.toString());
@@ -20319,6 +20318,7 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
         if (!detailTr) return;
         const isExpanded = toggleBtn.getAttribute("aria-expanded") === "true";
         toggleBtn.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+        toggleBtn.setAttribute("aria-label", isExpanded ? "Show confusion matrix detail" : "Hide confusion matrix detail");
         toggleBtn.textContent = isExpanded ? "\u25B8" : "\u25BE";
         detailTr.hidden = isExpanded;
       });
