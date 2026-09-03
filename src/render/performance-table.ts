@@ -19,7 +19,10 @@ const PRIMARY_METRIC_ORDER: { id: PerformanceMetricId; defaultLabel: string }[] 
 
 function cell(document: Document, text: string, className?: string): HTMLTableCellElement {
   const element = document.createElement("td");
-  element.textContent = text;
+  const contentSpan = document.createElement("span");
+  contentSpan.className = "rtichoke-performance-table__cell-text";
+  contentSpan.textContent = text;
+  element.append(contentSpan);
   if (className) element.className = className;
   return element;
 }

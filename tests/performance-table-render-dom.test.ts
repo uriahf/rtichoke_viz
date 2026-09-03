@@ -144,19 +144,26 @@ describe("performance table browser renderer parity", () => {
     expect(humanizeContextValue("adjusted_as_negative")).toBe("Adjusted as negative");
   });
 
-  it("renders in-cell quantitative background bars for primary metrics and net benefit", () => {
+  it("renders in-cell quantitative background bars for primary metrics, net benefit, and neutral metrics with appropriate modifier classes", () => {
     const nbSpec: PerformanceTableSpec = {
       schemaVersion: "2.0",
       type: "performance_table",
       evaluations: [{ id: "e1", model: "m1", population: "p1" }, { id: "e2", model: "m2", population: "p1" }],
-      metrics: [{ id: "net_benefit", label: "Net Benefit" }, { id: "sensitivity", label: "Sensitivity" }],
+      metrics: [
+        { id: "net_benefit", label: "Net Benefit" },
+        { id: "sensitivity", label: "Sensitivity" },
+        { id: "predicted_positives", label: "Predicted Positives" },
+        { id: "ppcr", label: "PPCR" }
+      ],
       rows: [
         {
           evaluationId: "e1",
           operatingPoint: { type: "probability_threshold", value: 0.1 },
           values: [
             { metricId: "net_benefit", estimate: 0.15 },
-            { metricId: "sensitivity", estimate: 0.80 }
+            { metricId: "sensitivity", estimate: 0.80 },
+            { metricId: "predicted_positives", estimate: 100 },
+            { metricId: "ppcr", estimate: 0.25 }
           ]
         },
         {
@@ -164,7 +171,9 @@ describe("performance table browser renderer parity", () => {
           operatingPoint: { type: "probability_threshold", value: 0.1 },
           values: [
             { metricId: "net_benefit", estimate: -0.05 },
-            { metricId: "sensitivity", estimate: 0.70 }
+            { metricId: "sensitivity", estimate: 0.70 },
+            { metricId: "predicted_positives", estimate: 50 },
+            { metricId: "ppcr", estimate: 0.12 }
           ]
         }
       ]
@@ -173,10 +182,21 @@ describe("performance table browser renderer parity", () => {
     const root = renderPerformanceTable(nbSpec, dom.window.document);
 
     const posNbCell = root.querySelector('tr[data-evaluation-id="e1"] td[data-metric-id="net_benefit"]');
+    const posSensCell = root.querySelector('tr[data-evaluation-id="e1"] td[data-metric-id="sensitivity"]');
     const negNbCell = root.querySelector('tr[data-evaluation-id="e2"] td[data-metric-id="net_benefit"]');
 
-    expect(posNbCell?.querySelector(".rtichoke-performance-table__bar-fill--positive")).not.toBeNull();
-    expect(negNbCell?.querySelector(".rtichoke-performance-table__bar-fill--negative")).not.toBeNull();
+    const posBar = posSensCell?.querySelector(".rtichoke-performance-table__bar-fill") as HTMLElement;
+    const posNbBar = posNbCell?.querySelector(".rtichoke-performance-table__bar-fill") as HTMLElement;
+    const negNbBar = negNbCell?.querySelector(".rtichoke-performance-table__bar-fill") as HTMLElement;
+
+    expect(posBar?.classList.contains("rtichoke-performance-table__bar-fill--positive")).toBe(true);
+    expect(posNbBar?.classList.contains("rtichoke-performance-table__bar-fill--positive")).toBe(true);
+    expect(negNbBar?.classList.contains("rtichoke-performance-table__bar-fill--negative")).toBe(true);
+
+    const opCells = root.querySelectorAll(".rtichoke-performance-table__op");
+    // opCells[0] is Probability Threshold, opCells[1] is Predicted Positives
+    const predPosBar = opCells[1]?.querySelector(".rtichoke-performance-table__bar-fill") as HTMLElement;
+    expect(predPosBar?.classList.contains("rtichoke-performance-table__bar-fill--neutral")).toBe(true);
   });
 
   it("preserves data-evaluation-id and data-metric-id DOM attributes", () => {
