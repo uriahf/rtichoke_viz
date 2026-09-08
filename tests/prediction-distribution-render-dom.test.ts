@@ -8,11 +8,44 @@ import type { PredictionDistributionSpec } from "../src/spec/v2/prediction-distr
 import {
   preparePredictionDistributionPlotData,
   renderPredictionDistribution,
+  resolveConfusionCellColors,
 } from "../src/render/prediction-distribution.js";
 import { renderReport } from "../src/render/report.js";
 import type { ReportSpecV1_0, ReportSpecV1_1 } from "../src/spec/report.js";
+import { RTICHOKE_BROWSER_THEME } from "../src/render/v2.js";
 
 describe("PredictionDistribution Helper & DOM Rendering", () => {
+  it("tests resolveConfusionCellColors pure helper for default theme and all four conditioning choices", () => {
+    const defaultPdTheme = RTICHOKE_BROWSER_THEME.predictionDistribution;
+
+    // 1. Predicted Positives: denominator TP + FP -> TP & FP emphasized
+    const predPos = resolveConfusionCellColors(defaultPdTheme, "predicted_positives");
+    expect(predPos.tp).toBe("#009E73"); // emphasized true
+    expect(predPos.fp).toBe("#FAC8CD"); // emphasized false
+    expect(predPos.tn).toBe("#F4FFF0"); // non-emphasized true
+    expect(predPos.fn).toBe("#FFF7F8"); // non-emphasized false
+
+    // 2. Predicted Negatives: denominator TN + FN -> TN & FN emphasized
+    const predNeg = resolveConfusionCellColors(defaultPdTheme, "predicted_negatives");
+    expect(predNeg.tn).toBe("#009E73"); // emphasized true
+    expect(predNeg.fn).toBe("#FAC8CD"); // emphasized false
+    expect(predNeg.tp).toBe("#F4FFF0"); // non-emphasized true
+    expect(predNeg.fp).toBe("#FFF7F8"); // non-emphasized false
+
+    // 3. Real Positives: denominator TP + FN -> TP & FN emphasized
+    const realPos = resolveConfusionCellColors(defaultPdTheme, "real_positives");
+    expect(realPos.tp).toBe("#009E73"); // emphasized true
+    expect(realPos.fn).toBe("#FAC8CD"); // emphasized false
+    expect(realPos.tn).toBe("#F4FFF0"); // non-emphasized true
+    expect(realPos.fp).toBe("#FFF7F8"); // non-emphasized false
+
+    // 4. Real Negatives: denominator TN + FP -> TN & FP emphasized
+    const realNeg = resolveConfusionCellColors(defaultPdTheme, "real_negatives");
+    expect(realNeg.tn).toBe("#009E73"); // emphasized true
+    expect(realNeg.fp).toBe("#FAC8CD"); // emphasized false
+    expect(realNeg.tp).toBe("#F4FFF0"); // non-emphasized true
+    expect(realNeg.fn).toBe("#FFF7F8"); // non-emphasized false
+  });
   it("directly tests preparePredictionDistributionPlotData helper for coordinates, heights, atom, cutoff, and count identity", () => {
     const spec = visualFixture as PredictionDistributionSpec;
     const evalId = "Model A";
@@ -317,5 +350,196 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
 
     const predDistEl = compEl?.querySelector(".rtichoke-prediction-distribution");
     expect(predDistEl).not.toBeNull();
+  });
+
+  it("verifies default color mode is Confusion matrix cell and default conditioning is Predicted positives", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const colorModeSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Color bars by']",
+    );
+    const conditioningSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Condition on']",
+    );
+
+    expect(colorModeSelect?.value).toBe("confusion_matrix_cell");
+    expect(conditioningSelect?.value).toBe("predicted_positives");
+
+    // Conditioning select is visible in Confusion matrix cell mode
+    const conditioningGroup = conditioningSelect?.parentElement;
+    expect(conditioningGroup?.style.display).not.toBe("none");
+
+    // Legend contains 4 classification swatches
+    const legendLabels = Array.from(
+      el.querySelectorAll(".rtichoke-legend-label"),
+    ).map((span) => span.textContent);
+    expect(legendLabels).toEqual([
+      "True Positives (TP)",
+      "False Positives (FP)",
+      "True Negatives (TN)",
+      "False Negatives (FN)",
+    ]);
+  });
+
+  it("handles observed-outcome mode, hides conditioning control, and preserves conditioning on switch back", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const colorModeSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Color bars by']",
+    );
+    const conditioningSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Condition on']",
+    );
+    const conditioningGroup = conditioningSelect?.parentElement;
+
+    // Change conditioning to "real_positives"
+    conditioningSelect!.value = "real_positives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+    expect(conditioningSelect!.value).toBe("real_positives");
+
+    // Switch to "observed_outcome" mode
+    colorModeSelect!.value = "observed_outcome";
+    colorModeSelect!.dispatchEvent(new Event("change"));
+
+    // Conditioning control is hidden
+    expect(conditioningGroup?.style.display).toBe("none");
+
+    // Legend shows only Observed Positives and Observed Negatives
+    const legendLabelsObserved = Array.from(
+      el.querySelectorAll(".rtichoke-legend-label"),
+    ).map((span) => span.textContent);
+    expect(legendLabelsObserved).toEqual([
+      "Observed Positives",
+      "Observed Negatives",
+    ]);
+
+    // Switch back to "confusion_matrix_cell" mode
+    colorModeSelect!.value = "confusion_matrix_cell";
+    colorModeSelect!.dispatchEvent(new Event("change"));
+
+    // Conditioning control is visible again and preserved as "real_positives"
+    expect(conditioningGroup?.style.display).toBe("inline-flex");
+    expect(conditioningSelect!.value).toBe("real_positives");
+
+    const legendLabelsRestored = Array.from(
+      el.querySelectorAll(".rtichoke-legend-label"),
+    ).map((span) => span.textContent);
+    expect(legendLabelsRestored).toEqual([
+      "True Positives (TP)",
+      "False Positives (FP)",
+      "True Negatives (TN)",
+      "False Negatives (FN)",
+    ]);
+  });
+
+  it("verifies count, cutoff, and geometry invariance across color and conditioning changes", () => {
+    const spec = visualFixture as PredictionDistributionSpec;
+    const digits = 3;
+
+    const prepDefault = preparePredictionDistributionPlotData(
+      spec,
+      "Model A",
+      "probability_threshold",
+      0.52,
+      digits,
+    );
+
+    const prepOther = preparePredictionDistributionPlotData(
+      spec,
+      "Model A",
+      "probability_threshold",
+      0.52,
+      digits,
+    );
+
+    expect(prepDefault.confusion).toEqual(prepOther.confusion);
+    expect(prepDefault.cutoff).toEqual(prepOther.cutoff);
+    expect(prepDefault.realizedPpcr).toEqual(prepOther.realizedPpcr);
+    expect(prepDefault.ordinaryPlotData.length).toEqual(
+      prepOther.ordinaryPlotData.length,
+    );
+
+    for (let i = 0; i < prepDefault.ordinaryPlotData.length; i++) {
+      expect(prepDefault.ordinaryPlotData[i].x1).toEqual(
+        prepOther.ordinaryPlotData[i].x1,
+      );
+      expect(prepDefault.ordinaryPlotData[i].x2).toEqual(
+        prepOther.ordinaryPlotData[i].x2,
+      );
+      expect(prepDefault.ordinaryPlotData[i].density).toEqual(
+        prepOther.ordinaryPlotData[i].density,
+      );
+    }
+  });
+
+  it("preserves component-local presentation state across cutoff movement, dimension, and evaluation switches", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const colorModeSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Color bars by']",
+    );
+    const conditioningSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Condition on']",
+    );
+    const evalSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Evaluation']",
+    );
+    const dimSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Operating point dimension']",
+    );
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    );
+
+    // Set conditioning to "real_negatives"
+    conditioningSelect!.value = "real_negatives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    // 1. Move slider cutoff
+    slider!.value = "3";
+    slider!.dispatchEvent(new Event("input"));
+    expect(conditioningSelect!.value).toBe("real_negatives");
+
+    // 2. Switch dimension to PPCR
+    dimSelect!.value = "ppcr";
+    dimSelect!.dispatchEvent(new Event("change"));
+    expect(conditioningSelect!.value).toBe("real_negatives");
+
+    // 3. Switch evaluation to Model B
+    evalSelect!.value = "Model B";
+    evalSelect!.dispatchEvent(new Event("change"));
+    expect(conditioningSelect!.value).toBe("real_negatives");
+  });
+
+  it("supports custom theme overrides for predictionDistribution colors", () => {
+    const customOptions = {
+      theme: {
+        predictionDistribution: {
+          emphasizedTrue: "#112233",
+          nonEmphasizedTrue: "#445566",
+          emphasizedFalse: "#778899",
+          nonEmphasizedFalse: "#AABBCC",
+          observedPositive: "#DDEEFF",
+          observedNegative: "#001122",
+        },
+      },
+    };
+
+    const el = renderPredictionDistribution(
+      thresholdFixture as PredictionDistributionSpec,
+      customOptions,
+    );
+
+    // Verify confusion table cells reflect custom colors
+    const tpCell = el.querySelector<HTMLElement>(
+      ".rtichoke-prediction-distribution__cell--tp",
+    );
+    expect(tpCell?.style.backgroundColor).toContain("rgb(17, 34, 51)"); // #112233 in RGB
   });
 });
