@@ -436,44 +436,199 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     ]);
   });
 
-  it("verifies count, cutoff, and geometry invariance across color and conditioning changes", () => {
+  it("verifies cutoff-dependent classification membership and score-atom semantics in preparePredictionDistributionPlotData", () => {
     const spec = visualFixture as PredictionDistributionSpec;
     const digits = 3;
 
-    const prepDefault = preparePredictionDistributionPlotData(
+    // 1. Cutoff 0.0: every bin (including score-zero atom) is predicted positive
+    const prep0 = preparePredictionDistributionPlotData(
       spec,
       "Model A",
       "probability_threshold",
-      0.52,
+      0.0,
       digits,
     );
 
-    const prepOther = preparePredictionDistributionPlotData(
-      spec,
-      "Model A",
-      "probability_threshold",
-      0.52,
-      digits,
-    );
+    expect(prep0.cutoff).toBe(0.0);
 
-    expect(prepDefault.confusion).toEqual(prepOther.confusion);
-    expect(prepDefault.cutoff).toEqual(prepOther.cutoff);
-    expect(prepDefault.realizedPpcr).toEqual(prepOther.realizedPpcr);
-    expect(prepDefault.ordinaryPlotData.length).toEqual(
-      prepOther.ordinaryPlotData.length,
+    // Score-zero mass atom at cutoff 0.0:
+    // pos atom = TP, neg atom = FP
+    const posZeroAtom0 = prep0.zeroAtomPlotData.find(
+      (d) => d.category === "Observed Positives",
     );
+    const negZeroAtom0 = prep0.zeroAtomPlotData.find(
+      (d) => d.category === "Observed Negatives",
+    );
+    expect(posZeroAtom0?.classificationCell).toBe("TP");
+    expect(posZeroAtom0?.cellLabel).toBe("True Positive (TP)");
+    expect(negZeroAtom0?.classificationCell).toBe("FP");
+    expect(negZeroAtom0?.cellLabel).toBe("False Positive (FP)");
 
-    for (let i = 0; i < prepDefault.ordinaryPlotData.length; i++) {
-      expect(prepDefault.ordinaryPlotData[i].x1).toEqual(
-        prepOther.ordinaryPlotData[i].x1,
-      );
-      expect(prepDefault.ordinaryPlotData[i].x2).toEqual(
-        prepOther.ordinaryPlotData[i].x2,
-      );
-      expect(prepDefault.ordinaryPlotData[i].density).toEqual(
-        prepOther.ordinaryPlotData[i].density,
-      );
+    // Ordinary bins at cutoff 0.0: all predicted positive
+    for (const d of prep0.ordinaryPlotData) {
+      if (d.category === "Observed Positives") {
+        expect(d.classificationCell).toBe("TP");
+      } else {
+        expect(d.classificationCell).toBe("FP");
+      }
     }
+
+    // 2. Cutoff 0.52: bins with upper <= 0.52 are predicted negative; upper > 0.52 are predicted positive
+    const prep052 = preparePredictionDistributionPlotData(
+      spec,
+      "Model A",
+      "probability_threshold",
+      0.52,
+      digits,
+    );
+
+    expect(prep052.cutoff).toBe(0.52);
+
+    // Score-zero mass atom at cutoff 0.52 (upper = 0.0 <= 0.52):
+    // pos atom = FN, neg atom = TN
+    const posZeroAtom052 = prep052.zeroAtomPlotData.find(
+      (d) => d.category === "Observed Positives",
+    );
+    const negZeroAtom052 = prep052.zeroAtomPlotData.find(
+      (d) => d.category === "Observed Negatives",
+    );
+    expect(posZeroAtom052?.classificationCell).toBe("FN");
+    expect(posZeroAtom052?.cellLabel).toBe("False Negative (FN)");
+    expect(negZeroAtom052?.classificationCell).toBe("TN");
+    expect(negZeroAtom052?.cellLabel).toBe("True Negative (TN)");
+
+    // Ordinary bins at cutoff 0.52:
+    for (const d of prep052.ordinaryPlotData) {
+      if (d.x2 <= 0.52) {
+        // predicted negative
+        if (d.category === "Observed Positives") {
+          expect(d.classificationCell).toBe("FN");
+        } else {
+          expect(d.classificationCell).toBe("TN");
+        }
+      } else {
+        // predicted positive
+        if (d.category === "Observed Positives") {
+          expect(d.classificationCell).toBe("TP");
+        } else {
+          expect(d.classificationCell).toBe("FP");
+        }
+      }
+    }
+  });
+
+  it("verifies DOM table cell background colors and legend swatches for all four conditioning choices", () => {
+    const el = renderPredictionDistribution(
+      thresholdFixture as PredictionDistributionSpec,
+    );
+
+    const conditioningSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Condition on']",
+    );
+
+    const getCellBgHex = (selector: string) => {
+      const cell = el.querySelector<HTMLElement>(selector);
+      return cell?.style.backgroundColor ?? "";
+    };
+
+    // Helper to convert hex like #009E73 or rgb(...) for clean comparisons
+    const hexToRgb = (hex: string) => {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.substring(0, 2), 16);
+      const g = parseInt(h.substring(2, 4), 16);
+      const b = parseInt(h.substring(4, 6), 16);
+      return `rgb(${r}, ${g}, ${b})`;
+    };
+
+    const emphTrueRgb = hexToRgb("#009E73");
+    const emphFalseRgb = hexToRgb("#FAC8CD");
+    const nonEmphTrueRgb = hexToRgb("#F4FFF0");
+    const nonEmphFalseRgb = hexToRgb("#FFF7F8");
+
+    // 1. Predicted Positives: TP & FP emphasized
+    conditioningSelect!.value = "predicted_positives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(emphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(emphFalseRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(nonEmphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(nonEmphFalseRgb);
+
+    // 2. Predicted Negatives: TN & FN emphasized
+    conditioningSelect!.value = "predicted_negatives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(emphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(emphFalseRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(nonEmphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(nonEmphFalseRgb);
+
+    // 3. Real Positives: TP & FN emphasized
+    conditioningSelect!.value = "real_positives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(emphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(emphFalseRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(nonEmphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(nonEmphFalseRgb);
+
+    // 4. Real Negatives: TN & FP emphasized
+    conditioningSelect!.value = "real_negatives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(emphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(emphFalseRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(nonEmphTrueRgb);
+    expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(nonEmphFalseRgb);
+  });
+
+  it("verifies DOM interaction invariance for table values and geometry across conditioning and color mode toggles", () => {
+    const el = renderPredictionDistribution(
+      thresholdFixture as PredictionDistributionSpec,
+    );
+
+    const conditioningSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Condition on']",
+    );
+    const colorModeSelect = el.querySelector<HTMLSelectElement>(
+      "select[aria-label='Color bars by']",
+    );
+
+    // 1. Record initial table values and plot rect geometry
+    const getTableValues = () => ({
+      tp: el.querySelector(".rtichoke-prediction-distribution__cell--tp")?.textContent,
+      fp: el.querySelector(".rtichoke-prediction-distribution__cell--fp")?.textContent,
+      tn: el.querySelector(".rtichoke-prediction-distribution__cell--tn")?.textContent,
+      fn: el.querySelector(".rtichoke-prediction-distribution__cell--fn")?.textContent,
+    });
+
+    const getSvgRectCount = () =>
+      el.querySelectorAll(".rtichoke-prediction-distribution__chart rect").length;
+
+    const initialTable = getTableValues();
+    const initialRectCount = getSvgRectCount();
+
+    // 2. Change conditioning to "real_positives"
+    conditioningSelect!.value = "real_positives";
+    conditioningSelect!.dispatchEvent(new Event("change"));
+
+    // Cell colors change to real_positives mapping (TP emphasized, FN emphasized)
+    const tpCell = el.querySelector<HTMLElement>(
+      ".rtichoke-prediction-distribution__cell--tp",
+    );
+    expect(tpCell?.style.backgroundColor).toBe("rgb(0, 158, 115)");
+
+    // Table values and geometry remain identical
+    expect(getTableValues()).toEqual(initialTable);
+    expect(getSvgRectCount()).toEqual(initialRectCount);
+
+    // 3. Switch color mode to "observed_outcome"
+    colorModeSelect!.value = "observed_outcome";
+    colorModeSelect!.dispatchEvent(new Event("change"));
+
+    // Table values and geometry remain identical again
+    expect(getTableValues()).toEqual(initialTable);
+    expect(getSvgRectCount()).toEqual(initialRectCount);
   });
 
   it("preserves component-local presentation state across cutoff movement, dimension, and evaluation switches", () => {

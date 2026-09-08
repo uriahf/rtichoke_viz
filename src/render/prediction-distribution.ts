@@ -590,7 +590,7 @@ export function renderPredictionDistribution(
     const lineSpan = document.createElement("span");
     lineSpan.className = "rtichoke-legend-line";
     lineSpan.style.backgroundColor = color;
-    lineSpan.style.border = `1px solid ${theme.axis.color}40`;
+      lineSpan.style.border = `1px solid ${theme.axis.color}`;
     lineSpan.style.boxSizing = "border-box";
     lineSpan.style.height = "10px";
     lineSpan.style.borderRadius = "2px";
@@ -704,10 +704,7 @@ export function renderPredictionDistribution(
       labelX: number;
     }> = [];
 
-    const highlightColor =
-      currentColorMode === "confusion_matrix_cell"
-        ? cellColors.tp
-        : theme.predictionDistribution.observedPositive;
+    const highlightColor = theme.predictionDistribution.emphasizedTrue;
 
     if (cutoffX > 0 && cutoffX < 1) {
       bgRegions.push(
@@ -992,30 +989,95 @@ export function renderPredictionDistribution(
         ? cellColors.fp
         : theme.predictionDistribution.observedNegative;
 
-    const cellBorder = `border: 1px solid ${theme.axis.color}40;`;
-    const darkText = "color: #111827; font-weight: 600;";
-
     const tbody = document.createElement("tbody");
-    tbody.innerHTML = `
-      <tr>
-        <th>Observed Positive</th>
-        <td class="rtichoke-prediction-distribution__cell--fn" style="background-color: ${cellFnColor}; ${darkText} ${cellBorder}" title="False Negatives">FN = ${fn}</td>
-        <td class="rtichoke-prediction-distribution__cell--tp" style="background-color: ${cellTpColor}; ${darkText} ${cellBorder}" title="True Positives">TP = ${tp}</td>
-        <td class="rtichoke-prediction-distribution__cell--total" style="${cellBorder}">${totalPositives}</td>
-      </tr>
-      <tr>
-        <th>Observed Negative</th>
-        <td class="rtichoke-prediction-distribution__cell--tn" style="background-color: ${cellTnColor}; ${darkText} ${cellBorder}" title="True Negatives">TN = ${tn}</td>
-        <td class="rtichoke-prediction-distribution__cell--fp" style="background-color: ${cellFpColor}; ${darkText} ${cellBorder}" title="False Positives">FP = ${fp}</td>
-        <td class="rtichoke-prediction-distribution__cell--total" style="${cellBorder}">${totalNegatives}</td>
-      </tr>
-      <tr>
-        <th>Total</th>
-        <td class="rtichoke-prediction-distribution__cell--total" style="${cellBorder}">${totalPredictedNeg}</td>
-        <td class="rtichoke-prediction-distribution__cell--total" style="${cellBorder}">${totalPredictedPos}</td>
-        <td class="rtichoke-prediction-distribution__cell--total" style="${cellBorder}">${totalN}</td>
-      </tr>
-    `;
+
+    const tr1 = document.createElement("tr");
+    const th1 = document.createElement("th");
+    th1.textContent = "Observed Positive";
+    const tdFn = document.createElement("td");
+    tdFn.className = "rtichoke-prediction-distribution__cell--fn";
+    tdFn.style.backgroundColor = cellFnColor;
+    tdFn.style.color = theme.axis.color;
+    tdFn.style.fontWeight = "600";
+    tdFn.style.border = `1px solid ${theme.axis.color}`;
+    tdFn.title = "False Negatives";
+    tdFn.textContent = `FN = ${fn}`;
+
+    const tdTp = document.createElement("td");
+    tdTp.className = "rtichoke-prediction-distribution__cell--tp";
+    tdTp.style.backgroundColor = cellTpColor;
+    tdTp.style.color = theme.axis.color;
+    tdTp.style.fontWeight = "600";
+    tdTp.style.border = `1px solid ${theme.axis.color}`;
+    tdTp.title = "True Positives";
+    tdTp.textContent = `TP = ${tp}`;
+
+    const tdTot1 = document.createElement("td");
+    tdTot1.className = "rtichoke-prediction-distribution__cell--total";
+    tdTot1.style.border = `1px solid ${theme.axis.color}`;
+    tdTot1.style.color = theme.axis.color;
+    tdTot1.style.fontWeight = "600";
+    tdTot1.textContent = String(totalPositives);
+
+    tr1.append(th1, tdFn, tdTp, tdTot1);
+
+    const tr2 = document.createElement("tr");
+    const th2 = document.createElement("th");
+    th2.textContent = "Observed Negative";
+    const tdTn = document.createElement("td");
+    tdTn.className = "rtichoke-prediction-distribution__cell--tn";
+    tdTn.style.backgroundColor = cellTnColor;
+    tdTn.style.color = theme.axis.color;
+    tdTn.style.fontWeight = "600";
+    tdTn.style.border = `1px solid ${theme.axis.color}`;
+    tdTn.title = "True Negatives";
+    tdTn.textContent = `TN = ${tn}`;
+
+    const tdFp = document.createElement("td");
+    tdFp.className = "rtichoke-prediction-distribution__cell--fp";
+    tdFp.style.backgroundColor = cellFpColor;
+    tdFp.style.color = theme.axis.color;
+    tdFp.style.fontWeight = "600";
+    tdFp.style.border = `1px solid ${theme.axis.color}`;
+    tdFp.title = "False Positives";
+    tdFp.textContent = `FP = ${fp}`;
+
+    const tdTot2 = document.createElement("td");
+    tdTot2.className = "rtichoke-prediction-distribution__cell--total";
+    tdTot2.style.border = `1px solid ${theme.axis.color}`;
+    tdTot2.style.color = theme.axis.color;
+    tdTot2.style.fontWeight = "600";
+    tdTot2.textContent = String(totalNegatives);
+
+    tr2.append(th2, tdTn, tdFp, tdTot2);
+
+    const tr3 = document.createElement("tr");
+    const th3 = document.createElement("th");
+    th3.textContent = "Total";
+    const tdTotNeg = document.createElement("td");
+    tdTotNeg.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotNeg.style.border = `1px solid ${theme.axis.color}`;
+    tdTotNeg.style.color = theme.axis.color;
+    tdTotNeg.style.fontWeight = "600";
+    tdTotNeg.textContent = String(totalPredictedNeg);
+
+    const tdTotPos = document.createElement("td");
+    tdTotPos.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotPos.style.border = `1px solid ${theme.axis.color}`;
+    tdTotPos.style.color = theme.axis.color;
+    tdTotPos.style.fontWeight = "600";
+    tdTotPos.textContent = String(totalPredictedPos);
+
+    const tdTotN = document.createElement("td");
+    tdTotN.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotN.style.border = `1px solid ${theme.axis.color}`;
+    tdTotN.style.color = theme.axis.color;
+    tdTotN.style.fontWeight = "600";
+    tdTotN.textContent = String(totalN);
+
+    tr3.append(th3, tdTotNeg, tdTotPos, tdTotN);
+
+    tbody.append(tr1, tr2, tr3);
 
     table.append(thead, tbody);
     summaryDiv.append(metricsRow, table);
