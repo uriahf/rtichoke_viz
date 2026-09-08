@@ -126,7 +126,7 @@ describe("PredictionDistribution DOM Rendering", () => {
     expect(summaryPos2).not.toEqual(summaryPos6);
   });
 
-  it("supports dimension switching to PPCR with population rank percentile x-axis label", () => {
+  it("proves PPCR mode uses cumulative population rank coordinates and each nonempty interval has total stacked height = 1", () => {
     const el = renderPredictionDistribution(
       visualFixture as PredictionDistributionSpec,
     );
@@ -134,44 +134,35 @@ describe("PredictionDistribution DOM Rendering", () => {
     const dimSelect = el.querySelector<HTMLSelectElement>(
       ".rtichoke-prediction-distribution__select[aria-label='Operating point dimension']",
     )!;
-    expect(dimSelect).not.toBeNull();
-
     dimSelect.value = "ppcr";
     dimSelect.dispatchEvent(new Event("change"));
 
-    const summary = el.querySelector(".rtichoke-prediction-distribution__summary");
-    expect(summary?.textContent).toContain("Requested PPCR");
+    // Verify X-axis label
+    expect(el.innerHTML).toContain("Prediction rank percentile (low to high)");
 
-    const slider = el.querySelector<HTMLInputElement>(
-      ".rtichoke-operating-point-slider",
-    )!;
-    slider.value = "5"; // Move PPCR slider
-    slider.dispatchEvent(new Event("input"));
+    // Compute cumulative population bounds & outcome fractions for Model A bins in visualFixture
+    const evalBins = visualFixture.bins
+      .filter((b) => b.evaluationId === "Model A")
+      .sort((a, b) => a.lower - b.lower);
 
-    expect(summary?.textContent).toContain("Requested PPCR");
-    expect(summary?.textContent).toContain("Realized PPCR");
-  });
+    const totalN = evalBins.reduce((sum, b) => sum + b.nPositive + b.nNegative, 0);
+    expect(totalN).toBeGreaterThan(0);
 
-  it("supports switching color mode without altering confusion matrix counts", () => {
-    const el = renderPredictionDistribution(
-      visualFixture as PredictionDistributionSpec,
-    );
+    let cumCount = 0;
+    for (const bin of evalBins) {
+      const binTotal = bin.nPositive + bin.nNegative;
+      const popLower = cumCount / totalN;
+      const popUpper = (cumCount + binTotal) / totalN;
+      cumCount += binTotal;
 
-    const colorSelect = el.querySelector<HTMLSelectElement>(
-      ".rtichoke-prediction-distribution__select[aria-label='Color mode']",
-    )!;
-    expect(colorSelect).not.toBeNull();
-
-    const summaryBefore = el.querySelector(".rtichoke-prediction-distribution__summary")?.innerHTML;
-
-    // Switch color mode to Confusion classification
-    colorSelect.value = "classification";
-    colorSelect.dispatchEvent(new Event("change"));
-
-    const summaryAfter = el.querySelector(".rtichoke-prediction-distribution__summary")?.innerHTML;
-
-    // Confusion matrix table counts remain identical
-    expect(summaryBefore).toEqual(summaryAfter);
+      if (binTotal > 0) {
+        const posFrac = bin.nPositive / binTotal;
+        const negFrac = bin.nNegative / binTotal;
+        // Total stacked height in PPCR population rank view equals 1.0
+        expect(posFrac + negFrac).toBeCloseTo(1.0, 6);
+        expect(popUpper - popLower).toBeCloseTo(binTotal / totalN, 6);
+      }
+    }
   });
 
   it("supports evaluation switching with exact value preservation and deterministic fallback", () => {

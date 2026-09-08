@@ -24,7 +24,6 @@ export function renderPredictionDistribution(
 
   // State
   let currentEvalId = spec.evaluations[0].id;
-  let currentColorMode: "outcome" | "classification" = "outcome";
 
   const getAvailableDimensions = (
     evalId: string,
@@ -141,28 +140,6 @@ export function renderPredictionDistribution(
   dimGroup.append(dimSelect);
   controlsDiv.append(dimGroup);
 
-  // Color Mode Selector
-  const colorGroup = document.createElement("label");
-  colorGroup.className = "rtichoke-prediction-distribution__control-group";
-  colorGroup.textContent = "Color bars by: ";
-
-  const colorSelect = document.createElement("select");
-  colorSelect.className = "rtichoke-prediction-distribution__select";
-  colorSelect.setAttribute("aria-label", "Color mode");
-
-  const optOutcome = document.createElement("option");
-  optOutcome.value = "outcome";
-  optOutcome.textContent = "Observed outcome";
-
-  const optClass = document.createElement("option");
-  optClass.value = "classification";
-  optClass.textContent = "Confusion classification";
-
-  colorSelect.append(optOutcome, optClass);
-  colorSelect.value = currentColorMode;
-  colorGroup.append(colorSelect);
-  controlsDiv.append(colorGroup);
-
   // Slider Control
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
@@ -192,11 +169,6 @@ export function renderPredictionDistribution(
   const posColor = resolved.colors[0];
   const negColor = resolved.colors[1];
 
-  const tpColor = "#166534";
-  const fpColor = "#dc2626";
-  const tnColor = "#22c55e";
-  const fnColor = "#991b1b";
-
   const createLegendItem = (label: string, color: string) => {
     const item = document.createElement("div");
     item.className = "rtichoke-legend-item";
@@ -217,22 +189,10 @@ export function renderPredictionDistribution(
     return item;
   };
 
-  const updateLegend = () => {
-    legendDiv.replaceChildren();
-    if (currentColorMode === "outcome") {
-      legendDiv.append(
-        createLegendItem("Observed Positives", posColor),
-        createLegendItem("Observed Negatives", negColor),
-      );
-    } else {
-      legendDiv.append(
-        createLegendItem("True Positives (TP)", tpColor),
-        createLegendItem("False Positives (FP)", fpColor),
-        createLegendItem("True Negatives (TN)", tnColor),
-        createLegendItem("False Negatives (FN)", fnColor),
-      );
-    }
-  };
+  legendDiv.append(
+    createLegendItem("Observed Positives", posColor),
+    createLegendItem("Observed Negatives", negColor),
+  );
 
   // Chart & Summary Content
   const chartDiv = document.createElement("div");
@@ -251,7 +211,6 @@ export function renderPredictionDistribution(
 
   const updateChart = () => {
     updateDimSelectOptions();
-    updateLegend();
 
     const ops = getOperatingPoints(currentEvalId, currentDim);
     const availableValues = getValuesFor(currentEvalId, currentDim);
@@ -308,14 +267,14 @@ export function renderPredictionDistribution(
     const ordinaryPlotData: Array<{
       x1: number;
       x2: number;
-      category: string;
+      category: "Observed Positives" | "Observed Negatives";
       density: number;
       count: number;
       title: string;
     }> = [];
 
     const zeroAtomPlotData: Array<{
-      category: string;
+      category: "Observed Positives" | "Observed Negatives";
       count: number;
       title: string;
     }> = [];
@@ -355,14 +314,8 @@ export function renderPredictionDistribution(
         if (bin.lower === 0 && bin.upper === 0) {
           // Score zero atom [0, 0]
           if (bin.nPositive > 0) {
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Positives"
-                : isPredictedPositive
-                ? "True Positives (TP)"
-                : "False Negatives (FN)";
             zeroAtomPlotData.push({
-              category: cat,
+              category: "Observed Positives",
               count: bin.nPositive,
               title: tooltip(digits, [
                 ["Evaluation", evalLabel],
@@ -374,14 +327,8 @@ export function renderPredictionDistribution(
             });
           }
           if (bin.nNegative > 0) {
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Negatives"
-                : isPredictedPositive
-                ? "False Positives (FP)"
-                : "True Negatives (TN)";
             zeroAtomPlotData.push({
-              category: cat,
+              category: "Observed Negatives",
               count: bin.nNegative,
               title: tooltip(digits, [
                 ["Evaluation", evalLabel],
@@ -399,16 +346,10 @@ export function renderPredictionDistribution(
 
           if (bin.nPositive > 0) {
             const posDensity = bin.nPositive / intervalWidth;
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Positives"
-                : isPredictedPositive
-                ? "True Positives (TP)"
-                : "False Negatives (FN)";
             ordinaryPlotData.push({
               x1: bin.lower,
               x2: bin.upper,
-              category: cat,
+              category: "Observed Positives",
               density: posDensity,
               count: bin.nPositive,
               title: tooltip(digits, [
@@ -424,16 +365,10 @@ export function renderPredictionDistribution(
 
           if (bin.nNegative > 0) {
             const negDensity = bin.nNegative / intervalWidth;
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Negatives"
-                : isPredictedPositive
-                ? "False Positives (FP)"
-                : "True Negatives (TN)";
             ordinaryPlotData.push({
               x1: bin.lower,
               x2: bin.upper,
-              category: cat,
+              category: "Observed Negatives",
               density: negDensity,
               count: bin.nNegative,
               title: tooltip(digits, [
@@ -459,16 +394,10 @@ export function renderPredictionDistribution(
 
           if (bin.nPositive > 0) {
             const frac = bin.nPositive / binTotal;
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Positives"
-                : isPredictedPositive
-                ? "True Positives (TP)"
-                : "False Negatives (FN)";
             ordinaryPlotData.push({
               x1: popLower,
               x2: popUpper,
-              category: cat,
+              category: "Observed Positives",
               density: frac,
               count: bin.nPositive,
               title: tooltip(digits, [
@@ -485,16 +414,10 @@ export function renderPredictionDistribution(
 
           if (bin.nNegative > 0) {
             const frac = bin.nNegative / binTotal;
-            const cat =
-              currentColorMode === "outcome"
-                ? "Observed Negatives"
-                : isPredictedPositive
-                ? "False Positives (FP)"
-                : "True Negatives (TN)";
             ordinaryPlotData.push({
               x1: popLower,
               x2: popUpper,
-              category: cat,
+              category: "Observed Negatives",
               density: frac,
               count: bin.nNegative,
               title: tooltip(digits, [
@@ -655,23 +578,6 @@ export function renderPredictionDistribution(
       ),
     );
 
-    // Color domain and range
-    let colorDomain: string[] = [];
-    let colorRange: string[] = [];
-
-    if (currentColorMode === "outcome") {
-      colorDomain = ["Observed Positives", "Observed Negatives"];
-      colorRange = [posColor, negColor];
-    } else {
-      colorDomain = [
-        "True Positives (TP)",
-        "False Positives (FP)",
-        "True Negatives (TN)",
-        "False Negatives (FN)",
-      ];
-      colorRange = [tpColor, fpColor, tnColor, fnColor];
-    }
-
     // Ordinary Stacked Bars
     if (ordinaryPlotData.length > 0) {
       marks.push(
@@ -721,8 +627,8 @@ export function renderPredictionDistribution(
       },
       color: {
         legend: false,
-        domain: colorDomain,
-        range: colorRange,
+        domain: ["Observed Positives", "Observed Negatives"],
+        range: [posColor, negColor],
       },
       x: {
         label: xAxisLabel,
@@ -848,11 +754,6 @@ export function renderPredictionDistribution(
   dimSelect.addEventListener("change", () => {
     currentDim = dimSelect.value as "probability_threshold" | "ppcr";
     currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
-    updateChart();
-  });
-
-  colorSelect.addEventListener("change", () => {
-    currentColorMode = colorSelect.value as "outcome" | "classification";
     updateChart();
   });
 
