@@ -126,7 +126,7 @@ describe("PredictionDistribution DOM Rendering", () => {
     expect(summaryPos2).not.toEqual(summaryPos6);
   });
 
-  it("supports dimension switching to PPCR and movement across multiple PPCR positions", () => {
+  it("supports dimension switching to PPCR with population rank percentile x-axis label", () => {
     const el = renderPredictionDistribution(
       visualFixture as PredictionDistributionSpec,
     );
@@ -150,6 +150,28 @@ describe("PredictionDistribution DOM Rendering", () => {
 
     expect(summary?.textContent).toContain("Requested PPCR");
     expect(summary?.textContent).toContain("Realized PPCR");
+  });
+
+  it("supports switching color mode without altering confusion matrix counts", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const colorSelect = el.querySelector<HTMLSelectElement>(
+      ".rtichoke-prediction-distribution__select[aria-label='Color mode']",
+    )!;
+    expect(colorSelect).not.toBeNull();
+
+    const summaryBefore = el.querySelector(".rtichoke-prediction-distribution__summary")?.innerHTML;
+
+    // Switch color mode to Confusion classification
+    colorSelect.value = "classification";
+    colorSelect.dispatchEvent(new Event("change"));
+
+    const summaryAfter = el.querySelector(".rtichoke-prediction-distribution__summary")?.innerHTML;
+
+    // Confusion matrix table counts remain identical
+    expect(summaryBefore).toEqual(summaryAfter);
   });
 
   it("supports evaluation switching with exact value preservation and deterministic fallback", () => {
