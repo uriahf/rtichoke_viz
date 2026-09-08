@@ -20601,7 +20601,6 @@ function renderPredictionDistribution(spec, options = {}) {
   const { theme } = resolved;
   const digits = theme.tip.digits;
   let currentEvalId = spec.evaluations[0].id;
-  let currentColorMode = "outcome";
   const getAvailableDimensions = (evalId) => {
     const dims = /* @__PURE__ */ new Set();
     for (const op of spec.operatingPoints) {
@@ -20679,22 +20678,6 @@ function renderPredictionDistribution(spec, options = {}) {
   };
   dimGroup.append(dimSelect);
   controlsDiv.append(dimGroup);
-  const colorGroup = document.createElement("label");
-  colorGroup.className = "rtichoke-prediction-distribution__control-group";
-  colorGroup.textContent = "Color bars by: ";
-  const colorSelect = document.createElement("select");
-  colorSelect.className = "rtichoke-prediction-distribution__select";
-  colorSelect.setAttribute("aria-label", "Color mode");
-  const optOutcome = document.createElement("option");
-  optOutcome.value = "outcome";
-  optOutcome.textContent = "Observed outcome";
-  const optClass = document.createElement("option");
-  optClass.value = "classification";
-  optClass.textContent = "Confusion classification";
-  colorSelect.append(optOutcome, optClass);
-  colorSelect.value = currentColorMode;
-  colorGroup.append(colorSelect);
-  controlsDiv.append(colorGroup);
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
   sliderControl.style.marginLeft = `${theme.margins.left}px`;
@@ -20714,10 +20697,6 @@ function renderPredictionDistribution(spec, options = {}) {
   legendDiv.style.paddingLeft = `${theme.margins.left}px`;
   const posColor = resolved.colors[0];
   const negColor = resolved.colors[1];
-  const tpColor = "#166534";
-  const fpColor = "#dc2626";
-  const tnColor = "#22c55e";
-  const fnColor = "#991b1b";
   const createLegendItem = (label, color3) => {
     const item = document.createElement("div");
     item.className = "rtichoke-legend-item";
@@ -20733,22 +20712,10 @@ function renderPredictionDistribution(spec, options = {}) {
     item.append(swatch, labelSpan);
     return item;
   };
-  const updateLegend = () => {
-    legendDiv.replaceChildren();
-    if (currentColorMode === "outcome") {
-      legendDiv.append(
-        createLegendItem("Observed Positives", posColor),
-        createLegendItem("Observed Negatives", negColor)
-      );
-    } else {
-      legendDiv.append(
-        createLegendItem("True Positives (TP)", tpColor),
-        createLegendItem("False Positives (FP)", fpColor),
-        createLegendItem("True Negatives (TN)", tnColor),
-        createLegendItem("False Negatives (FN)", fnColor)
-      );
-    }
-  };
+  legendDiv.append(
+    createLegendItem("Observed Positives", posColor),
+    createLegendItem("Observed Negatives", negColor)
+  );
   const chartDiv = document.createElement("div");
   chartDiv.className = "rtichoke-prediction-distribution__chart";
   const summaryDiv = document.createElement("div");
@@ -20762,7 +20729,6 @@ function renderPredictionDistribution(spec, options = {}) {
   );
   const updateChart = () => {
     updateDimSelectOptions();
-    updateLegend();
     const ops = getOperatingPoints(currentEvalId, currentDim);
     const availableValues = getValuesFor(currentEvalId, currentDim);
     if (!availableValues.includes(currentValue)) {
@@ -20817,9 +20783,8 @@ function renderPredictionDistribution(spec, options = {}) {
       if (currentDim === "probability_threshold") {
         if (bin.lower === 0 && bin.upper === 0) {
           if (bin.nPositive > 0) {
-            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
             zeroAtomPlotData.push({
-              category: cat,
+              category: "Observed Positives",
               count: bin.nPositive,
               title: tooltip(digits, [
                 ["Evaluation", evalLabel],
@@ -20831,9 +20796,8 @@ function renderPredictionDistribution(spec, options = {}) {
             });
           }
           if (bin.nNegative > 0) {
-            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
             zeroAtomPlotData.push({
-              category: cat,
+              category: "Observed Negatives",
               count: bin.nNegative,
               title: tooltip(digits, [
                 ["Evaluation", evalLabel],
@@ -20849,11 +20813,10 @@ function renderPredictionDistribution(spec, options = {}) {
           const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
           if (bin.nPositive > 0) {
             const posDensity = bin.nPositive / intervalWidth;
-            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
             ordinaryPlotData.push({
               x1: bin.lower,
               x2: bin.upper,
-              category: cat,
+              category: "Observed Positives",
               density: posDensity,
               count: bin.nPositive,
               title: tooltip(digits, [
@@ -20868,11 +20831,10 @@ function renderPredictionDistribution(spec, options = {}) {
           }
           if (bin.nNegative > 0) {
             const negDensity = bin.nNegative / intervalWidth;
-            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
             ordinaryPlotData.push({
               x1: bin.lower,
               x2: bin.upper,
-              category: cat,
+              category: "Observed Negatives",
               density: negDensity,
               count: bin.nNegative,
               title: tooltip(digits, [
@@ -20892,11 +20854,10 @@ function renderPredictionDistribution(spec, options = {}) {
           const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
           if (bin.nPositive > 0) {
             const frac = bin.nPositive / binTotal;
-            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
             ordinaryPlotData.push({
               x1: popLower,
               x2: popUpper,
-              category: cat,
+              category: "Observed Positives",
               density: frac,
               count: bin.nPositive,
               title: tooltip(digits, [
@@ -20912,11 +20873,10 @@ function renderPredictionDistribution(spec, options = {}) {
           }
           if (bin.nNegative > 0) {
             const frac = bin.nNegative / binTotal;
-            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
             ordinaryPlotData.push({
               x1: popLower,
               x2: popUpper,
-              category: cat,
+              category: "Observed Negatives",
               density: frac,
               count: bin.nNegative,
               title: tooltip(digits, [
@@ -21048,20 +21008,6 @@ function renderPredictionDistribution(spec, options = {}) {
         }
       )
     );
-    let colorDomain = [];
-    let colorRange = [];
-    if (currentColorMode === "outcome") {
-      colorDomain = ["Observed Positives", "Observed Negatives"];
-      colorRange = [posColor, negColor];
-    } else {
-      colorDomain = [
-        "True Positives (TP)",
-        "False Positives (FP)",
-        "True Negatives (TN)",
-        "False Negatives (FN)"
-      ];
-      colorRange = [tpColor, fpColor, tnColor, fnColor];
-    }
     if (ordinaryPlotData.length > 0) {
       marks2.push(
         rectY(
@@ -21107,8 +21053,8 @@ function renderPredictionDistribution(spec, options = {}) {
       },
       color: {
         legend: false,
-        domain: colorDomain,
-        range: colorRange
+        domain: ["Observed Positives", "Observed Negatives"],
+        range: [posColor, negColor]
       },
       x: {
         label: xAxisLabel,
@@ -21217,10 +21163,6 @@ function renderPredictionDistribution(spec, options = {}) {
   dimSelect.addEventListener("change", () => {
     currentDim = dimSelect.value;
     currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
-    updateChart();
-  });
-  colorSelect.addEventListener("change", () => {
-    currentColorMode = colorSelect.value;
     updateChart();
   });
   slider.addEventListener("input", () => {
