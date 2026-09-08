@@ -5,11 +5,137 @@ import ppcrTieFixture from "../fixtures/v2/prediction-distribution-ppcr-tie.json
 import multiFixture from "../fixtures/v2/prediction-distribution-multi.json";
 import visualFixture from "../fixtures/v2/prediction-distribution-visual.json";
 import type { PredictionDistributionSpec } from "../src/spec/v2/prediction-distribution.js";
-import { renderPredictionDistribution } from "../src/render/prediction-distribution.js";
+import {
+  preparePredictionDistributionPlotData,
+  renderPredictionDistribution,
+} from "../src/render/prediction-distribution.js";
 import { renderReport } from "../src/render/report.js";
 import type { ReportSpecV1_0, ReportSpecV1_1 } from "../src/spec/report.js";
 
-describe("PredictionDistribution DOM Rendering", () => {
+describe("PredictionDistribution Helper & DOM Rendering", () => {
+  it("directly tests preparePredictionDistributionPlotData helper for coordinates, heights, atom, cutoff, and count identity", () => {
+    const spec = visualFixture as PredictionDistributionSpec;
+    const evalId = "Model A";
+    const digits = 3;
+
+    // 1. Score-space mode (probability_threshold)
+    const threshPrep = preparePredictionDistributionPlotData(
+      spec,
+      evalId,
+      "probability_threshold",
+      0.52,
+      digits,
+    );
+
+    expect(threshPrep.xAxisLabel).toBe("Prediction Score");
+    expect(threshPrep.yAxisLabel).toBe("Count density");
+    expect(threshPrep.cutoffX).toBe(0.52);
+
+    // Verify score-space lower/upper bounds for ordinary bins
+    for (const d of threshPrep.ordinaryPlotData) {
+      expect(d.x1).toBeGreaterThanOrEqual(0);
+      expect(d.x2).toBeLessThanOrEqual(1);
+      expect(d.x2).toBeGreaterThan(d.x1);
+      // Density is raw count divided by interval width
+      expect(d.density).toBeGreaterThan(0);
+    }
+
+    // Verify score-zero mass atom in threshold mode
+    expect(threshPrep.zeroAtomPlotData.length).toBeGreaterThan(0);
+    expect(threshPrep.zeroAtomPlotData[0].count).toBeGreaterThan(0);
+
+    // 2. PPCR population rank mode (ppcr)
+    const ppcrPrep = preparePredictionDistributionPlotData(
+      spec,
+      evalId,
+      "ppcr",
+      0.4,
+      digits,
+    );
+
+    expect(ppcrPrep.xAxisLabel).toBe("Prediction rank percentile (low to high)");
+    expect(ppcrPrep.yAxisLabel).toBe("Outcome fraction");
+
+    // Cutoff position equal to 1 - realizedPpcr
+    expect(ppcrPrep.cutoffX).toBeCloseTo(1 - ppcrPrep.realizedPpcr, 6);
+
+    // Verify cumulative population bounds, interval widths, and total height = 1.0
+    const evalBins = spec.bins
+      .filter((b) => b.evaluationId === evalId)
+      .sort((a, b) => a.lower - b.lower);
+
+    const totalN = evalBins.reduce((sum, b) => sum + b.nPositive + b.nNegative, 0);
+    expect(totalN).toBe(ppcrPrep.totalN);
+
+    let cumCount = 0;
+    for (const bin of evalBins) {
+      const binTotal = bin.nPositive + bin.nNegative;
+      const popLower = cumCount / totalN;
+      const popUpper = (cumCount + binTotal) / totalN;
+      cumCount += binTotal;
+
+      if (binTotal === 0) {
+        // Empty canonical bins have zero population width and are skipped in PPCR plot data
+        const matches = ppcrPrep.ordinaryPlotData.filter(
+          (d) => d.x1 === popLower && d.x2 === popUpper,
+        );
+        expect(matches.length).toBe(0);
+      } else {
+        // Non-empty bins: PPCR interval width = bin total / total N
+        expect(popUpper - popLower).toBeCloseTo(binTotal / totalN, 6);
+
+        const posDatum = ppcrPrep.ordinaryPlotData.find(
+          (d) =>
+            Math.abs(d.x1 - popLower) < 1e-6 &&
+            Math.abs(d.x2 - popUpper) < 1e-6 &&
+            d.category === "Observed Positives",
+        );
+        const negDatum = ppcrPrep.ordinaryPlotData.find(
+          (d) =>
+            Math.abs(d.x1 - popLower) < 1e-6 &&
+            Math.abs(d.x2 - popUpper) < 1e-6 &&
+            d.category === "Observed Negatives",
+        );
+
+        const posFrac = posDatum ? posDatum.density : 0;
+        const negFrac = negDatum ? negDatum.density : 0;
+
+        // Positive fraction plus negative fraction equals 1.0
+        expect(posFrac + negFrac).toBeCloseTo(1.0, 6);
+      }
+    }
+
+    // Score-zero mass is represented as an ordinary population-width interval in PPCR mode
+    const zeroBin = evalBins.find((b) => b.lower === 0 && b.upper === 0)!;
+    const zeroBinTotal = zeroBin.nPositive + zeroBin.nNegative;
+    if (zeroBinTotal > 0) {
+      const zeroAtomMatches = ppcrPrep.ordinaryPlotData.filter(
+        (d) => d.x1 === 0 && Math.abs(d.x2 - zeroBinTotal / totalN) < 1e-6,
+      );
+      expect(zeroAtomMatches.length).toBeGreaterThan(0);
+    }
+
+    // Identical TP/TN/FP/FN totals across both coordinate modes for the same effective cutoff (cutoff = 0.52)
+    const ppcrPrep052 = preparePredictionDistributionPlotData(
+      spec,
+      evalId,
+      "ppcr",
+      0.4, // cutoff for requested PPCR 0.4 in Model A is 0.52
+      digits,
+    );
+
+    const threshPrep052 = preparePredictionDistributionPlotData(
+      spec,
+      evalId,
+      "probability_threshold",
+      0.52, // threshold 0.52 has cutoff 0.52
+      digits,
+    );
+
+    expect(ppcrPrep052.cutoff).toBe(threshPrep052.cutoff);
+    expect(ppcrPrep052.confusion).toEqual(threshPrep052.confusion);
+  });
+
   it("renders threshold golden fixture and reconstructs exact classifications for cutoff 0.0", () => {
     const el = renderPredictionDistribution(
       thresholdFixture as PredictionDistributionSpec,
@@ -124,45 +250,6 @@ describe("PredictionDistribution DOM Rendering", () => {
     const summaryPos6 = el.querySelector(".rtichoke-prediction-distribution__summary")?.textContent;
 
     expect(summaryPos2).not.toEqual(summaryPos6);
-  });
-
-  it("proves PPCR mode uses cumulative population rank coordinates and each nonempty interval has total stacked height = 1", () => {
-    const el = renderPredictionDistribution(
-      visualFixture as PredictionDistributionSpec,
-    );
-
-    const dimSelect = el.querySelector<HTMLSelectElement>(
-      ".rtichoke-prediction-distribution__select[aria-label='Operating point dimension']",
-    )!;
-    dimSelect.value = "ppcr";
-    dimSelect.dispatchEvent(new Event("change"));
-
-    // Verify X-axis label
-    expect(el.innerHTML).toContain("Prediction rank percentile (low to high)");
-
-    // Compute cumulative population bounds & outcome fractions for Model A bins in visualFixture
-    const evalBins = visualFixture.bins
-      .filter((b) => b.evaluationId === "Model A")
-      .sort((a, b) => a.lower - b.lower);
-
-    const totalN = evalBins.reduce((sum, b) => sum + b.nPositive + b.nNegative, 0);
-    expect(totalN).toBeGreaterThan(0);
-
-    let cumCount = 0;
-    for (const bin of evalBins) {
-      const binTotal = bin.nPositive + bin.nNegative;
-      const popLower = cumCount / totalN;
-      const popUpper = (cumCount + binTotal) / totalN;
-      cumCount += binTotal;
-
-      if (binTotal > 0) {
-        const posFrac = bin.nPositive / binTotal;
-        const negFrac = bin.nNegative / binTotal;
-        // Total stacked height in PPCR population rank view equals 1.0
-        expect(posFrac + negFrac).toBeCloseTo(1.0, 6);
-        expect(popUpper - popLower).toBeCloseTo(binTotal / totalN, 6);
-      }
-    }
   });
 
   it("supports evaluation switching with exact value preservation and deterministic fallback", () => {

@@ -12,6 +12,299 @@ import {
   type V2RenderOptions,
 } from "./v2.js";
 
+export interface PredictionDistributionPreparedData {
+  evalId: string;
+  evalLabel: string;
+  dim: "probability_threshold" | "ppcr";
+  currentValue: number;
+  cutoff: number;
+  realizedPpcr: number;
+  cutoffX: number;
+  xAxisLabel: string;
+  yAxisLabel: string;
+  yMax: number;
+  totalN: number;
+  confusion: {
+    tp: number;
+    fp: number;
+    tn: number;
+    fn: number;
+    totalPositives: number;
+    totalNegatives: number;
+    totalPredictedPos: number;
+    totalPredictedNeg: number;
+  };
+  ordinaryPlotData: Array<{
+    x1: number;
+    x2: number;
+    category: "Observed Positives" | "Observed Negatives";
+    density: number;
+    count: number;
+    title: string;
+  }>;
+  zeroAtomPlotData: Array<{
+    category: "Observed Positives" | "Observed Negatives";
+    count: number;
+    title: string;
+  }>;
+}
+
+export function preparePredictionDistributionPlotData(
+  spec: PredictionDistributionSpec,
+  evalId: string,
+  dim: "probability_threshold" | "ppcr",
+  currentValue: number,
+  digits: number,
+): PredictionDistributionPreparedData {
+  const ops = spec.operatingPoints
+    .filter((op) => op.evaluationId === evalId && op.type === dim)
+    .sort((a, b) => a.value - b.value);
+
+  const activeOp = ops.find((op) => op.value === currentValue) ?? ops[0];
+  const cutoff = activeOp ? activeOp.cutoff : 0;
+  const realizedPpcr = activeOp ? activeOp.realizedPpcr : 0;
+
+  const evalBins = spec.bins
+    .filter((bin) => bin.evaluationId === evalId)
+    .sort((a, b) => a.lower - b.lower);
+
+  let totalN = 0;
+  for (const bin of evalBins) {
+    totalN += bin.nPositive + bin.nNegative;
+  }
+
+  let tp = 0;
+  let fp = 0;
+  let tn = 0;
+  let fn = 0;
+
+  const evalSpec = spec.evaluations.find((e) => e.id === evalId);
+  const evalLabel =
+    evalSpec?.label ?? evalSpec?.model ?? evalSpec?.population ?? evalId;
+
+  const ordinaryPlotData: Array<{
+    x1: number;
+    x2: number;
+    category: "Observed Positives" | "Observed Negatives";
+    density: number;
+    count: number;
+    title: string;
+  }> = [];
+
+  const zeroAtomPlotData: Array<{
+    category: "Observed Positives" | "Observed Negatives";
+    count: number;
+    title: string;
+  }> = [];
+
+  let cumCount = 0;
+
+  for (const bin of evalBins) {
+    let isPredictedPositive = false;
+    if (cutoff === 0) {
+      isPredictedPositive = true;
+    } else {
+      isPredictedPositive = bin.upper > cutoff;
+    }
+
+    if (isPredictedPositive) {
+      tp += bin.nPositive;
+      fp += bin.nNegative;
+    } else {
+      fn += bin.nPositive;
+      tn += bin.nNegative;
+    }
+
+    const binTotal = bin.nPositive + bin.nNegative;
+    const popLower = totalN > 0 ? cumCount / totalN : 0;
+    const popUpper = totalN > 0 ? (cumCount + binTotal) / totalN : 0;
+    cumCount += binTotal;
+
+    const predLabel = isPredictedPositive
+      ? "Predicted Positive"
+      : "Predicted Negative";
+
+    if (dim === "probability_threshold") {
+      if (bin.lower === 0 && bin.upper === 0) {
+        if (bin.nPositive > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Positives",
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+        if (bin.nNegative > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Negatives",
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+      } else {
+        const intervalWidth = bin.upper - bin.lower;
+        const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+
+        if (bin.nPositive > 0) {
+          const posDensity = bin.nPositive / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Positives",
+            density: posDensity,
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Count Density", posDensity.toFixed(digits)],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+
+        if (bin.nNegative > 0) {
+          const negDensity = bin.nNegative / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Negatives",
+            density: negDensity,
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Count Density", negDensity.toFixed(digits)],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+      }
+    } else {
+      // PPCR view: empty bins (binTotal === 0) have popLower === popUpper and are skipped
+      if (binTotal > 0) {
+        const scoreIntervalStr =
+          bin.lower === 0 && bin.upper === 0
+            ? "[0, 0]"
+            : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+
+        const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
+
+        if (bin.nPositive > 0) {
+          const frac = bin.nPositive / binTotal;
+          ordinaryPlotData.push({
+            x1: popLower,
+            x2: popUpper,
+            category: "Observed Positives",
+            density: frac,
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Population Rank Percentile", rankIntervalStr],
+              ["Score Interval", scoreIntervalStr],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+
+        if (bin.nNegative > 0) {
+          const frac = bin.nNegative / binTotal;
+          ordinaryPlotData.push({
+            x1: popLower,
+            x2: popUpper,
+            category: "Observed Negatives",
+            density: frac,
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Population Rank Percentile", rankIntervalStr],
+              ["Score Interval", scoreIntervalStr],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+      }
+    }
+  }
+
+  let cutoffX = cutoff;
+  let xAxisLabel = "Prediction Score";
+  let yAxisLabel = "Count density";
+  let yMax = 1;
+
+  if (dim === "probability_threshold") {
+    cutoffX = cutoff;
+    xAxisLabel = "Prediction Score";
+    yAxisLabel = "Count density";
+
+    let maxBinDensity = 0;
+    const binsByLower = new Map<number, number>();
+    for (const d of ordinaryPlotData) {
+      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
+    }
+    for (const totalDensity of binsByLower.values()) {
+      maxBinDensity = Math.max(maxBinDensity, totalDensity);
+    }
+    yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
+  } else {
+    cutoffX = 1 - realizedPpcr;
+    xAxisLabel = "Prediction rank percentile (low to high)";
+    yAxisLabel = "Outcome fraction";
+    yMax = 1.18;
+  }
+
+  const totalPositives = tp + fn;
+  const totalNegatives = tn + fp;
+  const totalPredictedPos = tp + fp;
+  const totalPredictedNeg = tn + fn;
+
+  return {
+    evalId,
+    evalLabel,
+    dim,
+    currentValue,
+    cutoff,
+    realizedPpcr,
+    cutoffX,
+    xAxisLabel,
+    yAxisLabel,
+    yMax,
+    totalN,
+    confusion: {
+      tp,
+      fp,
+      tn,
+      fn,
+      totalPositives,
+      totalNegatives,
+      totalPredictedPos,
+      totalPredictedNeg,
+    },
+    ordinaryPlotData,
+    zeroAtomPlotData,
+  };
+}
+
 export function renderPredictionDistribution(
   spec: PredictionDistributionSpec,
   options: V2RenderOptions = {},
@@ -22,7 +315,6 @@ export function renderPredictionDistribution(
   const { theme } = resolved;
   const digits = theme.tip.digits;
 
-  // State
   let currentEvalId = spec.evaluations[0].id;
 
   const getAvailableDimensions = (
@@ -212,7 +504,6 @@ export function renderPredictionDistribution(
   const updateChart = () => {
     updateDimSelectOptions();
 
-    const ops = getOperatingPoints(currentEvalId, currentDim);
     const availableValues = getValuesFor(currentEvalId, currentDim);
 
     if (!availableValues.includes(currentValue)) {
@@ -234,234 +525,27 @@ export function renderPredictionDistribution(
     slider.setAttribute("aria-label", dimLabelText);
     slider.setAttribute("aria-valuetext", currentValue.toFixed(digits));
 
-    // Find active operating point
-    const activeOp =
-      ops.find((op) => op.value === currentValue) ?? ops[0];
-    const cutoff = activeOp.cutoff;
-    const realizedPpcr = activeOp.realizedPpcr;
+    // Call pure helper
+    const prep = preparePredictionDistributionPlotData(
+      spec,
+      currentEvalId,
+      currentDim,
+      currentValue,
+      digits,
+    );
 
-    // Filter bins for current evaluation
-    const evalBins = spec.bins
-      .filter((bin) => bin.evaluationId === currentEvalId)
-      .sort((a, b) => a.lower - b.lower);
-
-    // Calculate total count N
-    let totalN = 0;
-    for (const bin of evalBins) {
-      totalN += bin.nPositive + bin.nNegative;
-    }
-
-    // Calculate confusion matrix cells
-    let tp = 0;
-    let fp = 0;
-    let tn = 0;
-    let fn = 0;
-
-    const evalSpec = spec.evaluations.find((e) => e.id === currentEvalId);
-    const evalLabel =
-      evalSpec?.label ??
-      evalSpec?.model ??
-      evalSpec?.population ??
-      currentEvalId;
-
-    const ordinaryPlotData: Array<{
-      x1: number;
-      x2: number;
-      category: "Observed Positives" | "Observed Negatives";
-      density: number;
-      count: number;
-      title: string;
-    }> = [];
-
-    const zeroAtomPlotData: Array<{
-      category: "Observed Positives" | "Observed Negatives";
-      count: number;
-      title: string;
-    }> = [];
-
-    // Tracks cumulative population count for PPCR population rank coordinates
-    let cumCount = 0;
-
-    for (const bin of evalBins) {
-      let isPredictedPositive = false;
-      if (cutoff === 0) {
-        // At cutoff zero: everyone is predicted positive
-        isPredictedPositive = true;
-      } else {
-        // Nonzero cutoff: predicted positive if score > cutoff (upper > cutoff)
-        isPredictedPositive = bin.upper > cutoff;
-      }
-
-      if (isPredictedPositive) {
-        tp += bin.nPositive;
-        fp += bin.nNegative;
-      } else {
-        fn += bin.nPositive;
-        tn += bin.nNegative;
-      }
-
-      const binTotal = bin.nPositive + bin.nNegative;
-      const popLower = cumCount / totalN;
-      const popUpper = (cumCount + binTotal) / totalN;
-      cumCount += binTotal;
-
-      const predLabel = isPredictedPositive
-        ? "Predicted Positive"
-        : "Predicted Negative";
-
-      if (currentDim === "probability_threshold") {
-        // --- Score Space Coordinates ---
-        if (bin.lower === 0 && bin.upper === 0) {
-          // Score zero atom [0, 0]
-          if (bin.nPositive > 0) {
-            zeroAtomPlotData.push({
-              category: "Observed Positives",
-              count: bin.nPositive,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Score Interval", "[0, 0] (score zero atom)"],
-                ["Outcome", "Observed Positive"],
-                ["Count", bin.nPositive],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-          if (bin.nNegative > 0) {
-            zeroAtomPlotData.push({
-              category: "Observed Negatives",
-              count: bin.nNegative,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Score Interval", "[0, 0] (score zero atom)"],
-                ["Outcome", "Observed Negative"],
-                ["Count", bin.nNegative],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-        } else {
-          // Nondegenerate interval (lower, upper]
-          const intervalWidth = bin.upper - bin.lower;
-          const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-
-          if (bin.nPositive > 0) {
-            const posDensity = bin.nPositive / intervalWidth;
-            ordinaryPlotData.push({
-              x1: bin.lower,
-              x2: bin.upper,
-              category: "Observed Positives",
-              density: posDensity,
-              count: bin.nPositive,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Score Interval", intervalLabel],
-                ["Outcome", "Observed Positive"],
-                ["Count", bin.nPositive],
-                ["Count Density", posDensity.toFixed(digits)],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-
-          if (bin.nNegative > 0) {
-            const negDensity = bin.nNegative / intervalWidth;
-            ordinaryPlotData.push({
-              x1: bin.lower,
-              x2: bin.upper,
-              category: "Observed Negatives",
-              density: negDensity,
-              count: bin.nNegative,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Score Interval", intervalLabel],
-                ["Outcome", "Observed Negative"],
-                ["Count", bin.nNegative],
-                ["Count Density", negDensity.toFixed(digits)],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-        }
-      } else {
-        // --- PPCR Population Rank Coordinates ---
-        if (binTotal > 0) {
-          const scoreIntervalStr =
-            bin.lower === 0 && bin.upper === 0
-              ? "[0, 0]"
-              : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-
-          const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
-
-          if (bin.nPositive > 0) {
-            const frac = bin.nPositive / binTotal;
-            ordinaryPlotData.push({
-              x1: popLower,
-              x2: popUpper,
-              category: "Observed Positives",
-              density: frac,
-              count: bin.nPositive,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Population Rank Percentile", rankIntervalStr],
-                ["Score Interval", scoreIntervalStr],
-                ["Outcome", "Observed Positive"],
-                ["Count", bin.nPositive],
-                ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-
-          if (bin.nNegative > 0) {
-            const frac = bin.nNegative / binTotal;
-            ordinaryPlotData.push({
-              x1: popLower,
-              x2: popUpper,
-              category: "Observed Negatives",
-              density: frac,
-              count: bin.nNegative,
-              title: tooltip(digits, [
-                ["Evaluation", evalLabel],
-                ["Population Rank Percentile", rankIntervalStr],
-                ["Score Interval", scoreIntervalStr],
-                ["Outcome", "Observed Negative"],
-                ["Count", bin.nNegative],
-                ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
-                ["Classification", predLabel],
-              ]),
-            });
-          }
-        }
-      }
-    }
-
-    // Cutoff line x-coordinate and Maximum Y height calculation
-    let cutoffX = cutoff;
-    let xAxisLabel = "Prediction Score";
-    let yAxisLabel = "Count density";
-    let yMax = 1;
-
-    if (currentDim === "probability_threshold") {
-      cutoffX = cutoff;
-      xAxisLabel = "Prediction Score";
-      yAxisLabel = "Count density";
-
-      let maxBinDensity = 0;
-      const binsByLower = new Map<number, number>();
-      for (const d of ordinaryPlotData) {
-        binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
-      }
-      for (const totalDensity of binsByLower.values()) {
-        maxBinDensity = Math.max(maxBinDensity, totalDensity);
-      }
-      yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
-    } else {
-      // In PPCR view, cutoff boundary in population rank coordinates is 1 - realizedPpcr
-      cutoffX = 1 - realizedPpcr;
-      xAxisLabel = "Prediction rank percentile (low to high)";
-      yAxisLabel = "Outcome fraction";
-      yMax = 1.18;
-    }
+    const {
+      cutoff,
+      realizedPpcr,
+      cutoffX,
+      xAxisLabel,
+      yAxisLabel,
+      yMax,
+      totalN,
+      confusion,
+      ordinaryPlotData,
+      zeroAtomPlotData,
+    } = prep;
 
     // Background region shapes with theme-aware styling
     const bgRegions: Array<{
@@ -694,10 +778,16 @@ export function renderPredictionDistribution(
       );
     }
 
-    const totalPositives = tp + fn;
-    const totalNegatives = tn + fp;
-    const totalPredictedPos = tp + fp;
-    const totalPredictedNeg = tn + fn;
+    const {
+      tp,
+      fp,
+      tn,
+      fn,
+      totalPositives,
+      totalNegatives,
+      totalPredictedPos,
+      totalPredictedNeg,
+    } = confusion;
 
     const table = document.createElement("table");
     table.className = "rtichoke-prediction-distribution__table";
