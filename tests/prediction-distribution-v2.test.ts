@@ -14,7 +14,7 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
     ).not.toThrow();
   });
 
-  it("accepts valid PPCR tie golden fixture", () => {
+  it("accepts valid PPCR tie golden fixture with requested != realized PPCR", () => {
     expect(() =>
       assertPredictionDistributionReferentialIntegrity(
         ppcrTieFixture as PredictionDistributionSpec,
@@ -102,6 +102,30 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
     expect(() =>
       assertPredictionDistributionReferentialIntegrity(invalid),
     ).toThrow("does not match any bin upper boundary");
+  });
+
+  it("rejects probability_threshold operating point where value != cutoff", () => {
+    const invalid: any = JSON.parse(JSON.stringify(thresholdFixture));
+    invalid.operatingPoints[1].value = 0.25; // cutoff is 0.2
+    expect(() =>
+      assertPredictionDistributionReferentialIntegrity(invalid),
+    ).toThrow("probability_threshold value 0.25 must equal cutoff 0.2");
+  });
+
+  it("rejects realizedPpcr that does not match reconstructed bin counts", () => {
+    const invalid: any = JSON.parse(JSON.stringify(thresholdFixture));
+    invalid.operatingPoints[1].realizedPpcr = 0.99; // correct reconstructed is 4/6 = 0.6666...
+    expect(() =>
+      assertPredictionDistributionReferentialIntegrity(invalid),
+    ).toThrow("realizedPpcr 0.99 for evaluation Model A does not match reconstructed count fraction");
+  });
+
+  it("rejects top-level operatingPoint.dimension when not present in operatingPoints", () => {
+    const invalid: any = JSON.parse(JSON.stringify(thresholdFixture));
+    invalid.operatingPoint = { dimension: "ppcr" }; // thresholdFixture only has probability_threshold
+    expect(() =>
+      assertPredictionDistributionReferentialIntegrity(invalid),
+    ).toThrow("configured operatingPoint dimension ppcr is not present in operatingPoints");
   });
 
   it("rejects total count <= 0", () => {

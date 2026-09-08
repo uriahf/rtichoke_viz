@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 import thresholdFixture from "../fixtures/v2/prediction-distribution-threshold.json";
 import ppcrTieFixture from "../fixtures/v2/prediction-distribution-ppcr-tie.json";
 import multiFixture from "../fixtures/v2/prediction-distribution-multi.json";
+import visualFixture from "../fixtures/v2/prediction-distribution-visual.json";
 import type { PredictionDistributionSpec } from "../src/spec/v2/prediction-distribution.js";
 import { renderPredictionDistribution } from "../src/render/prediction-distribution.js";
 import { renderReport } from "../src/render/report.js";
-import type { ReportSpecV1_0 } from "../src/spec/report.js";
+import type { ReportSpecV1_0, ReportSpecV1_1 } from "../src/spec/report.js";
 
 describe("PredictionDistribution DOM Rendering", () => {
   it("renders threshold golden fixture and reconstructs exact classifications for cutoff 0.0", () => {
@@ -102,45 +103,119 @@ describe("PredictionDistribution DOM Rendering", () => {
     expect(summary?.textContent).toContain("0.333");
   });
 
-  it("renders multi-evaluation spec with evaluation switcher control", () => {
+  it("supports interactive slider movement across multiple threshold operating points", () => {
     const el = renderPredictionDistribution(
-      multiFixture as PredictionDistributionSpec,
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    )!;
+    expect(Number(slider.max)).toBeGreaterThanOrEqual(10);
+
+    // Move to position 2
+    slider.value = "2";
+    slider.dispatchEvent(new Event("input"));
+    const summaryPos2 = el.querySelector(".rtichoke-prediction-distribution__summary")?.textContent;
+
+    // Move to position 6
+    slider.value = "6";
+    slider.dispatchEvent(new Event("input"));
+    const summaryPos6 = el.querySelector(".rtichoke-prediction-distribution__summary")?.textContent;
+
+    expect(summaryPos2).not.toEqual(summaryPos6);
+  });
+
+  it("supports dimension switching to PPCR and movement across multiple PPCR positions", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const dimSelect = el.querySelector<HTMLSelectElement>(
+      ".rtichoke-prediction-distribution__select[aria-label='Operating point dimension']",
+    )!;
+    expect(dimSelect).not.toBeNull();
+
+    dimSelect.value = "ppcr";
+    dimSelect.dispatchEvent(new Event("change"));
+
+    const summary = el.querySelector(".rtichoke-prediction-distribution__summary");
+    expect(summary?.textContent).toContain("Requested PPCR");
+
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    )!;
+    slider.value = "5"; // Move PPCR slider
+    slider.dispatchEvent(new Event("input"));
+
+    expect(summary?.textContent).toContain("Requested PPCR");
+    expect(summary?.textContent).toContain("Realized PPCR");
+  });
+
+  it("supports evaluation switching with exact value preservation and deterministic fallback", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
     );
 
     const evalSelect = el.querySelector<HTMLSelectElement>(
       ".rtichoke-prediction-distribution__select[aria-label='Evaluation']",
     );
     expect(evalSelect).not.toBeNull();
-    expect(evalSelect?.options.length).toBe(2);
 
-    // Switch to Model B
+    // Select cutoff 0.52 (position 5 in Model A threshold ops)
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    )!;
+    slider.value = "5"; // value 0.52
+    slider.dispatchEvent(new Event("input"));
+
+    // Switch evaluation to Model B
     evalSelect!.value = "Model B";
     evalSelect!.dispatchEvent(new Event("change"));
 
-    expect(el.querySelector(".rtichoke-prediction-distribution__summary")?.textContent).toContain("Cutoff");
+    const valueSpan = el.querySelector(".rtichoke-operating-point-value");
+    // Value 0.52 exists in Model B threshold ops, so exact value is preserved
+    expect(valueSpan?.textContent).toBe("0.520");
   });
 
-  it("renders inside ReportSpec v1.0 component wrapper", () => {
-    const reportSpec: ReportSpecV1_0 = {
-      schemaVersion: "1.0",
+  it("renders embedded inside structured ReportSpec v1.1 sections -> group -> components", () => {
+    const reportSpecV1_1: ReportSpecV1_1 = {
+      schemaVersion: "1.1",
       type: "report",
-      title: "Prediction Distribution Report",
-      components: [
+      title: "Structured Report v1.1 Test",
+      sections: [
         {
-          id: "pred-dist-comp",
-          title: "Prediction Score Distribution",
-          spec: thresholdFixture as PredictionDistributionSpec,
+          id: "distribution-section",
+          title: "Prediction Score Distributions",
+          items: [
+            {
+              type: "group",
+              id: "prob-dist-group",
+              title: "Model Comparison Group",
+              components: [
+                {
+                  type: "component",
+                  id: "visual-comp",
+                  title: "Realistic Visual Review",
+                  spec: visualFixture as PredictionDistributionSpec,
+                },
+              ],
+            },
+          ],
         },
       ],
     };
 
-    const reportEl = renderReport(reportSpec);
+    const reportEl = renderReport(reportSpecV1_1);
     expect(reportEl).toBeInstanceOf(HTMLElement);
 
-    const compContent = reportEl.querySelector(
-      "[data-component-id='pred-dist-comp']",
-    );
-    expect(compContent).not.toBeNull();
-    expect(compContent?.querySelector(".rtichoke-prediction-distribution")).not.toBeNull();
+    const groupEl = reportEl.querySelector("[data-group-id='prob-dist-group']");
+    expect(groupEl).not.toBeNull();
+
+    const compEl = groupEl?.querySelector("[data-component-id='visual-comp']");
+    expect(compEl).not.toBeNull();
+
+    const predDistEl = compEl?.querySelector(".rtichoke-prediction-distribution");
+    expect(predDistEl).not.toBeNull();
   });
 });

@@ -7,6 +7,17 @@ import type {
 export function assertPredictionDistributionReferentialIntegrity(
   spec: PredictionDistributionSpec,
 ): void {
+  // Validate preferred top-level dimension exists in operatingPoints if present
+  if (spec.operatingPoint?.dimension) {
+    const prefDim = spec.operatingPoint.dimension;
+    const hasPrefDim = spec.operatingPoints.some((op) => op.type === prefDim);
+    if (!hasPrefDim) {
+      throw new Error(
+        `configured operatingPoint dimension ${prefDim} is not present in operatingPoints`,
+      );
+    }
+  }
+
   const evaluationIds = new Set<string>();
   for (const evaluation of spec.evaluations) {
     if (evaluationIds.has(evaluation.id)) {
@@ -59,6 +70,15 @@ export function assertPredictionDistributionReferentialIntegrity(
       throw new Error(
         `invalid operating point bounds for evaluation ${op.evaluationId}`,
       );
+    }
+
+    // Require value == cutoff for probability_threshold operating points
+    if (op.type === "probability_threshold") {
+      if (Math.abs(op.value - op.cutoff) > 1e-9) {
+        throw new Error(
+          `probability_threshold value ${op.value} must equal cutoff ${op.cutoff} for evaluation ${op.evaluationId}`,
+        );
+      }
     }
 
     let evalOps = opsByEvaluation.get(op.evaluationId);
@@ -157,11 +177,32 @@ export function assertPredictionDistributionReferentialIntegrity(
       throw new Error(`total count for evaluation ${evalId} must be positive`);
     }
 
-    // Match operating-point cutoff to canonical interval upper boundary
+    // Match operating-point cutoff to canonical interval upper boundary and validate realizedPpcr
     for (const op of ops) {
       if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
         throw new Error(
           `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`,
+        );
+      }
+
+      // Reconstruct predicted positive count from canonical bins
+      let predictedPositive = 0;
+      if (op.cutoff === 0) {
+        // Cutoff zero: everyone is predicted positive
+        predictedPositive = totalCount;
+      } else {
+        // Nonzero cutoff: predicted positive if bin upper > cutoff
+        for (const bin of bins) {
+          if (bin.upper > op.cutoff) {
+            predictedPositive += bin.nPositive + bin.nNegative;
+          }
+        }
+      }
+
+      const expectedRealizedPpcr = predictedPositive / totalCount;
+      if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
+        throw new Error(
+          `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`,
         );
       }
     }

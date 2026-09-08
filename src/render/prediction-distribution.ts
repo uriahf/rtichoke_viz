@@ -251,21 +251,27 @@ export function renderPredictionDistribution(
     let tn = 0;
     let fn = 0;
 
-    const plotData: Array<{
-      x1: number;
-      x2: number;
-      category: "Observed Positives" | "Observed Negatives";
-      count: number;
-      predicted: "positive" | "negative";
-      title: string;
-    }> = [];
-
     const evalSpec = spec.evaluations.find((e) => e.id === currentEvalId);
     const evalLabel =
       evalSpec?.label ??
       evalSpec?.model ??
       evalSpec?.population ??
       currentEvalId;
+
+    const ordinaryPlotData: Array<{
+      x1: number;
+      x2: number;
+      category: "Observed Positives" | "Observed Negatives";
+      density: number;
+      count: number;
+      title: string;
+    }> = [];
+
+    const zeroAtomPlotData: Array<{
+      category: "Observed Positives" | "Observed Negatives";
+      count: number;
+      title: string;
+    }> = [];
 
     for (const bin of evalBins) {
       let isPredictedPositive = false;
@@ -285,72 +291,100 @@ export function renderPredictionDistribution(
         tn += bin.nNegative;
       }
 
-      // X bounds for plot rendering
-      let x1 = bin.lower;
-      let x2 = bin.upper;
-      if (bin.lower === 0 && bin.upper === 0) {
-        x1 = 0;
-        x2 = 0.005;
-      } else if (bin.lower === 0) {
-        x1 = 0.005;
-      }
-
-      const intervalLabel =
-        bin.lower === 0 && bin.upper === 0
-          ? "[0, 0]"
-          : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-
       const predLabel = isPredictedPositive
         ? "Predicted Positive"
         : "Predicted Negative";
 
-      if (bin.nPositive > 0) {
-        plotData.push({
-          x1,
-          x2,
-          category: "Observed Positives",
-          count: bin.nPositive,
-          predicted: isPredictedPositive ? "positive" : "negative",
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Positive"],
-            ["Count", bin.nPositive],
-            ["Classification", predLabel],
-          ]),
-        });
-      }
+      if (bin.lower === 0 && bin.upper === 0) {
+        // Score zero atom [0, 0]
+        if (bin.nPositive > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Positives",
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+        if (bin.nNegative > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Negatives",
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+      } else {
+        // Nondegenerate interval (lower, upper]
+        const intervalWidth = bin.upper - bin.lower;
+        const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
 
-      if (bin.nNegative > 0) {
-        plotData.push({
-          x1,
-          x2,
-          category: "Observed Negatives",
-          count: bin.nNegative,
-          predicted: isPredictedPositive ? "positive" : "negative",
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Negative"],
-            ["Count", bin.nNegative],
-            ["Classification", predLabel],
-          ]),
-        });
+        if (bin.nPositive > 0) {
+          const posDensity = bin.nPositive / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Positives",
+            density: posDensity,
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Count Density", posDensity.toFixed(digits)],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
+
+        if (bin.nNegative > 0) {
+          const negDensity = bin.nNegative / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Negatives",
+            density: negDensity,
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Count Density", negDensity.toFixed(digits)],
+              ["Classification", predLabel],
+            ]),
+          });
+        }
       }
     }
 
-    // Maximum height calculation
-    let maxBinTotal = 0;
-    for (const bin of evalBins) {
-      maxBinTotal = Math.max(maxBinTotal, bin.nPositive + bin.nNegative);
+    // Maximum Y height calculation (using count density for ordinary bins)
+    let maxBinDensity = 0;
+    const binsByLower = new Map<number, number>();
+    for (const d of ordinaryPlotData) {
+      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
     }
-    const yMax = Math.max(1, Math.ceil(maxBinTotal * 1.15));
+    for (const totalDensity of binsByLower.values()) {
+      maxBinDensity = Math.max(maxBinDensity, totalDensity);
+    }
+    const yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
 
-    // Background region shapes
+    // Background region shapes with theme-aware styling
     const bgRegions: Array<{
       x1: number;
       x2: number;
       fill: string;
+      fillOpacity: number;
       label: string;
       labelX: number;
     }> = [];
@@ -360,14 +394,16 @@ export function renderPredictionDistribution(
         {
           x1: 0,
           x2: cutoff,
-          fill: "#f1f5f9",
+          fill: theme.axis.color,
+          fillOpacity: 0.06,
           label: "Predicted Negative (TN, FN)",
           labelX: cutoff / 2,
         },
         {
           x1: cutoff,
           x2: 1,
-          fill: "#fef3c7",
+          fill: posColor,
+          fillOpacity: 0.12,
           label: "Predicted Positive (TP, FP)",
           labelX: cutoff + (1 - cutoff) / 2,
         },
@@ -376,7 +412,8 @@ export function renderPredictionDistribution(
       bgRegions.push({
         x1: 0,
         x2: 1,
-        fill: "#fef3c7",
+        fill: posColor,
+        fillOpacity: 0.12,
         label: "Predicted Positive (TP, FP)",
         labelX: 0.5,
       });
@@ -384,7 +421,8 @@ export function renderPredictionDistribution(
       bgRegions.push({
         x1: 0,
         x2: 1,
-        fill: "#f1f5f9",
+        fill: theme.axis.color,
+        fillOpacity: 0.06,
         label: "Predicted Negative (TN, FN)",
         labelX: 0.5,
       });
@@ -401,7 +439,7 @@ export function renderPredictionDistribution(
           y1: 0,
           y2: yMax,
           fill: bg.fill,
-          fillOpacity: 0.35,
+          fillOpacity: bg.fillOpacity,
         }),
       );
     }
@@ -414,7 +452,7 @@ export function renderPredictionDistribution(
           y: yMax,
           text: "label",
           dy: 12,
-          fill: "#475569",
+          fill: theme.axis.color,
           fontSize: 11,
           fontWeight: 600,
         }),
@@ -424,7 +462,7 @@ export function renderPredictionDistribution(
     // Cutoff Line
     marks.push(
       Plot.ruleX([cutoff], {
-        stroke: "#0f172a",
+        stroke: theme.axis.color,
         strokeWidth: 2,
         strokeDasharray: "4,3",
       }),
@@ -444,27 +482,46 @@ export function renderPredictionDistribution(
           y: yMax,
           text: "label",
           dy: -10,
-          fill: "#0f172a",
+          fill: theme.axis.color,
           fontSize: 11,
           fontWeight: 700,
         },
       ),
     );
 
-    // Stacked Bars
-    marks.push(
-      Plot.rectY(
-        plotData,
-        Plot.stackY({
-          x1: "x1",
-          x2: "x2",
-          y: "count",
-          fill: "category",
-          title: (d) => d.title,
-          tip: true,
-        }),
-      ),
-    );
+    // Ordinary Stacked Bars (Count Density)
+    if (ordinaryPlotData.length > 0) {
+      marks.push(
+        Plot.rectY(
+          ordinaryPlotData,
+          Plot.stackY({
+            x1: "x1",
+            x2: "x2",
+            y: "density",
+            fill: "category",
+            title: (d) => d.title,
+            tip: true,
+          }),
+        ),
+      );
+    }
+
+    // Discrete Zero-Score Atom [0, 0] Spike/Rule
+    if (zeroAtomPlotData.length > 0) {
+      marks.push(
+        Plot.ruleX(
+          zeroAtomPlotData,
+          Plot.stackY({
+            x: 0,
+            y: "count",
+            stroke: "category",
+            strokeWidth: 5,
+            title: (d) => d.title,
+            tip: true,
+          }),
+        ),
+      );
+    }
 
     const plotSpec = {
       width: theme.width,
@@ -495,7 +552,7 @@ export function renderPredictionDistribution(
         tickFormat: theme.axis.numberFormat,
       },
       y: {
-        label: "Count",
+        label: "Count density",
         domain: [0, yMax],
         grid: false,
         line: true,
