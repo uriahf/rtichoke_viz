@@ -21,6 +21,24 @@ export const RTICHOKE_COLORS = [
   "#BC96E6",
 ] as const;
 
+export interface PredictionDistributionThemeOptions {
+  emphasizedTrue?: string;
+  nonEmphasizedTrue?: string;
+  emphasizedFalse?: string;
+  nonEmphasizedFalse?: string;
+  observedPositive?: string;
+  observedNegative?: string;
+}
+
+export interface PredictionDistributionTheme {
+  emphasizedTrue: string;
+  nonEmphasizedTrue: string;
+  emphasizedFalse: string;
+  nonEmphasizedFalse: string;
+  observedPositive: string;
+  observedNegative: string;
+}
+
 export interface V2RendererTheme {
   width: number;
   height: number;
@@ -52,6 +70,7 @@ export interface V2RendererTheme {
   reference: { color: string; width: number; dash: string };
   legend: { position: "top"; swatchWidth: number; columns: number | null };
   tip: { digits: number };
+  predictionDistribution: PredictionDistributionTheme;
 }
 
 export type V2ThemeOptions = {
@@ -65,6 +84,7 @@ export type V2ThemeOptions = {
   legend?: Partial<V2RendererTheme["legend"]>;
   tip?: Partial<V2RendererTheme["tip"]>;
   background?: string;
+  predictionDistribution?: PredictionDistributionThemeOptions;
 };
 
 export interface V2RenderOptions {
@@ -102,6 +122,14 @@ export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
   reference: { color: "#BEBEBE", width: 1.5, dash: "2,3" },
   legend: { position: "top", swatchWidth: 12, columns: null },
   tip: { digits: 3 },
+  predictionDistribution: {
+    emphasizedTrue: "#009E73",
+    nonEmphasizedTrue: "#F4FFF0",
+    emphasizedFalse: "#FAC8CD",
+    nonEmphasizedFalse: "#FFF7F8",
+    observedPositive: "#4C5454",
+    observedNegative: "#E0E0E0",
+  },
 };
 
 export interface ResolvedV2RenderOptions {
@@ -129,6 +157,10 @@ function mergeTheme(options: V2RenderOptions): V2RendererTheme {
     reference: { ...RTICHOKE_BROWSER_THEME.reference, ...custom.reference },
     legend: { ...RTICHOKE_BROWSER_THEME.legend, ...custom.legend },
     tip: { ...RTICHOKE_BROWSER_THEME.tip, ...custom.tip },
+    predictionDistribution: {
+      ...RTICHOKE_BROWSER_THEME.predictionDistribution,
+      ...custom.predictionDistribution,
+    },
   };
 }
 

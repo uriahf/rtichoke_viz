@@ -6,11 +6,22 @@ import type {
 } from "../spec/v2/prediction-distribution.js";
 import { assertPredictionDistributionReferentialIntegrity } from "../spec/v2/validate-prediction-distribution.js";
 import {
+  type PredictionDistributionTheme,
   resolveV2RenderOptions,
   themedPlot,
   tooltip,
   type V2RenderOptions,
 } from "./v2.js";
+
+export type PredictionDistributionColorMode =
+  | "confusion_matrix_cell"
+  | "observed_outcome";
+
+export type PredictionDistributionConditioning =
+  | "predicted_positives"
+  | "predicted_negatives"
+  | "real_positives"
+  | "real_negatives";
 
 export interface PredictionDistributionPreparedData {
   evalId: string;
@@ -41,12 +52,83 @@ export interface PredictionDistributionPreparedData {
     density: number;
     count: number;
     title: string;
+    classificationCell: "TP" | "FP" | "TN" | "FN";
+    cellLabel: string;
   }>;
   zeroAtomPlotData: Array<{
     category: "Observed Positives" | "Observed Negatives";
     count: number;
     title: string;
+    classificationCell: "TP" | "FP" | "TN" | "FN";
+    cellLabel: string;
   }>;
+}
+
+export function isDarkColor(color: string): boolean {
+  let hex = color.trim();
+  if (hex.startsWith("#")) {
+    hex = hex.substring(1);
+  }
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  if (hex.length !== 6) {
+    return false;
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    return false;
+  }
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum < 0.45;
+}
+
+export function resolveConfusionCellColors(
+  theme: PredictionDistributionTheme,
+  conditioning: PredictionDistributionConditioning,
+): { tp: string; fp: string; tn: string; fn: string } {
+  const {
+    emphasizedTrue,
+    nonEmphasizedTrue,
+    emphasizedFalse,
+    nonEmphasizedFalse,
+  } = theme;
+
+  switch (conditioning) {
+    case "predicted_positives":
+      return {
+        tp: emphasizedTrue,
+        fp: emphasizedFalse,
+        tn: nonEmphasizedTrue,
+        fn: nonEmphasizedFalse,
+      };
+    case "predicted_negatives":
+      return {
+        tn: emphasizedTrue,
+        fn: emphasizedFalse,
+        tp: nonEmphasizedTrue,
+        fp: nonEmphasizedFalse,
+      };
+    case "real_positives":
+      return {
+        tp: emphasizedTrue,
+        fn: emphasizedFalse,
+        tn: nonEmphasizedTrue,
+        fp: nonEmphasizedFalse,
+      };
+    case "real_negatives":
+      return {
+        tn: emphasizedTrue,
+        fp: emphasizedFalse,
+        tp: nonEmphasizedTrue,
+        fn: nonEmphasizedFalse,
+      };
+  }
 }
 
 export function preparePredictionDistributionPlotData(
@@ -82,20 +164,11 @@ export function preparePredictionDistributionPlotData(
   const evalLabel =
     evalSpec?.label ?? evalSpec?.model ?? evalSpec?.population ?? evalId;
 
-  const ordinaryPlotData: Array<{
-    x1: number;
-    x2: number;
-    category: "Observed Positives" | "Observed Negatives";
-    density: number;
-    count: number;
-    title: string;
-  }> = [];
+  const ordinaryPlotData: PredictionDistributionPreparedData["ordinaryPlotData"] =
+    [];
 
-  const zeroAtomPlotData: Array<{
-    category: "Observed Positives" | "Observed Negatives";
-    count: number;
-    title: string;
-  }> = [];
+  const zeroAtomPlotData: PredictionDistributionPreparedData["zeroAtomPlotData"] =
+    [];
 
   let cumCount = 0;
 
@@ -120,9 +193,15 @@ export function preparePredictionDistributionPlotData(
     const popUpper = totalN > 0 ? (cumCount + binTotal) / totalN : 0;
     cumCount += binTotal;
 
-    const predLabel = isPredictedPositive
-      ? "Predicted Positive"
-      : "Predicted Negative";
+    const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
+    const posCellLabel = isPredictedPositive
+      ? "True Positive (TP)"
+      : "False Negative (FN)";
+
+    const negCell: "FP" | "TN" = isPredictedPositive ? "FP" : "TN";
+    const negCellLabel = isPredictedPositive
+      ? "False Positive (FP)"
+      : "True Negative (TN)";
 
     if (dim === "probability_threshold") {
       if (bin.lower === 0 && bin.upper === 0) {
@@ -130,12 +209,14 @@ export function preparePredictionDistributionPlotData(
           zeroAtomPlotData.push({
             category: "Observed Positives",
             count: bin.nPositive,
+            classificationCell: posCell,
+            cellLabel: posCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Score Interval", "[0, 0] (score zero atom)"],
               ["Outcome", "Observed Positive"],
               ["Count", bin.nPositive],
-              ["Classification", predLabel],
+              ["Classification", posCellLabel],
             ]),
           });
         }
@@ -143,12 +224,14 @@ export function preparePredictionDistributionPlotData(
           zeroAtomPlotData.push({
             category: "Observed Negatives",
             count: bin.nNegative,
+            classificationCell: negCell,
+            cellLabel: negCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Score Interval", "[0, 0] (score zero atom)"],
               ["Outcome", "Observed Negative"],
               ["Count", bin.nNegative],
-              ["Classification", predLabel],
+              ["Classification", negCellLabel],
             ]),
           });
         }
@@ -164,13 +247,15 @@ export function preparePredictionDistributionPlotData(
             category: "Observed Positives",
             density: posDensity,
             count: bin.nPositive,
+            classificationCell: posCell,
+            cellLabel: posCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Positive"],
               ["Count", bin.nPositive],
               ["Count Density", posDensity.toFixed(digits)],
-              ["Classification", predLabel],
+              ["Classification", posCellLabel],
             ]),
           });
         }
@@ -183,13 +268,15 @@ export function preparePredictionDistributionPlotData(
             category: "Observed Negatives",
             density: negDensity,
             count: bin.nNegative,
+            classificationCell: negCell,
+            cellLabel: negCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Negative"],
               ["Count", bin.nNegative],
               ["Count Density", negDensity.toFixed(digits)],
-              ["Classification", predLabel],
+              ["Classification", negCellLabel],
             ]),
           });
         }
@@ -212,6 +299,8 @@ export function preparePredictionDistributionPlotData(
             category: "Observed Positives",
             density: frac,
             count: bin.nPositive,
+            classificationCell: posCell,
+            cellLabel: posCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
@@ -219,7 +308,7 @@ export function preparePredictionDistributionPlotData(
               ["Outcome", "Observed Positive"],
               ["Count", bin.nPositive],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
-              ["Classification", predLabel],
+              ["Classification", posCellLabel],
             ]),
           });
         }
@@ -232,6 +321,8 @@ export function preparePredictionDistributionPlotData(
             category: "Observed Negatives",
             density: frac,
             count: bin.nNegative,
+            classificationCell: negCell,
+            cellLabel: negCellLabel,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
@@ -239,7 +330,7 @@ export function preparePredictionDistributionPlotData(
               ["Outcome", "Observed Negative"],
               ["Count", bin.nNegative],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
-              ["Classification", predLabel],
+              ["Classification", negCellLabel],
             ]),
           });
         }
@@ -373,6 +464,8 @@ export function renderPredictionDistribution(
   };
 
   let currentValue = pickBestValue(currentEvalId, currentDim);
+  let currentColorMode: PredictionDistributionColorMode = "confusion_matrix_cell";
+  let currentConditioning: PredictionDistributionConditioning = "predicted_positives";
 
   // Main Container
   const container = document.createElement("div");
@@ -432,6 +525,59 @@ export function renderPredictionDistribution(
   dimGroup.append(dimSelect);
   controlsDiv.append(dimGroup);
 
+  // Color Mode Selector ("Color bars by:")
+  const colorModeGroup = document.createElement("label");
+  colorModeGroup.className = "rtichoke-prediction-distribution__control-group";
+  colorModeGroup.textContent = "Color bars by: ";
+
+  const colorModeSelect = document.createElement("select");
+  colorModeSelect.className = "rtichoke-prediction-distribution__select";
+  colorModeSelect.setAttribute("aria-label", "Color bars by");
+
+  const colorModeOpt1 = document.createElement("option");
+  colorModeOpt1.value = "confusion_matrix_cell";
+  colorModeOpt1.textContent = "Confusion matrix cell";
+
+  const colorModeOpt2 = document.createElement("option");
+  colorModeOpt2.value = "observed_outcome";
+  colorModeOpt2.textContent = "Observed outcome";
+
+  colorModeSelect.append(colorModeOpt1, colorModeOpt2);
+  colorModeSelect.value = currentColorMode;
+  colorModeGroup.append(colorModeSelect);
+  controlsDiv.append(colorModeGroup);
+
+  // Conditioning Selector ("Condition on:")
+  const conditioningGroup = document.createElement("label");
+  conditioningGroup.className =
+    "rtichoke-prediction-distribution__control-group";
+  conditioningGroup.textContent = "Condition on: ";
+
+  const conditioningSelect = document.createElement("select");
+  conditioningSelect.className = "rtichoke-prediction-distribution__select";
+  conditioningSelect.setAttribute("aria-label", "Condition on");
+
+  const condOpt1 = document.createElement("option");
+  condOpt1.value = "predicted_positives";
+  condOpt1.textContent = "Predicted positives";
+
+  const condOpt2 = document.createElement("option");
+  condOpt2.value = "predicted_negatives";
+  condOpt2.textContent = "Predicted negatives";
+
+  const condOpt3 = document.createElement("option");
+  condOpt3.value = "real_positives";
+  condOpt3.textContent = "Real positives";
+
+  const condOpt4 = document.createElement("option");
+  condOpt4.value = "real_negatives";
+  condOpt4.textContent = "Real negatives";
+
+  conditioningSelect.append(condOpt1, condOpt2, condOpt3, condOpt4);
+  conditioningSelect.value = currentConditioning;
+  conditioningGroup.append(conditioningSelect);
+  controlsDiv.append(conditioningGroup);
+
   // Slider Control
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
@@ -458,9 +604,6 @@ export function renderPredictionDistribution(
   legendDiv.className = "rtichoke-legend";
   legendDiv.style.paddingLeft = `${theme.margins.left}px`;
 
-  const posColor = resolved.colors[0];
-  const negColor = resolved.colors[1];
-
   const createLegendItem = (label: string, color: string) => {
     const item = document.createElement("div");
     item.className = "rtichoke-legend-item";
@@ -471,6 +614,10 @@ export function renderPredictionDistribution(
     const lineSpan = document.createElement("span");
     lineSpan.className = "rtichoke-legend-line";
     lineSpan.style.backgroundColor = color;
+      lineSpan.style.border = `1px solid ${theme.axis.color}`;
+    lineSpan.style.boxSizing = "border-box";
+    lineSpan.style.height = "10px";
+    lineSpan.style.borderRadius = "2px";
     swatch.append(lineSpan);
 
     const labelSpan = document.createElement("span");
@@ -480,11 +627,6 @@ export function renderPredictionDistribution(
     item.append(swatch, labelSpan);
     return item;
   };
-
-  legendDiv.append(
-    createLegendItem("Observed Positives", posColor),
-    createLegendItem("Observed Negatives", negColor),
-  );
 
   // Chart & Summary Content
   const chartDiv = document.createElement("div");
@@ -547,6 +689,35 @@ export function renderPredictionDistribution(
       zeroAtomPlotData,
     } = prep;
 
+    const cellColors = resolveConfusionCellColors(
+      theme.predictionDistribution,
+      currentConditioning,
+    );
+
+    // Update legend & control visibility
+    legendDiv.replaceChildren();
+    if (currentColorMode === "observed_outcome") {
+      conditioningGroup.style.display = "none";
+      legendDiv.append(
+        createLegendItem(
+          "Observed Positives",
+          theme.predictionDistribution.observedPositive,
+        ),
+        createLegendItem(
+          "Observed Negatives",
+          theme.predictionDistribution.observedNegative,
+        ),
+      );
+    } else {
+      conditioningGroup.style.display = "inline-flex";
+      legendDiv.append(
+        createLegendItem("True Positives (TP)", cellColors.tp),
+        createLegendItem("False Positives (FP)", cellColors.fp),
+        createLegendItem("True Negatives (TN)", cellColors.tn),
+        createLegendItem("False Negatives (FN)", cellColors.fn),
+      );
+    }
+
     // Background region shapes with theme-aware styling
     const bgRegions: Array<{
       x1: number;
@@ -556,6 +727,8 @@ export function renderPredictionDistribution(
       label: string;
       labelX: number;
     }> = [];
+
+    const highlightColor = theme.predictionDistribution.emphasizedTrue;
 
     if (cutoffX > 0 && cutoffX < 1) {
       bgRegions.push(
@@ -570,7 +743,7 @@ export function renderPredictionDistribution(
         {
           x1: cutoffX,
           x2: 1,
-          fill: posColor,
+          fill: highlightColor,
           fillOpacity: 0.12,
           label: "Predicted Positive (TP, FP)",
           labelX: cutoffX + (1 - cutoffX) / 2,
@@ -580,7 +753,7 @@ export function renderPredictionDistribution(
       bgRegions.push({
         x1: 0,
         x2: 1,
-        fill: posColor,
+        fill: highlightColor,
         fillOpacity: 0.12,
         label: "Predicted Positive (TP, FP)",
         labelX: 0.5,
@@ -662,6 +835,24 @@ export function renderPredictionDistribution(
       ),
     );
 
+    const fillKey =
+      currentColorMode === "confusion_matrix_cell"
+        ? "classificationCell"
+        : "category";
+
+    const colorDomain =
+      currentColorMode === "confusion_matrix_cell"
+        ? ["TP", "FP", "TN", "FN"]
+        : ["Observed Positives", "Observed Negatives"];
+
+    const colorRange =
+      currentColorMode === "confusion_matrix_cell"
+        ? [cellColors.tp, cellColors.fp, cellColors.tn, cellColors.fn]
+        : [
+            theme.predictionDistribution.observedPositive,
+            theme.predictionDistribution.observedNegative,
+          ];
+
     // Ordinary Stacked Bars
     if (ordinaryPlotData.length > 0) {
       marks.push(
@@ -671,7 +862,10 @@ export function renderPredictionDistribution(
             x1: "x1",
             x2: "x2",
             y: "density",
-            fill: "category",
+            fill: fillKey,
+            stroke: theme.axis.color,
+            strokeOpacity: 0.3,
+            strokeWidth: 0.75,
             title: (d) => d.title,
             tip: true,
           }),
@@ -687,7 +881,7 @@ export function renderPredictionDistribution(
           Plot.stackY({
             x: 0,
             y: "count",
-            stroke: "category",
+            stroke: fillKey,
             strokeWidth: 5,
             title: (d) => d.title,
             tip: true,
@@ -711,8 +905,8 @@ export function renderPredictionDistribution(
       },
       color: {
         legend: false,
-        domain: ["Observed Positives", "Observed Negatives"],
-        range: [posColor, negColor],
+        domain: colorDomain,
+        range: colorRange,
       },
       x: {
         label: xAxisLabel,
@@ -802,27 +996,106 @@ export function renderPredictionDistribution(
       </tr>
     `;
 
+    const cellFnColor =
+      currentColorMode === "confusion_matrix_cell"
+        ? cellColors.fn
+        : theme.predictionDistribution.observedPositive;
+    const cellTpColor =
+      currentColorMode === "confusion_matrix_cell"
+        ? cellColors.tp
+        : theme.predictionDistribution.observedPositive;
+    const cellTnColor =
+      currentColorMode === "confusion_matrix_cell"
+        ? cellColors.tn
+        : theme.predictionDistribution.observedNegative;
+    const cellFpColor =
+      currentColorMode === "confusion_matrix_cell"
+        ? cellColors.fp
+        : theme.predictionDistribution.observedNegative;
+
     const tbody = document.createElement("tbody");
-    tbody.innerHTML = `
-      <tr>
-        <th>Observed Positive</th>
-        <td class="rtichoke-prediction-distribution__cell--fn" title="False Negatives">FN = ${fn}</td>
-        <td class="rtichoke-prediction-distribution__cell--tp" title="True Positives">TP = ${tp}</td>
-        <td class="rtichoke-prediction-distribution__cell--total">${totalPositives}</td>
-      </tr>
-      <tr>
-        <th>Observed Negative</th>
-        <td class="rtichoke-prediction-distribution__cell--tn" title="True Negatives">TN = ${tn}</td>
-        <td class="rtichoke-prediction-distribution__cell--fp" title="False Positives">FP = ${fp}</td>
-        <td class="rtichoke-prediction-distribution__cell--total">${totalNegatives}</td>
-      </tr>
-      <tr>
-        <th>Total</th>
-        <td class="rtichoke-prediction-distribution__cell--total">${totalPredictedNeg}</td>
-        <td class="rtichoke-prediction-distribution__cell--total">${totalPredictedPos}</td>
-        <td class="rtichoke-prediction-distribution__cell--total">${totalN}</td>
-      </tr>
-    `;
+
+    const setCell = (
+      td: HTMLTableCellElement,
+      bgColor: string,
+      title: string,
+      text: string,
+    ) => {
+      td.style.backgroundColor = bgColor;
+      td.style.color = isDarkColor(bgColor) ? "#ffffff" : theme.axis.color;
+      td.style.fontWeight = "600";
+      td.style.border = `1px solid ${theme.axis.color}`;
+      td.title = title;
+      td.textContent = text;
+    };
+
+    const tr1 = document.createElement("tr");
+    const th1 = document.createElement("th");
+    th1.textContent = "Observed Positive";
+    const tdFn = document.createElement("td");
+    tdFn.className = "rtichoke-prediction-distribution__cell--fn";
+    setCell(tdFn, cellFnColor, "False Negatives", `FN = ${fn}`);
+
+    const tdTp = document.createElement("td");
+    tdTp.className = "rtichoke-prediction-distribution__cell--tp";
+    setCell(tdTp, cellTpColor, "True Positives", `TP = ${tp}`);
+
+    const tdTot1 = document.createElement("td");
+    tdTot1.className = "rtichoke-prediction-distribution__cell--total";
+    tdTot1.style.border = `1px solid ${theme.axis.color}`;
+    tdTot1.style.color = theme.axis.color;
+    tdTot1.style.fontWeight = "600";
+    tdTot1.textContent = String(totalPositives);
+
+    tr1.append(th1, tdFn, tdTp, tdTot1);
+
+    const tr2 = document.createElement("tr");
+    const th2 = document.createElement("th");
+    th2.textContent = "Observed Negative";
+    const tdTn = document.createElement("td");
+    tdTn.className = "rtichoke-prediction-distribution__cell--tn";
+    setCell(tdTn, cellTnColor, "True Negatives", `TN = ${tn}`);
+
+    const tdFp = document.createElement("td");
+    tdFp.className = "rtichoke-prediction-distribution__cell--fp";
+    setCell(tdFp, cellFpColor, "False Positives", `FP = ${fp}`);
+
+    const tdTot2 = document.createElement("td");
+    tdTot2.className = "rtichoke-prediction-distribution__cell--total";
+    tdTot2.style.border = `1px solid ${theme.axis.color}`;
+    tdTot2.style.color = theme.axis.color;
+    tdTot2.style.fontWeight = "600";
+    tdTot2.textContent = String(totalNegatives);
+
+    tr2.append(th2, tdTn, tdFp, tdTot2);
+
+    const tr3 = document.createElement("tr");
+    const th3 = document.createElement("th");
+    th3.textContent = "Total";
+    const tdTotNeg = document.createElement("td");
+    tdTotNeg.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotNeg.style.border = `1px solid ${theme.axis.color}`;
+    tdTotNeg.style.color = theme.axis.color;
+    tdTotNeg.style.fontWeight = "600";
+    tdTotNeg.textContent = String(totalPredictedNeg);
+
+    const tdTotPos = document.createElement("td");
+    tdTotPos.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotPos.style.border = `1px solid ${theme.axis.color}`;
+    tdTotPos.style.color = theme.axis.color;
+    tdTotPos.style.fontWeight = "600";
+    tdTotPos.textContent = String(totalPredictedPos);
+
+    const tdTotN = document.createElement("td");
+    tdTotN.className = "rtichoke-prediction-distribution__cell--total";
+    tdTotN.style.border = `1px solid ${theme.axis.color}`;
+    tdTotN.style.color = theme.axis.color;
+    tdTotN.style.fontWeight = "600";
+    tdTotN.textContent = String(totalN);
+
+    tr3.append(th3, tdTotNeg, tdTotPos, tdTotN);
+
+    tbody.append(tr1, tr2, tr3);
 
     table.append(thead, tbody);
     summaryDiv.append(metricsRow, table);
@@ -844,6 +1117,16 @@ export function renderPredictionDistribution(
   dimSelect.addEventListener("change", () => {
     currentDim = dimSelect.value as "probability_threshold" | "ppcr";
     currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
+    updateChart();
+  });
+
+  colorModeSelect.addEventListener("change", () => {
+    currentColorMode = colorModeSelect.value as PredictionDistributionColorMode;
+    updateChart();
+  });
+
+  conditioningSelect.addEventListener("change", () => {
+    currentConditioning = conditioningSelect.value as PredictionDistributionConditioning;
     updateChart();
   });
 
