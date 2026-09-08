@@ -28,7 +28,17 @@ Python -> same spec -> Plotly
 
 The initial v1 contract covers ROC and calibration specifications. Deterministic JSON fixtures drive both the tests and the browser demo.
 
-The v2 schema is the semantic successor used by the current browser, R, and Python consumer proofs for ROC, calibration, precision-recall, and gains. It represents evaluations separately from plotted series, permits unknown model identity, makes display grouping explicit, and encodes global/population/population-and-horizon reference ownership. Browser renderer options such as dimensions and palettes remain presentation metadata outside the canonical statistical specification.
+The v2 schema is the semantic successor used by the current browser, R, and Python consumer proofs for ROC, calibration, precision-recall, gains, lift, decision curves, interventions avoided, performance tables, summary metrics, and prediction distributions. It represents evaluations separately from plotted series, permits unknown model identity, makes display grouping explicit, and encodes global/population/population-and-horizon reference ownership. Browser renderer options such as dimensions and palettes remain presentation metadata outside the canonical statistical specification.
+
+### PredictionDistributionSpec
+
+`PredictionDistributionSpec` (`type: "prediction_distribution"`, `schemaVersion: "2.0"`) is a canonical static-binary prediction distribution component.
+
+- **Statistical ownership**: Producers (R and Python) own all score interval construction, classification semantics, cutoff grids, and outcome counts.
+- **Score intervals**: Aligned to supported operating points. The first interval is `[0, 0]`, followed by contiguous non-overlapping right-closed `(lower, upper]` intervals up to 1.
+- **Classification semantics**: At cutoff zero, everyone is predicted positive (including score = 0). At every nonzero cutoff, predicted positive is score > cutoff and predicted negative is score <= cutoff (equality at a nonzero cutoff is predicted negative).
+- **PPCR**: Requested PPCR (in `value`), effective cutoff (in `cutoff`), and realized PPCR (in `realizedPpcr`) are distinct quantities preserved separately when ties exist.
+- **Reusability**: Designed as a reusable building block for `create_probs_histogram()`, calibration reports, discrimination reports, utility reports, and summary reports.
 
 ```bash
 npm install
@@ -94,6 +104,7 @@ R and Python consumers should vendor an exact released archive during package de
 - Calibration
 - Precision-recall
 - Gains
+- Prediction distribution (Probability Histogram)
 - Deterministic fixtures
 - Runtime schema validation
 - Exported JSON Schema

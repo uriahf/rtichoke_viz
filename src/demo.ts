@@ -5,6 +5,7 @@ import {
   renderInterventionsAvoidedV2,
   renderLiftV2,
   renderPrecisionRecallV2,
+  renderPredictionDistribution,
   renderReport,
   renderRocV2,
 } from "./index.js";
@@ -16,6 +17,7 @@ import type {
   InterventionsAvoidedV2Spec,
   LiftV2Spec,
   PrecisionRecallV2Spec,
+  PredictionDistributionSpec,
   RocV2Spec,
 } from "./index.js";
 import { structuredReportFixture } from "../fixtures/v2/structured-report-v1_1.js";
@@ -28,6 +30,8 @@ import liftFixture from "../fixtures/v2/lift-shared-population.json" with { type
 import liftTimeFixture from "../fixtures/v2/lift-time.json" with { type: "json" };
 import precisionRecallFixture from "../fixtures/v2/precision-recall-shared-population.json" with { type: "json" };
 import rocFixture from "../fixtures/v2/roc.json" with { type: "json" };
+import predDistThresholdFixture from "../fixtures/v2/prediction-distribution-threshold.json" with { type: "json" };
+import predDistPpcrFixture from "../fixtures/v2/prediction-distribution-ppcr-tie.json" with { type: "json" };
 
 const reportHost = document.querySelector<HTMLElement>("#report-demo");
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
@@ -42,6 +46,8 @@ const precisionRecallHost = document.querySelector<HTMLElement>("#precision-reca
 const prPpcrHost = document.querySelector<HTMLElement>("#pr-ppcr-chart");
 const dcOpHost = document.querySelector<HTMLElement>("#dc-op-chart");
 const iaOpHost = document.querySelector<HTMLElement>("#ia-op-chart");
+const predDistHost = document.querySelector<HTMLElement>("#pred-dist-chart");
+const predDistPpcrHost = document.querySelector<HTMLElement>("#pred-dist-ppcr-chart");
 
 if (
   !reportHost ||
@@ -56,7 +62,9 @@ if (
   !liftHost ||
   !liftTimeHost ||
   !dcOpHost ||
-  !iaOpHost
+  !iaOpHost ||
+  !predDistHost ||
+  !predDistPpcrHost
 ) {
   throw new Error("Demo chart containers are missing");
 }
@@ -194,3 +202,5 @@ liftHost.append(
 liftTimeHost.append(renderLiftV2(liftTimeFixture as LiftV2Spec));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
+predDistHost.append(renderPredictionDistribution(predDistThresholdFixture as PredictionDistributionSpec));
+predDistPpcrHost.append(renderPredictionDistribution(predDistPpcrFixture as PredictionDistributionSpec));
