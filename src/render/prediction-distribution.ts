@@ -64,6 +64,30 @@ export interface PredictionDistributionPreparedData {
   }>;
 }
 
+export function isDarkColor(color: string): boolean {
+  let hex = color.trim();
+  if (hex.startsWith("#")) {
+    hex = hex.substring(1);
+  }
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  if (hex.length !== 6) {
+    return false;
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    return false;
+  }
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum < 0.45;
+}
+
 export function resolveConfusionCellColors(
   theme: PredictionDistributionTheme,
   conditioning: PredictionDistributionConditioning,
@@ -991,26 +1015,30 @@ export function renderPredictionDistribution(
 
     const tbody = document.createElement("tbody");
 
+    const setCell = (
+      td: HTMLTableCellElement,
+      bgColor: string,
+      title: string,
+      text: string,
+    ) => {
+      td.style.backgroundColor = bgColor;
+      td.style.color = isDarkColor(bgColor) ? "#ffffff" : theme.axis.color;
+      td.style.fontWeight = "600";
+      td.style.border = `1px solid ${theme.axis.color}`;
+      td.title = title;
+      td.textContent = text;
+    };
+
     const tr1 = document.createElement("tr");
     const th1 = document.createElement("th");
     th1.textContent = "Observed Positive";
     const tdFn = document.createElement("td");
     tdFn.className = "rtichoke-prediction-distribution__cell--fn";
-    tdFn.style.backgroundColor = cellFnColor;
-    tdFn.style.color = theme.axis.color;
-    tdFn.style.fontWeight = "600";
-    tdFn.style.border = `1px solid ${theme.axis.color}`;
-    tdFn.title = "False Negatives";
-    tdFn.textContent = `FN = ${fn}`;
+    setCell(tdFn, cellFnColor, "False Negatives", `FN = ${fn}`);
 
     const tdTp = document.createElement("td");
     tdTp.className = "rtichoke-prediction-distribution__cell--tp";
-    tdTp.style.backgroundColor = cellTpColor;
-    tdTp.style.color = theme.axis.color;
-    tdTp.style.fontWeight = "600";
-    tdTp.style.border = `1px solid ${theme.axis.color}`;
-    tdTp.title = "True Positives";
-    tdTp.textContent = `TP = ${tp}`;
+    setCell(tdTp, cellTpColor, "True Positives", `TP = ${tp}`);
 
     const tdTot1 = document.createElement("td");
     tdTot1.className = "rtichoke-prediction-distribution__cell--total";
@@ -1026,21 +1054,11 @@ export function renderPredictionDistribution(
     th2.textContent = "Observed Negative";
     const tdTn = document.createElement("td");
     tdTn.className = "rtichoke-prediction-distribution__cell--tn";
-    tdTn.style.backgroundColor = cellTnColor;
-    tdTn.style.color = theme.axis.color;
-    tdTn.style.fontWeight = "600";
-    tdTn.style.border = `1px solid ${theme.axis.color}`;
-    tdTn.title = "True Negatives";
-    tdTn.textContent = `TN = ${tn}`;
+    setCell(tdTn, cellTnColor, "True Negatives", `TN = ${tn}`);
 
     const tdFp = document.createElement("td");
     tdFp.className = "rtichoke-prediction-distribution__cell--fp";
-    tdFp.style.backgroundColor = cellFpColor;
-    tdFp.style.color = theme.axis.color;
-    tdFp.style.fontWeight = "600";
-    tdFp.style.border = `1px solid ${theme.axis.color}`;
-    tdFp.title = "False Positives";
-    tdFp.textContent = `FP = ${fp}`;
+    setCell(tdFp, cellFpColor, "False Positives", `FP = ${fp}`);
 
     const tdTot2 = document.createElement("td");
     tdTot2.className = "rtichoke-prediction-distribution__cell--total";

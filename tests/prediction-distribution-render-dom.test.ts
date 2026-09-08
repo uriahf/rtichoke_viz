@@ -531,6 +531,11 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
       return cell?.style.backgroundColor ?? "";
     };
 
+    const getLegendSwatchBgs = () =>
+      Array.from(
+        el.querySelectorAll<HTMLElement>(".rtichoke-legend-line"),
+      ).map((span) => span.style.backgroundColor);
+
     // Helper to convert hex like #009E73 or rgb(...) for clean comparisons
     const hexToRgb = (hex: string) => {
       const h = hex.replace("#", "");
@@ -554,6 +559,14 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(nonEmphTrueRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(nonEmphFalseRgb);
 
+    // Legend order is stable: TP, FP, TN, FN
+    expect(getLegendSwatchBgs()).toEqual([
+      emphTrueRgb,
+      emphFalseRgb,
+      nonEmphTrueRgb,
+      nonEmphFalseRgb,
+    ]);
+
     // 2. Predicted Negatives: TN & FN emphasized
     conditioningSelect!.value = "predicted_negatives";
     conditioningSelect!.dispatchEvent(new Event("change"));
@@ -562,6 +575,13 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(emphFalseRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(nonEmphTrueRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(nonEmphFalseRgb);
+
+    expect(getLegendSwatchBgs()).toEqual([
+      nonEmphTrueRgb,
+      nonEmphFalseRgb,
+      emphTrueRgb,
+      emphFalseRgb,
+    ]);
 
     // 3. Real Positives: TP & FN emphasized
     conditioningSelect!.value = "real_positives";
@@ -572,6 +592,13 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tn")).toBe(nonEmphTrueRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(nonEmphFalseRgb);
 
+    expect(getLegendSwatchBgs()).toEqual([
+      emphTrueRgb,
+      nonEmphFalseRgb,
+      nonEmphTrueRgb,
+      emphFalseRgb,
+    ]);
+
     // 4. Real Negatives: TN & FP emphasized
     conditioningSelect!.value = "real_negatives";
     conditioningSelect!.dispatchEvent(new Event("change"));
@@ -580,9 +607,16 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fp")).toBe(emphFalseRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--tp")).toBe(nonEmphTrueRgb);
     expect(getCellBgHex(".rtichoke-prediction-distribution__cell--fn")).toBe(nonEmphFalseRgb);
+
+    expect(getLegendSwatchBgs()).toEqual([
+      nonEmphTrueRgb,
+      emphFalseRgb,
+      emphTrueRgb,
+      nonEmphFalseRgb,
+    ]);
   });
 
-  it("verifies DOM interaction invariance for table values and geometry across conditioning and color mode toggles", () => {
+  it("verifies DOM interaction invariance for table values and exact SVG rect geometry attributes across conditioning and color mode toggles", () => {
     const el = renderPredictionDistribution(
       thresholdFixture as PredictionDistributionSpec,
     );
@@ -594,7 +628,7 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
       "select[aria-label='Color bars by']",
     );
 
-    // 1. Record initial table values and plot rect geometry
+    // 1. Record initial table values and exact SVG rect geometry attributes
     const getTableValues = () => ({
       tp: el.querySelector(".rtichoke-prediction-distribution__cell--tp")?.textContent,
       fp: el.querySelector(".rtichoke-prediction-distribution__cell--fp")?.textContent,
@@ -602,11 +636,21 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
       fn: el.querySelector(".rtichoke-prediction-distribution__cell--fn")?.textContent,
     });
 
-    const getSvgRectCount = () =>
-      el.querySelectorAll(".rtichoke-prediction-distribution__chart rect").length;
+    const getSvgRectAttributes = () =>
+      Array.from(
+        el.querySelectorAll<SVGRectElement>(
+          ".rtichoke-prediction-distribution__chart rect",
+        ),
+      ).map((rect) => ({
+        x: rect.getAttribute("x"),
+        y: rect.getAttribute("y"),
+        width: rect.getAttribute("width"),
+        height: rect.getAttribute("height"),
+      }));
 
     const initialTable = getTableValues();
-    const initialRectCount = getSvgRectCount();
+    const initialRects = getSvgRectAttributes();
+    expect(initialRects.length).toBeGreaterThan(0);
 
     // 2. Change conditioning to "real_positives"
     conditioningSelect!.value = "real_positives";
@@ -618,17 +662,17 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     );
     expect(tpCell?.style.backgroundColor).toBe("rgb(0, 158, 115)");
 
-    // Table values and geometry remain identical
+    // Table values and exact SVG rect geometry attributes remain identical
     expect(getTableValues()).toEqual(initialTable);
-    expect(getSvgRectCount()).toEqual(initialRectCount);
+    expect(getSvgRectAttributes()).toEqual(initialRects);
 
     // 3. Switch color mode to "observed_outcome"
     colorModeSelect!.value = "observed_outcome";
     colorModeSelect!.dispatchEvent(new Event("change"));
 
-    // Table values and geometry remain identical again
+    // Table values and exact SVG rect geometry attributes remain identical again
     expect(getTableValues()).toEqual(initialTable);
-    expect(getSvgRectCount()).toEqual(initialRectCount);
+    expect(getSvgRectAttributes()).toEqual(initialRects);
   });
 
   it("preserves component-local presentation state across cutoff movement, dimension, and evaluation switches", () => {
