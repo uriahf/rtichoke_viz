@@ -3462,6 +3462,15 @@ function assertPerformanceTableReferentialIntegrity(spec) {
 
 // src/spec/v2/validate-prediction-distribution.ts
 function assertPredictionDistributionReferentialIntegrity(spec) {
+  if (spec.operatingPoint?.dimension) {
+    const prefDim = spec.operatingPoint.dimension;
+    const hasPrefDim = spec.operatingPoints.some((op) => op.type === prefDim);
+    if (!hasPrefDim) {
+      throw new Error(
+        `configured operatingPoint dimension ${prefDim} is not present in operatingPoints`
+      );
+    }
+  }
   const evaluationIds = /* @__PURE__ */ new Set();
   for (const evaluation of spec.evaluations) {
     if (evaluationIds.has(evaluation.id)) {
@@ -3498,6 +3507,13 @@ function assertPredictionDistributionReferentialIntegrity(spec) {
       throw new Error(
         `invalid operating point bounds for evaluation ${op.evaluationId}`
       );
+    }
+    if (op.type === "probability_threshold") {
+      if (Math.abs(op.value - op.cutoff) > 1e-9) {
+        throw new Error(
+          `probability_threshold value ${op.value} must equal cutoff ${op.cutoff} for evaluation ${op.evaluationId}`
+        );
+      }
     }
     let evalOps = opsByEvaluation.get(op.evaluationId);
     if (!evalOps) {
@@ -3562,6 +3578,22 @@ function assertPredictionDistributionReferentialIntegrity(spec) {
       if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
         throw new Error(
           `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`
+        );
+      }
+      let predictedPositive = 0;
+      if (op.cutoff === 0) {
+        predictedPositive = totalCount;
+      } else {
+        for (const bin of bins) {
+          if (bin.upper > op.cutoff) {
+            predictedPositive += bin.nPositive + bin.nNegative;
+          }
+        }
+      }
+      const expectedRealizedPpcr = predictedPositive / totalCount;
+      if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
+        throw new Error(
+          `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`
         );
       }
     }
@@ -20720,9 +20752,10 @@ function renderPredictionDistribution(spec, options = {}) {
     let fp = 0;
     let tn = 0;
     let fn = 0;
-    const plotData = [];
     const evalSpec = spec.evaluations.find((e) => e.id === currentEvalId);
     const evalLabel = evalSpec?.label ?? evalSpec?.model ?? evalSpec?.population ?? currentEvalId;
+    const ordinaryPlotData = [];
+    const zeroAtomPlotData = [];
     for (const bin of evalBins) {
       let isPredictedPositive = false;
       if (cutoff === 0) {
@@ -20737,68 +20770,100 @@ function renderPredictionDistribution(spec, options = {}) {
         fn += bin.nPositive;
         tn += bin.nNegative;
       }
-      let x12 = bin.lower;
-      let x2 = bin.upper;
-      if (bin.lower === 0 && bin.upper === 0) {
-        x12 = 0;
-        x2 = 5e-3;
-      } else if (bin.lower === 0) {
-        x12 = 5e-3;
-      }
-      const intervalLabel = bin.lower === 0 && bin.upper === 0 ? "[0, 0]" : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
       const predLabel = isPredictedPositive ? "Predicted Positive" : "Predicted Negative";
-      if (bin.nPositive > 0) {
-        plotData.push({
-          x1: x12,
-          x2,
-          category: "Observed Positives",
-          count: bin.nPositive,
-          predicted: isPredictedPositive ? "positive" : "negative",
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Positive"],
-            ["Count", bin.nPositive],
-            ["Classification", predLabel]
-          ])
-        });
-      }
-      if (bin.nNegative > 0) {
-        plotData.push({
-          x1: x12,
-          x2,
-          category: "Observed Negatives",
-          count: bin.nNegative,
-          predicted: isPredictedPositive ? "positive" : "negative",
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Negative"],
-            ["Count", bin.nNegative],
-            ["Classification", predLabel]
-          ])
-        });
+      if (bin.lower === 0 && bin.upper === 0) {
+        if (bin.nPositive > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Positives",
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Classification", predLabel]
+            ])
+          });
+        }
+        if (bin.nNegative > 0) {
+          zeroAtomPlotData.push({
+            category: "Observed Negatives",
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", "[0, 0] (score zero atom)"],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Classification", predLabel]
+            ])
+          });
+        }
+      } else {
+        const intervalWidth = bin.upper - bin.lower;
+        const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+        if (bin.nPositive > 0) {
+          const posDensity = bin.nPositive / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Positives",
+            density: posDensity,
+            count: bin.nPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Count Density", posDensity.toFixed(digits)],
+              ["Classification", predLabel]
+            ])
+          });
+        }
+        if (bin.nNegative > 0) {
+          const negDensity = bin.nNegative / intervalWidth;
+          ordinaryPlotData.push({
+            x1: bin.lower,
+            x2: bin.upper,
+            category: "Observed Negatives",
+            density: negDensity,
+            count: bin.nNegative,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Count Density", negDensity.toFixed(digits)],
+              ["Classification", predLabel]
+            ])
+          });
+        }
       }
     }
-    let maxBinTotal = 0;
-    for (const bin of evalBins) {
-      maxBinTotal = Math.max(maxBinTotal, bin.nPositive + bin.nNegative);
+    let maxBinDensity = 0;
+    const binsByLower = /* @__PURE__ */ new Map();
+    for (const d of ordinaryPlotData) {
+      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
     }
-    const yMax = Math.max(1, Math.ceil(maxBinTotal * 1.15));
+    for (const totalDensity of binsByLower.values()) {
+      maxBinDensity = Math.max(maxBinDensity, totalDensity);
+    }
+    const yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
     const bgRegions = [];
     if (cutoff > 0 && cutoff < 1) {
       bgRegions.push(
         {
           x1: 0,
           x2: cutoff,
-          fill: "#f1f5f9",
+          fill: theme.axis.color,
+          fillOpacity: 0.06,
           label: "Predicted Negative (TN, FN)",
           labelX: cutoff / 2
         },
         {
           x1: cutoff,
           x2: 1,
-          fill: "#fef3c7",
+          fill: posColor,
+          fillOpacity: 0.12,
           label: "Predicted Positive (TP, FP)",
           labelX: cutoff + (1 - cutoff) / 2
         }
@@ -20807,7 +20872,8 @@ function renderPredictionDistribution(spec, options = {}) {
       bgRegions.push({
         x1: 0,
         x2: 1,
-        fill: "#fef3c7",
+        fill: posColor,
+        fillOpacity: 0.12,
         label: "Predicted Positive (TP, FP)",
         labelX: 0.5
       });
@@ -20815,7 +20881,8 @@ function renderPredictionDistribution(spec, options = {}) {
       bgRegions.push({
         x1: 0,
         x2: 1,
-        fill: "#f1f5f9",
+        fill: theme.axis.color,
+        fillOpacity: 0.06,
         label: "Predicted Negative (TN, FN)",
         labelX: 0.5
       });
@@ -20829,7 +20896,7 @@ function renderPredictionDistribution(spec, options = {}) {
           y1: 0,
           y2: yMax,
           fill: bg.fill,
-          fillOpacity: 0.35
+          fillOpacity: bg.fillOpacity
         })
       );
     }
@@ -20840,7 +20907,7 @@ function renderPredictionDistribution(spec, options = {}) {
           y: yMax,
           text: "label",
           dy: 12,
-          fill: "#475569",
+          fill: theme.axis.color,
           fontSize: 11,
           fontWeight: 600
         })
@@ -20848,7 +20915,7 @@ function renderPredictionDistribution(spec, options = {}) {
     }
     marks2.push(
       ruleX([cutoff], {
-        stroke: "#0f172a",
+        stroke: theme.axis.color,
         strokeWidth: 2,
         strokeDasharray: "4,3"
       })
@@ -20866,25 +20933,42 @@ function renderPredictionDistribution(spec, options = {}) {
           y: yMax,
           text: "label",
           dy: -10,
-          fill: "#0f172a",
+          fill: theme.axis.color,
           fontSize: 11,
           fontWeight: 700
         }
       )
     );
-    marks2.push(
-      rectY(
-        plotData,
-        stackY({
-          x1: "x1",
-          x2: "x2",
-          y: "count",
-          fill: "category",
-          title: (d) => d.title,
-          tip: true
-        })
-      )
-    );
+    if (ordinaryPlotData.length > 0) {
+      marks2.push(
+        rectY(
+          ordinaryPlotData,
+          stackY({
+            x1: "x1",
+            x2: "x2",
+            y: "density",
+            fill: "category",
+            title: (d) => d.title,
+            tip: true
+          })
+        )
+      );
+    }
+    if (zeroAtomPlotData.length > 0) {
+      marks2.push(
+        ruleX(
+          zeroAtomPlotData,
+          stackY({
+            x: 0,
+            y: "count",
+            stroke: "category",
+            strokeWidth: 5,
+            title: (d) => d.title,
+            tip: true
+          })
+        )
+      );
+    }
     const plotSpec = {
       width: theme.width,
       height: Math.round(theme.height * 0.72),
@@ -20914,7 +20998,7 @@ function renderPredictionDistribution(spec, options = {}) {
         tickFormat: theme.axis.numberFormat
       },
       y: {
-        label: "Count",
+        label: "Count density",
         domain: [0, yMax],
         grid: false,
         line: true,
@@ -25691,6 +25775,808 @@ var prediction_distribution_ppcr_tie_default = {
   ]
 };
 
+// fixtures/v2/prediction-distribution-visual.json
+var prediction_distribution_visual_default = {
+  schemaVersion: "2.0",
+  type: "prediction_distribution",
+  title: "Realistic Multi-Evaluation Prediction Distribution",
+  operatingPoint: {
+    dimension: "probability_threshold"
+  },
+  evaluations: [
+    {
+      id: "Model A",
+      model: "Model A (High Accuracy)",
+      population: "General Population"
+    },
+    {
+      id: "Model B",
+      model: "Model B (Moderate Accuracy)",
+      population: "General Population"
+    }
+  ],
+  bins: [
+    {
+      evaluationId: "Model A",
+      lower: 0,
+      upper: 0,
+      includeLower: true,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0,
+      upper: 0.04,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 100
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.04,
+      upper: 0.08,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 90
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.08,
+      upper: 0.12,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 80
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.12,
+      upper: 0.16,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 70
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.16,
+      upper: 0.2,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 60
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.2,
+      upper: 0.24,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 50
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.24,
+      upper: 0.28,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 40
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.28,
+      upper: 0.32,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 36
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.32,
+      upper: 0.36,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.36,
+      upper: 0.4,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 30,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.4,
+      upper: 0.44,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 40,
+      nNegative: 20
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.44,
+      upper: 0.48,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 50,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.48,
+      upper: 0.52,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 60,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.52,
+      upper: 0.56,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 70,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.56,
+      upper: 0.6,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 80,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.6,
+      upper: 0.64,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 90,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.64,
+      upper: 0.68,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 100,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.68,
+      upper: 0.72,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 90,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.72,
+      upper: 0.76,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 70,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.76,
+      upper: 0.8,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 60,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.8,
+      upper: 0.84,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 40,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.84,
+      upper: 0.88,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.88,
+      upper: 0.92,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.92,
+      upper: 0.96,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.96,
+      upper: 1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0,
+      upper: 0,
+      includeLower: true,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0,
+      upper: 0.04,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 40
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.04,
+      upper: 0.08,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 44
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.08,
+      upper: 0.12,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 50
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.12,
+      upper: 0.16,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 56
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.16,
+      upper: 0.2,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 30,
+      nNegative: 60
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.2,
+      upper: 0.24,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 36,
+      nNegative: 64
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.24,
+      upper: 0.28,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 40,
+      nNegative: 60
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.28,
+      upper: 0.32,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 44,
+      nNegative: 56
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.32,
+      upper: 0.36,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 50,
+      nNegative: 50
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.36,
+      upper: 0.4,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 56,
+      nNegative: 44
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.4,
+      upper: 0.44,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 60,
+      nNegative: 40
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.44,
+      upper: 0.48,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 64,
+      nNegative: 36
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.48,
+      upper: 0.52,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 60,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.52,
+      upper: 0.56,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 56,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.56,
+      upper: 0.6,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 50,
+      nNegative: 20
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.6,
+      upper: 0.64,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 44,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.64,
+      upper: 0.68,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 40,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.68,
+      upper: 0.72,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 36,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.72,
+      upper: 0.76,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 30,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.76,
+      upper: 0.8,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.8,
+      upper: 0.84,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.84,
+      upper: 0.88,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.88,
+      upper: 0.92,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.92,
+      upper: 0.96,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.96,
+      upper: 1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 0
+    }
+  ],
+  operatingPoints: [
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0,
+      cutoff: 0,
+      realizedPpcr: 1
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.08,
+      cutoff: 0.08,
+      realizedPpcr: 0.8521303258145363
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.2,
+      cutoff: 0.2,
+      realizedPpcr: 0.7092731829573935
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.32,
+      cutoff: 0.32,
+      realizedPpcr: 0.6015037593984962
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.4,
+      cutoff: 0.4,
+      realizedPpcr: 0.5338345864661654
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.52,
+      cutoff: 0.52,
+      realizedPpcr: 0.41102756892230574
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.6,
+      cutoff: 0.6,
+      realizedPpcr: 0.3082706766917293
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.72,
+      cutoff: 0.72,
+      realizedPpcr: 0.12781954887218044
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.8,
+      cutoff: 0.8,
+      realizedPpcr: 0.046365914786967416
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.92,
+      cutoff: 0.92,
+      realizedPpcr: 0.002506265664160401
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 1,
+      cutoff: 1,
+      realizedPpcr: 0
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0,
+      cutoff: 0.96,
+      realizedPpcr: 0
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.1,
+      cutoff: 0.76,
+      realizedPpcr: 0.08395989974937343
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.2,
+      cutoff: 0.68,
+      realizedPpcr: 0.18546365914786966
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.3,
+      cutoff: 0.6,
+      realizedPpcr: 0.3082706766917293
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.4,
+      cutoff: 0.52,
+      realizedPpcr: 0.41102756892230574
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.5,
+      cutoff: 0.44,
+      realizedPpcr: 0.49624060150375937
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.6,
+      cutoff: 0.32,
+      realizedPpcr: 0.6015037593984962
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.7,
+      cutoff: 0.2,
+      realizedPpcr: 0.7092731829573935
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.8,
+      cutoff: 0.12,
+      realizedPpcr: 0.7994987468671679
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.9,
+      cutoff: 0.04,
+      realizedPpcr: 0.9110275689223057
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 1,
+      cutoff: 0,
+      realizedPpcr: 1
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0,
+      cutoff: 0,
+      realizedPpcr: 1
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.08,
+      cutoff: 0.08,
+      realizedPpcr: 0.9169859514687101
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.2,
+      cutoff: 0.2,
+      realizedPpcr: 0.7637292464878672
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.32,
+      cutoff: 0.32,
+      realizedPpcr: 0.5721583652618135
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.4,
+      cutoff: 0.4,
+      realizedPpcr: 0.4444444444444444
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.52,
+      cutoff: 0.52,
+      realizedPpcr: 0.25925925925925924
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.6,
+      cutoff: 0.6,
+      realizedPpcr: 0.16347381864623245
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.72,
+      cutoff: 0.72,
+      realizedPpcr: 0.06768837803320563
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.8,
+      cutoff: 0.8,
+      realizedPpcr: 0.031928480204342274
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.92,
+      cutoff: 0.92,
+      realizedPpcr: 0.002554278416347382
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 1,
+      cutoff: 1,
+      realizedPpcr: 0
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0,
+      cutoff: 0.96,
+      realizedPpcr: 0
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.1,
+      cutoff: 0.68,
+      realizedPpcr: 0.09323116219667944
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.2,
+      cutoff: 0.56,
+      realizedPpcr: 0.2081736909323116
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.3,
+      cutoff: 0.48,
+      realizedPpcr: 0.3167305236270754
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.4,
+      cutoff: 0.44,
+      realizedPpcr: 0.38058748403575987
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.5,
+      cutoff: 0.36,
+      realizedPpcr: 0.508301404853129
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.6,
+      cutoff: 0.32,
+      realizedPpcr: 0.5721583652618135
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.7,
+      cutoff: 0.24,
+      realizedPpcr: 0.6998722860791826
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.8,
+      cutoff: 0.16,
+      realizedPpcr: 0.8212005108556832
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.9,
+      cutoff: 0.08,
+      realizedPpcr: 0.9169859514687101
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 1,
+      cutoff: 0,
+      realizedPpcr: 1
+    }
+  ]
+};
+
 // src/demo.ts
 var reportHost = document.querySelector("#report-demo");
 var rocHost = document.querySelector("#roc-chart");
@@ -25705,9 +26591,10 @@ var precisionRecallHost = document.querySelector("#precision-recall-chart");
 var prPpcrHost = document.querySelector("#pr-ppcr-chart");
 var dcOpHost = document.querySelector("#dc-op-chart");
 var iaOpHost = document.querySelector("#ia-op-chart");
+var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
 var predDistHost = document.querySelector("#pred-dist-chart");
 var predDistPpcrHost = document.querySelector("#pred-dist-ppcr-chart");
-if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistHost || !predDistPpcrHost) {
+if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !predDistHost || !predDistPpcrHost) {
   throw new Error("Demo chart containers are missing");
 }
 var singleRocOpSpec = {
@@ -25835,5 +26722,6 @@ liftHost.append(
 liftTimeHost.append(renderLiftV2(lift_time_default));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
+predDistVisualHost.append(renderPredictionDistribution(prediction_distribution_visual_default));
 predDistHost.append(renderPredictionDistribution(prediction_distribution_threshold_default));
 predDistPpcrHost.append(renderPredictionDistribution(prediction_distribution_ppcr_tie_default));
