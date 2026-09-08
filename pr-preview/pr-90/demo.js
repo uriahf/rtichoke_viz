@@ -20601,6 +20601,7 @@ function renderPredictionDistribution(spec, options = {}) {
   const { theme } = resolved;
   const digits = theme.tip.digits;
   let currentEvalId = spec.evaluations[0].id;
+  let currentColorMode = "outcome";
   const getAvailableDimensions = (evalId) => {
     const dims = /* @__PURE__ */ new Set();
     for (const op of spec.operatingPoints) {
@@ -20678,6 +20679,22 @@ function renderPredictionDistribution(spec, options = {}) {
   };
   dimGroup.append(dimSelect);
   controlsDiv.append(dimGroup);
+  const colorGroup = document.createElement("label");
+  colorGroup.className = "rtichoke-prediction-distribution__control-group";
+  colorGroup.textContent = "Color bars by: ";
+  const colorSelect = document.createElement("select");
+  colorSelect.className = "rtichoke-prediction-distribution__select";
+  colorSelect.setAttribute("aria-label", "Color mode");
+  const optOutcome = document.createElement("option");
+  optOutcome.value = "outcome";
+  optOutcome.textContent = "Observed outcome";
+  const optClass = document.createElement("option");
+  optClass.value = "classification";
+  optClass.textContent = "Confusion classification";
+  colorSelect.append(optOutcome, optClass);
+  colorSelect.value = currentColorMode;
+  colorGroup.append(colorSelect);
+  controlsDiv.append(colorGroup);
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
   sliderControl.style.marginLeft = `${theme.margins.left}px`;
@@ -20697,6 +20714,10 @@ function renderPredictionDistribution(spec, options = {}) {
   legendDiv.style.paddingLeft = `${theme.margins.left}px`;
   const posColor = resolved.colors[0];
   const negColor = resolved.colors[1];
+  const tpColor = "#166534";
+  const fpColor = "#dc2626";
+  const tnColor = "#22c55e";
+  const fnColor = "#991b1b";
   const createLegendItem = (label, color3) => {
     const item = document.createElement("div");
     item.className = "rtichoke-legend-item";
@@ -20712,10 +20733,22 @@ function renderPredictionDistribution(spec, options = {}) {
     item.append(swatch, labelSpan);
     return item;
   };
-  legendDiv.append(
-    createLegendItem("Observed Positives", posColor),
-    createLegendItem("Observed Negatives", negColor)
-  );
+  const updateLegend = () => {
+    legendDiv.replaceChildren();
+    if (currentColorMode === "outcome") {
+      legendDiv.append(
+        createLegendItem("Observed Positives", posColor),
+        createLegendItem("Observed Negatives", negColor)
+      );
+    } else {
+      legendDiv.append(
+        createLegendItem("True Positives (TP)", tpColor),
+        createLegendItem("False Positives (FP)", fpColor),
+        createLegendItem("True Negatives (TN)", tnColor),
+        createLegendItem("False Negatives (FN)", fnColor)
+      );
+    }
+  };
   const chartDiv = document.createElement("div");
   chartDiv.className = "rtichoke-prediction-distribution__chart";
   const summaryDiv = document.createElement("div");
@@ -20729,6 +20762,7 @@ function renderPredictionDistribution(spec, options = {}) {
   );
   const updateChart = () => {
     updateDimSelectOptions();
+    updateLegend();
     const ops = getOperatingPoints(currentEvalId, currentDim);
     const availableValues = getValuesFor(currentEvalId, currentDim);
     if (!availableValues.includes(currentValue)) {
@@ -20748,6 +20782,10 @@ function renderPredictionDistribution(spec, options = {}) {
     const cutoff = activeOp.cutoff;
     const realizedPpcr = activeOp.realizedPpcr;
     const evalBins = spec.bins.filter((bin) => bin.evaluationId === currentEvalId).sort((a2, b) => a2.lower - b.lower);
+    let totalN = 0;
+    for (const bin of evalBins) {
+      totalN += bin.nPositive + bin.nNegative;
+    }
     let tp = 0;
     let fp = 0;
     let tn = 0;
@@ -20756,6 +20794,7 @@ function renderPredictionDistribution(spec, options = {}) {
     const evalLabel = evalSpec?.label ?? evalSpec?.model ?? evalSpec?.population ?? currentEvalId;
     const ordinaryPlotData = [];
     const zeroAtomPlotData = [];
+    let cumCount = 0;
     for (const bin of evalBins) {
       let isPredictedPositive = false;
       if (cutoff === 0) {
@@ -20770,105 +20809,174 @@ function renderPredictionDistribution(spec, options = {}) {
         fn += bin.nPositive;
         tn += bin.nNegative;
       }
+      const binTotal = bin.nPositive + bin.nNegative;
+      const popLower = cumCount / totalN;
+      const popUpper = (cumCount + binTotal) / totalN;
+      cumCount += binTotal;
       const predLabel = isPredictedPositive ? "Predicted Positive" : "Predicted Negative";
-      if (bin.lower === 0 && bin.upper === 0) {
-        if (bin.nPositive > 0) {
-          zeroAtomPlotData.push({
-            category: "Observed Positives",
-            count: bin.nPositive,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", "[0, 0] (score zero atom)"],
-              ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
-              ["Classification", predLabel]
-            ])
-          });
-        }
-        if (bin.nNegative > 0) {
-          zeroAtomPlotData.push({
-            category: "Observed Negatives",
-            count: bin.nNegative,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", "[0, 0] (score zero atom)"],
-              ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
-              ["Classification", predLabel]
-            ])
-          });
+      if (currentDim === "probability_threshold") {
+        if (bin.lower === 0 && bin.upper === 0) {
+          if (bin.nPositive > 0) {
+            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
+            zeroAtomPlotData.push({
+              category: cat,
+              count: bin.nPositive,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", "[0, 0] (score zero atom)"],
+                ["Outcome", "Observed Positive"],
+                ["Count", bin.nPositive],
+                ["Classification", predLabel]
+              ])
+            });
+          }
+          if (bin.nNegative > 0) {
+            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
+            zeroAtomPlotData.push({
+              category: cat,
+              count: bin.nNegative,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", "[0, 0] (score zero atom)"],
+                ["Outcome", "Observed Negative"],
+                ["Count", bin.nNegative],
+                ["Classification", predLabel]
+              ])
+            });
+          }
+        } else {
+          const intervalWidth = bin.upper - bin.lower;
+          const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+          if (bin.nPositive > 0) {
+            const posDensity = bin.nPositive / intervalWidth;
+            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
+            ordinaryPlotData.push({
+              x1: bin.lower,
+              x2: bin.upper,
+              category: cat,
+              density: posDensity,
+              count: bin.nPositive,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Positive"],
+                ["Count", bin.nPositive],
+                ["Count Density", posDensity.toFixed(digits)],
+                ["Classification", predLabel]
+              ])
+            });
+          }
+          if (bin.nNegative > 0) {
+            const negDensity = bin.nNegative / intervalWidth;
+            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
+            ordinaryPlotData.push({
+              x1: bin.lower,
+              x2: bin.upper,
+              category: cat,
+              density: negDensity,
+              count: bin.nNegative,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Negative"],
+                ["Count", bin.nNegative],
+                ["Count Density", negDensity.toFixed(digits)],
+                ["Classification", predLabel]
+              ])
+            });
+          }
         }
       } else {
-        const intervalWidth = bin.upper - bin.lower;
-        const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-        if (bin.nPositive > 0) {
-          const posDensity = bin.nPositive / intervalWidth;
-          ordinaryPlotData.push({
-            x1: bin.lower,
-            x2: bin.upper,
-            category: "Observed Positives",
-            density: posDensity,
-            count: bin.nPositive,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
-              ["Count Density", posDensity.toFixed(digits)],
-              ["Classification", predLabel]
-            ])
-          });
-        }
-        if (bin.nNegative > 0) {
-          const negDensity = bin.nNegative / intervalWidth;
-          ordinaryPlotData.push({
-            x1: bin.lower,
-            x2: bin.upper,
-            category: "Observed Negatives",
-            density: negDensity,
-            count: bin.nNegative,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
-              ["Count Density", negDensity.toFixed(digits)],
-              ["Classification", predLabel]
-            ])
-          });
+        if (binTotal > 0) {
+          const scoreIntervalStr = bin.lower === 0 && bin.upper === 0 ? "[0, 0]" : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+          const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
+          if (bin.nPositive > 0) {
+            const frac = bin.nPositive / binTotal;
+            const cat = currentColorMode === "outcome" ? "Observed Positives" : isPredictedPositive ? "True Positives (TP)" : "False Negatives (FN)";
+            ordinaryPlotData.push({
+              x1: popLower,
+              x2: popUpper,
+              category: cat,
+              density: frac,
+              count: bin.nPositive,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Population Rank Percentile", rankIntervalStr],
+                ["Score Interval", scoreIntervalStr],
+                ["Outcome", "Observed Positive"],
+                ["Count", bin.nPositive],
+                ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+                ["Classification", predLabel]
+              ])
+            });
+          }
+          if (bin.nNegative > 0) {
+            const frac = bin.nNegative / binTotal;
+            const cat = currentColorMode === "outcome" ? "Observed Negatives" : isPredictedPositive ? "False Positives (FP)" : "True Negatives (TN)";
+            ordinaryPlotData.push({
+              x1: popLower,
+              x2: popUpper,
+              category: cat,
+              density: frac,
+              count: bin.nNegative,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Population Rank Percentile", rankIntervalStr],
+                ["Score Interval", scoreIntervalStr],
+                ["Outcome", "Observed Negative"],
+                ["Count", bin.nNegative],
+                ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+                ["Classification", predLabel]
+              ])
+            });
+          }
         }
       }
     }
-    let maxBinDensity = 0;
-    const binsByLower = /* @__PURE__ */ new Map();
-    for (const d of ordinaryPlotData) {
-      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
+    let cutoffX = cutoff;
+    let xAxisLabel = "Prediction Score";
+    let yAxisLabel = "Count density";
+    let yMax = 1;
+    if (currentDim === "probability_threshold") {
+      cutoffX = cutoff;
+      xAxisLabel = "Prediction Score";
+      yAxisLabel = "Count density";
+      let maxBinDensity = 0;
+      const binsByLower = /* @__PURE__ */ new Map();
+      for (const d of ordinaryPlotData) {
+        binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
+      }
+      for (const totalDensity of binsByLower.values()) {
+        maxBinDensity = Math.max(maxBinDensity, totalDensity);
+      }
+      yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
+    } else {
+      cutoffX = 1 - realizedPpcr;
+      xAxisLabel = "Prediction rank percentile (low to high)";
+      yAxisLabel = "Outcome fraction";
+      yMax = 1.18;
     }
-    for (const totalDensity of binsByLower.values()) {
-      maxBinDensity = Math.max(maxBinDensity, totalDensity);
-    }
-    const yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
     const bgRegions = [];
-    if (cutoff > 0 && cutoff < 1) {
+    if (cutoffX > 0 && cutoffX < 1) {
       bgRegions.push(
         {
           x1: 0,
-          x2: cutoff,
+          x2: cutoffX,
           fill: theme.axis.color,
           fillOpacity: 0.06,
           label: "Predicted Negative (TN, FN)",
-          labelX: cutoff / 2
+          labelX: cutoffX / 2
         },
         {
-          x1: cutoff,
+          x1: cutoffX,
           x2: 1,
           fill: posColor,
           fillOpacity: 0.12,
           label: "Predicted Positive (TP, FP)",
-          labelX: cutoff + (1 - cutoff) / 2
+          labelX: cutoffX + (1 - cutoffX) / 2
         }
       );
-    } else if (cutoff === 0) {
+    } else if (cutoffX === 0) {
       bgRegions.push({
         x1: 0,
         x2: 1,
@@ -20914,18 +21022,19 @@ function renderPredictionDistribution(spec, options = {}) {
       );
     }
     marks2.push(
-      ruleX([cutoff], {
+      ruleX([cutoffX], {
         stroke: theme.axis.color,
         strokeWidth: 2,
         strokeDasharray: "4,3"
       })
     );
+    const cutoffTextLabel = currentDim === "probability_threshold" ? `Cutoff = ${cutoff.toFixed(digits)}` : `Realized PPCR = ${realizedPpcr.toFixed(digits)}`;
     marks2.push(
       text(
         [
           {
-            x: cutoff,
-            label: `Cutoff = ${cutoff.toFixed(digits)}`
+            x: cutoffX,
+            label: cutoffTextLabel
           }
         ],
         {
@@ -20939,6 +21048,20 @@ function renderPredictionDistribution(spec, options = {}) {
         }
       )
     );
+    let colorDomain = [];
+    let colorRange = [];
+    if (currentColorMode === "outcome") {
+      colorDomain = ["Observed Positives", "Observed Negatives"];
+      colorRange = [posColor, negColor];
+    } else {
+      colorDomain = [
+        "True Positives (TP)",
+        "False Positives (FP)",
+        "True Negatives (TN)",
+        "False Negatives (FN)"
+      ];
+      colorRange = [tpColor, fpColor, tnColor, fnColor];
+    }
     if (ordinaryPlotData.length > 0) {
       marks2.push(
         rectY(
@@ -20954,7 +21077,7 @@ function renderPredictionDistribution(spec, options = {}) {
         )
       );
     }
-    if (zeroAtomPlotData.length > 0) {
+    if (currentDim === "probability_threshold" && zeroAtomPlotData.length > 0) {
       marks2.push(
         ruleX(
           zeroAtomPlotData,
@@ -20984,11 +21107,11 @@ function renderPredictionDistribution(spec, options = {}) {
       },
       color: {
         legend: false,
-        domain: ["Observed Positives", "Observed Negatives"],
-        range: [posColor, negColor]
+        domain: colorDomain,
+        range: colorRange
       },
       x: {
-        label: "Prediction Score",
+        label: xAxisLabel,
         domain: [0, 1],
         grid: false,
         line: true,
@@ -20998,7 +21121,7 @@ function renderPredictionDistribution(spec, options = {}) {
         tickFormat: theme.axis.numberFormat
       },
       y: {
-        label: "Count density",
+        label: yAxisLabel,
         domain: [0, yMax],
         grid: false,
         line: true,
@@ -21045,7 +21168,6 @@ function renderPredictionDistribution(spec, options = {}) {
     const totalNegatives = tn + fp;
     const totalPredictedPos = tp + fp;
     const totalPredictedNeg = tn + fn;
-    const totalN = totalPositives + totalNegatives;
     const table = document.createElement("table");
     table.className = "rtichoke-prediction-distribution__table";
     const thead = document.createElement("thead");
@@ -21095,6 +21217,10 @@ function renderPredictionDistribution(spec, options = {}) {
   dimSelect.addEventListener("change", () => {
     currentDim = dimSelect.value;
     currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
+    updateChart();
+  });
+  colorSelect.addEventListener("change", () => {
+    currentColorMode = colorSelect.value;
     updateChart();
   });
   slider.addEventListener("input", () => {
