@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "2.0",
+  "type": "prediction_distribution",
+  "title": "PPCR Tie Golden Fixture",
+  "evaluations": [
+    {
+      "id": "Model A",
+      "model": "Model A",
+      "population": "population"
+    }
+  ],
+  "bins": [
+    {
+      "evaluationId": "Model A",
+      "lower": 0,
+      "upper": 0,
+      "includeLower": true,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 0
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0,
+      "upper": 0.1,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 1
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.1,
+      "upper": 0.2,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 1
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.2,
+      "upper": 0.5,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 1,
+      "nNegative": 1
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.5,
+      "upper": 0.8,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 1,
+      "nNegative": 0
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.8,
+      "upper": 0.9,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 1,
+      "nNegative": 0
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.9,
+      "upper": 1.0,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 0
+    }
+  ],
+  "operatingPoints": [
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.5,
+      "cutoff": 0.5,
+      "realizedPpcr": 0.3333333333333333
+    }
+  ]
+}

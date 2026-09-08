@@ -133,6 +133,17 @@ Examples from the finalized R/Python semantics include:
 - decision-curve prevalence-dependent references: population-specific;
 - time-dependent population-derived references: population-and-horizon-specific.
 
+## Prediction Distribution Semantics
+
+The prediction distribution component (`PredictionDistributionSpec`, `type: "prediction_distribution"`) represents static binary score distributions stratified by observed binary outcomes and operating points.
+
+- **Scope**: Currently static binary prediction distributions.
+- **Statistical ownership**: Producers own score interval construction, classification semantics, cutoff grid selection, and exact outcome counts per bin.
+- **Interval alignment**: Canonical intervals are aligned to all effective cutoffs supported by the producer for each evaluation. The first interval is `[0, 0]`, followed by right-closed `(lower, upper]` intervals.
+- **Cutoff semantics**: At cutoff zero, everyone is predicted positive (including score = 0). At every ordinary nonzero cutoff, equality at an observed score belongs to the predicted-negative side (`score <= cutoff`).
+- **PPCR**: Requested PPCR (in `value`), effective cutoff (in `cutoff`), and realized PPCR (in `realizedPpcr`) are kept distinct to represent score tie behavior accurately.
+- **Report reusability**: Serves as the foundation for `create_probs_histogram()` and is reusable across calibration, discrimination, utility, and summary reports.
+
 The statistical packages compute the values. `rtichoke_viz` should render the
 ownership already encoded in the canonical spec.
 

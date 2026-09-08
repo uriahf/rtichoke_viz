@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { RtichokeChartSpecSchema } from "../src/spec/chart.js";
 import { ReportSpecSchema } from "../src/spec/report.js";
 import { RtichokeChartSpecV2Schema } from "../src/spec/v2/chart.js";
+import { PredictionDistributionSpecSchema } from "../src/spec/v2/prediction-distribution.js";
 import { SummaryMetricsSpecSchema } from "../src/spec/v2/summary-metrics.js";
 
 await mkdir("schemas", { recursive: true });
@@ -18,6 +19,11 @@ await writeFile(
 await writeFile(
   "schemas/rtichoke-viz-summary-metrics.schema.json",
   `${JSON.stringify(SummaryMetricsSpecSchema, null, 2)}\n`,
+  "utf8",
+);
+await writeFile(
+  "schemas/rtichoke-viz-prediction-distribution.schema.json",
+  `${JSON.stringify(PredictionDistributionSpecSchema, null, 2)}\n`,
   "utf8",
 );
 await writeFile(

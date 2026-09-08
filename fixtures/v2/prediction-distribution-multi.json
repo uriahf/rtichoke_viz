@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0",
+  "type": "prediction_distribution",
+  "title": "Multi-Evaluation Prediction Distribution",
+  "evaluations": [
+    {
+      "id": "Model A",
+      "model": "Model A",
+      "population": "population"
+    },
+    {
+      "id": "Model B",
+      "model": "Model B",
+      "population": "population"
+    }
+  ],
+  "bins": [
+    {
+      "evaluationId": "Model A",
+      "lower": 0,
+      "upper": 0,
+      "includeLower": true,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 1
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0,
+      "upper": 0.5,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 2,
+      "nNegative": 2
+    },
+    {
+      "evaluationId": "Model A",
+      "lower": 0.5,
+      "upper": 1.0,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 3,
+      "nNegative": 0
+    },
+    {
+      "evaluationId": "Model B",
+      "lower": 0,
+      "upper": 0,
+      "includeLower": true,
+      "includeUpper": true,
+      "nPositive": 0,
+      "nNegative": 0
+    },
+    {
+      "evaluationId": "Model B",
+      "lower": 0,
+      "upper": 0.5,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 1,
+      "nNegative": 4
+    },
+    {
+      "evaluationId": "Model B",
+      "lower": 0.5,
+      "upper": 1.0,
+      "includeLower": false,
+      "includeUpper": true,
+      "nPositive": 4,
+      "nNegative": 1
+    }
+  ],
+  "operatingPoints": [
+    {
+      "evaluationId": "Model A",
+      "type": "probability_threshold",
+      "value": 0.5,
+      "cutoff": 0.5,
+      "realizedPpcr": 0.375
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.5,
+      "cutoff": 0.5,
+      "realizedPpcr": 0.375
+    },
+    {
+      "evaluationId": "Model B",
+      "type": "probability_threshold",
+      "value": 0.5,
+      "cutoff": 0.5,
+      "realizedPpcr": 0.5
+    },
+    {
+      "evaluationId": "Model B",
+      "type": "ppcr",
+      "value": 0.5,
+      "cutoff": 0.5,
+      "realizedPpcr": 0.5
+    }
+  ]
+}
