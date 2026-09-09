@@ -285,6 +285,50 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(sensCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
   });
 
+  it("verifies PPCR risk-percentile geometry comes from producer-owned rankBins directly", () => {
+    const specWithRankBins: PredictionDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "prediction_distribution",
+      evaluations: [{ id: "eval-1", model: "Model A", population: "Pop" }],
+      bins: [
+        // Strongly unequal probability-bin masses (e.g. 10 subjects vs 900 subjects)
+        { evaluationId: "eval-1", lower: 0, upper: 0.1, includeLower: true, includeUpper: true, nPositive: 1, nNegative: 9 },
+        { evaluationId: "eval-1", lower: 0.1, upper: 1.0, includeLower: false, includeUpper: true, nPositive: 300, nNegative: 600 },
+      ],
+      rankBins: [
+        // Producer-owned quantile rankBins defined on [0, 0.5] and [0.5, 1.0] with fractional mass
+        { evaluationId: "eval-1", rankLower: 0.0, rankUpper: 0.5, positiveMass: 50.5, negativeMass: 400.5 },
+        { evaluationId: "eval-1", rankLower: 0.5, rankUpper: 1.0, positiveMass: 250.5, negativeMass: 208.5 },
+      ],
+      operatingPoints: [
+        { evaluationId: "eval-1", type: "ppcr", value: 0.5, cutoff: 0.5, realizedPpcr: 0.5 },
+      ],
+    };
+
+    const prep = preparePredictionDistributionPlotData(
+      specWithRankBins,
+      "eval-1",
+      "ppcr",
+      0.5,
+      3,
+    );
+
+    // Geometry comes directly from rankLower and rankUpper, NOT probability bin widths
+    expect(prep.ordinaryPlotData[0].x1).toBe(0.0);
+    expect(prep.ordinaryPlotData[0].x2).toBe(0.5);
+    expect(prep.ordinaryPlotData[0].count).toBe(50.5); // Fractional positiveMass preserved
+
+    expect(prep.ordinaryPlotData[2].x1).toBe(0.5);
+    expect(prep.ordinaryPlotData[2].x2).toBe(1.0);
+    expect(prep.ordinaryPlotData[2].count).toBe(250.5); // Fractional positiveMass preserved
+
+    // Total mass preserved across Stacked and Mirrored modes
+    const totalPosMass = prep.ordinaryPlotData
+      .filter((d) => d.category === "Observed Positives")
+      .reduce((acc, d) => acc + d.count, 0);
+    expect(totalPosMass).toBe(301.0);
+  });
+
   it("renders embedded inside structured ReportSpec v1.1 sections -> group -> components", () => {
     const reportSpecV1_1: ReportSpecV1_1 = {
       schemaVersion: "1.1",

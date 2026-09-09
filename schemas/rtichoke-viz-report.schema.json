@@ -5434,6 +5434,42 @@
                           }
                         }
                       },
+                      "rankBins": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "evaluationId",
+                            "rankLower",
+                            "rankUpper",
+                            "positiveMass",
+                            "negativeMass"
+                          ],
+                          "properties": {
+                            "evaluationId": {
+                              "type": "string"
+                            },
+                            "rankLower": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
+                            },
+                            "rankUpper": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
+                            },
+                            "positiveMass": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "negativeMass": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          }
+                        }
+                      },
                       "operatingPoints": {
                         "minItems": 1,
                         "type": "array",
@@ -11047,6 +11083,42 @@
                                     }
                                   }
                                 },
+                                "rankBins": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "required": [
+                                      "evaluationId",
+                                      "rankLower",
+                                      "rankUpper",
+                                      "positiveMass",
+                                      "negativeMass"
+                                    ],
+                                    "properties": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "rankLower": {
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "type": "number"
+                                      },
+                                      "rankUpper": {
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "type": "number"
+                                      },
+                                      "positiveMass": {
+                                        "minimum": 0,
+                                        "type": "number"
+                                      },
+                                      "negativeMass": {
+                                        "minimum": 0,
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                },
                                 "operatingPoints": {
                                   "minItems": 1,
                                   "type": "array",
@@ -16634,6 +16706,42 @@
                                             "nNegative": {
                                               "minimum": 0,
                                               "type": "integer"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "rankBins": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "required": [
+                                            "evaluationId",
+                                            "rankLower",
+                                            "rankUpper",
+                                            "positiveMass",
+                                            "negativeMass"
+                                          ],
+                                          "properties": {
+                                            "evaluationId": {
+                                              "type": "string"
+                                            },
+                                            "rankLower": {
+                                              "minimum": 0,
+                                              "maximum": 1,
+                                              "type": "number"
+                                            },
+                                            "rankUpper": {
+                                              "minimum": 0,
+                                              "maximum": 1,
+                                              "type": "number"
+                                            },
+                                            "positiveMass": {
+                                              "minimum": 0,
+                                              "type": "number"
+                                            },
+                                            "negativeMass": {
+                                              "minimum": 0,
+                                              "type": "number"
                                             }
                                           }
                                         }

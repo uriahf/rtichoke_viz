@@ -923,6 +923,708 @@
       "nNegative": 0
     }
   ],
+  "rankBins": [
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.0,
+      "rankUpper": 0.01,
+      "positiveMass": 0.001,
+      "negativeMass": 18.749
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.01,
+      "rankUpper": 0.02,
+      "positiveMass": 0.0073,
+      "negativeMass": 18.7427
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.02,
+      "rankUpper": 0.03,
+      "positiveMass": 0.0184,
+      "negativeMass": 18.7316
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.03,
+      "rankUpper": 0.04,
+      "positiveMass": 0.0337,
+      "negativeMass": 18.7163
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.04,
+      "rankUpper": 0.05,
+      "positiveMass": 0.0529,
+      "negativeMass": 18.6971
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.05,
+      "rankUpper": 0.06,
+      "positiveMass": 0.076,
+      "negativeMass": 18.674
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.06,
+      "rankUpper": 0.07,
+      "positiveMass": 0.1026,
+      "negativeMass": 18.6474
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.07,
+      "rankUpper": 0.08,
+      "positiveMass": 0.1328,
+      "negativeMass": 18.6172
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.08,
+      "rankUpper": 0.09,
+      "positiveMass": 0.1663,
+      "negativeMass": 18.5837
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.09,
+      "rankUpper": 0.1,
+      "positiveMass": 0.2032,
+      "negativeMass": 18.5468
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.1,
+      "rankUpper": 0.11,
+      "positiveMass": 0.2433,
+      "negativeMass": 18.5067
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.11,
+      "rankUpper": 0.12,
+      "positiveMass": 0.2866,
+      "negativeMass": 18.4634
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.12,
+      "rankUpper": 0.13,
+      "positiveMass": 0.333,
+      "negativeMass": 18.417
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.13,
+      "rankUpper": 0.14,
+      "positiveMass": 0.3825,
+      "negativeMass": 18.3675
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.14,
+      "rankUpper": 0.15,
+      "positiveMass": 0.435,
+      "negativeMass": 18.315
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.15,
+      "rankUpper": 0.16,
+      "positiveMass": 0.4905,
+      "negativeMass": 18.2595
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.16,
+      "rankUpper": 0.17,
+      "positiveMass": 0.549,
+      "negativeMass": 18.201
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.17,
+      "rankUpper": 0.18,
+      "positiveMass": 0.6103,
+      "negativeMass": 18.1397
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.18,
+      "rankUpper": 0.19,
+      "positiveMass": 0.6745,
+      "negativeMass": 18.0755
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.19,
+      "rankUpper": 0.2,
+      "positiveMass": 0.7415,
+      "negativeMass": 18.0085
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.2,
+      "rankUpper": 0.21,
+      "positiveMass": 0.8114,
+      "negativeMass": 17.9386
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.21,
+      "rankUpper": 0.22,
+      "positiveMass": 0.884,
+      "negativeMass": 17.866
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.22,
+      "rankUpper": 0.23,
+      "positiveMass": 0.9594,
+      "negativeMass": 17.7906
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.23,
+      "rankUpper": 0.24,
+      "positiveMass": 1.0375,
+      "negativeMass": 17.7125
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.24,
+      "rankUpper": 0.25,
+      "positiveMass": 1.1183,
+      "negativeMass": 17.6317
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.25,
+      "rankUpper": 0.26,
+      "positiveMass": 1.2018,
+      "negativeMass": 17.5482
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.26,
+      "rankUpper": 0.27,
+      "positiveMass": 1.288,
+      "negativeMass": 17.462
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.27,
+      "rankUpper": 0.28,
+      "positiveMass": 1.3768,
+      "negativeMass": 17.3732
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.28,
+      "rankUpper": 0.29,
+      "positiveMass": 1.4682,
+      "negativeMass": 17.2818
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.29,
+      "rankUpper": 0.3,
+      "positiveMass": 1.5622,
+      "negativeMass": 17.1878
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.3,
+      "rankUpper": 0.31,
+      "positiveMass": 1.6588,
+      "negativeMass": 17.0912
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.31,
+      "rankUpper": 0.32,
+      "positiveMass": 1.758,
+      "negativeMass": 16.992
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.32,
+      "rankUpper": 0.33,
+      "positiveMass": 1.8597,
+      "negativeMass": 16.8903
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.33,
+      "rankUpper": 0.34,
+      "positiveMass": 1.964,
+      "negativeMass": 16.786
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.34,
+      "rankUpper": 0.35,
+      "positiveMass": 2.0708,
+      "negativeMass": 16.6792
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.35,
+      "rankUpper": 0.36,
+      "positiveMass": 2.1801,
+      "negativeMass": 16.5699
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.36,
+      "rankUpper": 0.37,
+      "positiveMass": 2.2919,
+      "negativeMass": 16.4581
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.37,
+      "rankUpper": 0.38,
+      "positiveMass": 2.4061,
+      "negativeMass": 16.3439
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.38,
+      "rankUpper": 0.39,
+      "positiveMass": 2.5229,
+      "negativeMass": 16.2271
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.39,
+      "rankUpper": 0.4,
+      "positiveMass": 2.642,
+      "negativeMass": 16.108
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.4,
+      "rankUpper": 0.41,
+      "positiveMass": 2.7636,
+      "negativeMass": 15.9864
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.41,
+      "rankUpper": 0.42,
+      "positiveMass": 2.8877,
+      "negativeMass": 15.8623
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.42,
+      "rankUpper": 0.43,
+      "positiveMass": 3.0141,
+      "negativeMass": 15.7359
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.43,
+      "rankUpper": 0.44,
+      "positiveMass": 3.143,
+      "negativeMass": 15.607
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.44,
+      "rankUpper": 0.45,
+      "positiveMass": 3.2742,
+      "negativeMass": 15.4758
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.45,
+      "rankUpper": 0.46,
+      "positiveMass": 3.4079,
+      "negativeMass": 15.3421
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.46,
+      "rankUpper": 0.47,
+      "positiveMass": 3.5439,
+      "negativeMass": 15.2061
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.47,
+      "rankUpper": 0.48,
+      "positiveMass": 3.6822,
+      "negativeMass": 15.0678
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.48,
+      "rankUpper": 0.49,
+      "positiveMass": 3.8229,
+      "negativeMass": 14.9271
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.49,
+      "rankUpper": 0.5,
+      "positiveMass": 3.966,
+      "negativeMass": 14.784
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.5,
+      "rankUpper": 0.51,
+      "positiveMass": 4.1114,
+      "negativeMass": 14.6386
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.51,
+      "rankUpper": 0.52,
+      "positiveMass": 4.2591,
+      "negativeMass": 14.4909
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.52,
+      "rankUpper": 0.53,
+      "positiveMass": 4.4091,
+      "negativeMass": 14.3409
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.53,
+      "rankUpper": 0.54,
+      "positiveMass": 4.5614,
+      "negativeMass": 14.1886
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.54,
+      "rankUpper": 0.55,
+      "positiveMass": 4.716,
+      "negativeMass": 14.034
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.55,
+      "rankUpper": 0.56,
+      "positiveMass": 4.8729,
+      "negativeMass": 13.8771
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.56,
+      "rankUpper": 0.57,
+      "positiveMass": 5.0321,
+      "negativeMass": 13.7179
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.57,
+      "rankUpper": 0.58,
+      "positiveMass": 5.1936,
+      "negativeMass": 13.5564
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.58,
+      "rankUpper": 0.59,
+      "positiveMass": 5.3573,
+      "negativeMass": 13.3927
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.59,
+      "rankUpper": 0.6,
+      "positiveMass": 5.5232,
+      "negativeMass": 13.2268
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.6,
+      "rankUpper": 0.61,
+      "positiveMass": 5.6914,
+      "negativeMass": 13.0586
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.61,
+      "rankUpper": 0.62,
+      "positiveMass": 5.8619,
+      "negativeMass": 12.8881
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.62,
+      "rankUpper": 0.63,
+      "positiveMass": 6.0346,
+      "negativeMass": 12.7154
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.63,
+      "rankUpper": 0.64,
+      "positiveMass": 6.2095,
+      "negativeMass": 12.5405
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.64,
+      "rankUpper": 0.65,
+      "positiveMass": 6.3866,
+      "negativeMass": 12.3634
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.65,
+      "rankUpper": 0.66,
+      "positiveMass": 6.5659,
+      "negativeMass": 12.1841
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.66,
+      "rankUpper": 0.67,
+      "positiveMass": 6.7475,
+      "negativeMass": 12.0025
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.67,
+      "rankUpper": 0.68,
+      "positiveMass": 6.9312,
+      "negativeMass": 11.8188
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.68,
+      "rankUpper": 0.69,
+      "positiveMass": 7.1171,
+      "negativeMass": 11.6329
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.69,
+      "rankUpper": 0.7,
+      "positiveMass": 7.3053,
+      "negativeMass": 11.4447
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.7,
+      "rankUpper": 0.71,
+      "positiveMass": 7.4955,
+      "negativeMass": 11.2545
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.71,
+      "rankUpper": 0.72,
+      "positiveMass": 7.688,
+      "negativeMass": 11.062
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.72,
+      "rankUpper": 0.73,
+      "positiveMass": 7.8826,
+      "negativeMass": 10.8674
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.73,
+      "rankUpper": 0.74,
+      "positiveMass": 8.0794,
+      "negativeMass": 10.6706
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.74,
+      "rankUpper": 0.75,
+      "positiveMass": 8.2784,
+      "negativeMass": 10.4716
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.75,
+      "rankUpper": 0.76,
+      "positiveMass": 8.4794,
+      "negativeMass": 10.2706
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.76,
+      "rankUpper": 0.77,
+      "positiveMass": 8.6827,
+      "negativeMass": 10.0673
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.77,
+      "rankUpper": 0.78,
+      "positiveMass": 8.888,
+      "negativeMass": 9.862
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.78,
+      "rankUpper": 0.79,
+      "positiveMass": 9.0955,
+      "negativeMass": 9.6545
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.79,
+      "rankUpper": 0.8,
+      "positiveMass": 9.3051,
+      "negativeMass": 9.4449
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.8,
+      "rankUpper": 0.81,
+      "positiveMass": 9.5169,
+      "negativeMass": 9.2331
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.81,
+      "rankUpper": 0.82,
+      "positiveMass": 9.7307,
+      "negativeMass": 9.0193
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.82,
+      "rankUpper": 0.83,
+      "positiveMass": 9.9467,
+      "negativeMass": 8.8033
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.83,
+      "rankUpper": 0.84,
+      "positiveMass": 10.1648,
+      "negativeMass": 8.5852
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.84,
+      "rankUpper": 0.85,
+      "positiveMass": 10.385,
+      "negativeMass": 8.365
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.85,
+      "rankUpper": 0.86,
+      "positiveMass": 10.6072,
+      "negativeMass": 8.1428
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.86,
+      "rankUpper": 0.87,
+      "positiveMass": 10.8316,
+      "negativeMass": 7.9184
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.87,
+      "rankUpper": 0.88,
+      "positiveMass": 11.058,
+      "negativeMass": 7.692
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.88,
+      "rankUpper": 0.89,
+      "positiveMass": 11.2865,
+      "negativeMass": 7.4635
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.89,
+      "rankUpper": 0.9,
+      "positiveMass": 11.5171,
+      "negativeMass": 7.2329
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.9,
+      "rankUpper": 0.91,
+      "positiveMass": 11.7498,
+      "negativeMass": 7.0002
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.91,
+      "rankUpper": 0.92,
+      "positiveMass": 11.9845,
+      "negativeMass": 6.7655
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.92,
+      "rankUpper": 0.93,
+      "positiveMass": 12.2213,
+      "negativeMass": 6.5287
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.93,
+      "rankUpper": 0.94,
+      "positiveMass": 12.4602,
+      "negativeMass": 6.2898
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.94,
+      "rankUpper": 0.95,
+      "positiveMass": 12.7011,
+      "negativeMass": 6.0489
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.95,
+      "rankUpper": 0.96,
+      "positiveMass": 12.944,
+      "negativeMass": 5.806
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.96,
+      "rankUpper": 0.97,
+      "positiveMass": 13.189,
+      "negativeMass": 5.561
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.97,
+      "rankUpper": 0.98,
+      "positiveMass": 13.436,
+      "negativeMass": 5.314
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.98,
+      "rankUpper": 0.99,
+      "positiveMass": 13.6851,
+      "negativeMass": 5.0649
+    },
+    {
+      "evaluationId": "Model A",
+      "rankLower": 0.99,
+      "rankUpper": 1.0,
+      "positiveMass": 13.9362,
+      "negativeMass": 4.8138
+    }
+  ],
   "operatingPoints": [
     {
       "evaluationId": "Model A",

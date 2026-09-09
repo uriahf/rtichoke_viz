@@ -62,164 +62,28 @@
       "type": "probability_threshold",
       "value": 0.0,
       "cutoff": 0.0,
-      "realizedPpcr": 1.0,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 3
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 3
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 0
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 0
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 1.0
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.0
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.5
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0
-        }
-      ]
+      "realizedPpcr": 1.0
     },
     {
       "evaluationId": "Model A",
       "type": "probability_threshold",
       "value": 0.2,
       "cutoff": 0.2,
-      "realizedPpcr": 0.6666666666666666,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 2
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 2
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 1
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.666667
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.333333
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.5
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.5
-        }
-      ]
+      "realizedPpcr": 0.6666666666666666
     },
     {
       "evaluationId": "Model A",
       "type": "probability_threshold",
       "value": 0.5,
       "cutoff": 0.5,
-      "realizedPpcr": 0.3333333333333333,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 1
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 1
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 2
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 2
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.333333
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.666667
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.5
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.5
-        }
-      ]
+      "realizedPpcr": 0.3333333333333333
     },
     {
       "evaluationId": "Model A",
       "type": "probability_threshold",
       "value": 1.0,
       "cutoff": 1.0,
-      "realizedPpcr": 0.0,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 0
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 0
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 3
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 3
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.0
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 1.0
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.5
-        }
-      ]
+      "realizedPpcr": 0.0
     }
   ]
 }

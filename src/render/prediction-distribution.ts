@@ -517,18 +517,20 @@ export function preparePredictionDistributionPlotData(
       }
     }
   } else {
-    // PPCR / Risk Quantile mode
-    // Every displayed quantile bin must have equal visual width on the x-axis
-    const numBins = evalBins.length;
-    const binWidth = numBins > 0 ? 1.0 / numBins : 1.0;
+    // PPCR / Risk Percentile mode
+    // Consume producer-owned rankBins directly.
+    const evalRankBins = (spec.rankBins ?? [])
+      .filter((b) => b.evaluationId === evalId)
+      .sort((a, b) => a.rankLower - b.rankLower);
 
-    for (let i = 0; i < numBins; i++) {
-      const bin = evalBins[i];
-      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
-      const binTotal = bin.nPositive + bin.nNegative;
+    for (const rBin of evalRankBins) {
+      const popLower = rBin.rankLower;
+      const popUpper = rBin.rankUpper;
+      const totalMass = rBin.positiveMass + rBin.negativeMass;
 
-      const popLower = i * binWidth;
-      const popUpper = (i + 1) * binWidth;
+      // Classification is determined by operating-point boundary in rank space (1 - realizedPpcr)
+      const rankMid = (popLower + popUpper) / 2;
+      const isPredictedPositive = rankMid >= (1 - realizedPpcr);
 
       const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
       const posCellLabel = isPredictedPositive
@@ -539,53 +541,47 @@ export function preparePredictionDistributionPlotData(
         ? "False Positive (FP)"
         : "True Negative (TN)";
 
-      if (binTotal > 0) {
-        const scoreIntervalStr =
-          bin.lower === 0 && bin.upper === 0
-            ? "[0, 0]"
-            : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+      if (totalMass > 0) {
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
 
-        if (bin.nPositive > 0) {
-          const frac = bin.nPositive / binTotal;
+        if (rBin.positiveMass > 0) {
+          const frac = rBin.positiveMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Positives",
             density: frac,
-            count: bin.nPositive,
+            count: rBin.positiveMass,
             classificationCell: posCell,
             cellLabel: posCellLabel,
             isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
-              ["Score Interval", scoreIntervalStr],
               ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
+              ["Positive Mass", rBin.positiveMass.toFixed(digits)],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
               ["Classification", posCellLabel],
             ]),
           });
         }
 
-        if (bin.nNegative > 0) {
-          const frac = bin.nNegative / binTotal;
+        if (rBin.negativeMass > 0) {
+          const frac = rBin.negativeMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Negatives",
             density: frac,
-            count: bin.nNegative,
+            count: rBin.negativeMass,
             classificationCell: negCell,
             cellLabel: negCellLabel,
             isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
-              ["Score Interval", scoreIntervalStr],
               ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
+              ["Negative Mass", rBin.negativeMass.toFixed(digits)],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
               ["Classification", negCellLabel],
             ]),
