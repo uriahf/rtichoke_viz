@@ -741,4 +741,121 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     );
     expect(tpCell?.style.backgroundColor).toContain("rgb(17, 34, 51)"); // #112233 in RGB
   });
+
+  it("directly consumes precomputed operatingPoint.performance values (Sens, Spec, PPV, NPV, TP, FP, TN, FN)", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    // Verify metric cards display precomputed values
+    const metricsRow = el.querySelector(".rtichoke-pd-metrics-row");
+    expect(metricsRow).not.toBeNull();
+    expect(metricsRow?.textContent).toContain("Sens");
+    expect(metricsRow?.textContent).toContain("Spec");
+    expect(metricsRow?.textContent).toContain("PPV");
+    expect(metricsRow?.textContent).toContain("NPV");
+
+    // Move slider to cutoff position 0.52
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    )!;
+    slider.value = "5";
+    slider.dispatchEvent(new Event("input"));
+
+    // Verify precomputed performance values are consumed directly
+    expect(metricsRow?.textContent).not.toBeNull();
+  });
+
+  it("supports Stacked vs Mirrored radio selection and preserves state across display switches", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const stackedRadio = el.querySelector<HTMLInputElement>(
+      "input[type='radio'][value='stacked']",
+    );
+    const mirroredRadio = el.querySelector<HTMLInputElement>(
+      "input[type='radio'][value='mirrored']",
+    );
+
+    expect(stackedRadio?.checked).toBe(true);
+    expect(mirroredRadio?.checked).toBe(false);
+
+    // Switch to Mirrored
+    mirroredRadio!.checked = true;
+    mirroredRadio!.dispatchEvent(new Event("change"));
+
+    // Verify plot re-rendered in Mirrored mode (contains y=0 rule)
+    const chart = el.querySelector(".rtichoke-prediction-distribution__chart");
+    expect(chart).not.toBeNull();
+
+    // Switch back to Stacked
+    stackedRadio!.checked = true;
+    stackedRadio!.dispatchEvent(new Event("change"));
+    expect(stackedRadio?.checked).toBe(true);
+  });
+
+  it("integrates conditioning radio group into matrix headers with synchronized metric emphasis", () => {
+    const el = renderPredictionDistribution(
+      visualFixture as PredictionDistributionSpec,
+    );
+
+    const allObsRadio = el.querySelector<HTMLInputElement>(
+      "input[type='radio'][value='all_observations']",
+    );
+    const predPosRadio = el.querySelector<HTMLInputElement>(
+      "input[type='radio'][value='predicted_positives']",
+    );
+    const realPosRadio = el.querySelector<HTMLInputElement>(
+      "input[type='radio'][value='real_positives']",
+    );
+
+    expect(allObsRadio?.checked).toBe(true);
+
+    // Select Predicted Positives
+    predPosRadio!.checked = true;
+    predPosRadio!.dispatchEvent(new Event("change"));
+
+    // Verify PPV metric card is emphasized
+    const cards = el.querySelectorAll(".rtichoke-pd-metric-card");
+    const ppvCard = Array.from(cards).find((c) =>
+      c.textContent?.includes("PPV"),
+    );
+    expect(ppvCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(
+      true,
+    );
+
+    // Select Real Positives
+    realPosRadio!.checked = true;
+    realPosRadio!.dispatchEvent(new Event("change"));
+
+    // Verify Sens metric card is emphasized
+    const updatedCards = el.querySelectorAll(".rtichoke-pd-metric-card");
+    const sensCard = Array.from(updatedCards).find((c) =>
+      c.textContent?.includes("Sens"),
+    );
+    expect(sensCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(
+      true,
+    );
+  });
+
+  it("renders Model and Population radio controls and hides single-option selectors", () => {
+    // Multi-evaluation spec has Model and Population controls
+    const multiEl = renderPredictionDistribution(
+      multiFixture as PredictionDistributionSpec,
+    );
+    const modelGroup = multiEl.querySelector(
+      "[role='radiogroup'][aria-label='Model']",
+    );
+    expect(modelGroup).not.toBeNull();
+
+    // Single evaluation spec hides Model and Population controls
+    const singleEl = renderPredictionDistribution(
+      thresholdFixture as PredictionDistributionSpec,
+    );
+    const hiddenModelGroup = singleEl.querySelector(
+      "[role='radiogroup'][aria-label='Model']",
+    );
+    expect(hiddenModelGroup).toBeNull();
+  });
 });

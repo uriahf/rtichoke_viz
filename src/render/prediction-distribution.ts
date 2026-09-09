@@ -13,11 +13,14 @@ import {
   type V2RenderOptions,
 } from "./v2.js";
 
+export type PredictionDistributionDisplayMode = "stacked" | "mirrored";
+
 export type PredictionDistributionColorMode =
   | "confusion_matrix_cell"
   | "observed_outcome";
 
 export type PredictionDistributionConditioning =
+  | "all_observations"
   | "predicted_positives"
   | "predicted_negatives"
   | "real_positives"
@@ -35,6 +38,12 @@ export interface PredictionDistributionPreparedData {
   yAxisLabel: string;
   yMax: number;
   totalN: number;
+  performanceMetrics: {
+    sensitivity: number | null;
+    specificity: number | null;
+    ppv: number | null;
+    npv: number | null;
+  } | null;
   confusion: {
     tp: number;
     fp: number;
@@ -54,6 +63,7 @@ export interface PredictionDistributionPreparedData {
     title: string;
     classificationCell: "TP" | "FP" | "TN" | "FN";
     cellLabel: string;
+    isPredictedPositive: boolean;
   }>;
   zeroAtomPlotData: Array<{
     category: "Observed Positives" | "Observed Negatives";
@@ -64,7 +74,10 @@ export interface PredictionDistributionPreparedData {
   }>;
 }
 
+let pdInstanceCounter = 0;
+
 export function isDarkColor(color: string): boolean {
+  if (!color) return false;
   let hex = color.trim();
   if (hex.startsWith("#")) {
     hex = hex.substring(1);
@@ -128,6 +141,14 @@ export function resolveConfusionCellColors(
         tp: nonEmphasizedTrue,
         fn: nonEmphasizedFalse,
       };
+    case "all_observations":
+    default:
+      return {
+        tp: emphasizedTrue,
+        fp: emphasizedFalse,
+        tn: emphasizedTrue,
+        fn: emphasizedFalse,
+      };
   }
 }
 
@@ -155,10 +176,48 @@ export function preparePredictionDistributionPlotData(
     totalN += bin.nPositive + bin.nNegative;
   }
 
+  let performanceMetrics: PredictionDistributionPreparedData["performanceMetrics"] = null;
   let tp = 0;
   let fp = 0;
   let tn = 0;
   let fn = 0;
+
+  if (activeOp?.performance && activeOp.performance.length > 0) {
+    const getMetric = (id: string): number | null => {
+      const p = activeOp.performance?.find((item) => item.metricId === id);
+      return p && p.estimate !== undefined && p.estimate !== null
+        ? p.estimate
+        : null;
+    };
+
+    tp = getMetric("true_positives") ?? 0;
+    fp = getMetric("false_positives") ?? 0;
+    tn = getMetric("true_negatives") ?? 0;
+    fn = getMetric("false_negatives") ?? 0;
+
+    const sens = getMetric("sensitivity");
+    const specMetric = getMetric("specificity");
+    const ppv = getMetric("ppv");
+    const npv = getMetric("npv");
+
+    performanceMetrics = {
+      sensitivity: sens,
+      specificity: specMetric,
+      ppv: ppv,
+      npv: npv,
+    };
+  } else {
+    for (const bin of evalBins) {
+      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
+      if (isPredictedPositive) {
+        tp += bin.nPositive;
+        fp += bin.nNegative;
+      } else {
+        fn += bin.nPositive;
+        tn += bin.nNegative;
+      }
+    }
+  }
 
   const evalSpec = spec.evaluations.find((e) => e.id === evalId);
   const evalLabel =
@@ -166,129 +225,150 @@ export function preparePredictionDistributionPlotData(
 
   const ordinaryPlotData: PredictionDistributionPreparedData["ordinaryPlotData"] =
     [];
-
   const zeroAtomPlotData: PredictionDistributionPreparedData["zeroAtomPlotData"] =
     [];
 
   let cumCount = 0;
 
-  for (const bin of evalBins) {
-    let isPredictedPositive = false;
-    if (cutoff === 0) {
-      isPredictedPositive = true;
-    } else {
-      isPredictedPositive = bin.upper > cutoff;
-    }
+  if (dim === "probability_threshold") {
+    const bin0 = evalBins.find((b) => b.lower === 0 && b.upper === 0);
+    const nonZeroBins = evalBins.filter((b) => !(b.lower === 0 && b.upper === 0));
 
-    if (isPredictedPositive) {
-      tp += bin.nPositive;
-      fp += bin.nNegative;
-    } else {
-      fn += bin.nPositive;
-      tn += bin.nNegative;
-    }
+    if (bin0) {
+      const isPredictedPositiveBin0 = cutoff === 0 ? true : bin0.upper > cutoff;
+      const posCell0: "TP" | "FN" = isPredictedPositiveBin0 ? "TP" : "FN";
+      const posCellLabel0 = isPredictedPositiveBin0
+        ? "True Positive (TP)"
+        : "False Negative (FN)";
+      const negCell0: "FP" | "TN" = isPredictedPositiveBin0 ? "FP" : "TN";
+      const negCellLabel0 = isPredictedPositiveBin0
+        ? "False Positive (FP)"
+        : "True Negative (TN)";
 
-    const binTotal = bin.nPositive + bin.nNegative;
-    const popLower = totalN > 0 ? cumCount / totalN : 0;
-    const popUpper = totalN > 0 ? (cumCount + binTotal) / totalN : 0;
-    cumCount += binTotal;
-
-    const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
-    const posCellLabel = isPredictedPositive
-      ? "True Positive (TP)"
-      : "False Negative (FN)";
-
-    const negCell: "FP" | "TN" = isPredictedPositive ? "FP" : "TN";
-    const negCellLabel = isPredictedPositive
-      ? "False Positive (FP)"
-      : "True Negative (TN)";
-
-    if (dim === "probability_threshold") {
-      if (bin.lower === 0 && bin.upper === 0) {
-        if (bin.nPositive > 0) {
-          zeroAtomPlotData.push({
-            category: "Observed Positives",
-            count: bin.nPositive,
-            classificationCell: posCell,
-            cellLabel: posCellLabel,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", "[0, 0] (score zero atom)"],
-              ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
-              ["Classification", posCellLabel],
-            ]),
-          });
-        }
-        if (bin.nNegative > 0) {
-          zeroAtomPlotData.push({
-            category: "Observed Negatives",
-            count: bin.nNegative,
-            classificationCell: negCell,
-            cellLabel: negCellLabel,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", "[0, 0] (score zero atom)"],
-              ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
-              ["Classification", negCellLabel],
-            ]),
-          });
-        }
-      } else {
-        const intervalWidth = bin.upper - bin.lower;
-        const intervalLabel = `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-
-        if (bin.nPositive > 0) {
-          const posDensity = bin.nPositive / intervalWidth;
-          ordinaryPlotData.push({
-            x1: bin.lower,
-            x2: bin.upper,
-            category: "Observed Positives",
-            density: posDensity,
-            count: bin.nPositive,
-            classificationCell: posCell,
-            cellLabel: posCellLabel,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
-              ["Count Density", posDensity.toFixed(digits)],
-              ["Classification", posCellLabel],
-            ]),
-          });
-        }
-
-        if (bin.nNegative > 0) {
-          const negDensity = bin.nNegative / intervalWidth;
-          ordinaryPlotData.push({
-            x1: bin.lower,
-            x2: bin.upper,
-            category: "Observed Negatives",
-            density: negDensity,
-            count: bin.nNegative,
-            classificationCell: negCell,
-            cellLabel: negCellLabel,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
-              ["Count Density", negDensity.toFixed(digits)],
-              ["Classification", negCellLabel],
-            ]),
-          });
-        }
+      if (bin0.nPositive > 0) {
+        zeroAtomPlotData.push({
+          category: "Observed Positives",
+          count: bin0.nPositive,
+          classificationCell: posCell0,
+          cellLabel: posCellLabel0,
+          title: tooltip(digits, [
+            ["Evaluation", evalLabel],
+            ["Score Interval", "[0, 0] (score zero atom)"],
+            ["Outcome", "Observed Positive"],
+            ["Count", bin0.nPositive],
+            ["Classification", posCellLabel0],
+          ]),
+        });
       }
-    } else {
-      // PPCR view: empty bins (binTotal === 0) have popLower === popUpper and are skipped
+      if (bin0.nNegative > 0) {
+        zeroAtomPlotData.push({
+          category: "Observed Negatives",
+          count: bin0.nNegative,
+          classificationCell: negCell0,
+          cellLabel: negCellLabel0,
+          title: tooltip(digits, [
+            ["Evaluation", evalLabel],
+            ["Score Interval", "[0, 0] (score zero atom)"],
+            ["Outcome", "Observed Negative"],
+            ["Count", bin0.nNegative],
+            ["Classification", negCellLabel0],
+          ]),
+        });
+      }
+    }
+
+    for (let i = 0; i < nonZeroBins.length; i++) {
+      const bin = nonZeroBins[i];
+      let posCount = bin.nPositive;
+      let negCount = bin.nNegative;
+
+      const x1 = i === 0 ? 0 : bin.lower;
+      const x2 = bin.upper;
+
+      if (i === 0 && bin0) {
+        posCount += bin0.nPositive;
+        negCount += bin0.nNegative;
+      }
+
+      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
+      const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
+      const posCellLabel = isPredictedPositive
+        ? "True Positive (TP)"
+        : "False Negative (FN)";
+      const negCell: "FP" | "TN" = isPredictedPositive ? "FP" : "TN";
+      const negCellLabel = isPredictedPositive
+        ? "False Positive (FP)"
+        : "True Negative (TN)";
+
+      const intervalWidth = x2 - x1;
+      const intervalLabel = `[${x1.toFixed(digits)}, ${x2.toFixed(digits)}]`;
+
+      if (posCount > 0) {
+        const posDensity = posCount / intervalWidth;
+        ordinaryPlotData.push({
+          x1,
+          x2,
+          category: "Observed Positives",
+          density: posDensity,
+          count: posCount,
+          classificationCell: posCell,
+          cellLabel: posCellLabel,
+          isPredictedPositive,
+          title: tooltip(digits, [
+            ["Evaluation", evalLabel],
+            ["Score Interval", intervalLabel],
+            ["Outcome", "Observed Positive"],
+            ["Count", posCount],
+            ["Count Density", posDensity.toFixed(digits)],
+            ["Classification", posCellLabel],
+          ]),
+        });
+      }
+
+      if (negCount > 0) {
+        const negDensity = negCount / intervalWidth;
+        ordinaryPlotData.push({
+          x1,
+          x2,
+          category: "Observed Negatives",
+          density: negDensity,
+          count: negCount,
+          classificationCell: negCell,
+          cellLabel: negCellLabel,
+          isPredictedPositive,
+          title: tooltip(digits, [
+            ["Evaluation", evalLabel],
+            ["Score Interval", intervalLabel],
+            ["Outcome", "Observed Negative"],
+            ["Count", negCount],
+            ["Count Density", negDensity.toFixed(digits)],
+            ["Classification", negCellLabel],
+          ]),
+        });
+      }
+    }
+  } else {
+    for (const bin of evalBins) {
+      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
+      const binTotal = bin.nPositive + bin.nNegative;
+      const popLower = totalN > 0 ? cumCount / totalN : 0;
+      const popUpper = totalN > 0 ? (cumCount + binTotal) / totalN : 0;
+      cumCount += binTotal;
+
+      const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
+      const posCellLabel = isPredictedPositive
+        ? "True Positive (TP)"
+        : "False Negative (FN)";
+      const negCell: "FP" | "TN" = isPredictedPositive ? "FP" : "TN";
+      const negCellLabel = isPredictedPositive
+        ? "False Positive (FP)"
+        : "True Negative (TN)";
+
       if (binTotal > 0) {
         const scoreIntervalStr =
           bin.lower === 0 && bin.upper === 0
             ? "[0, 0]"
             : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
-
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
 
         if (bin.nPositive > 0) {
@@ -301,6 +381,7 @@ export function preparePredictionDistributionPlotData(
             count: bin.nPositive,
             classificationCell: posCell,
             cellLabel: posCellLabel,
+            isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
@@ -323,6 +404,7 @@ export function preparePredictionDistributionPlotData(
             count: bin.nNegative,
             classificationCell: negCell,
             cellLabel: negCellLabel,
+            isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
@@ -381,6 +463,7 @@ export function preparePredictionDistributionPlotData(
     yAxisLabel,
     yMax,
     totalN,
+    performanceMetrics,
     confusion: {
       tp,
       fp,
@@ -402,6 +485,7 @@ export function renderPredictionDistribution(
 ): SVGSVGElement | HTMLElement {
   assertPredictionDistributionReferentialIntegrity(spec);
 
+  const instanceId = ++pdInstanceCounter;
   const resolved = resolveV2RenderOptions(2, options);
   const { theme } = resolved;
   const digits = theme.tip.digits;
@@ -464,8 +548,9 @@ export function renderPredictionDistribution(
   };
 
   let currentValue = pickBestValue(currentEvalId, currentDim);
+  let currentDisplayMode: PredictionDistributionDisplayMode = "stacked";
   let currentColorMode: PredictionDistributionColorMode = "confusion_matrix_cell";
-  let currentConditioning: PredictionDistributionConditioning = "predicted_positives";
+  let currentConditioning: PredictionDistributionConditioning = "all_observations";
 
   // Main Container
   const container = document.createElement("div");
@@ -473,85 +558,31 @@ export function renderPredictionDistribution(
   container.style.width = `${theme.width}px`;
   container.style.maxWidth = "100%";
 
-  // Controls Header
+  // Controls Bar
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "rtichoke-prediction-distribution__controls";
 
-  // Evaluation Selector
-  let evalSelect: HTMLSelectElement | null = null;
-  if (spec.evaluations.length > 1) {
-    const evalGroup = document.createElement("label");
-    evalGroup.className = "rtichoke-prediction-distribution__control-group";
-    evalGroup.textContent = "Evaluation: ";
-
-    evalSelect = document.createElement("select");
-    evalSelect.className = "rtichoke-prediction-distribution__select";
-    evalSelect.setAttribute("aria-label", "Evaluation");
-
-    for (const evalSpec of spec.evaluations) {
-      const opt = document.createElement("option");
-      opt.value = evalSpec.id;
-      opt.textContent =
-        evalSpec.label ?? evalSpec.model ?? evalSpec.population ?? evalSpec.id;
-      evalSelect.append(opt);
-    }
-    evalSelect.value = currentEvalId;
-    evalGroup.append(evalSelect);
-    controlsDiv.append(evalGroup);
-  }
-
-  // Dimension Selector
-  const dimGroup = document.createElement("label");
-  dimGroup.className = "rtichoke-prediction-distribution__control-group";
-  dimGroup.textContent = "Dimension: ";
-
-  const dimSelect = document.createElement("select");
-  dimSelect.className = "rtichoke-prediction-distribution__select";
-  dimSelect.setAttribute("aria-label", "Operating point dimension");
-
-  const updateDimSelectOptions = () => {
-    dimSelect.replaceChildren();
-    const available = getAvailableDimensions(currentEvalId);
-    for (const dim of available) {
-      const opt = document.createElement("option");
-      opt.value = dim;
-      opt.textContent =
-        dim === "probability_threshold" ? "Probability threshold" : "PPCR";
-      dimSelect.append(opt);
-    }
-    dimSelect.value = currentDim;
-    dimGroup.style.display = available.length > 1 ? "inline-flex" : "none";
-  };
-  dimGroup.append(dimSelect);
-  controlsDiv.append(dimGroup);
-
-  // Color Mode Selector ("Color bars by:")
-  const colorModeGroup = document.createElement("label");
-  colorModeGroup.className = "rtichoke-prediction-distribution__control-group";
-  colorModeGroup.textContent = "Color bars by: ";
+  // Persistent select controls for DOM query compatibility
+  const evalSelect = document.createElement("select");
+  evalSelect.className = "rtichoke-prediction-distribution__select";
+  evalSelect.setAttribute("aria-label", "Evaluation");
+  evalSelect.style.display = "none";
 
   const colorModeSelect = document.createElement("select");
   colorModeSelect.className = "rtichoke-prediction-distribution__select";
   colorModeSelect.setAttribute("aria-label", "Color bars by");
+  colorModeSelect.style.display = "none";
 
-  const colorModeOpt1 = document.createElement("option");
-  colorModeOpt1.value = "confusion_matrix_cell";
-  colorModeOpt1.textContent = "Confusion matrix cell";
+  const cmOpt1 = document.createElement("option");
+  cmOpt1.value = "confusion_matrix_cell";
+  cmOpt1.textContent = "Confusion matrix cell";
+  const cmOpt2 = document.createElement("option");
+  cmOpt2.value = "observed_outcome";
+  cmOpt2.textContent = "Observed outcome";
+  colorModeSelect.append(cmOpt1, cmOpt2);
 
-  const colorModeOpt2 = document.createElement("option");
-  colorModeOpt2.value = "observed_outcome";
-  colorModeOpt2.textContent = "Observed outcome";
-
-  colorModeSelect.append(colorModeOpt1, colorModeOpt2);
-  colorModeSelect.value = currentColorMode;
-  colorModeGroup.append(colorModeSelect);
-  controlsDiv.append(colorModeGroup);
-
-  // Conditioning Selector ("Condition on:")
   const conditioningGroup = document.createElement("label");
-  conditioningGroup.className =
-    "rtichoke-prediction-distribution__control-group";
-  conditioningGroup.textContent = "Condition on: ";
+  conditioningGroup.className = "rtichoke-prediction-distribution__control-group";
 
   const conditioningSelect = document.createElement("select");
   conditioningSelect.className = "rtichoke-prediction-distribution__select";
@@ -560,23 +591,172 @@ export function renderPredictionDistribution(
   const condOpt1 = document.createElement("option");
   condOpt1.value = "predicted_positives";
   condOpt1.textContent = "Predicted positives";
-
   const condOpt2 = document.createElement("option");
   condOpt2.value = "predicted_negatives";
   condOpt2.textContent = "Predicted negatives";
-
   const condOpt3 = document.createElement("option");
   condOpt3.value = "real_positives";
   condOpt3.textContent = "Real positives";
-
   const condOpt4 = document.createElement("option");
   condOpt4.value = "real_negatives";
   condOpt4.textContent = "Real negatives";
-
   conditioningSelect.append(condOpt1, condOpt2, condOpt3, condOpt4);
-  conditioningSelect.value = currentConditioning;
   conditioningGroup.append(conditioningSelect);
-  controlsDiv.append(conditioningGroup);
+
+  const dimSelect = document.createElement("select");
+  dimSelect.className = "rtichoke-prediction-distribution__select";
+  dimSelect.setAttribute("aria-label", "Operating point dimension");
+  dimSelect.style.display = "none";
+
+  // Event listeners on persistent select controls
+  evalSelect.addEventListener("change", () => {
+    currentEvalId = evalSelect.value;
+    updateChart();
+  });
+
+  colorModeSelect.addEventListener("change", () => {
+    currentColorMode = colorModeSelect.value as PredictionDistributionColorMode;
+    updateChart();
+  });
+
+  conditioningSelect.addEventListener("change", () => {
+    currentConditioning = conditioningSelect.value as PredictionDistributionConditioning;
+    updateChart();
+  });
+
+  dimSelect.addEventListener("change", () => {
+    currentDim = dimSelect.value as "probability_threshold" | "ppcr";
+    currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
+    updateChart();
+  });
+
+  // Helper to create radio group
+  const createRadioGroup = <T extends string>(
+    groupLabel: string,
+    name: string,
+    options: Array<{ value: T; label: string }>,
+    currentVal: T,
+    onChange: (newVal: T) => void,
+  ): HTMLElement => {
+    const group = document.createElement("div");
+    group.className = "rtichoke-pd-radio-group";
+    group.setAttribute("role", "radiogroup");
+    group.setAttribute("aria-label", groupLabel);
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "rtichoke-pd-radio-group-label";
+    labelSpan.textContent = `${groupLabel}:`;
+    group.append(labelSpan);
+
+    const optionsContainer = document.createElement("div");
+    optionsContainer.className = "rtichoke-pd-radio-options";
+
+    for (const opt of options) {
+      const optionLabel = document.createElement("label");
+      optionLabel.className = "rtichoke-pd-radio-option";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = name;
+      radio.value = opt.value;
+      radio.checked = opt.value === currentVal;
+
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          onChange(opt.value);
+        }
+      });
+
+      const optSpan = document.createElement("span");
+      optSpan.textContent = opt.label;
+
+      optionLabel.append(radio, optSpan);
+      optionsContainer.append(optionLabel);
+    }
+
+    group.append(optionsContainer);
+    return group;
+  };
+
+  const evalControlContainer = document.createElement("div");
+  evalControlContainer.className = "rtichoke-pd-controls-row";
+
+  const uniqueModels = Array.from(
+    new Set(spec.evaluations.map((e) => e.model ?? e.label ?? e.id)),
+  );
+  const uniquePopulations = Array.from(
+    new Set(spec.evaluations.map((e) => e.population ?? e.label ?? e.id)),
+  );
+
+  const getCurrentEval = () =>
+    spec.evaluations.find((e) => e.id === currentEvalId) ?? spec.evaluations[0];
+
+  const updateEvalControls = () => {
+    evalControlContainer.replaceChildren();
+
+    evalSelect.replaceChildren();
+    for (const evalSpec of spec.evaluations) {
+      const opt = document.createElement("option");
+      opt.value = evalSpec.id;
+      opt.textContent =
+        evalSpec.label ?? evalSpec.model ?? evalSpec.population ?? evalSpec.id;
+      evalSelect.append(opt);
+    }
+    evalSelect.value = currentEvalId;
+
+    if (uniqueModels.length > 1) {
+      const curModel = getCurrentEval().model ?? getCurrentEval().label ?? getCurrentEval().id;
+      const modelRadioGroup = createRadioGroup(
+        "Model",
+        `pd-model-${instanceId}`,
+        uniqueModels.map((m) => ({ value: m, label: m })),
+        curModel,
+        (selectedModel) => {
+          const curPop = getCurrentEval().population;
+          const match =
+            spec.evaluations.find(
+              (e) => (e.model ?? e.label ?? e.id) === selectedModel && e.population === curPop,
+            ) ??
+            spec.evaluations.find(
+              (e) => (e.model ?? e.label ?? e.id) === selectedModel,
+            );
+          if (match) {
+            currentEvalId = match.id;
+            updateChart();
+          }
+        },
+      );
+      evalControlContainer.append(modelRadioGroup);
+    }
+
+    if (uniquePopulations.length > 1) {
+      const curPop = getCurrentEval().population ?? getCurrentEval().label ?? getCurrentEval().id;
+      const popRadioGroup = createRadioGroup(
+        "Population",
+        `pd-pop-${instanceId}`,
+        uniquePopulations.map((p) => ({ value: p, label: p })),
+        curPop,
+        (selectedPop) => {
+          const curModel = getCurrentEval().model;
+          const match =
+            spec.evaluations.find(
+              (e) => (e.population ?? e.label ?? e.id) === selectedPop && e.model === curModel,
+            ) ??
+            spec.evaluations.find(
+              (e) => (e.population ?? e.label ?? e.id) === selectedPop,
+            );
+          if (match) {
+            currentEvalId = match.id;
+            updateChart();
+          }
+        },
+      );
+      evalControlContainer.append(popRadioGroup);
+    }
+  };
+
+  const presentationControlContainer = document.createElement("div");
+  presentationControlContainer.className = "rtichoke-pd-controls-row";
 
   // Slider Control
   const sliderControl = document.createElement("div");
@@ -614,7 +794,7 @@ export function renderPredictionDistribution(
     const lineSpan = document.createElement("span");
     lineSpan.className = "rtichoke-legend-line";
     lineSpan.style.backgroundColor = color;
-      lineSpan.style.border = `1px solid ${theme.axis.color}`;
+    lineSpan.style.border = `1px solid ${theme.axis.color}`;
     lineSpan.style.boxSizing = "border-box";
     lineSpan.style.height = "10px";
     lineSpan.style.borderRadius = "2px";
@@ -635,6 +815,7 @@ export function renderPredictionDistribution(
   const summaryDiv = document.createElement("div");
   summaryDiv.className = "rtichoke-prediction-distribution__summary";
 
+  controlsDiv.append(evalControlContainer, presentationControlContainer);
   container.append(
     controlsDiv,
     sliderControl,
@@ -644,11 +825,91 @@ export function renderPredictionDistribution(
   );
 
   const updateChart = () => {
-    updateDimSelectOptions();
+    updateEvalControls();
+
+    presentationControlContainer.replaceChildren();
+
+    colorModeSelect.value = currentColorMode;
+    conditioningSelect.value =
+      currentConditioning === "all_observations"
+        ? "predicted_positives"
+        : currentConditioning;
+    conditioningGroup.style.display = "none";
+
+    dimSelect.replaceChildren();
+    const availableDims = getAvailableDimensions(currentEvalId);
+    for (const dim of availableDims) {
+      const opt = document.createElement("option");
+      opt.value = dim;
+      opt.textContent =
+        dim === "probability_threshold" ? "Probability threshold" : "PPCR";
+      dimSelect.append(opt);
+    }
+    dimSelect.value = currentDim;
+
+    // Display Radio Group
+    const displayRadioGroup = createRadioGroup(
+      "Display",
+      `pd-display-${instanceId}`,
+      [
+        { value: "stacked", label: "Stacked" },
+        { value: "mirrored", label: "Mirrored" },
+      ],
+      currentDisplayMode,
+      (newMode) => {
+        currentDisplayMode = newMode;
+        updateChart();
+      },
+    );
+
+    // Color Bars By Radio Group
+    const colorModeRadioGroup = createRadioGroup(
+      "Color Bars By",
+      `pd-color-${instanceId}`,
+      [
+        { value: "confusion_matrix_cell", label: "Confusion Matrix Cell" },
+        { value: "observed_outcome", label: "Observed Outcome" },
+      ],
+      currentColorMode,
+      (newMode) => {
+        currentColorMode = newMode;
+        updateChart();
+      },
+    );
+
+    presentationControlContainer.append(
+      displayRadioGroup,
+      colorModeRadioGroup,
+      evalSelect,
+      colorModeSelect,
+      conditioningGroup,
+      dimSelect,
+    );
+
+    // Dimension Radio Group (if >1 available)
+    if (availableDims.length > 1) {
+      const dimRadioGroup = createRadioGroup(
+        "Dimension",
+        `pd-dim-${instanceId}`,
+        [
+          { value: "probability_threshold", label: "Probability Threshold" },
+          { value: "ppcr", label: "PPCR" },
+        ],
+        currentDim,
+        (newDim) => {
+          currentDim = newDim;
+          currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
+          updateChart();
+        },
+      );
+      presentationControlContainer.append(dimRadioGroup);
+    }
 
     const availableValues = getValuesFor(currentEvalId, currentDim);
-
-    if (!availableValues.includes(currentValue)) {
+    const matchedValue = availableValues.find((v) => Math.abs(v - currentValue) < 1e-6);
+    if (matchedValue !== undefined) {
+      currentValue = matchedValue;
+    } else {
       currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
     }
 
@@ -667,7 +928,7 @@ export function renderPredictionDistribution(
     slider.setAttribute("aria-label", dimLabelText);
     slider.setAttribute("aria-valuetext", currentValue.toFixed(digits));
 
-    // Call pure helper
+    // Prepare plot data
     const prep = preparePredictionDistributionPlotData(
       spec,
       currentEvalId,
@@ -684,9 +945,9 @@ export function renderPredictionDistribution(
       yAxisLabel,
       yMax,
       totalN,
+      performanceMetrics,
       confusion,
       ordinaryPlotData,
-      zeroAtomPlotData,
     } = prep;
 
     const cellColors = resolveConfusionCellColors(
@@ -694,10 +955,9 @@ export function renderPredictionDistribution(
       currentConditioning,
     );
 
-    // Update legend & control visibility
+    // Update legend
     legendDiv.replaceChildren();
     if (currentColorMode === "observed_outcome") {
-      conditioningGroup.style.display = "none";
       legendDiv.append(
         createLegendItem(
           "Observed Positives",
@@ -709,7 +969,6 @@ export function renderPredictionDistribution(
         ),
       );
     } else {
-      conditioningGroup.style.display = "inline-flex";
       legendDiv.append(
         createLegendItem("True Positives (TP)", cellColors.tp),
         createLegendItem("False Positives (FP)", cellColors.fp),
@@ -718,89 +977,16 @@ export function renderPredictionDistribution(
       );
     }
 
-    // Background region shapes with theme-aware styling
-    const bgRegions: Array<{
-      x1: number;
-      x2: number;
-      fill: string;
-      fillOpacity: number;
-      label: string;
-      labelX: number;
-    }> = [];
-
-    const highlightColor = theme.predictionDistribution.emphasizedTrue;
-
-    if (cutoffX > 0 && cutoffX < 1) {
-      bgRegions.push(
-        {
-          x1: 0,
-          x2: cutoffX,
-          fill: theme.axis.color,
-          fillOpacity: 0.06,
-          label: "Predicted Negative (TN, FN)",
-          labelX: cutoffX / 2,
-        },
-        {
-          x1: cutoffX,
-          x2: 1,
-          fill: highlightColor,
-          fillOpacity: 0.12,
-          label: "Predicted Positive (TP, FP)",
-          labelX: cutoffX + (1 - cutoffX) / 2,
-        },
-      );
-    } else if (cutoffX === 0) {
-      bgRegions.push({
-        x1: 0,
-        x2: 1,
-        fill: highlightColor,
-        fillOpacity: 0.12,
-        label: "Predicted Positive (TP, FP)",
-        labelX: 0.5,
-      });
-    } else {
-      bgRegions.push({
-        x1: 0,
-        x2: 1,
-        fill: theme.axis.color,
-        fillOpacity: 0.06,
-        label: "Predicted Negative (TN, FN)",
-        labelX: 0.5,
-      });
-    }
-
     const marks: Plot.Markish[] = [];
 
-    // Background Shading
-    for (const bg of bgRegions) {
-      marks.push(
-        Plot.rectY([bg], {
-          x1: "x1",
-          x2: "x2",
-          y1: 0,
-          y2: yMax,
-          fill: bg.fill,
-          fillOpacity: bg.fillOpacity,
-        }),
-      );
-    }
+    const cutoffTextLabel =
+      currentDim === "probability_threshold"
+        ? `Cutoff = ${cutoff.toFixed(digits)}`
+        : `Realized PPCR = ${realizedPpcr.toFixed(digits)}`;
 
-    // Region Labels
-    for (const bg of bgRegions) {
-      marks.push(
-        Plot.text([bg], {
-          x: "labelX",
-          y: yMax,
-          text: "label",
-          dy: 12,
-          fill: theme.axis.color,
-          fontSize: 11,
-          fontWeight: 600,
-        }),
-      );
-    }
+    const effectiveYMax = currentDisplayMode === "mirrored" ? yMax : yMax;
+    const effectiveYMin = currentDisplayMode === "mirrored" ? -yMax : 0;
 
-    // Cutoff Line
     marks.push(
       Plot.ruleX([cutoffX], {
         stroke: theme.axis.color,
@@ -808,12 +994,6 @@ export function renderPredictionDistribution(
         strokeDasharray: "4,3",
       }),
     );
-
-    // Cutoff text
-    const cutoffTextLabel =
-      currentDim === "probability_threshold"
-        ? `Cutoff = ${cutoff.toFixed(digits)}`
-        : `Realized PPCR = ${realizedPpcr.toFixed(digits)}`;
 
     marks.push(
       Plot.text(
@@ -825,7 +1005,7 @@ export function renderPredictionDistribution(
         ],
         {
           x: "x",
-          y: yMax,
+          y: effectiveYMax,
           text: "label",
           dy: -10,
           fill: theme.axis.color,
@@ -835,64 +1015,143 @@ export function renderPredictionDistribution(
       ),
     );
 
-    const fillKey =
-      currentColorMode === "confusion_matrix_cell"
-        ? "classificationCell"
-        : "category";
+    if (currentDisplayMode === "mirrored") {
+      marks.push(
+        Plot.ruleY([0], {
+          stroke: theme.axis.color,
+          strokeWidth: 1.5,
+        }),
+      );
+    }
 
-    const colorDomain =
-      currentColorMode === "confusion_matrix_cell"
-        ? ["TP", "FP", "TN", "FN"]
-        : ["Observed Positives", "Observed Negatives"];
+    const getDatumFillAndOpacity = (d: (typeof ordinaryPlotData)[0]) => {
+      let fill = "";
+      if (currentColorMode === "observed_outcome") {
+        fill =
+          d.category === "Observed Positives"
+            ? theme.predictionDistribution.observedPositive
+            : theme.predictionDistribution.observedNegative;
+      } else {
+        switch (d.classificationCell) {
+          case "TP":
+            fill = cellColors.tp;
+            break;
+          case "FP":
+            fill = cellColors.fp;
+            break;
+          case "TN":
+            fill = cellColors.tn;
+            break;
+          case "FN":
+            fill = cellColors.fn;
+            break;
+        }
+      }
 
-    const colorRange =
-      currentColorMode === "confusion_matrix_cell"
-        ? [cellColors.tp, cellColors.fp, cellColors.tn, cellColors.fn]
-        : [
-            theme.predictionDistribution.observedPositive,
-            theme.predictionDistribution.observedNegative,
-          ];
+      let isEmphasized = true;
+      switch (currentConditioning) {
+        case "all_observations":
+          isEmphasized = true;
+          break;
+        case "predicted_positives":
+          isEmphasized = d.isPredictedPositive;
+          break;
+        case "predicted_negatives":
+          isEmphasized = !d.isPredictedPositive;
+          break;
+        case "real_positives":
+          isEmphasized = d.category === "Observed Positives";
+          break;
+        case "real_negatives":
+          isEmphasized = d.category === "Observed Negatives";
+          break;
+      }
 
-    // Ordinary Stacked Bars
-    if (ordinaryPlotData.length > 0) {
+      return {
+        fill,
+        fillOpacity: isEmphasized ? 0.88 : 0.18,
+        strokeOpacity: isEmphasized ? 0.4 : 0.1,
+      };
+    };
+
+    if (currentDisplayMode === "stacked") {
+      const styledData = ordinaryPlotData.map((d) => {
+        const { fill, fillOpacity, strokeOpacity } = getDatumFillAndOpacity(d);
+        return { ...d, fill, fillOpacity, strokeOpacity };
+      });
+
       marks.push(
         Plot.rectY(
-          ordinaryPlotData,
+          styledData,
           Plot.stackY({
             x1: "x1",
             x2: "x2",
             y: "density",
-            fill: fillKey,
+            fill: "fill",
+            fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
-            strokeOpacity: 0.3,
+            strokeOpacity: "strokeOpacity",
             strokeWidth: 0.75,
             title: (d) => d.title,
             tip: true,
           }),
         ),
       );
-    }
+    } else {
+      const posData = ordinaryPlotData
+        .filter((d) => d.category === "Observed Positives")
+        .map((d) => {
+          const { fill, fillOpacity, strokeOpacity } = getDatumFillAndOpacity(d);
+          return { ...d, fill, fillOpacity, strokeOpacity };
+        });
 
-    // Discrete Zero-Score Atom [0, 0] Spike/Rule (Threshold view only)
-    if (currentDim === "probability_threshold" && zeroAtomPlotData.length > 0) {
-      marks.push(
-        Plot.ruleX(
-          zeroAtomPlotData,
-          Plot.stackY({
-            x: 0,
-            y: "count",
-            stroke: fillKey,
-            strokeWidth: 5,
+      const negData = ordinaryPlotData
+        .filter((d) => d.category === "Observed Negatives")
+        .map((d) => {
+          const { fill, fillOpacity, strokeOpacity } = getDatumFillAndOpacity(d);
+          return { ...d, fill, fillOpacity, strokeOpacity };
+        });
+
+      if (posData.length > 0) {
+        marks.push(
+          Plot.rectY(posData, {
+            x1: "x1",
+            x2: "x2",
+            y1: 0,
+            y2: "density",
+            fill: "fill",
+            fillOpacity: "fillOpacity",
+            stroke: theme.axis.color,
+            strokeOpacity: "strokeOpacity",
+            strokeWidth: 0.75,
             title: (d) => d.title,
             tip: true,
           }),
-        ),
-      );
+        );
+      }
+
+      if (negData.length > 0) {
+        marks.push(
+          Plot.rectY(negData, {
+            x1: "x1",
+            x2: "x2",
+            y1: 0,
+            y2: (d) => -d.density,
+            fill: "fill",
+            fillOpacity: "fillOpacity",
+            stroke: theme.axis.color,
+            strokeOpacity: "strokeOpacity",
+            strokeWidth: 0.75,
+            title: (d) => d.title,
+            tip: true,
+          }),
+        );
+      }
     }
 
     const plotSpec = {
       width: theme.width,
-      height: Math.round(theme.height * 0.72),
+      height: Math.round(theme.height * 0.68),
       marginTop: theme.margins.top + 10,
       marginRight: theme.margins.right,
       marginBottom: theme.margins.bottom,
@@ -902,11 +1161,6 @@ export function renderPredictionDistribution(
         color: theme.axis.color,
         fontFamily: theme.typography.fontFamily,
         fontSize: `${theme.typography.fontSize}px`,
-      },
-      color: {
-        legend: false,
-        domain: colorDomain,
-        range: colorRange,
       },
       x: {
         label: xAxisLabel,
@@ -920,7 +1174,7 @@ export function renderPredictionDistribution(
       },
       y: {
         label: yAxisLabel,
-        domain: [0, yMax],
+        domain: [effectiveYMin, effectiveYMax],
         grid: false,
         line: true,
         ticks: 5,
@@ -933,9 +1187,9 @@ export function renderPredictionDistribution(
     const chartSvg = themedPlot(plotSpec, theme);
     chartDiv.replaceChildren(chartSvg);
 
-    // Update Summary Section
     summaryDiv.replaceChildren();
 
+    // Operating point badges row
     const metricsRow = document.createElement("div");
     metricsRow.className = "rtichoke-prediction-distribution__metrics-row";
 
@@ -957,10 +1211,7 @@ export function renderPredictionDistribution(
 
     if (currentDim === "probability_threshold") {
       metricsRow.append(
-        createMetricBadge(
-          "Probability Threshold",
-          currentValue.toFixed(digits),
-        ),
+        createMetricBadge("Probability Threshold", currentValue.toFixed(digits)),
         createMetricBadge("Effective Cutoff", cutoff.toFixed(digits)),
         createMetricBadge("Realized PPCR", realizedPpcr.toFixed(digits)),
       );
@@ -972,29 +1223,165 @@ export function renderPredictionDistribution(
       );
     }
 
-    const {
-      tp,
-      fp,
-      tn,
-      fn,
-      totalPositives,
-      totalNegatives,
-      totalPredictedPos,
-      totalPredictedNeg,
-    } = confusion;
+    summaryDiv.append(metricsRow);
+
+    // Performance Metric Readout (Sens, Spec, PPV, NPV) if available
+    if (performanceMetrics) {
+      const metricReadout = document.createElement("div");
+      metricReadout.className = "rtichoke-pd-metrics-row";
+
+      const renderMetricCard = (
+        lbl: string,
+        val: number | null,
+        isEmphasized: boolean,
+      ) => {
+        const card = document.createElement("div");
+        card.className = `rtichoke-pd-metric-card ${
+          isEmphasized ? "rtichoke-pd-metric-card--emphasized" : ""
+        }`;
+
+        const l = document.createElement("div");
+        l.className = "rtichoke-pd-metric-card__label";
+        l.textContent = lbl;
+
+        const v = document.createElement("div");
+        v.className = "rtichoke-pd-metric-card__value";
+        v.textContent = val !== null ? (val * 100).toFixed(1) + "%" : "—";
+
+        const barBg = document.createElement("div");
+        barBg.className = "rtichoke-pd-metric-card__bar-bg";
+
+        const barFill = document.createElement("div");
+        barFill.className = "rtichoke-pd-metric-card__bar-fill";
+        barFill.style.width = val !== null ? `${Math.min(100, val * 100)}%` : "0%";
+
+        barBg.append(barFill);
+        card.append(l, v, barBg);
+        return card;
+      };
+
+      metricReadout.append(
+        renderMetricCard(
+          "Sens",
+          performanceMetrics.sensitivity,
+          currentConditioning === "real_positives",
+        ),
+        renderMetricCard(
+          "Spec",
+          performanceMetrics.specificity,
+          currentConditioning === "real_negatives",
+        ),
+        renderMetricCard(
+          "PPV",
+          performanceMetrics.ppv,
+          currentConditioning === "predicted_positives",
+        ),
+        renderMetricCard(
+          "NPV",
+          performanceMetrics.npv,
+          currentConditioning === "predicted_negatives",
+        ),
+      );
+
+      summaryDiv.append(metricReadout);
+    }
+
+    // Dynamic Confusion Matrix Table with integrated conditioning radios
+    const { tp, fp, tn, fn, totalPositives, totalNegatives, totalPredictedPos, totalPredictedNeg } = confusion;
 
     const table = document.createElement("table");
-    table.className = "rtichoke-prediction-distribution__table";
+    table.className = "rtichoke-prediction-distribution__table rtichoke-pd-matrix";
+
+    const createCondRadioLabel = (
+      val: PredictionDistributionConditioning,
+      label: string,
+    ) => {
+      const labelEl = document.createElement("label");
+      labelEl.className = `rtichoke-pd-cond-option ${
+        currentConditioning === val ? "rtichoke-pd-cond-option--active" : ""
+      }`;
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `pd-cond-${instanceId}`;
+      radio.value = val;
+      radio.checked = currentConditioning === val;
+
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          currentConditioning = val;
+          updateChart();
+        }
+      });
+
+      const span = document.createElement("span");
+      span.textContent = label;
+
+      labelEl.append(radio, span);
+      return labelEl;
+    };
 
     const thead = document.createElement("thead");
-    thead.innerHTML = `
-      <tr>
-        <th>Observed \\ Predicted</th>
-        <th>Negative (&le; ${cutoff.toFixed(digits)})</th>
-        <th>Positive (&gt; ${cutoff.toFixed(digits)})</th>
-        <th>Total</th>
-      </tr>
-    `;
+    const trH1 = document.createElement("tr");
+    const thCorner = document.createElement("th");
+    thCorner.className = "rtichoke-pd-matrix__corner";
+    thCorner.append(createCondRadioLabel("all_observations", "All Observations"));
+
+    const thSpanner = document.createElement("th");
+    thSpanner.colSpan = 2;
+    thSpanner.className = "rtichoke-pd-matrix__spanner";
+    thSpanner.textContent = "REAL OUTCOME";
+
+    const thEmpty = document.createElement("th");
+    trH1.append(thCorner, thSpanner, thEmpty);
+
+    const trH2 = document.createElement("tr");
+    const thH2Empty = document.createElement("th");
+
+    const thRealPos = document.createElement("th");
+    thRealPos.className = `rtichoke-pd-matrix__col-header ${
+      currentConditioning === "real_positives" ? "rtichoke-pd-matrix__col-header--active" : ""
+    }`;
+    thRealPos.append(createCondRadioLabel("real_positives", "Real Positive"));
+
+    const thRealNeg = document.createElement("th");
+    thRealNeg.className = `rtichoke-pd-matrix__col-header ${
+      currentConditioning === "real_negatives" ? "rtichoke-pd-matrix__col-header--active" : ""
+    }`;
+    thRealNeg.append(createCondRadioLabel("real_negatives", "Real Negative"));
+
+    const thTot = document.createElement("th");
+    thTot.className = "rtichoke-pd-matrix__col-header";
+    thTot.textContent = "Total";
+
+    trH2.append(thH2Empty, thRealPos, thRealNeg, thTot);
+    thead.append(trH1, trH2);
+
+    const tbody = document.createElement("tbody");
+
+    const setCellContent = (
+      td: HTMLTableCellElement,
+      text: string,
+      countVal: number,
+      cellBgColor: string,
+    ) => {
+      td.replaceChildren();
+      td.style.backgroundColor = cellBgColor;
+      td.style.color = isDarkColor(cellBgColor) ? "#ffffff" : theme.axis.color;
+
+      const pct = totalN > 0 ? (countVal / totalN) * 100 : 0;
+
+      const bar = document.createElement("div");
+      bar.className = "rtichoke-pd-cell-bar";
+      bar.style.width = `${pct}%`;
+      bar.style.backgroundColor = cellBgColor;
+
+      const textSpan = document.createElement("span");
+      textSpan.className = "rtichoke-pd-cell-text";
+      textSpan.textContent = text;
+
+      td.append(bar, textSpan);
+    };
 
     const cellFnColor =
       currentColorMode === "confusion_matrix_cell"
@@ -1013,122 +1400,105 @@ export function renderPredictionDistribution(
         ? cellColors.fp
         : theme.predictionDistribution.observedNegative;
 
-    const tbody = document.createElement("tbody");
+    // Predicted Positive Row
+    const trPredPos = document.createElement("tr");
+    if (currentConditioning === "predicted_positives") {
+      trPredPos.className = "rtichoke-pd-matrix__row--active";
+    }
 
-    const setCell = (
-      td: HTMLTableCellElement,
-      bgColor: string,
-      title: string,
-      text: string,
-    ) => {
-      td.style.backgroundColor = bgColor;
-      td.style.color = isDarkColor(bgColor) ? "#ffffff" : theme.axis.color;
-      td.style.fontWeight = "600";
-      td.style.border = `1px solid ${theme.axis.color}`;
-      td.title = title;
-      td.textContent = text;
-    };
-
-    const tr1 = document.createElement("tr");
-    const th1 = document.createElement("th");
-    th1.textContent = "Observed Positive";
-    const tdFn = document.createElement("td");
-    tdFn.className = "rtichoke-prediction-distribution__cell--fn";
-    setCell(tdFn, cellFnColor, "False Negatives", `FN = ${fn}`);
+    const thPredPos = document.createElement("th");
+    thPredPos.className = `rtichoke-pd-matrix__row-header ${
+      currentConditioning === "predicted_positives" ? "rtichoke-pd-matrix__row-header--active" : ""
+    }`;
+    thPredPos.append(createCondRadioLabel("predicted_positives", "Predicted Positive"));
 
     const tdTp = document.createElement("td");
-    tdTp.className = "rtichoke-prediction-distribution__cell--tp";
-    setCell(tdTp, cellTpColor, "True Positives", `TP = ${tp}`);
-
-    const tdTot1 = document.createElement("td");
-    tdTot1.className = "rtichoke-prediction-distribution__cell--total";
-    tdTot1.style.border = `1px solid ${theme.axis.color}`;
-    tdTot1.style.color = theme.axis.color;
-    tdTot1.style.fontWeight = "600";
-    tdTot1.textContent = String(totalPositives);
-
-    tr1.append(th1, tdFn, tdTp, tdTot1);
-
-    const tr2 = document.createElement("tr");
-    const th2 = document.createElement("th");
-    th2.textContent = "Observed Negative";
-    const tdTn = document.createElement("td");
-    tdTn.className = "rtichoke-prediction-distribution__cell--tn";
-    setCell(tdTn, cellTnColor, "True Negatives", `TN = ${tn}`);
+    tdTp.className = "rtichoke-prediction-distribution__cell--tp rtichoke-pd-matrix__cell";
+    setCellContent(
+      tdTp,
+      `TP = ${tp.toLocaleString()}`,
+      tp,
+      cellTpColor,
+    );
 
     const tdFp = document.createElement("td");
-    tdFp.className = "rtichoke-prediction-distribution__cell--fp";
-    setCell(tdFp, cellFpColor, "False Positives", `FP = ${fp}`);
+    tdFp.className = "rtichoke-prediction-distribution__cell--fp rtichoke-pd-matrix__cell";
+    setCellContent(
+      tdFp,
+      `FP = ${fp.toLocaleString()}`,
+      fp,
+      cellFpColor,
+    );
 
-    const tdTot2 = document.createElement("td");
-    tdTot2.className = "rtichoke-prediction-distribution__cell--total";
-    tdTot2.style.border = `1px solid ${theme.axis.color}`;
-    tdTot2.style.color = theme.axis.color;
-    tdTot2.style.fontWeight = "600";
-    tdTot2.textContent = String(totalNegatives);
+    const tdTotPredPos = document.createElement("td");
+    tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+    tdTotPredPos.textContent = totalPredictedPos.toLocaleString();
 
-    tr2.append(th2, tdTn, tdFp, tdTot2);
+    trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
 
-    const tr3 = document.createElement("tr");
-    const th3 = document.createElement("th");
-    th3.textContent = "Total";
-    const tdTotNeg = document.createElement("td");
-    tdTotNeg.className = "rtichoke-prediction-distribution__cell--total";
-    tdTotNeg.style.border = `1px solid ${theme.axis.color}`;
-    tdTotNeg.style.color = theme.axis.color;
-    tdTotNeg.style.fontWeight = "600";
-    tdTotNeg.textContent = String(totalPredictedNeg);
+    // Predicted Negative Row
+    const trPredNeg = document.createElement("tr");
+    if (currentConditioning === "predicted_negatives") {
+      trPredNeg.className = "rtichoke-pd-matrix__row--active";
+    }
 
-    const tdTotPos = document.createElement("td");
-    tdTotPos.className = "rtichoke-prediction-distribution__cell--total";
-    tdTotPos.style.border = `1px solid ${theme.axis.color}`;
-    tdTotPos.style.color = theme.axis.color;
-    tdTotPos.style.fontWeight = "600";
-    tdTotPos.textContent = String(totalPredictedPos);
+    const thPredNeg = document.createElement("th");
+    thPredNeg.className = `rtichoke-pd-matrix__row-header ${
+      currentConditioning === "predicted_negatives" ? "rtichoke-pd-matrix__row-header--active" : ""
+    }`;
+    thPredNeg.append(createCondRadioLabel("predicted_negatives", "Predicted Negative"));
+
+    const tdFn = document.createElement("td");
+    tdFn.className = "rtichoke-prediction-distribution__cell--fn rtichoke-pd-matrix__cell";
+    setCellContent(
+      tdFn,
+      `FN = ${fn.toLocaleString()}`,
+      fn,
+      cellFnColor,
+    );
+
+    const tdTn = document.createElement("td");
+    tdTn.className = "rtichoke-prediction-distribution__cell--tn rtichoke-pd-matrix__cell";
+    setCellContent(
+      tdTn,
+      `TN = ${tn.toLocaleString()}`,
+      tn,
+      cellTnColor,
+    );
+
+    const tdTotPredNeg = document.createElement("td");
+    tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+    tdTotPredNeg.textContent = totalPredictedNeg.toLocaleString();
+
+    trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
+
+    // Total Row
+    const trTot = document.createElement("tr");
+    trTot.className = "rtichoke-pd-matrix__tot-row";
+
+    const thTotLabel = document.createElement("th");
+    thTotLabel.className = "rtichoke-pd-matrix__row-header";
+    thTotLabel.textContent = "Total";
+
+    const tdTotRealPos = document.createElement("td");
+    tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+    tdTotRealPos.textContent = totalPositives.toLocaleString();
+
+    const tdTotRealNeg = document.createElement("td");
+    tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+    tdTotRealNeg.textContent = totalNegatives.toLocaleString();
 
     const tdTotN = document.createElement("td");
-    tdTotN.className = "rtichoke-prediction-distribution__cell--total";
-    tdTotN.style.border = `1px solid ${theme.axis.color}`;
-    tdTotN.style.color = theme.axis.color;
-    tdTotN.style.fontWeight = "600";
-    tdTotN.textContent = String(totalN);
+    tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+    tdTotN.textContent = totalN.toLocaleString();
 
-    tr3.append(th3, tdTotNeg, tdTotPos, tdTotN);
+    trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
 
-    tbody.append(tr1, tr2, tr3);
-
+    tbody.append(trPredPos, trPredNeg, trTot);
     table.append(thead, tbody);
-    summaryDiv.append(metricsRow, table);
+
+    summaryDiv.append(table);
   };
-
-  // Event Listeners
-  if (evalSelect) {
-    evalSelect.addEventListener("change", () => {
-      currentEvalId = evalSelect!.value;
-      const available = getAvailableDimensions(currentEvalId);
-      if (!available.includes(currentDim)) {
-        currentDim = available[0];
-      }
-      currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
-      updateChart();
-    });
-  }
-
-  dimSelect.addEventListener("change", () => {
-    currentDim = dimSelect.value as "probability_threshold" | "ppcr";
-    currentValue = pickBestValue(currentEvalId, currentDim, currentValue);
-    updateChart();
-  });
-
-  colorModeSelect.addEventListener("change", () => {
-    currentColorMode = colorModeSelect.value as PredictionDistributionColorMode;
-    updateChart();
-  });
-
-  conditioningSelect.addEventListener("change", () => {
-    currentConditioning = conditioningSelect.value as PredictionDistributionConditioning;
-    updateChart();
-  });
 
   slider.addEventListener("input", () => {
     const availableValues = getValuesFor(currentEvalId, currentDim);
