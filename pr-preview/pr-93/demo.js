@@ -3321,6 +3321,13 @@ var PredictionDistributionBinSchema = Type.Object({
   nPositive: Type.Integer({ minimum: 0 }),
   nNegative: Type.Integer({ minimum: 0 })
 });
+var PredictionDistributionRankBinSchema = Type.Object({
+  evaluationId: Type.String(),
+  rankLower: Type.Number({ minimum: 0, maximum: 1 }),
+  rankUpper: Type.Number({ minimum: 0, maximum: 1 }),
+  positiveMass: Type.Number({ minimum: 0 }),
+  negativeMass: Type.Number({ minimum: 0 })
+});
 var PredictionDistributionOperatingPointSchema = Type.Object({
   evaluationId: Type.String(),
   type: OperatingPointDimensionSchema,
@@ -3340,6 +3347,7 @@ var PredictionDistributionSpecSchema = Type.Object({
     })
   ),
   bins: Type.Array(PredictionDistributionBinSchema, { minItems: 1 }),
+  rankBins: Type.Optional(Type.Array(PredictionDistributionRankBinSchema)),
   operatingPoints: Type.Array(PredictionDistributionOperatingPointSchema, {
     minItems: 1
   })
@@ -20952,60 +20960,56 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
       }
     }
   } else {
-    const numBins = evalBins.length;
-    const binWidth = numBins > 0 ? 1 / numBins : 1;
-    for (let i = 0; i < numBins; i++) {
-      const bin = evalBins[i];
-      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
-      const binTotal = bin.nPositive + bin.nNegative;
-      const popLower = i * binWidth;
-      const popUpper = (i + 1) * binWidth;
+    const evalRankBins = (spec.rankBins ?? []).filter((b) => b.evaluationId === evalId).sort((a2, b) => a2.rankLower - b.rankLower);
+    for (const rBin of evalRankBins) {
+      const popLower = rBin.rankLower;
+      const popUpper = rBin.rankUpper;
+      const totalMass = rBin.positiveMass + rBin.negativeMass;
+      const rankMid = (popLower + popUpper) / 2;
+      const isPredictedPositive = rankMid >= 1 - realizedPpcr;
       const posCell = isPredictedPositive ? "TP" : "FN";
       const posCellLabel = isPredictedPositive ? "True Positive (TP)" : "False Negative (FN)";
       const negCell = isPredictedPositive ? "FP" : "TN";
       const negCellLabel = isPredictedPositive ? "False Positive (FP)" : "True Negative (TN)";
-      if (binTotal > 0) {
-        const scoreIntervalStr = bin.lower === 0 && bin.upper === 0 ? "[0, 0]" : `(${bin.lower.toFixed(digits)}, ${bin.upper.toFixed(digits)}]`;
+      if (totalMass > 0) {
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
-        if (bin.nPositive > 0) {
-          const frac = bin.nPositive / binTotal;
+        if (rBin.positiveMass > 0) {
+          const frac = rBin.positiveMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Positives",
             density: frac,
-            count: bin.nPositive,
+            count: rBin.positiveMass,
             classificationCell: posCell,
             cellLabel: posCellLabel,
             isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
-              ["Score Interval", scoreIntervalStr],
               ["Outcome", "Observed Positive"],
-              ["Count", bin.nPositive],
+              ["Positive Mass", rBin.positiveMass.toFixed(digits)],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
               ["Classification", posCellLabel]
             ])
           });
         }
-        if (bin.nNegative > 0) {
-          const frac = bin.nNegative / binTotal;
+        if (rBin.negativeMass > 0) {
+          const frac = rBin.negativeMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Negatives",
             density: frac,
-            count: bin.nNegative,
+            count: rBin.negativeMass,
             classificationCell: negCell,
             cellLabel: negCellLabel,
             isPredictedPositive,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
-              ["Score Interval", scoreIntervalStr],
               ["Outcome", "Observed Negative"],
-              ["Count", bin.nNegative],
+              ["Negative Mass", rBin.negativeMass.toFixed(digits)],
               ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
               ["Classification", negCellLabel]
             ])
@@ -26325,164 +26329,28 @@ var prediction_distribution_threshold_default = {
       type: "probability_threshold",
       value: 0,
       cutoff: 0,
-      realizedPpcr: 1,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 3
-        },
-        {
-          metricId: "false_positives",
-          estimate: 3
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1
-        },
-        {
-          metricId: "specificity",
-          estimate: 0
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.5
-        },
-        {
-          metricId: "npv",
-          estimate: 0
-        }
-      ]
+      realizedPpcr: 1
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 0.2,
       cutoff: 0.2,
-      realizedPpcr: 0.6666666666666666,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.666667
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.333333
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.5
-        },
-        {
-          metricId: "npv",
-          estimate: 0.5
-        }
-      ]
+      realizedPpcr: 0.6666666666666666
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 0.5,
       cutoff: 0.5,
-      realizedPpcr: 0.3333333333333333,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1
-        },
-        {
-          metricId: "false_positives",
-          estimate: 1
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.333333
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.666667
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.5
-        },
-        {
-          metricId: "npv",
-          estimate: 0.5
-        }
-      ]
+      realizedPpcr: 0.3333333333333333
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 1,
       cutoff: 1,
-      realizedPpcr: 0,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 0
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 3
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 0
-        },
-        {
-          metricId: "npv",
-          estimate: 0.5
-        }
-      ]
+      realizedPpcr: 0
     }
   ]
 };
@@ -26570,41 +26438,7 @@ var prediction_distribution_ppcr_tie_default = {
       type: "ppcr",
       value: 0.5,
       cutoff: 0.5,
-      realizedPpcr: 0.3333333333333333,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 3
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.666667
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.75
-        }
-      ]
+      realizedPpcr: 0.3333333333333333
     }
   ]
 };
@@ -29364,6 +29198,2108 @@ var prediction_distribution_visual_default = {
       includeUpper: true,
       nPositive: 25,
       nNegative: 0
+    }
+  ],
+  rankBins: [
+    {
+      evaluationId: "Model A",
+      rankLower: 0,
+      rankUpper: 0.01,
+      positiveMass: 1e-3,
+      negativeMass: 18.749
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.01,
+      rankUpper: 0.02,
+      positiveMass: 73e-4,
+      negativeMass: 18.7427
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.02,
+      rankUpper: 0.03,
+      positiveMass: 0.0184,
+      negativeMass: 18.7316
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.03,
+      rankUpper: 0.04,
+      positiveMass: 0.0337,
+      negativeMass: 18.7163
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.04,
+      rankUpper: 0.05,
+      positiveMass: 0.0529,
+      negativeMass: 18.6971
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.05,
+      rankUpper: 0.06,
+      positiveMass: 0.076,
+      negativeMass: 18.674
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.06,
+      rankUpper: 0.07,
+      positiveMass: 0.1026,
+      negativeMass: 18.6474
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.07,
+      rankUpper: 0.08,
+      positiveMass: 0.1328,
+      negativeMass: 18.6172
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.08,
+      rankUpper: 0.09,
+      positiveMass: 0.1663,
+      negativeMass: 18.5837
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.09,
+      rankUpper: 0.1,
+      positiveMass: 0.2032,
+      negativeMass: 18.5468
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.1,
+      rankUpper: 0.11,
+      positiveMass: 0.2433,
+      negativeMass: 18.5067
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.11,
+      rankUpper: 0.12,
+      positiveMass: 0.2866,
+      negativeMass: 18.4634
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.12,
+      rankUpper: 0.13,
+      positiveMass: 0.333,
+      negativeMass: 18.417
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.13,
+      rankUpper: 0.14,
+      positiveMass: 0.3825,
+      negativeMass: 18.3675
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.14,
+      rankUpper: 0.15,
+      positiveMass: 0.435,
+      negativeMass: 18.315
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.15,
+      rankUpper: 0.16,
+      positiveMass: 0.4905,
+      negativeMass: 18.2595
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.16,
+      rankUpper: 0.17,
+      positiveMass: 0.549,
+      negativeMass: 18.201
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.17,
+      rankUpper: 0.18,
+      positiveMass: 0.6103,
+      negativeMass: 18.1397
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.18,
+      rankUpper: 0.19,
+      positiveMass: 0.6745,
+      negativeMass: 18.0755
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.19,
+      rankUpper: 0.2,
+      positiveMass: 0.7415,
+      negativeMass: 18.0085
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.2,
+      rankUpper: 0.21,
+      positiveMass: 0.8114,
+      negativeMass: 17.9386
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.21,
+      rankUpper: 0.22,
+      positiveMass: 0.884,
+      negativeMass: 17.866
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.22,
+      rankUpper: 0.23,
+      positiveMass: 0.9594,
+      negativeMass: 17.7906
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.23,
+      rankUpper: 0.24,
+      positiveMass: 1.0375,
+      negativeMass: 17.7125
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.24,
+      rankUpper: 0.25,
+      positiveMass: 1.1183,
+      negativeMass: 17.6317
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.25,
+      rankUpper: 0.26,
+      positiveMass: 1.2018,
+      negativeMass: 17.5482
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.26,
+      rankUpper: 0.27,
+      positiveMass: 1.288,
+      negativeMass: 17.462
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.27,
+      rankUpper: 0.28,
+      positiveMass: 1.3768,
+      negativeMass: 17.3732
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.28,
+      rankUpper: 0.29,
+      positiveMass: 1.4682,
+      negativeMass: 17.2818
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.29,
+      rankUpper: 0.3,
+      positiveMass: 1.5622,
+      negativeMass: 17.1878
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.3,
+      rankUpper: 0.31,
+      positiveMass: 1.6588,
+      negativeMass: 17.0912
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.31,
+      rankUpper: 0.32,
+      positiveMass: 1.758,
+      negativeMass: 16.992
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.32,
+      rankUpper: 0.33,
+      positiveMass: 1.8597,
+      negativeMass: 16.8903
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.33,
+      rankUpper: 0.34,
+      positiveMass: 1.964,
+      negativeMass: 16.786
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.34,
+      rankUpper: 0.35,
+      positiveMass: 2.0708,
+      negativeMass: 16.6792
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.35,
+      rankUpper: 0.36,
+      positiveMass: 2.1801,
+      negativeMass: 16.5699
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.36,
+      rankUpper: 0.37,
+      positiveMass: 2.2919,
+      negativeMass: 16.4581
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.37,
+      rankUpper: 0.38,
+      positiveMass: 2.4061,
+      negativeMass: 16.3439
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.38,
+      rankUpper: 0.39,
+      positiveMass: 2.5229,
+      negativeMass: 16.2271
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.39,
+      rankUpper: 0.4,
+      positiveMass: 2.642,
+      negativeMass: 16.108
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.4,
+      rankUpper: 0.41,
+      positiveMass: 2.7636,
+      negativeMass: 15.9864
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.41,
+      rankUpper: 0.42,
+      positiveMass: 2.8877,
+      negativeMass: 15.8623
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.42,
+      rankUpper: 0.43,
+      positiveMass: 3.0141,
+      negativeMass: 15.7359
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.43,
+      rankUpper: 0.44,
+      positiveMass: 3.143,
+      negativeMass: 15.607
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.44,
+      rankUpper: 0.45,
+      positiveMass: 3.2742,
+      negativeMass: 15.4758
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.45,
+      rankUpper: 0.46,
+      positiveMass: 3.4079,
+      negativeMass: 15.3421
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.46,
+      rankUpper: 0.47,
+      positiveMass: 3.5439,
+      negativeMass: 15.2061
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.47,
+      rankUpper: 0.48,
+      positiveMass: 3.6822,
+      negativeMass: 15.0678
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.48,
+      rankUpper: 0.49,
+      positiveMass: 3.8229,
+      negativeMass: 14.9271
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.49,
+      rankUpper: 0.5,
+      positiveMass: 3.966,
+      negativeMass: 14.784
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.5,
+      rankUpper: 0.51,
+      positiveMass: 4.1114,
+      negativeMass: 14.6386
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.51,
+      rankUpper: 0.52,
+      positiveMass: 4.2591,
+      negativeMass: 14.4909
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.52,
+      rankUpper: 0.53,
+      positiveMass: 4.4091,
+      negativeMass: 14.3409
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.53,
+      rankUpper: 0.54,
+      positiveMass: 4.5614,
+      negativeMass: 14.1886
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.54,
+      rankUpper: 0.55,
+      positiveMass: 4.716,
+      negativeMass: 14.034
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.55,
+      rankUpper: 0.56,
+      positiveMass: 4.8729,
+      negativeMass: 13.8771
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.56,
+      rankUpper: 0.57,
+      positiveMass: 5.0321,
+      negativeMass: 13.7179
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.57,
+      rankUpper: 0.58,
+      positiveMass: 5.1936,
+      negativeMass: 13.5564
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.58,
+      rankUpper: 0.59,
+      positiveMass: 5.3573,
+      negativeMass: 13.3927
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.59,
+      rankUpper: 0.6,
+      positiveMass: 5.5232,
+      negativeMass: 13.2268
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.6,
+      rankUpper: 0.61,
+      positiveMass: 5.6914,
+      negativeMass: 13.0586
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.61,
+      rankUpper: 0.62,
+      positiveMass: 5.8619,
+      negativeMass: 12.8881
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.62,
+      rankUpper: 0.63,
+      positiveMass: 6.0346,
+      negativeMass: 12.7154
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.63,
+      rankUpper: 0.64,
+      positiveMass: 6.2095,
+      negativeMass: 12.5405
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.64,
+      rankUpper: 0.65,
+      positiveMass: 6.3866,
+      negativeMass: 12.3634
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.65,
+      rankUpper: 0.66,
+      positiveMass: 6.5659,
+      negativeMass: 12.1841
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.66,
+      rankUpper: 0.67,
+      positiveMass: 6.7475,
+      negativeMass: 12.0025
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.67,
+      rankUpper: 0.68,
+      positiveMass: 6.9312,
+      negativeMass: 11.8188
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.68,
+      rankUpper: 0.69,
+      positiveMass: 7.1171,
+      negativeMass: 11.6329
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.69,
+      rankUpper: 0.7,
+      positiveMass: 7.3053,
+      negativeMass: 11.4447
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.7,
+      rankUpper: 0.71,
+      positiveMass: 7.4955,
+      negativeMass: 11.2545
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.71,
+      rankUpper: 0.72,
+      positiveMass: 7.688,
+      negativeMass: 11.062
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.72,
+      rankUpper: 0.73,
+      positiveMass: 7.8826,
+      negativeMass: 10.8674
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.73,
+      rankUpper: 0.74,
+      positiveMass: 8.0794,
+      negativeMass: 10.6706
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.74,
+      rankUpper: 0.75,
+      positiveMass: 8.2784,
+      negativeMass: 10.4716
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.75,
+      rankUpper: 0.76,
+      positiveMass: 8.4794,
+      negativeMass: 10.2706
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.76,
+      rankUpper: 0.77,
+      positiveMass: 8.6827,
+      negativeMass: 10.0673
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.77,
+      rankUpper: 0.78,
+      positiveMass: 8.888,
+      negativeMass: 9.862
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.78,
+      rankUpper: 0.79,
+      positiveMass: 9.0955,
+      negativeMass: 9.6545
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.79,
+      rankUpper: 0.8,
+      positiveMass: 9.3051,
+      negativeMass: 9.4449
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.8,
+      rankUpper: 0.81,
+      positiveMass: 9.5169,
+      negativeMass: 9.2331
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.81,
+      rankUpper: 0.82,
+      positiveMass: 9.7307,
+      negativeMass: 9.0193
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.82,
+      rankUpper: 0.83,
+      positiveMass: 9.9467,
+      negativeMass: 8.8033
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.83,
+      rankUpper: 0.84,
+      positiveMass: 10.1648,
+      negativeMass: 8.5852
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.84,
+      rankUpper: 0.85,
+      positiveMass: 10.385,
+      negativeMass: 8.365
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.85,
+      rankUpper: 0.86,
+      positiveMass: 10.6072,
+      negativeMass: 8.1428
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.86,
+      rankUpper: 0.87,
+      positiveMass: 10.8316,
+      negativeMass: 7.9184
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.87,
+      rankUpper: 0.88,
+      positiveMass: 11.058,
+      negativeMass: 7.692
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.88,
+      rankUpper: 0.89,
+      positiveMass: 11.2865,
+      negativeMass: 7.4635
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.89,
+      rankUpper: 0.9,
+      positiveMass: 11.5171,
+      negativeMass: 7.2329
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.9,
+      rankUpper: 0.91,
+      positiveMass: 11.7498,
+      negativeMass: 7.0002
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.91,
+      rankUpper: 0.92,
+      positiveMass: 11.9845,
+      negativeMass: 6.7655
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.92,
+      rankUpper: 0.93,
+      positiveMass: 12.2213,
+      negativeMass: 6.5287
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.93,
+      rankUpper: 0.94,
+      positiveMass: 12.4602,
+      negativeMass: 6.2898
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.94,
+      rankUpper: 0.95,
+      positiveMass: 12.7011,
+      negativeMass: 6.0489
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.95,
+      rankUpper: 0.96,
+      positiveMass: 12.944,
+      negativeMass: 5.806
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.96,
+      rankUpper: 0.97,
+      positiveMass: 13.189,
+      negativeMass: 5.561
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.97,
+      rankUpper: 0.98,
+      positiveMass: 13.436,
+      negativeMass: 5.314
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.98,
+      rankUpper: 0.99,
+      positiveMass: 13.6851,
+      negativeMass: 5.0649
+    },
+    {
+      evaluationId: "Model A",
+      rankLower: 0.99,
+      rankUpper: 1,
+      positiveMass: 13.9362,
+      negativeMass: 4.8138
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0,
+      rankUpper: 0.01,
+      positiveMass: 15e-4,
+      negativeMass: 27.1885
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.01,
+      rankUpper: 0.02,
+      positiveMass: 0.0106,
+      negativeMass: 27.1794
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.02,
+      rankUpper: 0.03,
+      positiveMass: 0.0267,
+      negativeMass: 27.1633
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.03,
+      rankUpper: 0.04,
+      positiveMass: 0.0488,
+      negativeMass: 27.1412
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.04,
+      rankUpper: 0.05,
+      positiveMass: 0.0768,
+      negativeMass: 27.1132
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.05,
+      rankUpper: 0.06,
+      positiveMass: 0.1102,
+      negativeMass: 27.0798
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.06,
+      rankUpper: 0.07,
+      positiveMass: 0.1488,
+      negativeMass: 27.0412
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.07,
+      rankUpper: 0.08,
+      positiveMass: 0.1926,
+      negativeMass: 26.9974
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.08,
+      rankUpper: 0.09,
+      positiveMass: 0.2412,
+      negativeMass: 26.9488
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.09,
+      rankUpper: 0.1,
+      positiveMass: 0.2947,
+      negativeMass: 26.8953
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.1,
+      rankUpper: 0.11,
+      positiveMass: 0.3529,
+      negativeMass: 26.8371
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.11,
+      rankUpper: 0.12,
+      positiveMass: 0.4156,
+      negativeMass: 26.7744
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.12,
+      rankUpper: 0.13,
+      positiveMass: 0.483,
+      negativeMass: 26.707
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.13,
+      rankUpper: 0.14,
+      positiveMass: 0.5547,
+      negativeMass: 26.6353
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.14,
+      rankUpper: 0.15,
+      positiveMass: 0.6309,
+      negativeMass: 26.5591
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.15,
+      rankUpper: 0.16,
+      positiveMass: 0.7113,
+      negativeMass: 26.4787
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.16,
+      rankUpper: 0.17,
+      positiveMass: 0.7961,
+      negativeMass: 26.3939
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.17,
+      rankUpper: 0.18,
+      positiveMass: 0.885,
+      negativeMass: 26.305
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.18,
+      rankUpper: 0.19,
+      positiveMass: 0.9781,
+      negativeMass: 26.2119
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.19,
+      rankUpper: 0.2,
+      positiveMass: 1.0753,
+      negativeMass: 26.1147
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.2,
+      rankUpper: 0.21,
+      positiveMass: 1.1766,
+      negativeMass: 26.0134
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.21,
+      rankUpper: 0.22,
+      positiveMass: 1.2819,
+      negativeMass: 25.9081
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.22,
+      rankUpper: 0.23,
+      positiveMass: 1.3912,
+      negativeMass: 25.7988
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.23,
+      rankUpper: 0.24,
+      positiveMass: 1.5045,
+      negativeMass: 25.6855
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.24,
+      rankUpper: 0.25,
+      positiveMass: 1.6217,
+      negativeMass: 25.5683
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.25,
+      rankUpper: 0.26,
+      positiveMass: 1.7428,
+      negativeMass: 25.4472
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.26,
+      rankUpper: 0.27,
+      positiveMass: 1.8677,
+      negativeMass: 25.3223
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.27,
+      rankUpper: 0.28,
+      positiveMass: 1.9965,
+      negativeMass: 25.1935
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.28,
+      rankUpper: 0.29,
+      positiveMass: 2.1291,
+      negativeMass: 25.0609
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.29,
+      rankUpper: 0.3,
+      positiveMass: 2.2654,
+      negativeMass: 24.9246
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.3,
+      rankUpper: 0.31,
+      positiveMass: 2.4055,
+      negativeMass: 24.7845
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.31,
+      rankUpper: 0.32,
+      positiveMass: 2.5494,
+      negativeMass: 24.6406
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.32,
+      rankUpper: 0.33,
+      positiveMass: 2.6969,
+      negativeMass: 24.4931
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.33,
+      rankUpper: 0.34,
+      positiveMass: 2.8481,
+      negativeMass: 24.3419
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.34,
+      rankUpper: 0.35,
+      positiveMass: 3.0029,
+      negativeMass: 24.1871
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.35,
+      rankUpper: 0.36,
+      positiveMass: 3.1614,
+      negativeMass: 24.0286
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.36,
+      rankUpper: 0.37,
+      positiveMass: 3.3235,
+      negativeMass: 23.8665
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.37,
+      rankUpper: 0.38,
+      positiveMass: 3.4892,
+      negativeMass: 23.7008
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.38,
+      rankUpper: 0.39,
+      positiveMass: 3.6585,
+      negativeMass: 23.5315
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.39,
+      rankUpper: 0.4,
+      positiveMass: 3.8313,
+      negativeMass: 23.3587
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.4,
+      rankUpper: 0.41,
+      positiveMass: 4.0076,
+      negativeMass: 23.1824
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.41,
+      rankUpper: 0.42,
+      positiveMass: 4.1875,
+      negativeMass: 23.0025
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.42,
+      rankUpper: 0.43,
+      positiveMass: 4.3709,
+      negativeMass: 22.8191
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.43,
+      rankUpper: 0.44,
+      positiveMass: 4.5578,
+      negativeMass: 22.6322
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.44,
+      rankUpper: 0.45,
+      positiveMass: 4.7481,
+      negativeMass: 22.4419
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.45,
+      rankUpper: 0.46,
+      positiveMass: 4.9419,
+      negativeMass: 22.2481
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.46,
+      rankUpper: 0.47,
+      positiveMass: 5.1391,
+      negativeMass: 22.0509
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.47,
+      rankUpper: 0.48,
+      positiveMass: 5.3397,
+      negativeMass: 21.8503
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.48,
+      rankUpper: 0.49,
+      positiveMass: 5.5438,
+      negativeMass: 21.6462
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.49,
+      rankUpper: 0.5,
+      positiveMass: 5.7512,
+      negativeMass: 21.4388
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.5,
+      rankUpper: 0.51,
+      positiveMass: 5.962,
+      negativeMass: 21.228
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.51,
+      rankUpper: 0.52,
+      positiveMass: 6.1762,
+      negativeMass: 21.0138
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.52,
+      rankUpper: 0.53,
+      positiveMass: 6.3938,
+      negativeMass: 20.7962
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.53,
+      rankUpper: 0.54,
+      positiveMass: 6.6147,
+      negativeMass: 20.5753
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.54,
+      rankUpper: 0.55,
+      positiveMass: 6.8389,
+      negativeMass: 20.3511
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.55,
+      rankUpper: 0.56,
+      positiveMass: 7.0664,
+      negativeMass: 20.1236
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.56,
+      rankUpper: 0.57,
+      positiveMass: 7.2972,
+      negativeMass: 19.8928
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.57,
+      rankUpper: 0.58,
+      positiveMass: 7.5313,
+      negativeMass: 19.6587
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.58,
+      rankUpper: 0.59,
+      positiveMass: 7.7687,
+      negativeMass: 19.4213
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.59,
+      rankUpper: 0.6,
+      positiveMass: 8.0094,
+      negativeMass: 19.1806
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.6,
+      rankUpper: 0.61,
+      positiveMass: 8.2533,
+      negativeMass: 18.9367
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.61,
+      rankUpper: 0.62,
+      positiveMass: 8.5005,
+      negativeMass: 18.6895
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.62,
+      rankUpper: 0.63,
+      positiveMass: 8.7509,
+      negativeMass: 18.4391
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.63,
+      rankUpper: 0.64,
+      positiveMass: 9.0046,
+      negativeMass: 18.1854
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.64,
+      rankUpper: 0.65,
+      positiveMass: 9.2614,
+      negativeMass: 17.9286
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.65,
+      rankUpper: 0.66,
+      positiveMass: 9.5215,
+      negativeMass: 17.6685
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.66,
+      rankUpper: 0.67,
+      positiveMass: 9.7847,
+      negativeMass: 17.4053
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.67,
+      rankUpper: 0.68,
+      positiveMass: 10.0512,
+      negativeMass: 17.1388
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.68,
+      rankUpper: 0.69,
+      positiveMass: 10.3208,
+      negativeMass: 16.8692
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.69,
+      rankUpper: 0.7,
+      positiveMass: 10.5936,
+      negativeMass: 16.5964
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.7,
+      rankUpper: 0.71,
+      positiveMass: 10.8695,
+      negativeMass: 16.3205
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.71,
+      rankUpper: 0.72,
+      positiveMass: 11.1486,
+      negativeMass: 16.0414
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.72,
+      rankUpper: 0.73,
+      positiveMass: 11.4309,
+      negativeMass: 15.7591
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.73,
+      rankUpper: 0.74,
+      positiveMass: 11.7162,
+      negativeMass: 15.4738
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.74,
+      rankUpper: 0.75,
+      positiveMass: 12.0047,
+      negativeMass: 15.1853
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.75,
+      rankUpper: 0.76,
+      positiveMass: 12.2963,
+      negativeMass: 14.8937
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.76,
+      rankUpper: 0.77,
+      positiveMass: 12.591,
+      negativeMass: 14.599
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.77,
+      rankUpper: 0.78,
+      positiveMass: 12.8888,
+      negativeMass: 14.3012
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.78,
+      rankUpper: 0.79,
+      positiveMass: 13.1897,
+      negativeMass: 14.0003
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.79,
+      rankUpper: 0.8,
+      positiveMass: 13.4937,
+      negativeMass: 13.6963
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.8,
+      rankUpper: 0.81,
+      positiveMass: 13.8008,
+      negativeMass: 13.3892
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.81,
+      rankUpper: 0.82,
+      positiveMass: 14.1109,
+      negativeMass: 13.0791
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.82,
+      rankUpper: 0.83,
+      positiveMass: 14.4241,
+      negativeMass: 12.7659
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.83,
+      rankUpper: 0.84,
+      positiveMass: 14.7403,
+      negativeMass: 12.4497
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.84,
+      rankUpper: 0.85,
+      positiveMass: 15.0596,
+      negativeMass: 12.1304
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.85,
+      rankUpper: 0.86,
+      positiveMass: 15.3819,
+      negativeMass: 11.8081
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.86,
+      rankUpper: 0.87,
+      positiveMass: 15.7072,
+      negativeMass: 11.4828
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.87,
+      rankUpper: 0.88,
+      positiveMass: 16.0356,
+      negativeMass: 11.1544
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.88,
+      rankUpper: 0.89,
+      positiveMass: 16.367,
+      negativeMass: 10.823
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.89,
+      rankUpper: 0.9,
+      positiveMass: 16.7014,
+      negativeMass: 10.4886
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.9,
+      rankUpper: 0.91,
+      positiveMass: 17.0388,
+      negativeMass: 10.1512
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.91,
+      rankUpper: 0.92,
+      positiveMass: 17.3791,
+      negativeMass: 9.8109
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.92,
+      rankUpper: 0.93,
+      positiveMass: 17.7225,
+      negativeMass: 9.4675
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.93,
+      rankUpper: 0.94,
+      positiveMass: 18.0689,
+      negativeMass: 9.1211
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.94,
+      rankUpper: 0.95,
+      positiveMass: 18.4182,
+      negativeMass: 8.7718
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.95,
+      rankUpper: 0.96,
+      positiveMass: 18.7705,
+      negativeMass: 8.4195
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.96,
+      rankUpper: 0.97,
+      positiveMass: 19.1258,
+      negativeMass: 8.0642
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.97,
+      rankUpper: 0.98,
+      positiveMass: 19.484,
+      negativeMass: 7.706
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.98,
+      rankUpper: 0.99,
+      positiveMass: 19.8452,
+      negativeMass: 7.3448
+    },
+    {
+      evaluationId: "Model B",
+      rankLower: 0.99,
+      rankUpper: 1,
+      positiveMass: 20.2093,
+      negativeMass: 6.9807
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0,
+      rankUpper: 0.01,
+      positiveMass: 1e-3,
+      negativeMass: 18.749
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.01,
+      rankUpper: 0.02,
+      positiveMass: 73e-4,
+      negativeMass: 18.7427
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.02,
+      rankUpper: 0.03,
+      positiveMass: 0.0184,
+      negativeMass: 18.7316
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.03,
+      rankUpper: 0.04,
+      positiveMass: 0.0337,
+      negativeMass: 18.7163
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.04,
+      rankUpper: 0.05,
+      positiveMass: 0.0529,
+      negativeMass: 18.6971
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.05,
+      rankUpper: 0.06,
+      positiveMass: 0.076,
+      negativeMass: 18.674
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.06,
+      rankUpper: 0.07,
+      positiveMass: 0.1026,
+      negativeMass: 18.6474
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.07,
+      rankUpper: 0.08,
+      positiveMass: 0.1328,
+      negativeMass: 18.6172
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.08,
+      rankUpper: 0.09,
+      positiveMass: 0.1663,
+      negativeMass: 18.5837
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.09,
+      rankUpper: 0.1,
+      positiveMass: 0.2032,
+      negativeMass: 18.5468
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.1,
+      rankUpper: 0.11,
+      positiveMass: 0.2433,
+      negativeMass: 18.5067
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.11,
+      rankUpper: 0.12,
+      positiveMass: 0.2866,
+      negativeMass: 18.4634
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.12,
+      rankUpper: 0.13,
+      positiveMass: 0.333,
+      negativeMass: 18.417
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.13,
+      rankUpper: 0.14,
+      positiveMass: 0.3825,
+      negativeMass: 18.3675
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.14,
+      rankUpper: 0.15,
+      positiveMass: 0.435,
+      negativeMass: 18.315
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.15,
+      rankUpper: 0.16,
+      positiveMass: 0.4905,
+      negativeMass: 18.2595
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.16,
+      rankUpper: 0.17,
+      positiveMass: 0.549,
+      negativeMass: 18.201
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.17,
+      rankUpper: 0.18,
+      positiveMass: 0.6103,
+      negativeMass: 18.1397
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.18,
+      rankUpper: 0.19,
+      positiveMass: 0.6745,
+      negativeMass: 18.0755
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.19,
+      rankUpper: 0.2,
+      positiveMass: 0.7415,
+      negativeMass: 18.0085
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.2,
+      rankUpper: 0.21,
+      positiveMass: 0.8114,
+      negativeMass: 17.9386
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.21,
+      rankUpper: 0.22,
+      positiveMass: 0.884,
+      negativeMass: 17.866
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.22,
+      rankUpper: 0.23,
+      positiveMass: 0.9594,
+      negativeMass: 17.7906
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.23,
+      rankUpper: 0.24,
+      positiveMass: 1.0375,
+      negativeMass: 17.7125
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.24,
+      rankUpper: 0.25,
+      positiveMass: 1.1183,
+      negativeMass: 17.6317
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.25,
+      rankUpper: 0.26,
+      positiveMass: 1.2018,
+      negativeMass: 17.5482
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.26,
+      rankUpper: 0.27,
+      positiveMass: 1.288,
+      negativeMass: 17.462
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.27,
+      rankUpper: 0.28,
+      positiveMass: 1.3768,
+      negativeMass: 17.3732
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.28,
+      rankUpper: 0.29,
+      positiveMass: 1.4682,
+      negativeMass: 17.2818
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.29,
+      rankUpper: 0.3,
+      positiveMass: 1.5622,
+      negativeMass: 17.1878
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.3,
+      rankUpper: 0.31,
+      positiveMass: 1.6588,
+      negativeMass: 17.0912
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.31,
+      rankUpper: 0.32,
+      positiveMass: 1.758,
+      negativeMass: 16.992
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.32,
+      rankUpper: 0.33,
+      positiveMass: 1.8597,
+      negativeMass: 16.8903
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.33,
+      rankUpper: 0.34,
+      positiveMass: 1.964,
+      negativeMass: 16.786
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.34,
+      rankUpper: 0.35,
+      positiveMass: 2.0708,
+      negativeMass: 16.6792
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.35,
+      rankUpper: 0.36,
+      positiveMass: 2.1801,
+      negativeMass: 16.5699
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.36,
+      rankUpper: 0.37,
+      positiveMass: 2.2919,
+      negativeMass: 16.4581
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.37,
+      rankUpper: 0.38,
+      positiveMass: 2.4061,
+      negativeMass: 16.3439
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.38,
+      rankUpper: 0.39,
+      positiveMass: 2.5229,
+      negativeMass: 16.2271
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.39,
+      rankUpper: 0.4,
+      positiveMass: 2.642,
+      negativeMass: 16.108
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.4,
+      rankUpper: 0.41,
+      positiveMass: 2.7636,
+      negativeMass: 15.9864
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.41,
+      rankUpper: 0.42,
+      positiveMass: 2.8877,
+      negativeMass: 15.8623
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.42,
+      rankUpper: 0.43,
+      positiveMass: 3.0141,
+      negativeMass: 15.7359
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.43,
+      rankUpper: 0.44,
+      positiveMass: 3.143,
+      negativeMass: 15.607
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.44,
+      rankUpper: 0.45,
+      positiveMass: 3.2742,
+      negativeMass: 15.4758
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.45,
+      rankUpper: 0.46,
+      positiveMass: 3.4079,
+      negativeMass: 15.3421
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.46,
+      rankUpper: 0.47,
+      positiveMass: 3.5439,
+      negativeMass: 15.2061
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.47,
+      rankUpper: 0.48,
+      positiveMass: 3.6822,
+      negativeMass: 15.0678
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.48,
+      rankUpper: 0.49,
+      positiveMass: 3.8229,
+      negativeMass: 14.9271
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.49,
+      rankUpper: 0.5,
+      positiveMass: 3.966,
+      negativeMass: 14.784
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.5,
+      rankUpper: 0.51,
+      positiveMass: 4.1114,
+      negativeMass: 14.6386
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.51,
+      rankUpper: 0.52,
+      positiveMass: 4.2591,
+      negativeMass: 14.4909
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.52,
+      rankUpper: 0.53,
+      positiveMass: 4.4091,
+      negativeMass: 14.3409
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.53,
+      rankUpper: 0.54,
+      positiveMass: 4.5614,
+      negativeMass: 14.1886
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.54,
+      rankUpper: 0.55,
+      positiveMass: 4.716,
+      negativeMass: 14.034
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.55,
+      rankUpper: 0.56,
+      positiveMass: 4.8729,
+      negativeMass: 13.8771
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.56,
+      rankUpper: 0.57,
+      positiveMass: 5.0321,
+      negativeMass: 13.7179
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.57,
+      rankUpper: 0.58,
+      positiveMass: 5.1936,
+      negativeMass: 13.5564
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.58,
+      rankUpper: 0.59,
+      positiveMass: 5.3573,
+      negativeMass: 13.3927
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.59,
+      rankUpper: 0.6,
+      positiveMass: 5.5232,
+      negativeMass: 13.2268
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.6,
+      rankUpper: 0.61,
+      positiveMass: 5.6914,
+      negativeMass: 13.0586
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.61,
+      rankUpper: 0.62,
+      positiveMass: 5.8619,
+      negativeMass: 12.8881
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.62,
+      rankUpper: 0.63,
+      positiveMass: 6.0346,
+      negativeMass: 12.7154
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.63,
+      rankUpper: 0.64,
+      positiveMass: 6.2095,
+      negativeMass: 12.5405
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.64,
+      rankUpper: 0.65,
+      positiveMass: 6.3866,
+      negativeMass: 12.3634
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.65,
+      rankUpper: 0.66,
+      positiveMass: 6.5659,
+      negativeMass: 12.1841
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.66,
+      rankUpper: 0.67,
+      positiveMass: 6.7475,
+      negativeMass: 12.0025
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.67,
+      rankUpper: 0.68,
+      positiveMass: 6.9312,
+      negativeMass: 11.8188
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.68,
+      rankUpper: 0.69,
+      positiveMass: 7.1171,
+      negativeMass: 11.6329
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.69,
+      rankUpper: 0.7,
+      positiveMass: 7.3053,
+      negativeMass: 11.4447
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.7,
+      rankUpper: 0.71,
+      positiveMass: 7.4955,
+      negativeMass: 11.2545
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.71,
+      rankUpper: 0.72,
+      positiveMass: 7.688,
+      negativeMass: 11.062
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.72,
+      rankUpper: 0.73,
+      positiveMass: 7.8826,
+      negativeMass: 10.8674
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.73,
+      rankUpper: 0.74,
+      positiveMass: 8.0794,
+      negativeMass: 10.6706
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.74,
+      rankUpper: 0.75,
+      positiveMass: 8.2784,
+      negativeMass: 10.4716
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.75,
+      rankUpper: 0.76,
+      positiveMass: 8.4794,
+      negativeMass: 10.2706
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.76,
+      rankUpper: 0.77,
+      positiveMass: 8.6827,
+      negativeMass: 10.0673
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.77,
+      rankUpper: 0.78,
+      positiveMass: 8.888,
+      negativeMass: 9.862
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.78,
+      rankUpper: 0.79,
+      positiveMass: 9.0955,
+      negativeMass: 9.6545
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.79,
+      rankUpper: 0.8,
+      positiveMass: 9.3051,
+      negativeMass: 9.4449
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.8,
+      rankUpper: 0.81,
+      positiveMass: 9.5169,
+      negativeMass: 9.2331
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.81,
+      rankUpper: 0.82,
+      positiveMass: 9.7307,
+      negativeMass: 9.0193
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.82,
+      rankUpper: 0.83,
+      positiveMass: 9.9467,
+      negativeMass: 8.8033
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.83,
+      rankUpper: 0.84,
+      positiveMass: 10.1648,
+      negativeMass: 8.5852
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.84,
+      rankUpper: 0.85,
+      positiveMass: 10.385,
+      negativeMass: 8.365
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.85,
+      rankUpper: 0.86,
+      positiveMass: 10.6072,
+      negativeMass: 8.1428
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.86,
+      rankUpper: 0.87,
+      positiveMass: 10.8316,
+      negativeMass: 7.9184
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.87,
+      rankUpper: 0.88,
+      positiveMass: 11.058,
+      negativeMass: 7.692
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.88,
+      rankUpper: 0.89,
+      positiveMass: 11.2865,
+      negativeMass: 7.4635
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.89,
+      rankUpper: 0.9,
+      positiveMass: 11.5171,
+      negativeMass: 7.2329
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.9,
+      rankUpper: 0.91,
+      positiveMass: 11.7498,
+      negativeMass: 7.0002
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.91,
+      rankUpper: 0.92,
+      positiveMass: 11.9845,
+      negativeMass: 6.7655
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.92,
+      rankUpper: 0.93,
+      positiveMass: 12.2213,
+      negativeMass: 6.5287
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.93,
+      rankUpper: 0.94,
+      positiveMass: 12.4602,
+      negativeMass: 6.2898
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.94,
+      rankUpper: 0.95,
+      positiveMass: 12.7011,
+      negativeMass: 6.0489
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.95,
+      rankUpper: 0.96,
+      positiveMass: 12.944,
+      negativeMass: 5.806
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.96,
+      rankUpper: 0.97,
+      positiveMass: 13.189,
+      negativeMass: 5.561
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.97,
+      rankUpper: 0.98,
+      positiveMass: 13.436,
+      negativeMass: 5.314
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.98,
+      rankUpper: 0.99,
+      positiveMass: 13.6851,
+      negativeMass: 5.0649
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      rankLower: 0.99,
+      rankUpper: 1,
+      positiveMass: 13.9362,
+      negativeMass: 4.8138
     }
   ],
   operatingPoints: [
