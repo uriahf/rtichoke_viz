@@ -80,7 +80,41 @@
       "type": "ppcr",
       "value": 0.5,
       "cutoff": 0.5,
-      "realizedPpcr": 0.3333333333333333
+      "realizedPpcr": 0.3333333333333333,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 2
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 0
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 1
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.666667
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.75
+        }
+      ]
     }
   ]
 }

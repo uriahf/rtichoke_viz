@@ -1,77 +1,76 @@
 import json
+import math
 
-def create_eval_bins(eval_id, count_multiplier=3, model_quality="high"):
+def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
+    bins = []
+
+    # Bin 0: [0, 0]
     if model_quality == "high":
-        raw_bins = [
-            (0.0, 0.0, True, True, 10, 50),
-            (0.0, 0.04, False, True, 5, 240),
-            (0.04, 0.08, False, True, 8, 210),
-            (0.08, 0.12, False, True, 12, 180),
-            (0.12, 0.16, False, True, 18, 150),
-            (0.16, 0.20, False, True, 25, 120),
-            (0.20, 0.24, False, True, 35, 95),
-            (0.24, 0.28, False, True, 48, 75),
-            (0.28, 0.32, False, True, 62, 60),
-            (0.32, 0.36, False, True, 78, 48),
-            (0.36, 0.40, False, True, 95, 38),
-            (0.40, 0.44, False, True, 115, 28),
-            (0.44, 0.48, False, True, 130, 20),
-            (0.48, 0.52, False, True, 142, 14),
-            (0.52, 0.56, False, True, 148, 10),
-            (0.56, 0.60, False, True, 145, 6),
-            (0.60, 0.64, False, True, 135, 4),
-            (0.64, 0.68, False, True, 120, 2),
-            (0.68, 0.72, False, True, 100, 1),
-            (0.72, 0.76, False, True, 80, 0),
-            (0.76, 0.80, False, True, 60, 0),
-            (0.80, 0.84, False, True, 42, 0),
-            (0.84, 0.88, False, True, 26, 0),
-            (0.88, 0.92, False, True, 15, 0),
-            (0.92, 0.96, False, True, 8, 0),
-            (0.96, 1.00, False, True, 3, 0),
-        ]
+        bin0_pos = 15
+        bin0_neg = 85
     else:
-        raw_bins = [
-            (0.0, 0.0, True, True, 5, 25),
-            (0.0, 0.04, False, True, 20, 120),
-            (0.04, 0.08, False, True, 28, 130),
-            (0.08, 0.12, False, True, 35, 140),
-            (0.12, 0.16, False, True, 42, 150),
-            (0.16, 0.20, False, True, 50, 145),
-            (0.20, 0.24, False, True, 58, 135),
-            (0.24, 0.28, False, True, 65, 120),
-            (0.28, 0.32, False, True, 72, 105),
-            (0.32, 0.36, False, True, 80, 90),
-            (0.36, 0.40, False, True, 88, 78),
-            (0.40, 0.44, False, True, 92, 65),
-            (0.44, 0.48, False, True, 95, 52),
-            (0.48, 0.52, False, True, 92, 42),
-            (0.52, 0.56, False, True, 88, 32),
-            (0.56, 0.60, False, True, 80, 24),
-            (0.60, 0.64, False, True, 70, 18),
-            (0.64, 0.68, False, True, 60, 12),
-            (0.68, 0.72, False, True, 50, 8),
-            (0.72, 0.76, False, True, 40, 5),
-            (0.76, 0.80, False, True, 30, 2),
-            (0.80, 0.84, False, True, 22, 1),
-            (0.84, 0.88, False, True, 15, 0),
-            (0.88, 0.92, False, True, 10, 0),
-            (0.92, 0.96, False, True, 5, 0),
-            (0.96, 1.00, False, True, 2, 0),
-        ]
+        bin0_pos = 5
+        bin0_neg = 35
 
-    out_bins = []
-    for lower, upper, inc_l, inc_u, pos, neg in raw_bins:
-        out_bins.append({
+    bins.append({
+        "evaluationId": eval_id,
+        "lower": 0.0,
+        "upper": 0.0,
+        "includeLower": True,
+        "includeUpper": True,
+        "nPositive": bin0_pos,
+        "nNegative": bin0_neg
+    })
+
+    # Sub-interval (0, 0.005]
+    bins.append({
+        "evaluationId": eval_id,
+        "lower": 0.0,
+        "upper": 0.005,
+        "includeLower": False,
+        "includeUpper": True,
+        "nPositive": 2,
+        "nNegative": 80
+    })
+
+    # Sub-interval (0.005, 0.01]
+    bins.append({
+        "evaluationId": eval_id,
+        "lower": 0.005,
+        "upper": 0.01,
+        "includeLower": False,
+        "includeUpper": True,
+        "nPositive": 3,
+        "nNegative": 75
+    })
+
+    # Remaining intervals from 0.01 to 1.00 in steps of 0.01
+    for i in range(1, 100):
+        x = (i + 0.5) / 100.0  # midpoint
+        lower = round(i * 0.01, 3)
+        upper = round((i + 1) * 0.01, 3)
+
+        if model_quality == "high":
+            pos_weight = math.pow(x, 2.2)
+            neg_weight = math.pow(1.0 - x, 2.2)
+        else:
+            pos_weight = math.pow(x, 1.2)
+            neg_weight = math.pow(1.0 - x, 1.2)
+
+        pos_count = max(0, int(round(pos_weight * 25)))
+        neg_count = max(0, int(round(neg_weight * 35)))
+
+        bins.append({
             "evaluationId": eval_id,
             "lower": lower,
             "upper": upper,
-            "includeLower": inc_l,
-            "includeUpper": inc_u,
-            "nPositive": pos * count_multiplier,
-            "nNegative": neg * count_multiplier
+            "includeLower": False,
+            "includeUpper": True,
+            "nPositive": pos_count,
+            "nNegative": neg_count
         })
-    return out_bins
+
+    return bins
 
 def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
     total_positives = sum(b["nPositive"] for b in bins)
@@ -161,8 +160,8 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
     return ops
 
 def generate_single_spec():
-    bins = create_eval_bins("Model A", count_multiplier=2, model_quality="high")
-    thresholds = [0.0, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
+    bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
+    thresholds = [0.0, 0.005, 0.01, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
     ppcr_mappings = [
         (0.0, 0.96), (0.1, 0.76), (0.2, 0.68), (0.3, 0.60), (0.4, 0.52),
         (0.5, 0.44), (0.6, 0.32), (0.7, 0.20), (0.8, 0.12), (0.9, 0.04), (1.0, 0.0)
@@ -172,7 +171,7 @@ def generate_single_spec():
     return {
         "schemaVersion": "2.0",
         "type": "prediction_distribution",
-        "title": "Realistic Single Model Prediction Distribution",
+        "title": "Realistic Single Model Prediction Distribution (by = 0.01)",
         "evaluations": [
             {
                 "id": "Model A",
@@ -188,11 +187,11 @@ def generate_single_spec():
     }
 
 def generate_multi_spec():
-    bins_a = create_eval_bins("Model A", count_multiplier=2, model_quality="high")
-    bins_b = create_eval_bins("Model B", count_multiplier=2, model_quality="moderate")
-    bins_sub = create_eval_bins("Model A (High Risk)", count_multiplier=1, model_quality="high")
+    bins_a = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
+    bins_b = create_fine_eval_bins("Model B", n_total=3000, model_quality="moderate")
+    bins_sub = create_fine_eval_bins("Model A (High Risk)", n_total=2000, model_quality="high")
 
-    thresholds = [0.0, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
+    thresholds = [0.0, 0.005, 0.01, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
     ppcr_mappings = [
         (0.0, 0.96), (0.1, 0.76), (0.2, 0.68), (0.3, 0.60), (0.4, 0.52),
         (0.5, 0.44), (0.6, 0.32), (0.7, 0.20), (0.8, 0.12), (0.9, 0.04), (1.0, 0.0)
@@ -208,22 +207,25 @@ def generate_multi_spec():
     return {
         "schemaVersion": "2.0",
         "type": "prediction_distribution",
-        "title": "Realistic Multi-Evaluation Prediction Distribution",
+        "title": "Realistic Multi-Evaluation Prediction Distribution (by = 0.01)",
         "evaluations": [
             {
                 "id": "Model A",
                 "model": "Model A (High Accuracy)",
-                "population": "Overall Population"
+                "population": "Overall Population",
+                "label": "Model A (High Accuracy)"
             },
             {
                 "id": "Model B",
                 "model": "Model B (Moderate Accuracy)",
-                "population": "Overall Population"
+                "population": "Overall Population",
+                "label": "Model B (Moderate Accuracy)"
             },
             {
                 "id": "Model A (High Risk)",
                 "model": "Model A (High Accuracy)",
-                "population": "High-Risk Subgroup"
+                "population": "High-Risk Subgroup",
+                "label": "Model A (High Risk Subgroup)"
             }
         ],
         "operatingPoint": {
@@ -246,4 +248,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    print("Successfully generated realistic prediction distribution fixtures.")
+    print("Successfully generated realistic fine-grid prediction distribution fixtures (by = 0.01).")
