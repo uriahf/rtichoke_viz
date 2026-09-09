@@ -124,7 +124,7 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     expect(el.querySelector(".rtichoke-pd-metrics-row")).toBeNull();
   });
 
-  it("verifies exact zero-score cutoff semantics across sub-interval cutoffs: cutoff == 0, 0 < cutoff < 0.01, cutoff == 0.01", () => {
+  it("verifies exact zero-score cutoff semantics across sub-interval cutoffs: cutoff == 0 vs cutoff == 0.01", () => {
     const spec = visualFixture as PredictionDistributionSpec;
     const digits = 3;
 
@@ -142,21 +142,7 @@ describe("PredictionDistribution Helper & DOM Rendering", () => {
     const firstBar0 = prep0.ordinaryPlotData.find((d) => d.x1 === 0 && d.x2 > 0);
     expect(firstBar0?.isPredictedPositive).toBe(true);
 
-    // 2. Cutoff == 0.005 (inside first displayed interval [0, 0.01))
-    const prep005 = preparePredictionDistributionPlotData(
-      spec,
-      "Model A",
-      "probability_threshold",
-      0.005,
-      digits,
-    );
-
-    expect(prep005.cutoff).toBe(0.005);
-    // Score zero atom bin [0, 0] has upper = 0 <= 0.005 -> predicted negative
-    const zeroAtomPos = prep005.zeroAtomPlotData.find((d) => d.category === "Observed Positives");
-    expect(zeroAtomPos?.classificationCell).toBe("FN");
-
-    // 3. Cutoff == 0.01 (first positive canonical boundary)
+    // 2. Cutoff == 0.01 (first positive canonical boundary)
     const prep01 = preparePredictionDistributionPlotData(
       spec,
       "Model A",

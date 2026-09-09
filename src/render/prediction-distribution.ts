@@ -269,7 +269,7 @@ export function preparePredictionDistributionPlotData(
           cellLabel: posCellLabel0,
           title: tooltip(digits, [
             ["Evaluation", evalLabel],
-            ["Score Interval", "[0, 0] (score zero atom)"],
+            ["Score Interval", "[0, 0]"],
             ["Outcome", "Observed Positive"],
             ["Count", bin0.nPositive],
             ["Classification", posCellLabel0],
@@ -284,7 +284,7 @@ export function preparePredictionDistributionPlotData(
           cellLabel: negCellLabel0,
           title: tooltip(digits, [
             ["Evaluation", evalLabel],
-            ["Score Interval", "[0, 0] (score zero atom)"],
+            ["Score Interval", "[0, 0]"],
             ["Outcome", "Observed Negative"],
             ["Count", bin0.nNegative],
             ["Classification", negCellLabel0],
@@ -321,48 +321,144 @@ export function preparePredictionDistributionPlotData(
         const combinedPos = bin0.nPositive + bin.nPositive;
         const combinedNeg = bin0.nNegative + bin.nNegative;
 
-        if (combinedPos > 0) {
-          const posDensity = combinedPos / intervalWidth;
-          ordinaryPlotData.push({
-            x1,
-            x2,
-            category: "Observed Positives",
-            density: posDensity,
-            count: combinedPos,
-            classificationCell: bin1PosCell,
-            cellLabel: bin1PosLabel,
-            isPredictedPositive: isBin1PredictedPos,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Positive"],
-              ["Count", combinedPos],
-              ["Count Density", posDensity.toFixed(digits)],
-              ["Classification", bin1PosLabel],
-            ]),
-          });
+        // Preserve exact classification semantics for bin0 [0, 0] and bin1 (0, upper1]
+        // when cutoffs lie inside the first interval (e.g. cutoff == 0 vs cutoff == 0.005)
+        if (bin0PosCell === bin1PosCell) {
+          // Same cell classification for positives: aggregate into one mark
+          if (combinedPos > 0) {
+            const posDensity = combinedPos / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Positives",
+              density: posDensity,
+              count: combinedPos,
+              classificationCell: bin1PosCell,
+              cellLabel: bin1PosLabel,
+              isPredictedPositive: isBin1PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Positive"],
+                ["Count", combinedPos],
+                ["Count Density", posDensity.toFixed(digits)],
+                ["Classification", bin1PosLabel],
+              ]),
+            });
+          }
+        } else {
+          // Differing cell classification across sub-interval boundaries: push distinct stacked pieces
+          if (bin0.nPositive > 0) {
+            const posDensity0 = bin0.nPositive / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Positives",
+              density: posDensity0,
+              count: bin0.nPositive,
+              classificationCell: bin0PosCell,
+              cellLabel: bin0PosLabel,
+              isPredictedPositive: isBin0PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Positive"],
+                ["Count", bin0.nPositive],
+                ["Count Density", posDensity0.toFixed(digits)],
+                ["Classification", bin0PosLabel],
+              ]),
+            });
+          }
+          if (bin.nPositive > 0) {
+            const posDensity1 = bin.nPositive / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Positives",
+              density: posDensity1,
+              count: bin.nPositive,
+              classificationCell: bin1PosCell,
+              cellLabel: bin1PosLabel,
+              isPredictedPositive: isBin1PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Positive"],
+                ["Count", bin.nPositive],
+                ["Count Density", posDensity1.toFixed(digits)],
+                ["Classification", bin1PosLabel],
+              ]),
+            });
+          }
         }
 
-        if (combinedNeg > 0) {
-          const negDensity = combinedNeg / intervalWidth;
-          ordinaryPlotData.push({
-            x1,
-            x2,
-            category: "Observed Negatives",
-            density: negDensity,
-            count: combinedNeg,
-            classificationCell: bin1NegCell,
-            cellLabel: bin1NegLabel,
-            isPredictedPositive: isBin1PredictedPos,
-            title: tooltip(digits, [
-              ["Evaluation", evalLabel],
-              ["Score Interval", intervalLabel],
-              ["Outcome", "Observed Negative"],
-              ["Count", combinedNeg],
-              ["Count Density", negDensity.toFixed(digits)],
-              ["Classification", bin1NegLabel],
-            ]),
-          });
+        if (bin0NegCell === bin1NegCell) {
+          // Same cell classification for negatives: aggregate into one mark
+          if (combinedNeg > 0) {
+            const negDensity = combinedNeg / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Negatives",
+              density: negDensity,
+              count: combinedNeg,
+              classificationCell: bin1NegCell,
+              cellLabel: bin1NegLabel,
+              isPredictedPositive: isBin1PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Negative"],
+                ["Count", combinedNeg],
+                ["Count Density", negDensity.toFixed(digits)],
+                ["Classification", bin1NegLabel],
+              ]),
+            });
+          }
+        } else {
+          // Differing cell classification across sub-interval boundaries: push distinct stacked pieces
+          if (bin0.nNegative > 0) {
+            const negDensity0 = bin0.nNegative / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Negatives",
+              density: negDensity0,
+              count: bin0.nNegative,
+              classificationCell: bin0NegCell,
+              cellLabel: bin0NegLabel,
+              isPredictedPositive: isBin0PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Negative"],
+                ["Count", bin0.nNegative],
+                ["Count Density", negDensity0.toFixed(digits)],
+                ["Classification", bin0NegLabel],
+              ]),
+            });
+          }
+          if (bin.nNegative > 0) {
+            const negDensity1 = bin.nNegative / intervalWidth;
+            ordinaryPlotData.push({
+              x1,
+              x2,
+              category: "Observed Negatives",
+              density: negDensity1,
+              count: bin.nNegative,
+              classificationCell: bin1NegCell,
+              cellLabel: bin1NegLabel,
+              isPredictedPositive: isBin1PredictedPos,
+              title: tooltip(digits, [
+                ["Evaluation", evalLabel],
+                ["Score Interval", intervalLabel],
+                ["Outcome", "Observed Negative"],
+                ["Count", bin.nNegative],
+                ["Count Density", negDensity1.toFixed(digits)],
+                ["Classification", bin1NegLabel],
+              ]),
+            });
+          }
         }
       } else {
         const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
@@ -421,13 +517,18 @@ export function preparePredictionDistributionPlotData(
       }
     }
   } else {
-    // PPCR mode
-    for (const bin of evalBins) {
+    // PPCR / Risk Quantile mode
+    // Every displayed quantile bin must have equal visual width on the x-axis
+    const numBins = evalBins.length;
+    const binWidth = numBins > 0 ? 1.0 / numBins : 1.0;
+
+    for (let i = 0; i < numBins; i++) {
+      const bin = evalBins[i];
       const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
       const binTotal = bin.nPositive + bin.nNegative;
-      const popLower = totalN > 0 ? cumCount / totalN : 0;
-      const popUpper = totalN > 0 ? (cumCount + binTotal) / totalN : 0;
-      cumCount += binTotal;
+
+      const popLower = i * binWidth;
+      const popUpper = (i + 1) * binWidth;
 
       const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
       const posCellLabel = isPredictedPositive

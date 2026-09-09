@@ -4,13 +4,13 @@ import math
 def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
     bins = []
 
-    # Bin 0: [0, 0]
+    # Bin 0: [0, 0] - Modest, plausible exact-zero count (Blocker 2)
     if model_quality == "high":
-        bin0_pos = 15
-        bin0_neg = 85
+        bin0_pos = 1
+        bin0_neg = 14
     else:
-        bin0_pos = 5
-        bin0_neg = 35
+        bin0_pos = 1
+        bin0_neg = 9
 
     bins.append({
         "evaluationId": eval_id,
@@ -22,43 +22,27 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
         "nNegative": bin0_neg
     })
 
-    # Sub-interval (0, 0.005]
-    bins.append({
-        "evaluationId": eval_id,
-        "lower": 0.0,
-        "upper": 0.005,
-        "includeLower": False,
-        "includeUpper": True,
-        "nPositive": 2,
-        "nNegative": 80
-    })
-
-    # Sub-interval (0.005, 0.01]
-    bins.append({
-        "evaluationId": eval_id,
-        "lower": 0.005,
-        "upper": 0.01,
-        "includeLower": False,
-        "includeUpper": True,
-        "nPositive": 3,
-        "nNegative": 75
-    })
-
-    # Remaining intervals from 0.01 to 1.00 in steps of 0.01
-    for i in range(1, 100):
+    # Display intervals from 0.00 to 1.00 in steps of 0.01 (Blocker 1 & 2)
+    # The first interval (0.00, 0.01] has a modest, plausible count
+    for i in range(0, 100):
+        lower = round(i * 0.01, 2)
+        upper = round((i + 1) * 0.01, 2)
         x = (i + 0.5) / 100.0  # midpoint
-        lower = round(i * 0.01, 3)
-        upper = round((i + 1) * 0.01, 3)
 
-        if model_quality == "high":
-            pos_weight = math.pow(x, 2.2)
-            neg_weight = math.pow(1.0 - x, 2.2)
+        if i == 0:
+            # Modest count for (0.00, 0.01] so total [0, 0.01) is reasonable
+            pos_count = 2
+            neg_count = 18
         else:
-            pos_weight = math.pow(x, 1.2)
-            neg_weight = math.pow(1.0 - x, 1.2)
+            if model_quality == "high":
+                pos_weight = math.pow(x, 2.2)
+                neg_weight = math.pow(1.0 - x, 2.2)
+            else:
+                pos_weight = math.pow(x, 1.2)
+                neg_weight = math.pow(1.0 - x, 1.2)
 
-        pos_count = max(0, int(round(pos_weight * 25)))
-        neg_count = max(0, int(round(neg_weight * 35)))
+            pos_count = max(0, int(round(pos_weight * 25)))
+            neg_count = max(0, int(round(neg_weight * 35)))
 
         bins.append({
             "evaluationId": eval_id,
@@ -79,7 +63,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
 
     ops = []
 
-    # Threshold operating points
+    # Threshold operating points (exact 0.01 grid: 0.00, 0.01, ..., 1.00)
     for cut in thresholds:
         tp = 0
         fp = 0
@@ -103,8 +87,8 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
         ops.append({
             "evaluationId": eval_id,
             "type": "probability_threshold",
-            "value": round(cut, 4),
-            "cutoff": round(cut, 4),
+            "value": round(cut, 2),
+            "cutoff": round(cut, 2),
             "realizedPpcr": round(realized_ppcr, 6),
             "performance": [
                 {"metricId": "true_positives", "estimate": tp},
@@ -142,8 +126,8 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
         ops.append({
             "evaluationId": eval_id,
             "type": "ppcr",
-            "value": round(p_req, 4),
-            "cutoff": round(cut, 4),
+            "value": round(p_req, 2),
+            "cutoff": round(cut, 2),
             "realizedPpcr": round(realized_ppcr, 6),
             "performance": [
                 {"metricId": "true_positives", "estimate": tp},
@@ -161,10 +145,11 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
 
 def generate_single_spec():
     bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
-    thresholds = [0.0, 0.005, 0.01, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
+    # Operating point threshold grid strictly 0.00 to 1.00 in steps of 0.01
+    thresholds = [round(i * 0.01, 2) for i in range(101)]
     ppcr_mappings = [
-        (0.0, 0.96), (0.1, 0.76), (0.2, 0.68), (0.3, 0.60), (0.4, 0.52),
-        (0.5, 0.44), (0.6, 0.32), (0.7, 0.20), (0.8, 0.12), (0.9, 0.04), (1.0, 0.0)
+        (0.0, 1.00), (0.1, 0.85), (0.2, 0.72), (0.3, 0.60), (0.4, 0.50),
+        (0.5, 0.40), (0.6, 0.30), (0.7, 0.20), (0.8, 0.12), (0.9, 0.05), (1.0, 0.0)
     ]
     ops = calculate_operating_points("Model A", bins, thresholds, ppcr_mappings)
 
@@ -191,10 +176,10 @@ def generate_multi_spec():
     bins_b = create_fine_eval_bins("Model B", n_total=3000, model_quality="moderate")
     bins_sub = create_fine_eval_bins("Model A (High Risk)", n_total=2000, model_quality="high")
 
-    thresholds = [0.0, 0.005, 0.01, 0.08, 0.20, 0.32, 0.40, 0.52, 0.60, 0.72, 0.80, 0.92, 1.0]
+    thresholds = [round(i * 0.01, 2) for i in range(101)]
     ppcr_mappings = [
-        (0.0, 0.96), (0.1, 0.76), (0.2, 0.68), (0.3, 0.60), (0.4, 0.52),
-        (0.5, 0.44), (0.6, 0.32), (0.7, 0.20), (0.8, 0.12), (0.9, 0.04), (1.0, 0.0)
+        (0.0, 1.00), (0.1, 0.85), (0.2, 0.72), (0.3, 0.60), (0.4, 0.50),
+        (0.5, 0.40), (0.6, 0.30), (0.7, 0.20), (0.8, 0.12), (0.9, 0.05), (1.0, 0.0)
     ]
 
     ops_a = calculate_operating_points("Model A", bins_a, thresholds, ppcr_mappings)
@@ -248,4 +233,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    print("Successfully generated realistic fine-grid prediction distribution fixtures (by = 0.01).")
+    print("Successfully updated realistic fine-grid prediction distribution fixtures (by = 0.01).")
