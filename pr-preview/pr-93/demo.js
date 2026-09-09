@@ -20609,27 +20609,6 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
 
 // src/render/prediction-distribution.ts
 var pdInstanceCounter = 0;
-function isDarkColor(color3) {
-  if (!color3) return false;
-  let hex2 = color3.trim();
-  if (hex2.startsWith("#")) {
-    hex2 = hex2.substring(1);
-  }
-  if (hex2.length === 3) {
-    hex2 = hex2.split("").map((c4) => c4 + c4).join("");
-  }
-  if (hex2.length !== 6) {
-    return false;
-  }
-  const r = parseInt(hex2.substring(0, 2), 16);
-  const g = parseInt(hex2.substring(2, 4), 16);
-  const b = parseInt(hex2.substring(4, 6), 16);
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
-    return false;
-  }
-  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  return lum < 0.45;
-}
 function resolveConfusionCellColors(theme, conditioning) {
   const {
     emphasizedTrue,
@@ -20678,7 +20657,7 @@ function resolveConfusionCellColors(theme, conditioning) {
 }
 function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, digits) {
   const ops = spec.operatingPoints.filter((op) => op.evaluationId === evalId && op.type === dim).sort((a2, b) => a2.value - b.value);
-  const activeOp = ops.find((op) => op.value === currentValue) ?? ops[0];
+  const activeOp = ops.find((op) => Math.abs(op.value - currentValue) < 1e-6) ?? ops[0];
   const cutoff = activeOp ? activeOp.cutoff : 0;
   const realizedPpcr = activeOp ? activeOp.realizedPpcr : 0;
   const evalBins = spec.bins.filter((bin) => bin.evaluationId === evalId).sort((a2, b) => a2.lower - b.lower);
@@ -20687,39 +20666,43 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
     totalN += bin.nPositive + bin.nNegative;
   }
   let performanceMetrics = null;
-  let tp = 0;
-  let fp = 0;
-  let tn = 0;
-  let fn = 0;
+  let confusion = null;
   if (activeOp?.performance && activeOp.performance.length > 0) {
     const getMetric = (id2) => {
       const p = activeOp.performance?.find((item) => item.metricId === id2);
       return p && p.estimate !== void 0 && p.estimate !== null ? p.estimate : null;
     };
-    tp = getMetric("true_positives") ?? 0;
-    fp = getMetric("false_positives") ?? 0;
-    tn = getMetric("true_negatives") ?? 0;
-    fn = getMetric("false_negatives") ?? 0;
+    const tp = getMetric("true_positives");
+    const fp = getMetric("false_positives");
+    const tn = getMetric("true_negatives");
+    const fn = getMetric("false_negatives");
     const sens = getMetric("sensitivity");
     const specMetric = getMetric("specificity");
     const ppv = getMetric("ppv");
     const npv = getMetric("npv");
-    performanceMetrics = {
-      sensitivity: sens,
-      specificity: specMetric,
-      ppv,
-      npv
-    };
-  } else {
-    for (const bin of evalBins) {
-      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
-      if (isPredictedPositive) {
-        tp += bin.nPositive;
-        fp += bin.nNegative;
-      } else {
-        fn += bin.nPositive;
-        tn += bin.nNegative;
-      }
+    if (sens !== null || specMetric !== null || ppv !== null || npv !== null) {
+      performanceMetrics = {
+        sensitivity: sens,
+        specificity: specMetric,
+        ppv,
+        npv
+      };
+    }
+    if (tp !== null && fp !== null && tn !== null && fn !== null) {
+      const totalPositives = tp + fn;
+      const totalNegatives = tn + fp;
+      const totalPredictedPos = tp + fp;
+      const totalPredictedNeg = tn + fn;
+      confusion = {
+        tp,
+        fp,
+        tn,
+        fn,
+        totalPositives,
+        totalNegatives,
+        totalPredictedPos,
+        totalPredictedNeg
+      };
     }
   }
   const evalSpec = spec.evaluations.find((e) => e.id === evalId);
@@ -20769,62 +20752,113 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
     }
     for (let i = 0; i < nonZeroBins.length; i++) {
       const bin = nonZeroBins[i];
-      let posCount = bin.nPositive;
-      let negCount = bin.nNegative;
       const x12 = i === 0 ? 0 : bin.lower;
       const x2 = bin.upper;
-      if (i === 0 && bin0) {
-        posCount += bin0.nPositive;
-        negCount += bin0.nNegative;
-      }
-      const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
-      const posCell = isPredictedPositive ? "TP" : "FN";
-      const posCellLabel = isPredictedPositive ? "True Positive (TP)" : "False Negative (FN)";
-      const negCell = isPredictedPositive ? "FP" : "TN";
-      const negCellLabel = isPredictedPositive ? "False Positive (FP)" : "True Negative (TN)";
       const intervalWidth = x2 - x12;
       const intervalLabel = `[${x12.toFixed(digits)}, ${x2.toFixed(digits)}]`;
-      if (posCount > 0) {
-        const posDensity = posCount / intervalWidth;
-        ordinaryPlotData.push({
-          x1: x12,
-          x2,
-          category: "Observed Positives",
-          density: posDensity,
-          count: posCount,
-          classificationCell: posCell,
-          cellLabel: posCellLabel,
-          isPredictedPositive,
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Positive"],
-            ["Count", posCount],
-            ["Count Density", posDensity.toFixed(digits)],
-            ["Classification", posCellLabel]
-          ])
-        });
-      }
-      if (negCount > 0) {
-        const negDensity = negCount / intervalWidth;
-        ordinaryPlotData.push({
-          x1: x12,
-          x2,
-          category: "Observed Negatives",
-          density: negDensity,
-          count: negCount,
-          classificationCell: negCell,
-          cellLabel: negCellLabel,
-          isPredictedPositive,
-          title: tooltip(digits, [
-            ["Evaluation", evalLabel],
-            ["Score Interval", intervalLabel],
-            ["Outcome", "Observed Negative"],
-            ["Count", negCount],
-            ["Count Density", negDensity.toFixed(digits)],
-            ["Classification", negCellLabel]
-          ])
-        });
+      if (i === 0 && bin0) {
+        const isBin0PredictedPos = cutoff === 0 ? true : bin0.upper > cutoff;
+        const bin0PosCell = isBin0PredictedPos ? "TP" : "FN";
+        const bin0PosLabel = isBin0PredictedPos ? "True Positive (TP)" : "False Negative (FN)";
+        const bin0NegCell = isBin0PredictedPos ? "FP" : "TN";
+        const bin0NegLabel = isBin0PredictedPos ? "False Positive (FP)" : "True Negative (TN)";
+        const isBin1PredictedPos = cutoff === 0 ? true : bin.upper > cutoff;
+        const bin1PosCell = isBin1PredictedPos ? "TP" : "FN";
+        const bin1PosLabel = isBin1PredictedPos ? "True Positive (TP)" : "False Negative (FN)";
+        const bin1NegCell = isBin1PredictedPos ? "FP" : "TN";
+        const bin1NegLabel = isBin1PredictedPos ? "False Positive (FP)" : "True Negative (TN)";
+        const combinedPos = bin0.nPositive + bin.nPositive;
+        const combinedNeg = bin0.nNegative + bin.nNegative;
+        if (combinedPos > 0) {
+          const posDensity = combinedPos / intervalWidth;
+          ordinaryPlotData.push({
+            x1: x12,
+            x2,
+            category: "Observed Positives",
+            density: posDensity,
+            count: combinedPos,
+            classificationCell: bin1PosCell,
+            cellLabel: bin1PosLabel,
+            isPredictedPositive: isBin1PredictedPos,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Positive"],
+              ["Count", combinedPos],
+              ["Count Density", posDensity.toFixed(digits)],
+              ["Classification", bin1PosLabel]
+            ])
+          });
+        }
+        if (combinedNeg > 0) {
+          const negDensity = combinedNeg / intervalWidth;
+          ordinaryPlotData.push({
+            x1: x12,
+            x2,
+            category: "Observed Negatives",
+            density: negDensity,
+            count: combinedNeg,
+            classificationCell: bin1NegCell,
+            cellLabel: bin1NegLabel,
+            isPredictedPositive: isBin1PredictedPos,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Negative"],
+              ["Count", combinedNeg],
+              ["Count Density", negDensity.toFixed(digits)],
+              ["Classification", bin1NegLabel]
+            ])
+          });
+        }
+      } else {
+        const isPredictedPositive = cutoff === 0 ? true : bin.upper > cutoff;
+        const posCell = isPredictedPositive ? "TP" : "FN";
+        const posCellLabel = isPredictedPositive ? "True Positive (TP)" : "False Negative (FN)";
+        const negCell = isPredictedPositive ? "FP" : "TN";
+        const negCellLabel = isPredictedPositive ? "False Positive (FP)" : "True Negative (TN)";
+        if (bin.nPositive > 0) {
+          const posDensity = bin.nPositive / intervalWidth;
+          ordinaryPlotData.push({
+            x1: x12,
+            x2,
+            category: "Observed Positives",
+            density: posDensity,
+            count: bin.nPositive,
+            classificationCell: posCell,
+            cellLabel: posCellLabel,
+            isPredictedPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Positive"],
+              ["Count", bin.nPositive],
+              ["Count Density", posDensity.toFixed(digits)],
+              ["Classification", posCellLabel]
+            ])
+          });
+        }
+        if (bin.nNegative > 0) {
+          const negDensity = bin.nNegative / intervalWidth;
+          ordinaryPlotData.push({
+            x1: x12,
+            x2,
+            category: "Observed Negatives",
+            density: negDensity,
+            count: bin.nNegative,
+            classificationCell: negCell,
+            cellLabel: negCellLabel,
+            isPredictedPositive,
+            title: tooltip(digits, [
+              ["Evaluation", evalLabel],
+              ["Score Interval", intervalLabel],
+              ["Outcome", "Observed Negative"],
+              ["Count", bin.nNegative],
+              ["Count Density", negDensity.toFixed(digits)],
+              ["Classification", negCellLabel]
+            ])
+          });
+        }
       }
     }
   } else {
@@ -20907,14 +20941,10 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
     yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
   } else {
     cutoffX = 1 - realizedPpcr;
-    xAxisLabel = "Prediction rank percentile (low to high)";
+    xAxisLabel = "Risk Percentile";
     yAxisLabel = "Outcome fraction";
     yMax = 1.18;
   }
-  const totalPositives = tp + fn;
-  const totalNegatives = tn + fp;
-  const totalPredictedPos = tp + fp;
-  const totalPredictedNeg = tn + fn;
   return {
     evalId,
     evalLabel,
@@ -20928,16 +20958,7 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
     yMax,
     totalN,
     performanceMetrics,
-    confusion: {
-      tp,
-      fp,
-      tn,
-      fn,
-      totalPositives,
-      totalNegatives,
-      totalPredictedPos,
-      totalPredictedNeg
-    },
+    confusion,
     ordinaryPlotData,
     zeroAtomPlotData
   };
@@ -20973,10 +20994,10 @@ function renderPredictionDistribution(spec, options = {}) {
   const pickBestValue = (evalId, dim, preferredVal) => {
     const vals = getValuesFor(evalId, dim);
     if (vals.length === 0) return 0;
-    if (preferredVal !== void 0 && vals.includes(preferredVal)) {
+    if (preferredVal !== void 0 && vals.some((v) => Math.abs(v - preferredVal) < 1e-6)) {
       return preferredVal;
     }
-    if (vals.includes(0.5)) {
+    if (vals.some((v) => Math.abs(v - 0.5) < 1e-6)) {
       return 0.5;
     }
     return vals[0];
@@ -21080,13 +21101,6 @@ function renderPredictionDistribution(spec, options = {}) {
   };
   const evalControlContainer = document.createElement("div");
   evalControlContainer.className = "rtichoke-pd-controls-row";
-  const uniqueModels = Array.from(
-    new Set(spec.evaluations.map((e) => e.model ?? e.label ?? e.id))
-  );
-  const uniquePopulations = Array.from(
-    new Set(spec.evaluations.map((e) => e.population ?? e.label ?? e.id))
-  );
-  const getCurrentEval = () => spec.evaluations.find((e) => e.id === currentEvalId) ?? spec.evaluations[0];
   const updateEvalControls = () => {
     evalControlContainer.replaceChildren();
     evalSelect.replaceChildren();
@@ -21097,49 +21111,22 @@ function renderPredictionDistribution(spec, options = {}) {
       evalSelect.append(opt);
     }
     evalSelect.value = currentEvalId;
-    if (uniqueModels.length > 1) {
-      const curModel = getCurrentEval().model ?? getCurrentEval().label ?? getCurrentEval().id;
-      const modelRadioGroup = createRadioGroup(
-        "Model",
-        `pd-model-${instanceId}`,
-        uniqueModels.map((m) => ({ value: m, label: m })),
-        curModel,
-        (selectedModel) => {
-          const curPop = getCurrentEval().population;
-          const match = spec.evaluations.find(
-            (e) => (e.model ?? e.label ?? e.id) === selectedModel && e.population === curPop
-          ) ?? spec.evaluations.find(
-            (e) => (e.model ?? e.label ?? e.id) === selectedModel
-          );
-          if (match) {
-            currentEvalId = match.id;
-            updateChart();
-          }
+    if (spec.evaluations.length > 1) {
+      const refGroupOptions = spec.evaluations.map((e) => ({
+        value: e.id,
+        label: e.label ?? e.model ?? e.population ?? e.id
+      }));
+      const refRadioGroup = createRadioGroup(
+        "Reference Group",
+        `pd-ref-group-${instanceId}`,
+        refGroupOptions,
+        currentEvalId,
+        (selectedEvalId) => {
+          currentEvalId = selectedEvalId;
+          updateChart();
         }
       );
-      evalControlContainer.append(modelRadioGroup);
-    }
-    if (uniquePopulations.length > 1) {
-      const curPop = getCurrentEval().population ?? getCurrentEval().label ?? getCurrentEval().id;
-      const popRadioGroup = createRadioGroup(
-        "Population",
-        `pd-pop-${instanceId}`,
-        uniquePopulations.map((p) => ({ value: p, label: p })),
-        curPop,
-        (selectedPop) => {
-          const curModel = getCurrentEval().model;
-          const match = spec.evaluations.find(
-            (e) => (e.population ?? e.label ?? e.id) === selectedPop && e.model === curModel
-          ) ?? spec.evaluations.find(
-            (e) => (e.population ?? e.label ?? e.id) === selectedPop
-          );
-          if (match) {
-            currentEvalId = match.id;
-            updateChart();
-          }
-        }
-      );
-      evalControlContainer.append(popRadioGroup);
+      evalControlContainer.append(refRadioGroup);
     }
   };
   const presentationControlContainer = document.createElement("div");
@@ -21187,10 +21174,10 @@ function renderPredictionDistribution(spec, options = {}) {
   controlsDiv.append(evalControlContainer, presentationControlContainer);
   container.append(
     controlsDiv,
+    summaryDiv,
     sliderControl,
     legendDiv,
-    chartDiv,
-    summaryDiv
+    chartDiv
   );
   const updateChart = () => {
     updateEvalControls();
@@ -21309,13 +21296,6 @@ function renderPredictionDistribution(spec, options = {}) {
           "Observed Negatives",
           theme.predictionDistribution.observedNegative
         )
-      );
-    } else {
-      legendDiv.append(
-        createLegendItem("True Positives (TP)", cellColors.tp),
-        createLegendItem("False Positives (FP)", cellColors.fp),
-        createLegendItem("True Negatives (TN)", cellColors.tn),
-        createLegendItem("False Negatives (FN)", cellColors.fn)
       );
     }
     const marks2 = [];
@@ -21496,41 +21476,153 @@ function renderPredictionDistribution(spec, options = {}) {
         line: true,
         ticks: 5,
         tickSize: theme.axis.tickSize,
-        tickPadding: theme.axis.tickPadding
+        tickPadding: theme.axis.tickPadding,
+        tickFormat: (d) => String(Math.abs(d))
       },
       marks: marks2
     };
     const chartSvg = themedPlot(plotSpec, theme);
     chartDiv.replaceChildren(chartSvg);
     summaryDiv.replaceChildren();
-    const metricsRow = document.createElement("div");
-    metricsRow.className = "rtichoke-prediction-distribution__metrics-row";
-    const createMetricBadge = (lbl, val) => {
-      const badge = document.createElement("div");
-      badge.className = "rtichoke-prediction-distribution__metric-badge";
-      const l = document.createElement("span");
-      l.className = "rtichoke-prediction-distribution__metric-label";
-      l.textContent = `${lbl}:`;
-      const v = document.createElement("span");
-      v.className = "rtichoke-prediction-distribution__metric-value";
-      v.textContent = val;
-      badge.append(l, v);
-      return badge;
-    };
-    if (currentDim === "probability_threshold") {
-      metricsRow.append(
-        createMetricBadge("Probability Threshold", currentValue.toFixed(digits)),
-        createMetricBadge("Effective Cutoff", cutoff.toFixed(digits)),
-        createMetricBadge("Realized PPCR", realizedPpcr.toFixed(digits))
+    if (confusion) {
+      const { tp, fp, tn, fn, totalPositives, totalNegatives, totalPredictedPos, totalPredictedNeg } = confusion;
+      const table = document.createElement("table");
+      table.className = "rtichoke-prediction-distribution__table rtichoke-pd-matrix";
+      const createCondRadioLabel = (val, label) => {
+        const labelEl = document.createElement("label");
+        labelEl.className = `rtichoke-pd-cond-option ${currentConditioning === val ? "rtichoke-pd-cond-option--active" : ""}`;
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `pd-cond-${instanceId}`;
+        radio.value = val;
+        radio.checked = currentConditioning === val;
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            currentConditioning = val;
+            updateChart();
+          }
+        });
+        const span = document.createElement("span");
+        span.textContent = label;
+        labelEl.append(radio, span);
+        return labelEl;
+      };
+      const thead = document.createElement("thead");
+      const trH1 = document.createElement("tr");
+      const thCorner = document.createElement("th");
+      thCorner.className = "rtichoke-pd-matrix__corner";
+      thCorner.append(createCondRadioLabel("all_observations", "All Observations"));
+      const thSpanner = document.createElement("th");
+      thSpanner.colSpan = 2;
+      thSpanner.className = "rtichoke-pd-matrix__spanner";
+      thSpanner.textContent = "REAL OUTCOME";
+      const thEmpty = document.createElement("th");
+      trH1.append(thCorner, thSpanner, thEmpty);
+      const trH2 = document.createElement("tr");
+      const thH2Empty = document.createElement("th");
+      const thRealPos = document.createElement("th");
+      thRealPos.className = `rtichoke-pd-matrix__col-header ${currentConditioning === "real_positives" ? "rtichoke-pd-matrix__col-header--active" : ""}`;
+      thRealPos.append(createCondRadioLabel("real_positives", "Real Positive"));
+      const thRealNeg = document.createElement("th");
+      thRealNeg.className = `rtichoke-pd-matrix__col-header ${currentConditioning === "real_negatives" ? "rtichoke-pd-matrix__col-header--active" : ""}`;
+      thRealNeg.append(createCondRadioLabel("real_negatives", "Real Negative"));
+      const thTot = document.createElement("th");
+      thTot.className = "rtichoke-pd-matrix__col-header";
+      thTot.textContent = "Total";
+      trH2.append(thH2Empty, thRealPos, thRealNeg, thTot);
+      thead.append(trH1, trH2);
+      const tbody = document.createElement("tbody");
+      const setCellContent = (td, text2, countVal, barColor) => {
+        td.replaceChildren();
+        td.style.backgroundColor = "#ffffff";
+        td.style.color = theme.axis.color;
+        const pct = totalN > 0 ? countVal / totalN * 100 : 0;
+        const bar = document.createElement("div");
+        bar.className = "rtichoke-pd-cell-bar";
+        bar.style.width = `${pct}%`;
+        bar.style.backgroundColor = barColor;
+        const textSpan = document.createElement("span");
+        textSpan.className = "rtichoke-pd-cell-text";
+        textSpan.textContent = text2;
+        td.append(bar, textSpan);
+      };
+      const cellFnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fn : theme.predictionDistribution.observedPositive;
+      const cellTpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tp : theme.predictionDistribution.observedPositive;
+      const cellTnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tn : theme.predictionDistribution.observedNegative;
+      const cellFpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fp : theme.predictionDistribution.observedNegative;
+      const trPredPos = document.createElement("tr");
+      if (currentConditioning === "predicted_positives") {
+        trPredPos.className = "rtichoke-pd-matrix__row--active";
+      }
+      const thPredPos = document.createElement("th");
+      thPredPos.className = `rtichoke-pd-matrix__row-header ${currentConditioning === "predicted_positives" ? "rtichoke-pd-matrix__row-header--active" : ""}`;
+      thPredPos.append(createCondRadioLabel("predicted_positives", "Predicted Positive"));
+      const tdTp = document.createElement("td");
+      tdTp.className = "rtichoke-prediction-distribution__cell--tp rtichoke-pd-matrix__cell";
+      setCellContent(
+        tdTp,
+        `TP = ${tp.toLocaleString()}`,
+        tp,
+        cellTpColor
       );
-    } else {
-      metricsRow.append(
-        createMetricBadge("Requested PPCR", currentValue.toFixed(digits)),
-        createMetricBadge("Effective Cutoff", cutoff.toFixed(digits)),
-        createMetricBadge("Realized PPCR", realizedPpcr.toFixed(digits))
+      const tdFp = document.createElement("td");
+      tdFp.className = "rtichoke-prediction-distribution__cell--fp rtichoke-pd-matrix__cell";
+      setCellContent(
+        tdFp,
+        `FP = ${fp.toLocaleString()}`,
+        fp,
+        cellFpColor
       );
+      const tdTotPredPos = document.createElement("td");
+      tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+      tdTotPredPos.textContent = totalPredictedPos.toLocaleString();
+      trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
+      const trPredNeg = document.createElement("tr");
+      if (currentConditioning === "predicted_negatives") {
+        trPredNeg.className = "rtichoke-pd-matrix__row--active";
+      }
+      const thPredNeg = document.createElement("th");
+      thPredNeg.className = `rtichoke-pd-matrix__row-header ${currentConditioning === "predicted_negatives" ? "rtichoke-pd-matrix__row-header--active" : ""}`;
+      thPredNeg.append(createCondRadioLabel("predicted_negatives", "Predicted Negative"));
+      const tdFn = document.createElement("td");
+      tdFn.className = "rtichoke-prediction-distribution__cell--fn rtichoke-pd-matrix__cell";
+      setCellContent(
+        tdFn,
+        `FN = ${fn.toLocaleString()}`,
+        fn,
+        cellFnColor
+      );
+      const tdTn = document.createElement("td");
+      tdTn.className = "rtichoke-prediction-distribution__cell--tn rtichoke-pd-matrix__cell";
+      setCellContent(
+        tdTn,
+        `TN = ${tn.toLocaleString()}`,
+        tn,
+        cellTnColor
+      );
+      const tdTotPredNeg = document.createElement("td");
+      tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+      tdTotPredNeg.textContent = totalPredictedNeg.toLocaleString();
+      trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
+      const trTot = document.createElement("tr");
+      trTot.className = "rtichoke-pd-matrix__tot-row";
+      const thTotLabel = document.createElement("th");
+      thTotLabel.className = "rtichoke-pd-matrix__row-header";
+      thTotLabel.textContent = "Total";
+      const tdTotRealPos = document.createElement("td");
+      tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+      tdTotRealPos.textContent = totalPositives.toLocaleString();
+      const tdTotRealNeg = document.createElement("td");
+      tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+      tdTotRealNeg.textContent = totalNegatives.toLocaleString();
+      const tdTotN = document.createElement("td");
+      tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+      tdTotN.textContent = totalN.toLocaleString();
+      trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
+      tbody.append(trPredPos, trPredNeg, trTot);
+      table.append(thead, tbody);
+      summaryDiv.append(table);
     }
-    summaryDiv.append(metricsRow);
     if (performanceMetrics) {
       const metricReadout = document.createElement("div");
       metricReadout.className = "rtichoke-pd-metrics-row";
@@ -21576,143 +21668,6 @@ function renderPredictionDistribution(spec, options = {}) {
       );
       summaryDiv.append(metricReadout);
     }
-    const { tp, fp, tn, fn, totalPositives, totalNegatives, totalPredictedPos, totalPredictedNeg } = confusion;
-    const table = document.createElement("table");
-    table.className = "rtichoke-prediction-distribution__table rtichoke-pd-matrix";
-    const createCondRadioLabel = (val, label) => {
-      const labelEl = document.createElement("label");
-      labelEl.className = `rtichoke-pd-cond-option ${currentConditioning === val ? "rtichoke-pd-cond-option--active" : ""}`;
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `pd-cond-${instanceId}`;
-      radio.value = val;
-      radio.checked = currentConditioning === val;
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          currentConditioning = val;
-          updateChart();
-        }
-      });
-      const span = document.createElement("span");
-      span.textContent = label;
-      labelEl.append(radio, span);
-      return labelEl;
-    };
-    const thead = document.createElement("thead");
-    const trH1 = document.createElement("tr");
-    const thCorner = document.createElement("th");
-    thCorner.className = "rtichoke-pd-matrix__corner";
-    thCorner.append(createCondRadioLabel("all_observations", "All Observations"));
-    const thSpanner = document.createElement("th");
-    thSpanner.colSpan = 2;
-    thSpanner.className = "rtichoke-pd-matrix__spanner";
-    thSpanner.textContent = "REAL OUTCOME";
-    const thEmpty = document.createElement("th");
-    trH1.append(thCorner, thSpanner, thEmpty);
-    const trH2 = document.createElement("tr");
-    const thH2Empty = document.createElement("th");
-    const thRealPos = document.createElement("th");
-    thRealPos.className = `rtichoke-pd-matrix__col-header ${currentConditioning === "real_positives" ? "rtichoke-pd-matrix__col-header--active" : ""}`;
-    thRealPos.append(createCondRadioLabel("real_positives", "Real Positive"));
-    const thRealNeg = document.createElement("th");
-    thRealNeg.className = `rtichoke-pd-matrix__col-header ${currentConditioning === "real_negatives" ? "rtichoke-pd-matrix__col-header--active" : ""}`;
-    thRealNeg.append(createCondRadioLabel("real_negatives", "Real Negative"));
-    const thTot = document.createElement("th");
-    thTot.className = "rtichoke-pd-matrix__col-header";
-    thTot.textContent = "Total";
-    trH2.append(thH2Empty, thRealPos, thRealNeg, thTot);
-    thead.append(trH1, trH2);
-    const tbody = document.createElement("tbody");
-    const setCellContent = (td, text2, countVal, cellBgColor) => {
-      td.replaceChildren();
-      td.style.backgroundColor = cellBgColor;
-      td.style.color = isDarkColor(cellBgColor) ? "#ffffff" : theme.axis.color;
-      const pct = totalN > 0 ? countVal / totalN * 100 : 0;
-      const bar = document.createElement("div");
-      bar.className = "rtichoke-pd-cell-bar";
-      bar.style.width = `${pct}%`;
-      bar.style.backgroundColor = cellBgColor;
-      const textSpan = document.createElement("span");
-      textSpan.className = "rtichoke-pd-cell-text";
-      textSpan.textContent = text2;
-      td.append(bar, textSpan);
-    };
-    const cellFnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fn : theme.predictionDistribution.observedPositive;
-    const cellTpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tp : theme.predictionDistribution.observedPositive;
-    const cellTnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tn : theme.predictionDistribution.observedNegative;
-    const cellFpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fp : theme.predictionDistribution.observedNegative;
-    const trPredPos = document.createElement("tr");
-    if (currentConditioning === "predicted_positives") {
-      trPredPos.className = "rtichoke-pd-matrix__row--active";
-    }
-    const thPredPos = document.createElement("th");
-    thPredPos.className = `rtichoke-pd-matrix__row-header ${currentConditioning === "predicted_positives" ? "rtichoke-pd-matrix__row-header--active" : ""}`;
-    thPredPos.append(createCondRadioLabel("predicted_positives", "Predicted Positive"));
-    const tdTp = document.createElement("td");
-    tdTp.className = "rtichoke-prediction-distribution__cell--tp rtichoke-pd-matrix__cell";
-    setCellContent(
-      tdTp,
-      `TP = ${tp.toLocaleString()}`,
-      tp,
-      cellTpColor
-    );
-    const tdFp = document.createElement("td");
-    tdFp.className = "rtichoke-prediction-distribution__cell--fp rtichoke-pd-matrix__cell";
-    setCellContent(
-      tdFp,
-      `FP = ${fp.toLocaleString()}`,
-      fp,
-      cellFpColor
-    );
-    const tdTotPredPos = document.createElement("td");
-    tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-    tdTotPredPos.textContent = totalPredictedPos.toLocaleString();
-    trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
-    const trPredNeg = document.createElement("tr");
-    if (currentConditioning === "predicted_negatives") {
-      trPredNeg.className = "rtichoke-pd-matrix__row--active";
-    }
-    const thPredNeg = document.createElement("th");
-    thPredNeg.className = `rtichoke-pd-matrix__row-header ${currentConditioning === "predicted_negatives" ? "rtichoke-pd-matrix__row-header--active" : ""}`;
-    thPredNeg.append(createCondRadioLabel("predicted_negatives", "Predicted Negative"));
-    const tdFn = document.createElement("td");
-    tdFn.className = "rtichoke-prediction-distribution__cell--fn rtichoke-pd-matrix__cell";
-    setCellContent(
-      tdFn,
-      `FN = ${fn.toLocaleString()}`,
-      fn,
-      cellFnColor
-    );
-    const tdTn = document.createElement("td");
-    tdTn.className = "rtichoke-prediction-distribution__cell--tn rtichoke-pd-matrix__cell";
-    setCellContent(
-      tdTn,
-      `TN = ${tn.toLocaleString()}`,
-      tn,
-      cellTnColor
-    );
-    const tdTotPredNeg = document.createElement("td");
-    tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-    tdTotPredNeg.textContent = totalPredictedNeg.toLocaleString();
-    trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
-    const trTot = document.createElement("tr");
-    trTot.className = "rtichoke-pd-matrix__tot-row";
-    const thTotLabel = document.createElement("th");
-    thTotLabel.className = "rtichoke-pd-matrix__row-header";
-    thTotLabel.textContent = "Total";
-    const tdTotRealPos = document.createElement("td");
-    tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-    tdTotRealPos.textContent = totalPositives.toLocaleString();
-    const tdTotRealNeg = document.createElement("td");
-    tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-    tdTotRealNeg.textContent = totalNegatives.toLocaleString();
-    const tdTotN = document.createElement("td");
-    tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-    tdTotN.textContent = totalN.toLocaleString();
-    trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
-    tbody.append(trPredPos, trPredNeg, trTot);
-    table.append(thead, tbody);
-    summaryDiv.append(table);
   };
   slider.addEventListener("input", () => {
     const availableValues = getValuesFor(currentEvalId, currentDim);
@@ -26278,28 +26233,164 @@ var prediction_distribution_threshold_default = {
       type: "probability_threshold",
       value: 0,
       cutoff: 0,
-      realizedPpcr: 1
+      realizedPpcr: 1,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 3
+        },
+        {
+          metricId: "false_positives",
+          estimate: 3
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 1
+        },
+        {
+          metricId: "specificity",
+          estimate: 0
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.5
+        },
+        {
+          metricId: "npv",
+          estimate: 0
+        }
+      ]
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 0.2,
       cutoff: 0.2,
-      realizedPpcr: 0.6666666666666666
+      realizedPpcr: 0.6666666666666666,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 2
+        },
+        {
+          metricId: "false_positives",
+          estimate: 2
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 1
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.666667
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.333333
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.5
+        },
+        {
+          metricId: "npv",
+          estimate: 0.5
+        }
+      ]
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 0.5,
       cutoff: 0.5,
-      realizedPpcr: 0.3333333333333333
+      realizedPpcr: 0.3333333333333333,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 2
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 2
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.333333
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.666667
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.5
+        },
+        {
+          metricId: "npv",
+          estimate: 0.5
+        }
+      ]
     },
     {
       evaluationId: "Model A",
       type: "probability_threshold",
       value: 1,
       cutoff: 1,
-      realizedPpcr: 0
+      realizedPpcr: 0,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 0
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 3
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 3
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 0
+        },
+        {
+          metricId: "npv",
+          estimate: 0.5
+        }
+      ]
     }
   ]
 };
@@ -26387,7 +26478,41 @@ var prediction_distribution_ppcr_tie_default = {
       type: "ppcr",
       value: 0.5,
       cutoff: 0.5,
-      realizedPpcr: 0.3333333333333333
+      realizedPpcr: 0.3333333333333333,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 2
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 3
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 1
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.666667
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 1
+        },
+        {
+          metricId: "npv",
+          estimate: 0.75
+        }
+      ]
     }
   ]
 };
@@ -26396,22 +26521,25 @@ var prediction_distribution_ppcr_tie_default = {
 var prediction_distribution_visual_default = {
   schemaVersion: "2.0",
   type: "prediction_distribution",
-  title: "Realistic Multi-Evaluation Prediction Distribution",
+  title: "Realistic Multi-Evaluation Prediction Distribution (by = 0.01)",
   evaluations: [
     {
       id: "Model A",
       model: "Model A (High Accuracy)",
-      population: "Overall Population"
+      population: "Overall Population",
+      label: "Model A (High Accuracy)"
     },
     {
       id: "Model B",
       model: "Model B (Moderate Accuracy)",
-      population: "Overall Population"
+      population: "Overall Population",
+      label: "Model B (Moderate Accuracy)"
     },
     {
       id: "Model A (High Risk)",
       model: "Model A (High Accuracy)",
-      population: "High-Risk Subgroup"
+      population: "High-Risk Subgroup",
+      label: "Model A (High Risk Subgroup)"
     }
   ],
   operatingPoint: {
@@ -26424,466 +26552,1834 @@ var prediction_distribution_visual_default = {
       upper: 0,
       includeLower: true,
       includeUpper: true,
-      nPositive: 20,
-      nNegative: 100
+      nPositive: 15,
+      nNegative: 85
     },
     {
       evaluationId: "Model A",
       lower: 0,
+      upper: 5e-3,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 80
+    },
+    {
+      evaluationId: "Model A",
+      lower: 5e-3,
+      upper: 0.01,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 75
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.01,
+      upper: 0.02,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 34
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.02,
+      upper: 0.03,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 33
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.03,
       upper: 0.04,
       includeLower: false,
       includeUpper: true,
-      nPositive: 10,
-      nNegative: 480
+      nPositive: 0,
+      nNegative: 32
     },
     {
       evaluationId: "Model A",
       lower: 0.04,
+      upper: 0.05,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 32
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.05,
+      upper: 0.06,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 31
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.06,
+      upper: 0.07,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.07,
       upper: 0.08,
       includeLower: false,
       includeUpper: true,
-      nPositive: 16,
-      nNegative: 420
+      nPositive: 0,
+      nNegative: 29
     },
     {
       evaluationId: "Model A",
       lower: 0.08,
-      upper: 0.12,
+      upper: 0.09,
       includeLower: false,
       includeUpper: true,
-      nPositive: 24,
-      nNegative: 360
+      nPositive: 0,
+      nNegative: 29
     },
     {
       evaluationId: "Model A",
-      lower: 0.12,
-      upper: 0.16,
+      lower: 0.09,
+      upper: 0.1,
       includeLower: false,
       includeUpper: true,
-      nPositive: 36,
-      nNegative: 300
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.16,
-      upper: 0.2,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 50,
-      nNegative: 240
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.2,
-      upper: 0.24,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 70,
-      nNegative: 190
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.24,
-      upper: 0.28,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 96,
-      nNegative: 150
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.28,
-      upper: 0.32,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 124,
-      nNegative: 120
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.32,
-      upper: 0.36,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 156,
-      nNegative: 96
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.36,
-      upper: 0.4,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 190,
-      nNegative: 76
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.4,
-      upper: 0.44,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 230,
-      nNegative: 56
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.44,
-      upper: 0.48,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 260,
-      nNegative: 40
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.48,
-      upper: 0.52,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 284,
+      nPositive: 0,
       nNegative: 28
     },
     {
       evaluationId: "Model A",
-      lower: 0.52,
-      upper: 0.56,
+      lower: 0.1,
+      upper: 0.11,
       includeLower: false,
       includeUpper: true,
-      nPositive: 296,
+      nPositive: 0,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.11,
+      upper: 0.12,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.12,
+      upper: 0.13,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 26
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.13,
+      upper: 0.14,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.14,
+      upper: 0.15,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.15,
+      upper: 0.16,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.16,
+      upper: 0.17,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.17,
+      upper: 0.18,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 23
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.18,
+      upper: 0.19,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.19,
+      upper: 0.2,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.2,
+      upper: 0.21,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.21,
+      upper: 0.22,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.22,
+      upper: 0.23,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
       nNegative: 20
     },
     {
       evaluationId: "Model A",
-      lower: 0.56,
-      upper: 0.6,
+      lower: 0.23,
+      upper: 0.24,
       includeLower: false,
       includeUpper: true,
-      nPositive: 290,
+      nPositive: 1,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.24,
+      upper: 0.25,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.25,
+      upper: 0.26,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.26,
+      upper: 0.27,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.27,
+      upper: 0.28,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.28,
+      upper: 0.29,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.29,
+      upper: 0.3,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.3,
+      upper: 0.31,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.31,
+      upper: 0.32,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.32,
+      upper: 0.33,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.33,
+      upper: 0.34,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.34,
+      upper: 0.35,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.35,
+      upper: 0.36,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.36,
+      upper: 0.37,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.37,
+      upper: 0.38,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
       nNegative: 12
     },
     {
       evaluationId: "Model A",
-      lower: 0.6,
-      upper: 0.64,
+      lower: 0.38,
+      upper: 0.39,
       includeLower: false,
       includeUpper: true,
-      nPositive: 270,
+      nPositive: 3,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.39,
+      upper: 0.4,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.4,
+      upper: 0.41,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.41,
+      upper: 0.42,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.42,
+      upper: 0.43,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.43,
+      upper: 0.44,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.44,
+      upper: 0.45,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.45,
+      upper: 0.46,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.46,
+      upper: 0.47,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.47,
+      upper: 0.48,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
       nNegative: 8
     },
     {
       evaluationId: "Model A",
-      lower: 0.64,
-      upper: 0.68,
+      lower: 0.48,
+      upper: 0.49,
       includeLower: false,
       includeUpper: true,
-      nPositive: 240,
-      nNegative: 4
+      nPositive: 5,
+      nNegative: 8
     },
     {
       evaluationId: "Model A",
-      lower: 0.68,
-      upper: 0.72,
+      lower: 0.49,
+      upper: 0.5,
       includeLower: false,
       includeUpper: true,
-      nPositive: 200,
-      nNegative: 2
+      nPositive: 5,
+      nNegative: 8
     },
     {
       evaluationId: "Model A",
-      lower: 0.72,
-      upper: 0.76,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 160,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.76,
-      upper: 0.8,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 120,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.8,
-      upper: 0.84,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 84,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.84,
-      upper: 0.88,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 52,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.88,
-      upper: 0.92,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 30,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.92,
-      upper: 0.96,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 16,
-      nNegative: 0
-    },
-    {
-      evaluationId: "Model A",
-      lower: 0.96,
-      upper: 1,
+      lower: 0.5,
+      upper: 0.51,
       includeLower: false,
       includeUpper: true,
       nPositive: 6,
-      nNegative: 0
+      nNegative: 7
     },
     {
-      evaluationId: "Model B",
-      lower: 0,
-      upper: 0,
-      includeLower: true,
-      includeUpper: true,
-      nPositive: 10,
-      nNegative: 50
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0,
-      upper: 0.04,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 40,
-      nNegative: 240
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.04,
-      upper: 0.08,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 56,
-      nNegative: 260
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.08,
-      upper: 0.12,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 70,
-      nNegative: 280
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.12,
-      upper: 0.16,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 84,
-      nNegative: 300
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.16,
-      upper: 0.2,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 100,
-      nNegative: 290
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.2,
-      upper: 0.24,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 116,
-      nNegative: 270
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.24,
-      upper: 0.28,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 130,
-      nNegative: 240
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.28,
-      upper: 0.32,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 144,
-      nNegative: 210
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.32,
-      upper: 0.36,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 160,
-      nNegative: 180
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.36,
-      upper: 0.4,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 176,
-      nNegative: 156
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.4,
-      upper: 0.44,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 184,
-      nNegative: 130
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.44,
-      upper: 0.48,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 190,
-      nNegative: 104
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.48,
+      evaluationId: "Model A",
+      lower: 0.51,
       upper: 0.52,
       includeLower: false,
       includeUpper: true,
-      nPositive: 184,
-      nNegative: 84
+      nPositive: 6,
+      nNegative: 7
     },
     {
-      evaluationId: "Model B",
+      evaluationId: "Model A",
       lower: 0.52,
+      upper: 0.53,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.53,
+      upper: 0.54,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.54,
+      upper: 0.55,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.55,
       upper: 0.56,
       includeLower: false,
       includeUpper: true,
-      nPositive: 176,
-      nNegative: 64
+      nPositive: 7,
+      nNegative: 6
     },
     {
-      evaluationId: "Model B",
+      evaluationId: "Model A",
       lower: 0.56,
+      upper: 0.57,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.57,
+      upper: 0.58,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.58,
+      upper: 0.59,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.59,
       upper: 0.6,
       includeLower: false,
       includeUpper: true,
-      nPositive: 160,
-      nNegative: 48
+      nPositive: 8,
+      nNegative: 5
     },
     {
-      evaluationId: "Model B",
+      evaluationId: "Model A",
       lower: 0.6,
-      upper: 0.64,
+      upper: 0.61,
       includeLower: false,
       includeUpper: true,
-      nPositive: 140,
-      nNegative: 36
+      nPositive: 8,
+      nNegative: 5
     },
     {
-      evaluationId: "Model B",
-      lower: 0.64,
-      upper: 0.68,
+      evaluationId: "Model A",
+      lower: 0.61,
+      upper: 0.62,
       includeLower: false,
       includeUpper: true,
-      nPositive: 120,
-      nNegative: 24
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.68,
-      upper: 0.72,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 100,
-      nNegative: 16
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.72,
-      upper: 0.76,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 80,
-      nNegative: 10
-    },
-    {
-      evaluationId: "Model B",
-      lower: 0.76,
-      upper: 0.8,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 60,
+      nPositive: 9,
       nNegative: 4
     },
     {
-      evaluationId: "Model B",
-      lower: 0.8,
-      upper: 0.84,
+      evaluationId: "Model A",
+      lower: 0.62,
+      upper: 0.63,
       includeLower: false,
       includeUpper: true,
-      nPositive: 44,
+      nPositive: 9,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.63,
+      upper: 0.64,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.64,
+      upper: 0.65,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.65,
+      upper: 0.66,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.66,
+      upper: 0.67,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.67,
+      upper: 0.68,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.68,
+      upper: 0.69,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.69,
+      upper: 0.7,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.7,
+      upper: 0.71,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
       nNegative: 2
     },
     {
-      evaluationId: "Model B",
-      lower: 0.84,
-      upper: 0.88,
+      evaluationId: "Model A",
+      lower: 0.71,
+      upper: 0.72,
       includeLower: false,
       includeUpper: true,
-      nPositive: 30,
+      nPositive: 12,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.72,
+      upper: 0.73,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.73,
+      upper: 0.74,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.74,
+      upper: 0.75,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.75,
+      upper: 0.76,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.76,
+      upper: 0.77,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.77,
+      upper: 0.78,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.78,
+      upper: 0.79,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.79,
+      upper: 0.8,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.8,
+      upper: 0.81,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.81,
+      upper: 0.82,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.82,
+      upper: 0.83,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.83,
+      upper: 0.84,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.84,
+      upper: 0.85,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.85,
+      upper: 0.86,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.86,
+      upper: 0.87,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
       nNegative: 0
     },
     {
-      evaluationId: "Model B",
+      evaluationId: "Model A",
+      lower: 0.87,
+      upper: 0.88,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
       lower: 0.88,
-      upper: 0.92,
+      upper: 0.89,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.89,
+      upper: 0.9,
       includeLower: false,
       includeUpper: true,
       nPositive: 20,
       nNegative: 0
     },
     {
-      evaluationId: "Model B",
+      evaluationId: "Model A",
+      lower: 0.9,
+      upper: 0.91,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.91,
+      upper: 0.92,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
       lower: 0.92,
+      upper: 0.93,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.93,
+      upper: 0.94,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.94,
+      upper: 0.95,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.95,
       upper: 0.96,
       includeLower: false,
       includeUpper: true,
-      nPositive: 10,
+      nPositive: 23,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.96,
+      upper: 0.97,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 23,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.97,
+      upper: 0.98,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.98,
+      upper: 0.99,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A",
+      lower: 0.99,
+      upper: 1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 25,
       nNegative: 0
     },
     {
       evaluationId: "Model B",
-      lower: 0.96,
-      upper: 1,
+      lower: 0,
+      upper: 0,
+      includeLower: true,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 35
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0,
+      upper: 5e-3,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 80
+    },
+    {
+      evaluationId: "Model B",
+      lower: 5e-3,
+      upper: 0.01,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 75
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.01,
+      upper: 0.02,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 34
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.02,
+      upper: 0.03,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 34
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.03,
+      upper: 0.04,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 34
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.04,
+      upper: 0.05,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 33
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.05,
+      upper: 0.06,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 33
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.06,
+      upper: 0.07,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 32
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.07,
+      upper: 0.08,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 32
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.08,
+      upper: 0.09,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 31
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.09,
+      upper: 0.1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 31
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.1,
+      upper: 0.11,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 31
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.11,
+      upper: 0.12,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.12,
+      upper: 0.13,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.13,
+      upper: 0.14,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 29
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.14,
+      upper: 0.15,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 29
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.15,
+      upper: 0.16,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 29
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.16,
+      upper: 0.17,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 28
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.17,
+      upper: 0.18,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 28
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.18,
+      upper: 0.19,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.19,
+      upper: 0.2,
       includeLower: false,
       includeUpper: true,
       nPositive: 4,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.2,
+      upper: 0.21,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.21,
+      upper: 0.22,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 26
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.22,
+      upper: 0.23,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 26
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.23,
+      upper: 0.24,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.24,
+      upper: 0.25,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.25,
+      upper: 0.26,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.26,
+      upper: 0.27,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.27,
+      upper: 0.28,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.28,
+      upper: 0.29,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 23
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.29,
+      upper: 0.3,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 23
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.3,
+      upper: 0.31,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 23
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.31,
+      upper: 0.32,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.32,
+      upper: 0.33,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.33,
+      upper: 0.34,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.34,
+      upper: 0.35,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.35,
+      upper: 0.36,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.36,
+      upper: 0.37,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 20
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.37,
+      upper: 0.38,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 20
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.38,
+      upper: 0.39,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 20
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.39,
+      upper: 0.4,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.4,
+      upper: 0.41,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.41,
+      upper: 0.42,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.42,
+      upper: 0.43,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.43,
+      upper: 0.44,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.44,
+      upper: 0.45,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.45,
+      upper: 0.46,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.46,
+      upper: 0.47,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.47,
+      upper: 0.48,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.48,
+      upper: 0.49,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.49,
+      upper: 0.5,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.5,
+      upper: 0.51,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.51,
+      upper: 0.52,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.52,
+      upper: 0.53,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.53,
+      upper: 0.54,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.54,
+      upper: 0.55,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.55,
+      upper: 0.56,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.56,
+      upper: 0.57,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.57,
+      upper: 0.58,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.58,
+      upper: 0.59,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.59,
+      upper: 0.6,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.6,
+      upper: 0.61,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.61,
+      upper: 0.62,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.62,
+      upper: 0.63,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.63,
+      upper: 0.64,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.64,
+      upper: 0.65,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.65,
+      upper: 0.66,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.66,
+      upper: 0.67,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.67,
+      upper: 0.68,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.68,
+      upper: 0.69,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.69,
+      upper: 0.7,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.7,
+      upper: 0.71,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.71,
+      upper: 0.72,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.72,
+      upper: 0.73,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.73,
+      upper: 0.74,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.74,
+      upper: 0.75,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.75,
+      upper: 0.76,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.76,
+      upper: 0.77,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.77,
+      upper: 0.78,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.78,
+      upper: 0.79,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.79,
+      upper: 0.8,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.8,
+      upper: 0.81,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.81,
+      upper: 0.82,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.82,
+      upper: 0.83,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.83,
+      upper: 0.84,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.84,
+      upper: 0.85,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.85,
+      upper: 0.86,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.86,
+      upper: 0.87,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.87,
+      upper: 0.88,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.88,
+      upper: 0.89,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.89,
+      upper: 0.9,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.9,
+      upper: 0.91,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.91,
+      upper: 0.92,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.92,
+      upper: 0.93,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 23,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.93,
+      upper: 0.94,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 23,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.94,
+      upper: 0.95,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 23,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.95,
+      upper: 0.96,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.96,
+      upper: 0.97,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.97,
+      upper: 0.98,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.98,
+      upper: 0.99,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 25,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model B",
+      lower: 0.99,
+      upper: 1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 25,
       nNegative: 0
     },
     {
@@ -26892,232 +28388,916 @@ var prediction_distribution_visual_default = {
       upper: 0,
       includeLower: true,
       includeUpper: true,
-      nPositive: 10,
-      nNegative: 50
+      nPositive: 15,
+      nNegative: 85
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0,
-      upper: 0.04,
+      upper: 5e-3,
       includeLower: false,
       includeUpper: true,
-      nPositive: 5,
-      nNegative: 240
+      nPositive: 2,
+      nNegative: 80
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.04,
-      upper: 0.08,
+      lower: 5e-3,
+      upper: 0.01,
       includeLower: false,
       includeUpper: true,
-      nPositive: 8,
-      nNegative: 210
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      lower: 0.08,
-      upper: 0.12,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 12,
-      nNegative: 180
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      lower: 0.12,
-      upper: 0.16,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 18,
-      nNegative: 150
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      lower: 0.16,
-      upper: 0.2,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 25,
-      nNegative: 120
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      lower: 0.2,
-      upper: 0.24,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 35,
-      nNegative: 95
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      lower: 0.24,
-      upper: 0.28,
-      includeLower: false,
-      includeUpper: true,
-      nPositive: 48,
+      nPositive: 3,
       nNegative: 75
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.28,
-      upper: 0.32,
+      lower: 0.01,
+      upper: 0.02,
       includeLower: false,
       includeUpper: true,
-      nPositive: 62,
-      nNegative: 60
+      nPositive: 0,
+      nNegative: 34
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.32,
-      upper: 0.36,
+      lower: 0.02,
+      upper: 0.03,
       includeLower: false,
       includeUpper: true,
-      nPositive: 78,
-      nNegative: 48
+      nPositive: 0,
+      nNegative: 33
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.36,
-      upper: 0.4,
+      lower: 0.03,
+      upper: 0.04,
       includeLower: false,
       includeUpper: true,
-      nPositive: 95,
-      nNegative: 38
+      nPositive: 0,
+      nNegative: 32
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.4,
-      upper: 0.44,
+      lower: 0.04,
+      upper: 0.05,
       includeLower: false,
       includeUpper: true,
-      nPositive: 115,
+      nPositive: 0,
+      nNegative: 32
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.05,
+      upper: 0.06,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 31
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.06,
+      upper: 0.07,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 30
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.07,
+      upper: 0.08,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 29
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.08,
+      upper: 0.09,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 29
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.09,
+      upper: 0.1,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
       nNegative: 28
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.44,
-      upper: 0.48,
+      lower: 0.1,
+      upper: 0.11,
       includeLower: false,
       includeUpper: true,
-      nPositive: 130,
+      nPositive: 0,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.11,
+      upper: 0.12,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 27
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.12,
+      upper: 0.13,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 26
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.13,
+      upper: 0.14,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.14,
+      upper: 0.15,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 25
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.15,
+      upper: 0.16,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.16,
+      upper: 0.17,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 0,
+      nNegative: 24
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.17,
+      upper: 0.18,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 23
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.18,
+      upper: 0.19,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.19,
+      upper: 0.2,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 22
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.2,
+      upper: 0.21,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.21,
+      upper: 0.22,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 21
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.22,
+      upper: 0.23,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
       nNegative: 20
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.48,
-      upper: 0.52,
+      lower: 0.23,
+      upper: 0.24,
       includeLower: false,
       includeUpper: true,
-      nPositive: 142,
+      nPositive: 1,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.24,
+      upper: 0.25,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 19
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.25,
+      upper: 0.26,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.26,
+      upper: 0.27,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 18
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.27,
+      upper: 0.28,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 1,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.28,
+      upper: 0.29,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 17
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.29,
+      upper: 0.3,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.3,
+      upper: 0.31,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 16
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.31,
+      upper: 0.32,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.32,
+      upper: 0.33,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
+      nNegative: 15
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.33,
+      upper: 0.34,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 2,
       nNegative: 14
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.52,
-      upper: 0.56,
+      lower: 0.34,
+      upper: 0.35,
       includeLower: false,
       includeUpper: true,
-      nPositive: 148,
+      nPositive: 2,
+      nNegative: 14
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.35,
+      upper: 0.36,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.36,
+      upper: 0.37,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 13
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.37,
+      upper: 0.38,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.38,
+      upper: 0.39,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.39,
+      upper: 0.4,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 12
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.4,
+      upper: 0.41,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 3,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.41,
+      upper: 0.42,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 11
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.42,
+      upper: 0.43,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
       nNegative: 10
     },
     {
       evaluationId: "Model A (High Risk)",
-      lower: 0.56,
-      upper: 0.6,
+      lower: 0.43,
+      upper: 0.44,
       includeLower: false,
       includeUpper: true,
-      nPositive: 145,
+      nPositive: 4,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.44,
+      upper: 0.45,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 10
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.45,
+      upper: 0.46,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 4,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.46,
+      upper: 0.47,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 9
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.47,
+      upper: 0.48,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.48,
+      upper: 0.49,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.49,
+      upper: 0.5,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 5,
+      nNegative: 8
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.5,
+      upper: 0.51,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.51,
+      upper: 0.52,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.52,
+      upper: 0.53,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
+      nNegative: 7
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.53,
+      upper: 0.54,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 6,
       nNegative: 6
     },
     {
       evaluationId: "Model A (High Risk)",
+      lower: 0.54,
+      upper: 0.55,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.55,
+      upper: 0.56,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.56,
+      upper: 0.57,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 6
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.57,
+      upper: 0.58,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 7,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.58,
+      upper: 0.59,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.59,
+      upper: 0.6,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A (High Risk)",
       lower: 0.6,
+      upper: 0.61,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 8,
+      nNegative: 5
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.61,
+      upper: 0.62,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.62,
+      upper: 0.63,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 9,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.63,
       upper: 0.64,
       includeLower: false,
       includeUpper: true,
-      nPositive: 135,
+      nPositive: 9,
       nNegative: 4
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.64,
+      upper: 0.65,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 4
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.65,
+      upper: 0.66,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.66,
+      upper: 0.67,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 10,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.67,
       upper: 0.68,
       includeLower: false,
       includeUpper: true,
-      nPositive: 120,
-      nNegative: 2
+      nPositive: 11,
+      nNegative: 3
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.68,
+      upper: 0.69,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.69,
+      upper: 0.7,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 11,
+      nNegative: 3
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.7,
+      upper: 0.71,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.71,
       upper: 0.72,
       includeLower: false,
       includeUpper: true,
-      nPositive: 100,
-      nNegative: 1
+      nPositive: 12,
+      nNegative: 2
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.72,
+      upper: 0.73,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 12,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.73,
+      upper: 0.74,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.74,
+      upper: 0.75,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 13,
+      nNegative: 2
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.75,
       upper: 0.76,
       includeLower: false,
       includeUpper: true,
-      nPositive: 80,
-      nNegative: 0
+      nPositive: 13,
+      nNegative: 2
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.76,
+      upper: 0.77,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.77,
+      upper: 0.78,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 14,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.78,
+      upper: 0.79,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 15,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.79,
       upper: 0.8,
       includeLower: false,
       includeUpper: true,
-      nPositive: 60,
-      nNegative: 0
+      nPositive: 15,
+      nNegative: 1
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.8,
+      upper: 0.81,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.81,
+      upper: 0.82,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.82,
+      upper: 0.83,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 16,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.83,
       upper: 0.84,
       includeLower: false,
       includeUpper: true,
-      nPositive: 42,
-      nNegative: 0
+      nPositive: 17,
+      nNegative: 1
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.84,
+      upper: 0.85,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 17,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.85,
+      upper: 0.86,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 1
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.86,
+      upper: 0.87,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 18,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.87,
       upper: 0.88,
       includeLower: false,
       includeUpper: true,
-      nPositive: 26,
+      nPositive: 19,
       nNegative: 0
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.88,
+      upper: 0.89,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 19,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.89,
+      upper: 0.9,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.9,
+      upper: 0.91,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 20,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.91,
       upper: 0.92,
       includeLower: false,
       includeUpper: true,
-      nPositive: 15,
+      nPositive: 21,
       nNegative: 0
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.92,
+      upper: 0.93,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 21,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.93,
+      upper: 0.94,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.94,
+      upper: 0.95,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 22,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.95,
       upper: 0.96,
       includeLower: false,
       includeUpper: true,
-      nPositive: 8,
+      nPositive: 23,
       nNegative: 0
     },
     {
       evaluationId: "Model A (High Risk)",
       lower: 0.96,
+      upper: 0.97,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 23,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.97,
+      upper: 0.98,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.98,
+      upper: 0.99,
+      includeLower: false,
+      includeUpper: true,
+      nPositive: 24,
+      nNegative: 0
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      lower: 0.99,
       upper: 1,
       includeLower: false,
       includeUpper: true,
-      nPositive: 3,
+      nPositive: 25,
       nNegative: 0
     }
   ],
@@ -27131,11 +29311,11 @@ var prediction_distribution_visual_default = {
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3330
+          estimate: 803
         },
         {
           metricId: "false_positives",
-          estimate: 2702
+          estimate: 1297
         },
         {
           metricId: "true_negatives",
@@ -27155,7 +29335,7 @@ var prediction_distribution_visual_default = {
         },
         {
           metricId: "ppv",
-          estimate: 0.552056
+          estimate: 0.382381
         },
         {
           metricId: "npv",
@@ -27166,41 +29346,123 @@ var prediction_distribution_visual_default = {
     {
       evaluationId: "Model A",
       type: "probability_threshold",
-      value: 0.08,
-      cutoff: 0.08,
-      realizedPpcr: 0.826592,
+      value: 5e-3,
+      cutoff: 5e-3,
+      realizedPpcr: 0.913333,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3284
+          estimate: 786
         },
         {
           metricId: "false_positives",
-          estimate: 1702
+          estimate: 1132
         },
         {
           metricId: "true_negatives",
-          estimate: 1e3
+          estimate: 165
         },
         {
           metricId: "false_negatives",
-          estimate: 46
+          estimate: 17
         },
         {
           metricId: "sensitivity",
-          estimate: 0.986186
+          estimate: 0.978829
         },
         {
           metricId: "specificity",
-          estimate: 0.370096
+          estimate: 0.127217
         },
         {
           metricId: "ppv",
-          estimate: 0.658644
+          estimate: 0.409802
         },
         {
           metricId: "npv",
-          estimate: 0.956023
+          estimate: 0.906593
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.01,
+      cutoff: 0.01,
+      realizedPpcr: 0.87619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1057
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 240
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.185042
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.425543
+        },
+        {
+          metricId: "npv",
+          estimate: 0.923077
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.08,
+      cutoff: 0.08,
+      realizedPpcr: 0.770952,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 836
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 461
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.355436
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.483632
+        },
+        {
+          metricId: "npv",
+          estimate: 0.95842
         }
       ]
     },
@@ -27209,39 +29471,39 @@ var prediction_distribution_visual_default = {
       type: "probability_threshold",
       value: 0.2,
       cutoff: 0.2,
-      realizedPpcr: 0.659151,
+      realizedPpcr: 0.625714,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3174
+          estimate: 780
         },
         {
           metricId: "false_positives",
-          estimate: 802
+          estimate: 534
         },
         {
           metricId: "true_negatives",
-          estimate: 1900
+          estimate: 763
         },
         {
           metricId: "false_negatives",
-          estimate: 156
+          estimate: 23
         },
         {
           metricId: "sensitivity",
-          estimate: 0.953153
+          estimate: 0.971357
         },
         {
           metricId: "specificity",
-          estimate: 0.703183
+          estimate: 0.588281
         },
         {
           metricId: "ppv",
-          estimate: 0.79829
+          estimate: 0.593607
         },
         {
           metricId: "npv",
-          estimate: 0.924125
+          estimate: 0.970738
         }
       ]
     },
@@ -27250,39 +29512,39 @@ var prediction_distribution_visual_default = {
       type: "probability_threshold",
       value: 0.32,
       cutoff: 0.32,
-      realizedPpcr: 0.534814,
+      realizedPpcr: 0.514762,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 2884
+          estimate: 764
         },
         {
           metricId: "false_positives",
-          estimate: 342
+          estimate: 317
         },
         {
           metricId: "true_negatives",
-          estimate: 2360
+          estimate: 980
         },
         {
           metricId: "false_negatives",
-          estimate: 446
+          estimate: 39
         },
         {
           metricId: "sensitivity",
-          estimate: 0.866066
+          estimate: 0.951432
         },
         {
           metricId: "specificity",
-          estimate: 0.873427
+          estimate: 0.75559
         },
         {
           metricId: "ppv",
-          estimate: 0.893986
+          estimate: 0.706753
         },
         {
           metricId: "npv",
-          estimate: 0.841055
+          estimate: 0.961727
         }
       ]
     },
@@ -27291,11 +29553,503 @@ var prediction_distribution_visual_default = {
       type: "probability_threshold",
       value: 0.4,
       cutoff: 0.4,
-      realizedPpcr: 0.448939,
+      realizedPpcr: 0.454762,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 2538
+          estimate: 743
+        },
+        {
+          metricId: "false_positives",
+          estimate: 212
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1085
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 60
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.92528
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.836546
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.77801
+        },
+        {
+          metricId: "npv",
+          estimate: 0.947598
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.52,
+      cutoff: 0.52,
+      realizedPpcr: 0.377143,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 688
+        },
+        {
+          metricId: "false_positives",
+          estimate: 104
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1193
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 115
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.856787
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.919815
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.868687
+        },
+        {
+          metricId: "npv",
+          estimate: 0.91208
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.6,
+      cutoff: 0.6,
+      realizedPpcr: 0.328571,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 632
+        },
+        {
+          metricId: "false_positives",
+          estimate: 58
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1239
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 171
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.787049
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.955281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.915942
+        },
+        {
+          metricId: "npv",
+          estimate: 0.878723
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.72,
+      cutoff: 0.72,
+      realizedPpcr: 0.251429,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 510
+        },
+        {
+          metricId: "false_positives",
+          estimate: 18
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1279
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 293
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.635118
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.986122
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.965909
+        },
+        {
+          metricId: "npv",
+          estimate: 0.813613
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.8,
+      cutoff: 0.8,
+      realizedPpcr: 0.19381,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 401
+        },
+        {
+          metricId: "false_positives",
+          estimate: 6
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1291
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 402
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.499377
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.995374
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.985258
+        },
+        {
+          metricId: "npv",
+          estimate: 0.762552
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 0.92,
+      cutoff: 0.92,
+      realizedPpcr: 0.087619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 184
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 619
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.229141
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 1
+        },
+        {
+          metricId: "npv",
+          estimate: 0.676931
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "probability_threshold",
+      value: 1,
+      cutoff: 1,
+      realizedPpcr: 0,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 0
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 803
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 0
+        },
+        {
+          metricId: "npv",
+          estimate: 0.617619
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0,
+      cutoff: 0.96,
+      realizedPpcr: 0.045714,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 96
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 707
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.119552
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 1
+        },
+        {
+          metricId: "npv",
+          estimate: 0.647206
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.1,
+      cutoff: 0.76,
+      realizedPpcr: 0.223333,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 459
+        },
+        {
+          metricId: "false_positives",
+          estimate: 10
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1287
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 344
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.571606
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.99229
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.978678
+        },
+        {
+          metricId: "npv",
+          estimate: 0.789086
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.2,
+      cutoff: 0.68,
+      realizedPpcr: 0.278095,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 556
+        },
+        {
+          metricId: "false_positives",
+          estimate: 28
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1269
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 247
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.692403
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.978412
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.952055
+        },
+        {
+          metricId: "npv",
+          estimate: 0.837071
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.3,
+      cutoff: 0.6,
+      realizedPpcr: 0.328571,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 632
+        },
+        {
+          metricId: "false_positives",
+          estimate: 58
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1239
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 171
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.787049
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.955281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.915942
+        },
+        {
+          metricId: "npv",
+          estimate: 0.878723
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.4,
+      cutoff: 0.52,
+      realizedPpcr: 0.377143,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 688
+        },
+        {
+          metricId: "false_positives",
+          estimate: 104
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1193
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 115
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.856787
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.919815
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.868687
+        },
+        {
+          metricId: "npv",
+          estimate: 0.91208
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A",
+      type: "ppcr",
+      value: 0.5,
+      cutoff: 0.44,
+      realizedPpcr: 0.427619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 728
         },
         {
           metricId: "false_positives",
@@ -27303,519 +30057,27 @@ var prediction_distribution_visual_default = {
         },
         {
           metricId: "true_negatives",
-          estimate: 2532
+          estimate: 1127
         },
         {
           metricId: "false_negatives",
-          estimate: 792
+          estimate: 75
         },
         {
           metricId: "sensitivity",
-          estimate: 0.762162
+          estimate: 0.9066
         },
         {
           metricId: "specificity",
-          estimate: 0.937084
+          estimate: 0.868928
         },
         {
           metricId: "ppv",
-          estimate: 0.937223
+          estimate: 0.81069
         },
         {
           metricId: "npv",
-          estimate: 0.761733
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 0.52,
-      cutoff: 0.52,
-      realizedPpcr: 0.300066,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1764
-        },
-        {
-          metricId: "false_positives",
-          estimate: 46
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2656
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1566
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.52973
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.982976
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.974586
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629086
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 0.6,
-      cutoff: 0.6,
-      realizedPpcr: 0.197613,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1178
-        },
-        {
-          metricId: "false_positives",
-          estimate: 14
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2688
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2152
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.353754
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.994819
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.988255
-        },
-        {
-          metricId: "npv",
-          estimate: 0.555372
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 0.72,
-      cutoff: 0.72,
-      realizedPpcr: 0.077586,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 468
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2862
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.140541
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.485622
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 0.8,
-      cutoff: 0.8,
-      realizedPpcr: 0.031167,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 188
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3142
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.056456
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.462355
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 0.92,
-      cutoff: 0.92,
-      realizedPpcr: 3647e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 22
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3308
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 6607e-6
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.449584
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "probability_threshold",
-      value: 1,
-      cutoff: 1,
-      realizedPpcr: 0,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 0
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3330
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 0
-        },
-        {
-          metricId: "npv",
-          estimate: 0.447944
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0,
-      cutoff: 0.96,
-      realizedPpcr: 995e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 6
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3324
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1802e-6
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.44839
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0.1,
-      cutoff: 0.76,
-      realizedPpcr: 0.051061,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 308
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2702
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 3022
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.092492
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.472048
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0.2,
-      cutoff: 0.68,
-      realizedPpcr: 0.111074,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 668
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2700
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2662
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.200601
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.99926
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.997015
-        },
-        {
-          metricId: "npv",
-          estimate: 0.503543
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0.3,
-      cutoff: 0.6,
-      realizedPpcr: 0.197613,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1178
-        },
-        {
-          metricId: "false_positives",
-          estimate: 14
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2688
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2152
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.353754
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.994819
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.988255
-        },
-        {
-          metricId: "npv",
-          estimate: 0.555372
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0.4,
-      cutoff: 0.52,
-      realizedPpcr: 0.300066,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1764
-        },
-        {
-          metricId: "false_positives",
-          estimate: 46
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2656
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1566
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.52973
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.982976
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.974586
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629086
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A",
-      type: "ppcr",
-      value: 0.5,
-      cutoff: 0.44,
-      realizedPpcr: 0.401525,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2308
-        },
-        {
-          metricId: "false_positives",
-          estimate: 114
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2588
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1022
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.693093
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.957809
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.952931
-        },
-        {
-          metricId: "npv",
-          estimate: 0.716898
+          estimate: 0.937604
         }
       ]
     },
@@ -27824,39 +30086,39 @@ var prediction_distribution_visual_default = {
       type: "ppcr",
       value: 0.6,
       cutoff: 0.32,
-      realizedPpcr: 0.534814,
+      realizedPpcr: 0.514762,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 2884
+          estimate: 764
         },
         {
           metricId: "false_positives",
-          estimate: 342
+          estimate: 317
         },
         {
           metricId: "true_negatives",
-          estimate: 2360
+          estimate: 980
         },
         {
           metricId: "false_negatives",
-          estimate: 446
+          estimate: 39
         },
         {
           metricId: "sensitivity",
-          estimate: 0.866066
+          estimate: 0.951432
         },
         {
           metricId: "specificity",
-          estimate: 0.873427
+          estimate: 0.75559
         },
         {
           metricId: "ppv",
-          estimate: 0.893986
+          estimate: 0.706753
         },
         {
           metricId: "npv",
-          estimate: 0.841055
+          estimate: 0.961727
         }
       ]
     },
@@ -27865,39 +30127,39 @@ var prediction_distribution_visual_default = {
       type: "ppcr",
       value: 0.7,
       cutoff: 0.2,
-      realizedPpcr: 0.659151,
+      realizedPpcr: 0.625714,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3174
+          estimate: 780
         },
         {
           metricId: "false_positives",
-          estimate: 802
+          estimate: 534
         },
         {
           metricId: "true_negatives",
-          estimate: 1900
+          estimate: 763
         },
         {
           metricId: "false_negatives",
-          estimate: 156
+          estimate: 23
         },
         {
           metricId: "sensitivity",
-          estimate: 0.953153
+          estimate: 0.971357
         },
         {
           metricId: "specificity",
-          estimate: 0.703183
+          estimate: 0.588281
         },
         {
           metricId: "ppv",
-          estimate: 0.79829
+          estimate: 0.593607
         },
         {
           metricId: "npv",
-          estimate: 0.924125
+          estimate: 0.970738
         }
       ]
     },
@@ -27906,39 +30168,39 @@ var prediction_distribution_visual_default = {
       type: "ppcr",
       value: 0.8,
       cutoff: 0.12,
-      realizedPpcr: 0.762931,
+      realizedPpcr: 0.718095,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3260
+          estimate: 783
         },
         {
           metricId: "false_positives",
-          estimate: 1342
+          estimate: 725
         },
         {
           metricId: "true_negatives",
-          estimate: 1360
+          estimate: 572
         },
         {
           metricId: "false_negatives",
-          estimate: 70
+          estimate: 20
         },
         {
           metricId: "sensitivity",
-          estimate: 0.978979
+          estimate: 0.975093
         },
         {
           metricId: "specificity",
-          estimate: 0.503331
+          estimate: 0.441018
         },
         {
           metricId: "ppv",
-          estimate: 0.708388
+          estimate: 0.519231
         },
         {
           metricId: "npv",
-          estimate: 0.951049
+          estimate: 0.966216
         }
       ]
     },
@@ -27947,39 +30209,39 @@ var prediction_distribution_visual_default = {
       type: "ppcr",
       value: 0.9,
       cutoff: 0.04,
-      realizedPpcr: 0.898873,
+      realizedPpcr: 0.829048,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3300
+          estimate: 783
         },
         {
           metricId: "false_positives",
-          estimate: 2122
+          estimate: 958
         },
         {
           metricId: "true_negatives",
-          estimate: 580
+          estimate: 339
         },
         {
           metricId: "false_negatives",
-          estimate: 30
+          estimate: 20
         },
         {
           metricId: "sensitivity",
-          estimate: 0.990991
+          estimate: 0.975093
         },
         {
           metricId: "specificity",
-          estimate: 0.214656
+          estimate: 0.261372
         },
         {
           metricId: "ppv",
-          estimate: 0.608632
+          estimate: 0.449742
         },
         {
           metricId: "npv",
-          estimate: 0.95082
+          estimate: 0.94429
         }
       ]
     },
@@ -27992,11 +30254,11 @@ var prediction_distribution_visual_default = {
       performance: [
         {
           metricId: "true_positives",
-          estimate: 3330
+          estimate: 803
         },
         {
           metricId: "false_positives",
-          estimate: 2702
+          estimate: 1297
         },
         {
           metricId: "true_negatives",
@@ -28016,7 +30278,7 @@ var prediction_distribution_visual_default = {
         },
         {
           metricId: "ppv",
-          estimate: 0.552056
+          estimate: 0.382381
         },
         {
           metricId: "npv",
@@ -28033,11 +30295,11 @@ var prediction_distribution_visual_default = {
       performance: [
         {
           metricId: "true_positives",
-          estimate: 2588
+          estimate: 1144
         },
         {
           metricId: "false_positives",
-          estimate: 2998
+          estimate: 1745
         },
         {
           metricId: "true_negatives",
@@ -28057,7 +30319,7 @@ var prediction_distribution_visual_default = {
         },
         {
           metricId: "ppv",
-          estimate: 0.463301
+          estimate: 0.395985
         },
         {
           metricId: "npv",
@@ -28068,1727 +30330,907 @@ var prediction_distribution_visual_default = {
     {
       evaluationId: "Model B",
       type: "probability_threshold",
-      value: 0.08,
-      cutoff: 0.08,
-      realizedPpcr: 0.882564,
+      value: 5e-3,
+      cutoff: 5e-3,
+      realizedPpcr: 0.957771,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 2482
+          estimate: 1137
         },
         {
           metricId: "false_positives",
-          estimate: 2448
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 550
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 106
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.959042
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.183456
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.503448
-        },
-        {
-          metricId: "npv",
-          estimate: 0.838415
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.2,
-      cutoff: 0.2,
-      realizedPpcr: 0.681346,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2228
-        },
-        {
-          metricId: "false_positives",
-          estimate: 1578
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1420
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 360
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.860896
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.473649
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.585391
-        },
-        {
-          metricId: "npv",
-          estimate: 0.797753
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.32,
-      cutoff: 0.32,
-      realizedPpcr: 0.482635,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1838
-        },
-        {
-          metricId: "false_positives",
-          estimate: 858
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2140
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 750
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.710201
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.713809
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.681751
-        },
-        {
-          metricId: "npv",
-          estimate: 0.740484
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.4,
-      cutoff: 0.4,
-      realizedPpcr: 0.362334,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1502
-        },
-        {
-          metricId: "false_positives",
-          estimate: 522
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2476
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1086
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.580371
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.825884
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.742095
-        },
-        {
-          metricId: "npv",
-          estimate: 0.695115
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.52,
-      cutoff: 0.52,
-      realizedPpcr: 0.205514,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 944
-        },
-        {
-          metricId: "false_positives",
-          estimate: 204
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2794
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1644
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.36476
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.931955
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.8223
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629563
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.6,
-      cutoff: 0.6,
-      realizedPpcr: 0.125313,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 608
-        },
-        {
-          metricId: "false_positives",
-          estimate: 92
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2906
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1980
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.23493
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.969313
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.868571
-        },
-        {
-          metricId: "npv",
-          estimate: 0.594761
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.72,
-      cutoff: 0.72,
-      realizedPpcr: 0.047261,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 248
-        },
-        {
-          metricId: "false_positives",
-          estimate: 16
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2982
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2340
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.095827
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.994663
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.939394
-        },
-        {
-          metricId: "npv",
-          estimate: 0.560316
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.8,
-      cutoff: 0.8,
-      realizedPpcr: 0.019692,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 108
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2996
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2480
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.041731
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.999333
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.981818
-        },
-        {
-          metricId: "npv",
-          estimate: 0.547115
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 0.92,
-      cutoff: 0.92,
-      realizedPpcr: 2506e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 14
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2998
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2574
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 541e-5
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.538047
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "probability_threshold",
-      value: 1,
-      cutoff: 1,
-      realizedPpcr: 0,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 0
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2998
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2588
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 0
-        },
-        {
-          metricId: "npv",
-          estimate: 0.536699
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0,
-      cutoff: 0.96,
-      realizedPpcr: 716e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 4
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2998
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2584
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1546e-6
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.537083
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.1,
-      cutoff: 0.76,
-      realizedPpcr: 0.031149,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 168
-        },
-        {
-          metricId: "false_positives",
-          estimate: 6
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2992
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2420
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.064915
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.997999
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.965517
-        },
-        {
-          metricId: "npv",
-          estimate: 0.552846
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.2,
-      cutoff: 0.68,
-      realizedPpcr: 0.068027,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 348
-        },
-        {
-          metricId: "false_positives",
-          estimate: 32
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2966
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 2240
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.134467
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.989326
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.915789
-        },
-        {
-          metricId: "npv",
-          estimate: 0.569727
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.3,
-      cutoff: 0.6,
-      realizedPpcr: 0.125313,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 608
-        },
-        {
-          metricId: "false_positives",
-          estimate: 92
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2906
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1980
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.23493
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.969313
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.868571
-        },
-        {
-          metricId: "npv",
-          estimate: 0.594761
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.4,
-      cutoff: 0.52,
-      realizedPpcr: 0.205514,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 944
-        },
-        {
-          metricId: "false_positives",
-          estimate: 204
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2794
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1644
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.36476
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.931955
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.8223
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629563
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.5,
-      cutoff: 0.44,
-      realizedPpcr: 0.306122,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1318
-        },
-        {
-          metricId: "false_positives",
-          estimate: 392
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2606
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1270
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.509274
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.869246
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.77076
-        },
-        {
-          metricId: "npv",
-          estimate: 0.672343
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.6,
-      cutoff: 0.32,
-      realizedPpcr: 0.482635,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1838
-        },
-        {
-          metricId: "false_positives",
-          estimate: 858
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 2140
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 750
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.710201
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.713809
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.681751
-        },
-        {
-          metricId: "npv",
-          estimate: 0.740484
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.7,
-      cutoff: 0.2,
-      realizedPpcr: 0.681346,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2228
-        },
-        {
-          metricId: "false_positives",
-          estimate: 1578
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1420
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 360
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.860896
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.473649
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.585391
-        },
-        {
-          metricId: "npv",
-          estimate: 0.797753
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.8,
-      cutoff: 0.12,
-      realizedPpcr: 0.819907,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2412
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2168
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 830
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 176
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.931994
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.276851
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.526638
-        },
-        {
-          metricId: "npv",
-          estimate: 0.82505
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 0.9,
-      cutoff: 0.04,
-      realizedPpcr: 0.939134,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2538
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2708
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 290
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 50
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.98068
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.096731
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.483797
-        },
-        {
-          metricId: "npv",
-          estimate: 0.852941
-        }
-      ]
-    },
-    {
-      evaluationId: "Model B",
-      type: "ppcr",
-      value: 1,
-      cutoff: 0,
-      realizedPpcr: 1,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 2588
-        },
-        {
-          metricId: "false_positives",
-          estimate: 2998
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1
-        },
-        {
-          metricId: "specificity",
-          estimate: 0
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.463301
-        },
-        {
-          metricId: "npv",
-          estimate: 0
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0,
-      cutoff: 0,
-      realizedPpcr: 1,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1665
-        },
-        {
-          metricId: "false_positives",
-          estimate: 1351
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 0
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1
-        },
-        {
-          metricId: "specificity",
-          estimate: 0
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.552056
-        },
-        {
-          metricId: "npv",
-          estimate: 0
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.08,
-      cutoff: 0.08,
-      realizedPpcr: 0.826592,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1642
-        },
-        {
-          metricId: "false_positives",
-          estimate: 851
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 500
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 23
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.986186
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.370096
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.658644
-        },
-        {
-          metricId: "npv",
-          estimate: 0.956023
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.2,
-      cutoff: 0.2,
-      realizedPpcr: 0.659151,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1587
-        },
-        {
-          metricId: "false_positives",
-          estimate: 401
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 950
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 78
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.953153
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.703183
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.79829
-        },
-        {
-          metricId: "npv",
-          estimate: 0.924125
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.32,
-      cutoff: 0.32,
-      realizedPpcr: 0.534814,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1442
-        },
-        {
-          metricId: "false_positives",
-          estimate: 171
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1180
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 223
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.866066
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.873427
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.893986
-        },
-        {
-          metricId: "npv",
-          estimate: 0.841055
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.4,
-      cutoff: 0.4,
-      realizedPpcr: 0.448939,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1269
-        },
-        {
-          metricId: "false_positives",
-          estimate: 85
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1266
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 396
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.762162
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.937084
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.937223
-        },
-        {
-          metricId: "npv",
-          estimate: 0.761733
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.52,
-      cutoff: 0.52,
-      realizedPpcr: 0.300066,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 882
-        },
-        {
-          metricId: "false_positives",
-          estimate: 23
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1328
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 783
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.52973
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.982976
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.974586
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629086
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.6,
-      cutoff: 0.6,
-      realizedPpcr: 0.197613,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 589
-        },
-        {
-          metricId: "false_positives",
-          estimate: 7
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1344
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1076
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.353754
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.994819
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.988255
-        },
-        {
-          metricId: "npv",
-          estimate: 0.555372
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.72,
-      cutoff: 0.72,
-      realizedPpcr: 0.077586,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 234
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1431
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.140541
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.485622
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.8,
-      cutoff: 0.8,
-      realizedPpcr: 0.031167,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 94
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1571
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.056456
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.462355
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 0.92,
-      cutoff: 0.92,
-      realizedPpcr: 3647e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 11
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1654
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 6607e-6
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.449584
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "probability_threshold",
-      value: 1,
-      cutoff: 1,
-      realizedPpcr: 0,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 0
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1665
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 0
-        },
-        {
-          metricId: "npv",
-          estimate: 0.447944
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0,
-      cutoff: 0.96,
-      realizedPpcr: 995e-6,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 3
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1662
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 1802e-6
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.44839
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.1,
-      cutoff: 0.76,
-      realizedPpcr: 0.051061,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 154
-        },
-        {
-          metricId: "false_positives",
-          estimate: 0
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1351
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1511
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.092492
-        },
-        {
-          metricId: "specificity",
-          estimate: 1
-        },
-        {
-          metricId: "ppv",
-          estimate: 1
-        },
-        {
-          metricId: "npv",
-          estimate: 0.472048
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.2,
-      cutoff: 0.68,
-      realizedPpcr: 0.111074,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 334
-        },
-        {
-          metricId: "false_positives",
-          estimate: 1
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1350
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1331
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.200601
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.99926
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.997015
-        },
-        {
-          metricId: "npv",
-          estimate: 0.503543
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.3,
-      cutoff: 0.6,
-      realizedPpcr: 0.197613,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 589
-        },
-        {
-          metricId: "false_positives",
-          estimate: 7
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1344
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 1076
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.353754
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.994819
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.988255
-        },
-        {
-          metricId: "npv",
-          estimate: 0.555372
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.4,
-      cutoff: 0.52,
-      realizedPpcr: 0.300066,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 882
-        },
-        {
-          metricId: "false_positives",
-          estimate: 23
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1328
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 783
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.52973
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.982976
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.974586
-        },
-        {
-          metricId: "npv",
-          estimate: 0.629086
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.5,
-      cutoff: 0.44,
-      realizedPpcr: 0.401525,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1154
-        },
-        {
-          metricId: "false_positives",
-          estimate: 57
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1294
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 511
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.693093
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.957809
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.952931
-        },
-        {
-          metricId: "npv",
-          estimate: 0.716898
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.6,
-      cutoff: 0.32,
-      realizedPpcr: 0.534814,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1442
-        },
-        {
-          metricId: "false_positives",
-          estimate: 171
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 1180
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 223
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.866066
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.873427
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.893986
-        },
-        {
-          metricId: "npv",
-          estimate: 0.841055
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.7,
-      cutoff: 0.2,
-      realizedPpcr: 0.659151,
-      performance: [
-        {
-          metricId: "true_positives",
-          estimate: 1587
-        },
-        {
-          metricId: "false_positives",
-          estimate: 401
-        },
-        {
-          metricId: "true_negatives",
-          estimate: 950
-        },
-        {
-          metricId: "false_negatives",
-          estimate: 78
-        },
-        {
-          metricId: "sensitivity",
-          estimate: 0.953153
-        },
-        {
-          metricId: "specificity",
-          estimate: 0.703183
-        },
-        {
-          metricId: "ppv",
-          estimate: 0.79829
-        },
-        {
-          metricId: "npv",
-          estimate: 0.924125
-        }
-      ]
-    },
-    {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.8,
-      cutoff: 0.12,
-      realizedPpcr: 0.762931,
-      performance: [
-        {
-          metricId: "true_positives",
           estimate: 1630
         },
         {
-          metricId: "false_positives",
-          estimate: 671
-        },
-        {
           metricId: "true_negatives",
-          estimate: 680
+          estimate: 115
         },
         {
           metricId: "false_negatives",
-          estimate: 35
+          estimate: 7
         },
         {
           metricId: "sensitivity",
-          estimate: 0.978979
+          estimate: 0.993881
         },
         {
           metricId: "specificity",
-          estimate: 0.503331
+          estimate: 0.065903
         },
         {
           metricId: "ppv",
-          estimate: 0.708388
+          estimate: 0.410914
         },
         {
           metricId: "npv",
-          estimate: 0.951049
+          estimate: 0.942623
         }
       ]
     },
     {
-      evaluationId: "Model A (High Risk)",
-      type: "ppcr",
-      value: 0.9,
-      cutoff: 0.04,
-      realizedPpcr: 0.898873,
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.01,
+      cutoff: 0.01,
+      realizedPpcr: 0.930772,
       performance: [
         {
           metricId: "true_positives",
-          estimate: 1650
+          estimate: 1134
         },
         {
           metricId: "false_positives",
-          estimate: 1061
+          estimate: 1555
         },
         {
           metricId: "true_negatives",
-          estimate: 290
+          estimate: 190
         },
         {
           metricId: "false_negatives",
-          estimate: 15
+          estimate: 10
         },
         {
           metricId: "sensitivity",
-          estimate: 0.990991
+          estimate: 0.991259
         },
         {
           metricId: "specificity",
-          estimate: 0.214656
+          estimate: 0.108883
         },
         {
           metricId: "ppv",
-          estimate: 0.608632
+          estimate: 0.421718
         },
         {
           metricId: "npv",
-          estimate: 0.95082
+          estimate: 0.95
         }
       ]
     },
     {
-      evaluationId: "Model A (High Risk)",
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.08,
+      cutoff: 0.08,
+      realizedPpcr: 0.849083,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1130
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1323
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 422
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 14
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.987762
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.241834
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.46066
+        },
+        {
+          metricId: "npv",
+          estimate: 0.96789
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.2,
+      cutoff: 0.2,
+      realizedPpcr: 0.718242,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1102
+        },
+        {
+          metricId: "false_positives",
+          estimate: 973
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 772
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 42
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.963287
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.442407
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.531084
+        },
+        {
+          metricId: "npv",
+          estimate: 0.948403
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.32,
+      cutoff: 0.32,
+      realizedPpcr: 0.596054,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1042
+        },
+        {
+          metricId: "false_positives",
+          estimate: 680
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1065
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 102
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.910839
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.610315
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.60511
+        },
+        {
+          metricId: "npv",
+          estimate: 0.912596
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.4,
+      cutoff: 0.4,
+      realizedPpcr: 0.519211,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 984
+        },
+        {
+          metricId: "false_positives",
+          estimate: 516
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1229
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 160
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.86014
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.704298
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.656
+        },
+        {
+          metricId: "npv",
+          estimate: 0.884809
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.52,
+      cutoff: 0.52,
+      realizedPpcr: 0.409138,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 867
+        },
+        {
+          metricId: "false_positives",
+          estimate: 315
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1430
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 277
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.757867
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.819484
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.733503
+        },
+        {
+          metricId: "npv",
+          estimate: 0.837727
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.6,
+      cutoff: 0.6,
+      realizedPpcr: 0.338179,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 767
+        },
+        {
+          metricId: "false_positives",
+          estimate: 210
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1535
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 377
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.670455
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.879656
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.785056
+        },
+        {
+          metricId: "npv",
+          estimate: 0.802824
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.72,
+      cutoff: 0.72,
+      realizedPpcr: 0.235722,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 585
+        },
+        {
+          metricId: "false_positives",
+          estimate: 96
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1649
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 559
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.511364
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.944986
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.859031
+        },
+        {
+          metricId: "npv",
+          estimate: 0.74683
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.8,
+      cutoff: 0.8,
+      realizedPpcr: 0.16857,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 441
+        },
+        {
+          metricId: "false_positives",
+          estimate: 46
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1699
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 703
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.38549
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.973639
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.905544
+        },
+        {
+          metricId: "npv",
+          estimate: 0.707327
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 0.92,
+      cutoff: 0.92,
+      realizedPpcr: 0.06819,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 191
+        },
+        {
+          metricId: "false_positives",
+          estimate: 6
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1739
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 953
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.166958
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.996562
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.969543
+        },
+        {
+          metricId: "npv",
+          estimate: 0.645988
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "probability_threshold",
+      value: 1,
+      cutoff: 1,
+      realizedPpcr: 0,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 0
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1745
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 1144
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 0
+        },
+        {
+          metricId: "npv",
+          estimate: 0.604015
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0,
+      cutoff: 0.96,
+      realizedPpcr: 0.034268,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 98
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1744
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 1046
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.085664
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.999427
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.989899
+        },
+        {
+          metricId: "npv",
+          estimate: 0.62509
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.1,
+      cutoff: 0.76,
+      realizedPpcr: 0.202146,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 515
+        },
+        {
+          metricId: "false_positives",
+          estimate: 69
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1676
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 629
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.450175
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.960458
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.881849
+        },
+        {
+          metricId: "npv",
+          estimate: 0.727115
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.2,
+      cutoff: 0.68,
+      realizedPpcr: 0.269643,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 650
+        },
+        {
+          metricId: "false_positives",
+          estimate: 129
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1616
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 494
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.568182
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.926074
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.834403
+        },
+        {
+          metricId: "npv",
+          estimate: 0.765877
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.3,
+      cutoff: 0.6,
+      realizedPpcr: 0.338179,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 767
+        },
+        {
+          metricId: "false_positives",
+          estimate: 210
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1535
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 377
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.670455
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.879656
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.785056
+        },
+        {
+          metricId: "npv",
+          estimate: 0.802824
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.4,
+      cutoff: 0.52,
+      realizedPpcr: 0.409138,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 867
+        },
+        {
+          metricId: "false_positives",
+          estimate: 315
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1430
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 277
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.757867
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.819484
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.733503
+        },
+        {
+          metricId: "npv",
+          estimate: 0.837727
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.5,
+      cutoff: 0.44,
+      realizedPpcr: 0.481828,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 949
+        },
+        {
+          metricId: "false_positives",
+          estimate: 443
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1302
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 195
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.829545
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.746132
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.681753
+        },
+        {
+          metricId: "npv",
+          estimate: 0.869739
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.6,
+      cutoff: 0.32,
+      realizedPpcr: 0.596054,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1042
+        },
+        {
+          metricId: "false_positives",
+          estimate: 680
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1065
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 102
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.910839
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.610315
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.60511
+        },
+        {
+          metricId: "npv",
+          estimate: 0.912596
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.7,
+      cutoff: 0.2,
+      realizedPpcr: 0.718242,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1102
+        },
+        {
+          metricId: "false_positives",
+          estimate: 973
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 772
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 42
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.963287
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.442407
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.531084
+        },
+        {
+          metricId: "npv",
+          estimate: 0.948403
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.8,
+      cutoff: 0.12,
+      realizedPpcr: 0.804431,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1124
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1200
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 545
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.982517
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.312321
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.483649
+        },
+        {
+          metricId: "npv",
+          estimate: 0.964602
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
+      type: "ppcr",
+      value: 0.9,
+      cutoff: 0.04,
+      realizedPpcr: 0.895466,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 1134
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1453
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 292
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 10
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.991259
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.167335
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.438346
+        },
+        {
+          metricId: "npv",
+          estimate: 0.966887
+        }
+      ]
+    },
+    {
+      evaluationId: "Model B",
       type: "ppcr",
       value: 1,
       cutoff: 0,
@@ -29796,11 +31238,11 @@ var prediction_distribution_visual_default = {
       performance: [
         {
           metricId: "true_positives",
-          estimate: 1665
+          estimate: 1144
         },
         {
           metricId: "false_positives",
-          estimate: 1351
+          estimate: 1745
         },
         {
           metricId: "true_negatives",
@@ -29820,7 +31262,991 @@ var prediction_distribution_visual_default = {
         },
         {
           metricId: "ppv",
-          estimate: 0.552056
+          estimate: 0.395985
+        },
+        {
+          metricId: "npv",
+          estimate: 0
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0,
+      cutoff: 0,
+      realizedPpcr: 1,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 803
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1297
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 1
+        },
+        {
+          metricId: "specificity",
+          estimate: 0
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.382381
+        },
+        {
+          metricId: "npv",
+          estimate: 0
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 5e-3,
+      cutoff: 5e-3,
+      realizedPpcr: 0.913333,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 786
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1132
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 165
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 17
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.978829
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.127217
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.409802
+        },
+        {
+          metricId: "npv",
+          estimate: 0.906593
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.01,
+      cutoff: 0.01,
+      realizedPpcr: 0.87619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1057
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 240
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.185042
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.425543
+        },
+        {
+          metricId: "npv",
+          estimate: 0.923077
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.08,
+      cutoff: 0.08,
+      realizedPpcr: 0.770952,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 836
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 461
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.355436
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.483632
+        },
+        {
+          metricId: "npv",
+          estimate: 0.95842
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.2,
+      cutoff: 0.2,
+      realizedPpcr: 0.625714,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 780
+        },
+        {
+          metricId: "false_positives",
+          estimate: 534
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 763
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 23
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.971357
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.588281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.593607
+        },
+        {
+          metricId: "npv",
+          estimate: 0.970738
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.32,
+      cutoff: 0.32,
+      realizedPpcr: 0.514762,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 764
+        },
+        {
+          metricId: "false_positives",
+          estimate: 317
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 980
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 39
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.951432
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.75559
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.706753
+        },
+        {
+          metricId: "npv",
+          estimate: 0.961727
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.4,
+      cutoff: 0.4,
+      realizedPpcr: 0.454762,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 743
+        },
+        {
+          metricId: "false_positives",
+          estimate: 212
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1085
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 60
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.92528
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.836546
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.77801
+        },
+        {
+          metricId: "npv",
+          estimate: 0.947598
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.52,
+      cutoff: 0.52,
+      realizedPpcr: 0.377143,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 688
+        },
+        {
+          metricId: "false_positives",
+          estimate: 104
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1193
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 115
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.856787
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.919815
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.868687
+        },
+        {
+          metricId: "npv",
+          estimate: 0.91208
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.6,
+      cutoff: 0.6,
+      realizedPpcr: 0.328571,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 632
+        },
+        {
+          metricId: "false_positives",
+          estimate: 58
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1239
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 171
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.787049
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.955281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.915942
+        },
+        {
+          metricId: "npv",
+          estimate: 0.878723
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.72,
+      cutoff: 0.72,
+      realizedPpcr: 0.251429,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 510
+        },
+        {
+          metricId: "false_positives",
+          estimate: 18
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1279
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 293
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.635118
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.986122
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.965909
+        },
+        {
+          metricId: "npv",
+          estimate: 0.813613
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.8,
+      cutoff: 0.8,
+      realizedPpcr: 0.19381,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 401
+        },
+        {
+          metricId: "false_positives",
+          estimate: 6
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1291
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 402
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.499377
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.995374
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.985258
+        },
+        {
+          metricId: "npv",
+          estimate: 0.762552
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 0.92,
+      cutoff: 0.92,
+      realizedPpcr: 0.087619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 184
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 619
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.229141
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 1
+        },
+        {
+          metricId: "npv",
+          estimate: 0.676931
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "probability_threshold",
+      value: 1,
+      cutoff: 1,
+      realizedPpcr: 0,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 0
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 803
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 0
+        },
+        {
+          metricId: "npv",
+          estimate: 0.617619
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0,
+      cutoff: 0.96,
+      realizedPpcr: 0.045714,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 96
+        },
+        {
+          metricId: "false_positives",
+          estimate: 0
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1297
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 707
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.119552
+        },
+        {
+          metricId: "specificity",
+          estimate: 1
+        },
+        {
+          metricId: "ppv",
+          estimate: 1
+        },
+        {
+          metricId: "npv",
+          estimate: 0.647206
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.1,
+      cutoff: 0.76,
+      realizedPpcr: 0.223333,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 459
+        },
+        {
+          metricId: "false_positives",
+          estimate: 10
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1287
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 344
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.571606
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.99229
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.978678
+        },
+        {
+          metricId: "npv",
+          estimate: 0.789086
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.2,
+      cutoff: 0.68,
+      realizedPpcr: 0.278095,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 556
+        },
+        {
+          metricId: "false_positives",
+          estimate: 28
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1269
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 247
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.692403
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.978412
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.952055
+        },
+        {
+          metricId: "npv",
+          estimate: 0.837071
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.3,
+      cutoff: 0.6,
+      realizedPpcr: 0.328571,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 632
+        },
+        {
+          metricId: "false_positives",
+          estimate: 58
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1239
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 171
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.787049
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.955281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.915942
+        },
+        {
+          metricId: "npv",
+          estimate: 0.878723
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.4,
+      cutoff: 0.52,
+      realizedPpcr: 0.377143,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 688
+        },
+        {
+          metricId: "false_positives",
+          estimate: 104
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1193
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 115
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.856787
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.919815
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.868687
+        },
+        {
+          metricId: "npv",
+          estimate: 0.91208
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.5,
+      cutoff: 0.44,
+      realizedPpcr: 0.427619,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 728
+        },
+        {
+          metricId: "false_positives",
+          estimate: 170
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 1127
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 75
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.9066
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.868928
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.81069
+        },
+        {
+          metricId: "npv",
+          estimate: 0.937604
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.6,
+      cutoff: 0.32,
+      realizedPpcr: 0.514762,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 764
+        },
+        {
+          metricId: "false_positives",
+          estimate: 317
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 980
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 39
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.951432
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.75559
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.706753
+        },
+        {
+          metricId: "npv",
+          estimate: 0.961727
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.7,
+      cutoff: 0.2,
+      realizedPpcr: 0.625714,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 780
+        },
+        {
+          metricId: "false_positives",
+          estimate: 534
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 763
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 23
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.971357
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.588281
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.593607
+        },
+        {
+          metricId: "npv",
+          estimate: 0.970738
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.8,
+      cutoff: 0.12,
+      realizedPpcr: 0.718095,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 725
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 572
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.441018
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.519231
+        },
+        {
+          metricId: "npv",
+          estimate: 0.966216
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 0.9,
+      cutoff: 0.04,
+      realizedPpcr: 0.829048,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 783
+        },
+        {
+          metricId: "false_positives",
+          estimate: 958
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 339
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 20
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 0.975093
+        },
+        {
+          metricId: "specificity",
+          estimate: 0.261372
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.449742
+        },
+        {
+          metricId: "npv",
+          estimate: 0.94429
+        }
+      ]
+    },
+    {
+      evaluationId: "Model A (High Risk)",
+      type: "ppcr",
+      value: 1,
+      cutoff: 0,
+      realizedPpcr: 1,
+      performance: [
+        {
+          metricId: "true_positives",
+          estimate: 803
+        },
+        {
+          metricId: "false_positives",
+          estimate: 1297
+        },
+        {
+          metricId: "true_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "false_negatives",
+          estimate: 0
+        },
+        {
+          metricId: "sensitivity",
+          estimate: 1
+        },
+        {
+          metricId: "specificity",
+          estimate: 0
+        },
+        {
+          metricId: "ppv",
+          estimate: 0.382381
         },
         {
           metricId: "npv",
