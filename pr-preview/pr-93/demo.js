@@ -21197,7 +21197,7 @@ function renderPredictionDistribution(spec, options = {}) {
     presentationControlContainer.replaceChildren();
     colorModeSelect.value = currentColorMode;
     conditioningSelect.value = currentConditioning === "all_observations" ? "predicted_positives" : currentConditioning;
-    conditioningGroup.style.display = "none";
+    conditioningGroup.style.display = currentColorMode === "observed_outcome" ? "none" : "inline-flex";
     dimSelect.replaceChildren();
     const availableDims = getAvailableDimensions(currentEvalId);
     for (const dim of availableDims) {
