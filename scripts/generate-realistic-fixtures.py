@@ -54,36 +54,6 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
 
     return bins
 
-def create_producer_rank_bins(eval_id, bins, num_quantiles=100):
-    total_positives = sum(b["nPositive"] for b in bins)
-    total_negatives = sum(b["nNegative"] for b in bins)
-    total_n = total_positives + total_negatives
-
-    rank_bins = []
-    # Generate 100 equal-width rank percentile bins [i/100, (i+1)/100]
-    for i in range(num_quantiles):
-        r_lower = round(i / num_quantiles, 4)
-        r_upper = round((i + 1) / num_quantiles, 4)
-        r_mid = (r_lower + r_upper) / 2.0
-
-        # Construct realistic outcome composition across rank percentile
-        # (higher rank = higher predicted risk = higher event prevalence)
-        event_frac = math.pow(r_mid, 1.8) * 0.75
-        bin_mass = total_n / float(num_quantiles)
-
-        pos_mass = round(bin_mass * event_frac, 4)
-        neg_mass = round(bin_mass * (1.0 - event_frac), 4)
-
-        rank_bins.append({
-            "evaluationId": eval_id,
-            "rankLower": r_lower,
-            "rankUpper": r_upper,
-            "positiveMass": pos_mass,
-            "negativeMass": neg_mass
-        })
-
-    return rank_bins
-
 def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
     total_positives = sum(b["nPositive"] for b in bins)
     total_negatives = sum(b["nNegative"] for b in bins)
@@ -171,16 +141,52 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
 
     return ops
 
+def create_rank_bins_from_ops(eval_id, ops):
+    # Derive empirical PPCR strata directly from differences between successive PPCR operating points
+    ppcr_ops = [op for op in ops if op["type"] == "ppcr"]
+    ppcr_ops.sort(key=lambda op: op["value"])
+
+    rank_bins = []
+    # For requested PPCR grid p_0=0, p_1=0.01, ..., p_K=1.00
+    for i in range(len(ppcr_ops) - 1):
+        op_prev = ppcr_ops[i]
+        op_curr = ppcr_ops[i + 1]
+
+        r_lower = round(op_prev["value"], 4)
+        r_upper = round(op_curr["value"], 4)
+
+        tp_prev = next(m["estimate"] for m in op_prev["performance"] if m["metricId"] == "true_positives")
+        fp_prev = next(m["estimate"] for m in op_prev["performance"] if m["metricId"] == "false_positives")
+
+        tp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "true_positives")
+        fp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "false_positives")
+
+        # Note: Higher requested PPCR selects lower thresholds (more predicted positives).
+        # When moving from r_lower (e.g. 0.0) to r_upper (e.g. 0.1), TP and FP increase.
+        pos_mass = max(0.0, float(tp_curr - tp_prev))
+        neg_mass = max(0.0, float(fp_curr - fp_prev))
+
+        rank_bins.append({
+            "evaluationId": eval_id,
+            "rankLower": r_lower,
+            "rankUpper": r_upper,
+            "positiveMass": pos_mass,
+            "negativeMass": neg_mass
+        })
+
+    return rank_bins
+
 def generate_single_spec():
     bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
-    rank_bins = create_producer_rank_bins("Model A", bins, num_quantiles=100)
-
     thresholds = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_mappings = [
-        (0.0, 1.00), (0.1, 0.85), (0.2, 0.72), (0.3, 0.60), (0.4, 0.50),
-        (0.5, 0.40), (0.6, 0.30), (0.7, 0.20), (0.8, 0.12), (0.9, 0.05), (1.0, 0.0)
-    ]
+
+    # 101 PPCR operating points (0.00 to 1.00 in steps of 0.01)
+    ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
+    # Map requested PPCR p to empirical cutoff (1 - p)
+    ppcr_mappings = [(p, round(1.0 - p, 2)) for p in ppcr_grid]
+
     ops = calculate_operating_points("Model A", bins, thresholds, ppcr_mappings)
+    rank_bins = create_rank_bins_from_ops("Model A", ops)
 
     return {
         "schemaVersion": "2.0",
@@ -206,19 +212,17 @@ def generate_multi_spec():
     bins_b = create_fine_eval_bins("Model B", n_total=3000, model_quality="moderate")
     bins_sub = create_fine_eval_bins("Model A (High Risk)", n_total=2000, model_quality="high")
 
-    rank_bins_a = create_producer_rank_bins("Model A", bins_a, num_quantiles=100)
-    rank_bins_b = create_producer_rank_bins("Model B", bins_b, num_quantiles=100)
-    rank_bins_sub = create_producer_rank_bins("Model A (High Risk)", bins_sub, num_quantiles=100)
-
     thresholds = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_mappings = [
-        (0.0, 1.00), (0.1, 0.85), (0.2, 0.72), (0.3, 0.60), (0.4, 0.50),
-        (0.5, 0.40), (0.6, 0.30), (0.7, 0.20), (0.8, 0.12), (0.9, 0.05), (1.0, 0.0)
-    ]
+    ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
+    ppcr_mappings = [(p, round(1.0 - p, 2)) for p in ppcr_grid]
 
     ops_a = calculate_operating_points("Model A", bins_a, thresholds, ppcr_mappings)
     ops_b = calculate_operating_points("Model B", bins_b, thresholds, ppcr_mappings)
     ops_sub = calculate_operating_points("Model A (High Risk)", bins_sub, thresholds, ppcr_mappings)
+
+    rank_bins_a = create_rank_bins_from_ops("Model A", ops_a)
+    rank_bins_b = create_rank_bins_from_ops("Model B", ops_b)
+    rank_bins_sub = create_rank_bins_from_ops("Model A (High Risk)", ops_sub)
 
     all_bins = bins_a + bins_b + bins_sub
     all_rank_bins = rank_bins_a + rank_bins_b + rank_bins_sub
@@ -256,55 +260,9 @@ def generate_multi_spec():
         "operatingPoints": all_ops
     }
 
-def generate_ppcr_tie_spec():
-    # Dedicated fixture with a large tied-score group crossing rank boundaries
-    # Total N = 1000. Tied score group has 200 subjects (20% of population) with 40 events and 160 non-events
-    # Covering rank [0.15, 0.35].
-    # Spans across 10 percentile bins (0.0..0.1, 0.1..0.2, etc.)
-    bins = [
-        {"evaluationId": "Model Tie", "lower": 0.0, "upper": 0.0, "includeLower": True, "includeUpper": True, "nPositive": 10, "nNegative": 90},
-        {"evaluationId": "Model Tie", "lower": 0.0, "upper": 0.25, "includeLower": False, "includeUpper": True, "nPositive": 40, "nNegative": 160}, # Tied group
-        {"evaluationId": "Model Tie", "lower": 0.25, "upper": 1.00, "includeLower": False, "includeUpper": True, "nPositive": 200, "nNegative": 500},
-    ]
-
-    # Deterministic rankBins demonstrating fractional allocation across percentile boundaries
-    rank_bins = []
-    # 10 percentile bins of width 0.10
-    # Bin 0: [0.0, 0.1]
-    rank_bins.append({"evaluationId": "Model Tie", "rankLower": 0.0, "rankUpper": 0.1, "positiveMass": 10.0, "negativeMass": 90.0})
-    # Bin 1: [0.1, 0.2] (Half from bin0, half from tied group)
-    rank_bins.append({"evaluationId": "Model Tie", "rankLower": 0.1, "rankUpper": 0.2, "positiveMass": 10.0, "negativeMass": 40.0})
-    # Bin 2: [0.2, 0.3] (Fully inside tied group: 20 positiveMass, 80 negativeMass)
-    rank_bins.append({"evaluationId": "Model Tie", "rankLower": 0.2, "rankUpper": 0.3, "positiveMass": 20.0, "negativeMass": 80.0})
-    # Bin 3: [0.3, 0.4] (Half from tied group: 10 positiveMass, 40 negativeMass + rest)
-    rank_bins.append({"evaluationId": "Model Tie", "rankLower": 0.3, "rankUpper": 0.4, "positiveMass": 25.0, "negativeMass": 75.0})
-
-    for i in range(4, 10):
-        rank_bins.append({
-            "evaluationId": "Model Tie",
-            "rankLower": round(i * 0.1, 2),
-            "rankUpper": round((i + 1) * 0.1, 2),
-            "positiveMass": 30.0,
-            "negativeMass": 70.0
-        })
-
-    ops = calculate_operating_points("Model Tie", bins, [0.0, 0.25, 0.50, 1.0], [(0.0, 1.0), (0.2, 0.25), (1.0, 0.0)])
-
-    return {
-        "schemaVersion": "2.0",
-        "type": "prediction_distribution",
-        "title": "PPCR Tie Spec with Producer-Owned Rank Bins",
-        "evaluations": [{"id": "Model Tie", "model": "Model Tie", "population": "Pop"}],
-        "operatingPoint": {"dimension": "ppcr"},
-        "bins": bins,
-        "rankBins": rank_bins,
-        "operatingPoints": ops
-    }
-
 if __name__ == "__main__":
     single_spec = generate_single_spec()
     multi_spec = generate_multi_spec()
-    tie_spec = generate_ppcr_tie_spec()
 
     with open("fixtures/v2/prediction-distribution-single.json", "w") as f:
         json.dump(single_spec, f, indent=2)
@@ -315,10 +273,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    with open("fixtures/v2/prediction-distribution-threshold.json", "w") as f:
-        json.dump(single_spec, f, indent=2)
-
-    with open("fixtures/v2/prediction-distribution-ppcr-tie.json", "w") as f:
-        json.dump(tie_spec, f, indent=2)
-
-    print("Successfully updated realistic prediction distribution fixtures with producer-owned rankBins.")
+    print("Successfully updated realistic prediction distribution fixtures with producer-owned rankBins derived from PPCR operating points.")
