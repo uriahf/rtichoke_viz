@@ -956,14 +956,14 @@
       "evaluationId": "Model A",
       "rankLower": 0.04,
       "rankUpper": 0.05,
-      "positiveMass": 23.0,
+      "positiveMass": 0.0,
       "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.05,
       "rankUpper": 0.06,
-      "positiveMass": 22.0,
+      "positiveMass": 23.0,
       "negativeMass": 0.0
     },
     {
@@ -977,7 +977,7 @@
       "evaluationId": "Model A",
       "rankLower": 0.07,
       "rankUpper": 0.08,
-      "positiveMass": 21.0,
+      "positiveMass": 22.0,
       "negativeMass": 0.0
     },
     {
@@ -991,7 +991,7 @@
       "evaluationId": "Model A",
       "rankLower": 0.09,
       "rankUpper": 0.1,
-      "positiveMass": 20.0,
+      "positiveMass": 21.0,
       "negativeMass": 0.0
     },
     {
@@ -1005,57 +1005,57 @@
       "evaluationId": "Model A",
       "rankLower": 0.11,
       "rankUpper": 0.12,
-      "positiveMass": 19.0,
+      "positiveMass": 0.0,
       "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.12,
       "rankUpper": 0.13,
-      "positiveMass": 19.0,
+      "positiveMass": 20.0,
       "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.13,
       "rankUpper": 0.14,
-      "positiveMass": 18.0,
+      "positiveMass": 19.0,
       "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.14,
       "rankUpper": 0.15,
-      "positiveMass": 18.0,
-      "negativeMass": 1.0
+      "positiveMass": 19.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.15,
       "rankUpper": 0.16,
-      "positiveMass": 17.0,
-      "negativeMass": 1.0
+      "positiveMass": 18.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.16,
       "rankUpper": 0.17,
-      "positiveMass": 17.0,
+      "positiveMass": 18.0,
       "negativeMass": 1.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.17,
       "rankUpper": 0.18,
-      "positiveMass": 16.0,
+      "positiveMass": 17.0,
       "negativeMass": 1.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.18,
       "rankUpper": 0.19,
-      "positiveMass": 16.0,
-      "negativeMass": 1.0
+      "positiveMass": 33.0,
+      "negativeMass": 2.0
     },
     {
       "evaluationId": "Model A",
@@ -1068,7 +1068,7 @@
       "evaluationId": "Model A",
       "rankLower": 0.2,
       "rankUpper": 0.21,
-      "positiveMass": 15.0,
+      "positiveMass": 16.0,
       "negativeMass": 1.0
     },
     {
@@ -1082,7 +1082,7 @@
       "evaluationId": "Model A",
       "rankLower": 0.22,
       "rankUpper": 0.23,
-      "positiveMass": 14.0,
+      "positiveMass": 15.0,
       "negativeMass": 1.0
     },
     {
@@ -1096,15 +1096,15 @@
       "evaluationId": "Model A",
       "rankLower": 0.24,
       "rankUpper": 0.25,
-      "positiveMass": 13.0,
-      "negativeMass": 2.0
+      "positiveMass": 14.0,
+      "negativeMass": 1.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.25,
       "rankUpper": 0.26,
-      "positiveMass": 13.0,
-      "negativeMass": 2.0
+      "positiveMass": 26.0,
+      "negativeMass": 4.0
     },
     {
       "evaluationId": "Model A",
@@ -1124,15 +1124,15 @@
       "evaluationId": "Model A",
       "rankLower": 0.28,
       "rankUpper": 0.29,
-      "positiveMass": 12.0,
-      "negativeMass": 2.0
+      "positiveMass": 24.0,
+      "negativeMass": 4.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.29,
       "rankUpper": 0.3,
-      "positiveMass": 12.0,
-      "negativeMass": 2.0
+      "positiveMass": 11.0,
+      "negativeMass": 3.0
     },
     {
       "evaluationId": "Model A",
@@ -1145,14 +1145,14 @@
       "evaluationId": "Model A",
       "rankLower": 0.31,
       "rankUpper": 0.32,
-      "positiveMass": 11.0,
-      "negativeMass": 3.0
+      "positiveMass": 21.0,
+      "negativeMass": 6.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.32,
       "rankUpper": 0.33,
-      "positiveMass": 11.0,
+      "positiveMass": 10.0,
       "negativeMass": 3.0
     },
     {
@@ -1160,469 +1160,469 @@
       "rankLower": 0.33,
       "rankUpper": 0.34,
       "positiveMass": 10.0,
-      "negativeMass": 3.0
+      "negativeMass": 4.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.34,
       "rankUpper": 0.35,
-      "positiveMass": 10.0,
-      "negativeMass": 3.0
+      "positiveMass": 18.0,
+      "negativeMass": 8.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.35,
       "rankUpper": 0.36,
-      "positiveMass": 10.0,
+      "positiveMass": 9.0,
       "negativeMass": 4.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.36,
       "rankUpper": 0.37,
-      "positiveMass": 9.0,
-      "negativeMass": 4.0
+      "positiveMass": 16.0,
+      "negativeMass": 10.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.37,
       "rankUpper": 0.38,
-      "positiveMass": 9.0,
-      "negativeMass": 4.0
+      "positiveMass": 8.0,
+      "negativeMass": 5.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.38,
       "rankUpper": 0.39,
-      "positiveMass": 9.0,
-      "negativeMass": 4.0
+      "positiveMass": 14.0,
+      "negativeMass": 11.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.39,
       "rankUpper": 0.4,
-      "positiveMass": 8.0,
-      "negativeMass": 5.0
+      "positiveMass": 7.0,
+      "negativeMass": 6.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.4,
       "rankUpper": 0.41,
-      "positiveMass": 8.0,
-      "negativeMass": 5.0
+      "positiveMass": 13.0,
+      "negativeMass": 12.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.41,
       "rankUpper": 0.42,
-      "positiveMass": 8.0,
-      "negativeMass": 5.0
+      "positiveMass": 6.0,
+      "negativeMass": 7.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.42,
       "rankUpper": 0.43,
-      "positiveMass": 7.0,
-      "negativeMass": 5.0
+      "positiveMass": 12.0,
+      "negativeMass": 14.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.43,
       "rankUpper": 0.44,
-      "positiveMass": 7.0,
-      "negativeMass": 6.0
+      "positiveMass": 5.0,
+      "negativeMass": 8.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.44,
       "rankUpper": 0.45,
-      "positiveMass": 7.0,
-      "negativeMass": 6.0
+      "positiveMass": 5.0,
+      "negativeMass": 8.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.45,
       "rankUpper": 0.46,
-      "positiveMass": 7.0,
-      "negativeMass": 6.0
+      "positiveMass": 10.0,
+      "negativeMass": 17.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.46,
       "rankUpper": 0.47,
-      "positiveMass": 6.0,
-      "negativeMass": 6.0
+      "positiveMass": 4.0,
+      "negativeMass": 9.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.47,
       "rankUpper": 0.48,
-      "positiveMass": 6.0,
-      "negativeMass": 7.0
+      "positiveMass": 8.0,
+      "negativeMass": 20.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.48,
       "rankUpper": 0.49,
-      "positiveMass": 6.0,
-      "negativeMass": 7.0
+      "positiveMass": 4.0,
+      "negativeMass": 10.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.49,
       "rankUpper": 0.5,
-      "positiveMass": 6.0,
-      "negativeMass": 7.0
+      "positiveMass": 4.0,
+      "negativeMass": 11.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.5,
       "rankUpper": 0.51,
-      "positiveMass": 5.0,
-      "negativeMass": 8.0
+      "positiveMass": 6.0,
+      "negativeMass": 23.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.51,
       "rankUpper": 0.52,
-      "positiveMass": 5.0,
-      "negativeMass": 8.0
+      "positiveMass": 3.0,
+      "negativeMass": 12.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.52,
       "rankUpper": 0.53,
-      "positiveMass": 5.0,
-      "negativeMass": 8.0
+      "positiveMass": 3.0,
+      "negativeMass": 12.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.53,
       "rankUpper": 0.54,
-      "positiveMass": 5.0,
-      "negativeMass": 9.0
+      "positiveMass": 3.0,
+      "negativeMass": 13.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.54,
       "rankUpper": 0.55,
-      "positiveMass": 4.0,
-      "negativeMass": 9.0
+      "positiveMass": 3.0,
+      "negativeMass": 13.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.55,
       "rankUpper": 0.56,
       "positiveMass": 4.0,
-      "negativeMass": 10.0
+      "negativeMass": 28.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.56,
       "rankUpper": 0.57,
-      "positiveMass": 4.0,
-      "negativeMass": 10.0
+      "positiveMass": 2.0,
+      "negativeMass": 15.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.57,
       "rankUpper": 0.58,
-      "positiveMass": 4.0,
-      "negativeMass": 10.0
+      "positiveMass": 2.0,
+      "negativeMass": 15.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.58,
       "rankUpper": 0.59,
-      "positiveMass": 4.0,
-      "negativeMass": 11.0
+      "positiveMass": 2.0,
+      "negativeMass": 16.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.59,
       "rankUpper": 0.6,
-      "positiveMass": 3.0,
-      "negativeMass": 11.0
+      "positiveMass": 2.0,
+      "negativeMass": 16.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.6,
       "rankUpper": 0.61,
-      "positiveMass": 3.0,
-      "negativeMass": 12.0
+      "positiveMass": 2.0,
+      "negativeMass": 17.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.61,
       "rankUpper": 0.62,
-      "positiveMass": 3.0,
-      "negativeMass": 12.0
+      "positiveMass": 1.0,
+      "negativeMass": 17.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.62,
       "rankUpper": 0.63,
-      "positiveMass": 3.0,
-      "negativeMass": 12.0
+      "positiveMass": 1.0,
+      "negativeMass": 18.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.63,
       "rankUpper": 0.64,
-      "positiveMass": 3.0,
-      "negativeMass": 13.0
+      "positiveMass": 1.0,
+      "negativeMass": 18.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.64,
       "rankUpper": 0.65,
-      "positiveMass": 3.0,
-      "negativeMass": 13.0
+      "positiveMass": 1.0,
+      "negativeMass": 19.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.65,
       "rankUpper": 0.66,
-      "positiveMass": 2.0,
-      "negativeMass": 14.0
+      "positiveMass": 1.0,
+      "negativeMass": 19.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.66,
       "rankUpper": 0.67,
-      "positiveMass": 2.0,
-      "negativeMass": 14.0
+      "positiveMass": 1.0,
+      "negativeMass": 20.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.67,
       "rankUpper": 0.68,
-      "positiveMass": 2.0,
-      "negativeMass": 15.0
+      "positiveMass": 1.0,
+      "negativeMass": 21.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.68,
       "rankUpper": 0.69,
-      "positiveMass": 2.0,
-      "negativeMass": 15.0
+      "positiveMass": 1.0,
+      "negativeMass": 21.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.69,
       "rankUpper": 0.7,
-      "positiveMass": 2.0,
-      "negativeMass": 16.0
+      "positiveMass": 0.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.7,
       "rankUpper": 0.71,
-      "positiveMass": 2.0,
-      "negativeMass": 16.0
+      "positiveMass": 1.0,
+      "negativeMass": 22.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.71,
       "rankUpper": 0.72,
-      "positiveMass": 2.0,
-      "negativeMass": 17.0
+      "positiveMass": 1.0,
+      "negativeMass": 22.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.72,
       "rankUpper": 0.73,
       "positiveMass": 1.0,
-      "negativeMass": 17.0
+      "negativeMass": 23.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.73,
       "rankUpper": 0.74,
-      "positiveMass": 1.0,
-      "negativeMass": 18.0
+      "positiveMass": 0.0,
+      "negativeMass": 24.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.74,
       "rankUpper": 0.75,
-      "positiveMass": 1.0,
-      "negativeMass": 18.0
+      "positiveMass": 0.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.75,
       "rankUpper": 0.76,
-      "positiveMass": 1.0,
-      "negativeMass": 19.0
+      "positiveMass": 0.0,
+      "negativeMass": 24.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.76,
       "rankUpper": 0.77,
-      "positiveMass": 1.0,
-      "negativeMass": 19.0
+      "positiveMass": 0.0,
+      "negativeMass": 25.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.77,
       "rankUpper": 0.78,
-      "positiveMass": 1.0,
-      "negativeMass": 20.0
+      "positiveMass": 0.0,
+      "negativeMass": 25.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.78,
       "rankUpper": 0.79,
-      "positiveMass": 1.0,
-      "negativeMass": 21.0
+      "positiveMass": 0.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.79,
       "rankUpper": 0.8,
-      "positiveMass": 1.0,
-      "negativeMass": 21.0
+      "positiveMass": 0.0,
+      "negativeMass": 26.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.8,
       "rankUpper": 0.81,
-      "positiveMass": 1.0,
-      "negativeMass": 22.0
+      "positiveMass": 0.0,
+      "negativeMass": 27.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.81,
       "rankUpper": 0.82,
-      "positiveMass": 1.0,
-      "negativeMass": 22.0
+      "positiveMass": 0.0,
+      "negativeMass": 27.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.82,
       "rankUpper": 0.83,
-      "positiveMass": 1.0,
-      "negativeMass": 23.0
+      "positiveMass": 0.0,
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.83,
       "rankUpper": 0.84,
       "positiveMass": 0.0,
-      "negativeMass": 24.0
+      "negativeMass": 28.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.84,
       "rankUpper": 0.85,
       "positiveMass": 0.0,
-      "negativeMass": 24.0
+      "negativeMass": 29.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.85,
       "rankUpper": 0.86,
       "positiveMass": 0.0,
-      "negativeMass": 25.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.86,
       "rankUpper": 0.87,
       "positiveMass": 0.0,
-      "negativeMass": 25.0
+      "negativeMass": 29.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.87,
       "rankUpper": 0.88,
       "positiveMass": 0.0,
-      "negativeMass": 26.0
+      "negativeMass": 30.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.88,
       "rankUpper": 0.89,
       "positiveMass": 0.0,
-      "negativeMass": 27.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.89,
       "rankUpper": 0.9,
       "positiveMass": 0.0,
-      "negativeMass": 27.0
+      "negativeMass": 31.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.9,
       "rankUpper": 0.91,
       "positiveMass": 0.0,
-      "negativeMass": 28.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.91,
       "rankUpper": 0.92,
       "positiveMass": 0.0,
-      "negativeMass": 29.0
+      "negativeMass": 32.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.92,
       "rankUpper": 0.93,
       "positiveMass": 0.0,
-      "negativeMass": 29.0
+      "negativeMass": 32.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.93,
       "rankUpper": 0.94,
       "positiveMass": 0.0,
-      "negativeMass": 30.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.94,
       "rankUpper": 0.95,
       "positiveMass": 0.0,
-      "negativeMass": 31.0
+      "negativeMass": 33.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.95,
       "rankUpper": 0.96,
       "positiveMass": 0.0,
-      "negativeMass": 32.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.96,
       "rankUpper": 0.97,
       "positiveMass": 0.0,
-      "negativeMass": 32.0
+      "negativeMass": 34.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.97,
       "rankUpper": 0.98,
       "positiveMass": 0.0,
-      "negativeMass": 33.0
+      "negativeMass": 0.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.98,
       "rankUpper": 0.99,
-      "positiveMass": 0.0,
-      "negativeMass": 34.0
+      "positiveMass": 3.0,
+      "negativeMass": 32.0
     },
     {
       "evaluationId": "Model A",
       "rankLower": 0.99,
       "rankUpper": 1.0,
-      "positiveMass": 3.0,
-      "negativeMass": 32.0
+      "positiveMass": 0.0,
+      "negativeMass": 0.0
     }
   ],
   "operatingPoints": [
@@ -6400,6 +6400,51 @@
       "evaluationId": "Model A",
       "type": "ppcr",
       "value": 0.05,
+      "cutoff": 0.96,
+      "realizedPpcr": 0.0512,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 96
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 0
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 1089
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 690
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.122137
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.612142
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.06,
       "cutoff": 0.95,
       "realizedPpcr": 0.063467,
       "performance": [
@@ -6444,7 +6489,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.06,
+      "value": 0.07,
       "cutoff": 0.94,
       "realizedPpcr": 0.0752,
       "performance": [
@@ -6489,7 +6534,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.07,
+      "value": 0.08,
       "cutoff": 0.93,
       "realizedPpcr": 0.086933,
       "performance": [
@@ -6534,7 +6579,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.08,
+      "value": 0.09,
       "cutoff": 0.92,
       "realizedPpcr": 0.098133,
       "performance": [
@@ -6579,7 +6624,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.09,
+      "value": 0.1,
       "cutoff": 0.91,
       "realizedPpcr": 0.109333,
       "performance": [
@@ -6624,7 +6669,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.1,
+      "value": 0.11,
       "cutoff": 0.9,
       "realizedPpcr": 0.12,
       "performance": [
@@ -6669,7 +6714,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.11,
+      "value": 0.12,
+      "cutoff": 0.9,
+      "realizedPpcr": 0.12,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 225
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 0
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 1089
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 561
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.28626
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.66
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.13,
       "cutoff": 0.89,
       "realizedPpcr": 0.130667,
       "performance": [
@@ -6714,7 +6804,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.12,
+      "value": 0.14,
       "cutoff": 0.88,
       "realizedPpcr": 0.1408,
       "performance": [
@@ -6759,7 +6849,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.13,
+      "value": 0.15,
       "cutoff": 0.87,
       "realizedPpcr": 0.150933,
       "performance": [
@@ -6804,7 +6894,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.14,
+      "value": 0.16,
       "cutoff": 0.86,
       "realizedPpcr": 0.160533,
       "performance": [
@@ -6849,7 +6939,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.15,
+      "value": 0.17,
       "cutoff": 0.85,
       "realizedPpcr": 0.170667,
       "performance": [
@@ -6894,7 +6984,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.16,
+      "value": 0.18,
       "cutoff": 0.84,
       "realizedPpcr": 0.180267,
       "performance": [
@@ -6939,52 +7029,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.17,
-      "cutoff": 0.83,
-      "realizedPpcr": 0.189867,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 353
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 3
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1086
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 433
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.449109
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.997245
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.991573
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.714944
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.365394
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.18,
+      "value": 0.19,
       "cutoff": 0.82,
       "realizedPpcr": 0.198933,
       "performance": [
@@ -7029,7 +7074,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.19,
+      "value": 0.2,
       "cutoff": 0.81,
       "realizedPpcr": 0.208,
       "performance": [
@@ -7074,7 +7119,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.2,
+      "value": 0.21,
       "cutoff": 0.8,
       "realizedPpcr": 0.217067,
       "performance": [
@@ -7119,7 +7164,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.21,
+      "value": 0.22,
       "cutoff": 0.79,
       "realizedPpcr": 0.2256,
       "performance": [
@@ -7164,7 +7209,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.22,
+      "value": 0.23,
       "cutoff": 0.78,
       "realizedPpcr": 0.234133,
       "performance": [
@@ -7209,7 +7254,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.23,
+      "value": 0.24,
       "cutoff": 0.77,
       "realizedPpcr": 0.242133,
       "performance": [
@@ -7254,7 +7299,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.24,
+      "value": 0.25,
       "cutoff": 0.76,
       "realizedPpcr": 0.250133,
       "performance": [
@@ -7293,51 +7338,6 @@
         {
           "metricId": "lift",
           "estimate": 2.334633
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.25,
-      "cutoff": 0.75,
-      "realizedPpcr": 0.258133,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 472
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 12
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1077
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 314
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.600509
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.988981
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.975207
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.774263
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.326352
         }
       ]
     },
@@ -7480,51 +7480,6 @@
       "evaluationId": "Model A",
       "type": "ppcr",
       "value": 0.29,
-      "cutoff": 0.71,
-      "realizedPpcr": 0.289067,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 522
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 20
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1069
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 264
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.664122
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.981635
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.9631
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.80195
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.29747
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.3,
       "cutoff": 0.7,
       "realizedPpcr": 0.296533,
       "performance": [
@@ -7569,7 +7524,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.31,
+      "value": 0.3,
       "cutoff": 0.69,
       "realizedPpcr": 0.304,
       "performance": [
@@ -7614,7 +7569,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.32,
+      "value": 0.31,
       "cutoff": 0.68,
       "realizedPpcr": 0.311467,
       "performance": [
@@ -7659,52 +7614,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.33,
-      "cutoff": 0.67,
-      "realizedPpcr": 0.318933,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 567
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 31
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1058
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 219
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.721374
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.971534
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.948161
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.828504
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.261833
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.34,
+      "value": 0.32,
       "cutoff": 0.66,
       "realizedPpcr": 0.325867,
       "performance": [
@@ -7749,7 +7659,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.35,
+      "value": 0.33,
       "cutoff": 0.65,
       "realizedPpcr": 0.3328,
       "performance": [
@@ -7794,7 +7704,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.36,
+      "value": 0.34,
       "cutoff": 0.64,
       "realizedPpcr": 0.340267,
       "performance": [
@@ -7839,52 +7749,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.37,
-      "cutoff": 0.63,
-      "realizedPpcr": 0.3472,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 606
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 45
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1044
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 180
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.770992
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.958678
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.930876
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.852941
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.2206
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.38,
+      "value": 0.35,
       "cutoff": 0.62,
       "realizedPpcr": 0.354133,
       "performance": [
@@ -7929,7 +7794,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.39,
+      "value": 0.36,
       "cutoff": 0.61,
       "realizedPpcr": 0.361067,
       "performance": [
@@ -7974,52 +7839,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.4,
-      "cutoff": 0.6,
-      "realizedPpcr": 0.368,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 632
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 58
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1031
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 154
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.804071
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.94674
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.915942
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.870042
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.184976
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.41,
+      "value": 0.37,
       "cutoff": 0.59,
       "realizedPpcr": 0.374933,
       "performance": [
@@ -8064,7 +7884,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.42,
+      "value": 0.38,
       "cutoff": 0.58,
       "realizedPpcr": 0.381867,
       "performance": [
@@ -8109,52 +7929,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.43,
-      "cutoff": 0.57,
-      "realizedPpcr": 0.388267,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 655
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 73
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 1016
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 131
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.833333
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.932966
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.899725
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.885789
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.146291
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.44,
+      "value": 0.39,
       "cutoff": 0.56,
       "realizedPpcr": 0.3952,
       "performance": [
@@ -8199,7 +7974,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.45,
+      "value": 0.4,
       "cutoff": 0.55,
       "realizedPpcr": 0.402133,
       "performance": [
@@ -8244,52 +8019,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.46,
-      "cutoff": 0.54,
-      "realizedPpcr": 0.409067,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 676
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 91
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 998
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 110
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.860051
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.916437
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.881356
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.900722
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.102471
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.47,
+      "value": 0.41,
       "cutoff": 0.53,
       "realizedPpcr": 0.415467,
       "performance": [
@@ -8334,7 +8064,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.48,
+      "value": 0.42,
       "cutoff": 0.52,
       "realizedPpcr": 0.4224,
       "performance": [
@@ -8379,52 +8109,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.49,
-      "cutoff": 0.51,
-      "realizedPpcr": 0.429333,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 694
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 111
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 978
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 92
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.882952
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.898072
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.862112
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.914019
-        },
-        {
-          "metricId": "lift",
-          "estimate": 2.056564
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.5,
+      "value": 0.43,
       "cutoff": 0.5,
       "realizedPpcr": 0.436267,
       "performance": [
@@ -8469,7 +8154,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.51,
+      "value": 0.44,
       "cutoff": 0.49,
       "realizedPpcr": 0.4432,
       "performance": [
@@ -8514,7 +8199,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.52,
+      "value": 0.45,
       "cutoff": 0.48,
       "realizedPpcr": 0.450133,
       "performance": [
@@ -8559,52 +8244,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.53,
-      "cutoff": 0.47,
-      "realizedPpcr": 0.457067,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 715
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 142
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 947
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 71
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.909669
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.869605
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.834306
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.930255
-        },
-        {
-          "metricId": "lift",
-          "estimate": 1.990233
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.54,
+      "value": 0.46,
       "cutoff": 0.46,
       "realizedPpcr": 0.464533,
       "performance": [
@@ -8649,7 +8289,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.55,
+      "value": 0.47,
       "cutoff": 0.45,
       "realizedPpcr": 0.471467,
       "performance": [
@@ -8694,52 +8334,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.56,
-      "cutoff": 0.44,
-      "realizedPpcr": 0.478933,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 728
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 170
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 919
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 58
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.926209
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.843893
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.81069
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.940635
-        },
-        {
-          "metricId": "lift",
-          "estimate": 1.933899
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.57,
+      "value": 0.48,
       "cutoff": 0.43,
       "realizedPpcr": 0.4864,
       "performance": [
@@ -8784,7 +8379,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.58,
+      "value": 0.49,
       "cutoff": 0.42,
       "realizedPpcr": 0.493867,
       "performance": [
@@ -8829,7 +8424,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.59,
+      "value": 0.5,
       "cutoff": 0.41,
       "realizedPpcr": 0.501867,
       "performance": [
@@ -8874,52 +8469,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.6,
-      "cutoff": 0.4,
-      "realizedPpcr": 0.509333,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 743
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 212
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 877
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 43
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.945293
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.805326
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.77801
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.953261
-        },
-        {
-          "metricId": "lift",
-          "estimate": 1.855941
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.61,
+      "value": 0.51,
       "cutoff": 0.39,
       "realizedPpcr": 0.517333,
       "performance": [
@@ -8964,7 +8514,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.62,
+      "value": 0.52,
       "cutoff": 0.38,
       "realizedPpcr": 0.525333,
       "performance": [
@@ -9009,7 +8559,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.63,
+      "value": 0.53,
       "cutoff": 0.37,
       "realizedPpcr": 0.533333,
       "performance": [
@@ -9054,7 +8604,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.64,
+      "value": 0.54,
       "cutoff": 0.36,
       "realizedPpcr": 0.541867,
       "performance": [
@@ -9099,7 +8649,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.65,
+      "value": 0.55,
       "cutoff": 0.35,
       "realizedPpcr": 0.5504,
       "performance": [
@@ -9144,52 +8694,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.66,
-      "cutoff": 0.34,
-      "realizedPpcr": 0.558933,
-      "performance": [
-        {
-          "metricId": "true_positives",
-          "estimate": 760
-        },
-        {
-          "metricId": "false_positives",
-          "estimate": 288
-        },
-        {
-          "metricId": "true_negatives",
-          "estimate": 801
-        },
-        {
-          "metricId": "false_negatives",
-          "estimate": 26
-        },
-        {
-          "metricId": "sensitivity",
-          "estimate": 0.966921
-        },
-        {
-          "metricId": "specificity",
-          "estimate": 0.735537
-        },
-        {
-          "metricId": "ppv",
-          "estimate": 0.725191
-        },
-        {
-          "metricId": "npv",
-          "estimate": 0.968561
-        },
-        {
-          "metricId": "lift",
-          "estimate": 1.72994
-        }
-      ]
-    },
-    {
-      "evaluationId": "Model A",
-      "type": "ppcr",
-      "value": 0.67,
+      "value": 0.56,
       "cutoff": 0.33,
       "realizedPpcr": 0.567467,
       "performance": [
@@ -9234,7 +8739,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.68,
+      "value": 0.57,
       "cutoff": 0.32,
       "realizedPpcr": 0.576533,
       "performance": [
@@ -9279,7 +8784,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.69,
+      "value": 0.58,
       "cutoff": 0.31,
       "realizedPpcr": 0.5856,
       "performance": [
@@ -9324,7 +8829,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.7,
+      "value": 0.59,
       "cutoff": 0.3,
       "realizedPpcr": 0.5952,
       "performance": [
@@ -9369,7 +8874,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.71,
+      "value": 0.6,
       "cutoff": 0.29,
       "realizedPpcr": 0.6048,
       "performance": [
@@ -9414,7 +8919,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.72,
+      "value": 0.61,
       "cutoff": 0.28,
       "realizedPpcr": 0.614933,
       "performance": [
@@ -9459,7 +8964,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.73,
+      "value": 0.62,
       "cutoff": 0.27,
       "realizedPpcr": 0.624533,
       "performance": [
@@ -9504,7 +9009,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.74,
+      "value": 0.63,
       "cutoff": 0.26,
       "realizedPpcr": 0.634667,
       "performance": [
@@ -9549,7 +9054,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.75,
+      "value": 0.64,
       "cutoff": 0.25,
       "realizedPpcr": 0.6448,
       "performance": [
@@ -9594,7 +9099,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.76,
+      "value": 0.65,
       "cutoff": 0.24,
       "realizedPpcr": 0.655467,
       "performance": [
@@ -9639,7 +9144,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.77,
+      "value": 0.66,
       "cutoff": 0.23,
       "realizedPpcr": 0.666133,
       "performance": [
@@ -9684,7 +9189,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.78,
+      "value": 0.67,
       "cutoff": 0.22,
       "realizedPpcr": 0.677333,
       "performance": [
@@ -9729,7 +9234,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.79,
+      "value": 0.68,
       "cutoff": 0.21,
       "realizedPpcr": 0.689067,
       "performance": [
@@ -9774,7 +9279,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.8,
+      "value": 0.69,
       "cutoff": 0.2,
       "realizedPpcr": 0.7008,
       "performance": [
@@ -9819,7 +9324,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.81,
+      "value": 0.7,
+      "cutoff": 0.2,
+      "realizedPpcr": 0.7008,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 780
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 534
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 555
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 6
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.992366
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.509642
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.593607
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.989305
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.416048
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.71,
       "cutoff": 0.19,
       "realizedPpcr": 0.713067,
       "performance": [
@@ -9864,7 +9414,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.82,
+      "value": 0.72,
       "cutoff": 0.18,
       "realizedPpcr": 0.725333,
       "performance": [
@@ -9909,7 +9459,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.83,
+      "value": 0.73,
       "cutoff": 0.17,
       "realizedPpcr": 0.738133,
       "performance": [
@@ -9954,7 +9504,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.84,
+      "value": 0.74,
       "cutoff": 0.16,
       "realizedPpcr": 0.750933,
       "performance": [
@@ -9999,7 +9549,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.85,
+      "value": 0.75,
+      "cutoff": 0.16,
+      "realizedPpcr": 0.750933,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 625
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 464
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.426079
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.556108
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.993576
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.326593
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.76,
       "cutoff": 0.15,
       "realizedPpcr": 0.763733,
       "performance": [
@@ -10044,7 +9639,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.86,
+      "value": 0.77,
       "cutoff": 0.14,
       "realizedPpcr": 0.777067,
       "performance": [
@@ -10089,7 +9684,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.87,
+      "value": 0.78,
       "cutoff": 0.13,
       "realizedPpcr": 0.7904,
       "performance": [
@@ -10134,7 +9729,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.88,
+      "value": 0.79,
+      "cutoff": 0.13,
+      "realizedPpcr": 0.7904,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 699
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 390
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.358127
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.52834
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.992366
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.260353
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.8,
       "cutoff": 0.12,
       "realizedPpcr": 0.804267,
       "performance": [
@@ -10179,7 +9819,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.89,
+      "value": 0.81,
       "cutoff": 0.11,
       "realizedPpcr": 0.818667,
       "performance": [
@@ -10224,7 +9864,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.9,
+      "value": 0.82,
       "cutoff": 0.1,
       "realizedPpcr": 0.833067,
       "performance": [
@@ -10269,7 +9909,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.91,
+      "value": 0.83,
+      "cutoff": 0.1,
+      "realizedPpcr": 0.833067,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 779
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 310
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.284665
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.50128
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.990415
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.195803
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.84,
       "cutoff": 0.09,
       "realizedPpcr": 0.848,
       "performance": [
@@ -10314,7 +9999,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.92,
+      "value": 0.85,
       "cutoff": 0.08,
       "realizedPpcr": 0.863467,
       "performance": [
@@ -10359,7 +10044,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.93,
+      "value": 0.86,
+      "cutoff": 0.08,
+      "realizedPpcr": 0.863467,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 836
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 253
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.232323
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.483632
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.988281
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.153702
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.87,
       "cutoff": 0.07,
       "realizedPpcr": 0.878933,
       "performance": [
@@ -10404,7 +10134,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.94,
+      "value": 0.88,
       "cutoff": 0.06,
       "realizedPpcr": 0.894933,
       "performance": [
@@ -10449,7 +10179,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.95,
+      "value": 0.89,
+      "cutoff": 0.06,
+      "realizedPpcr": 0.894933,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 895
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 194
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.178145
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.466627
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.984772
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.113137
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.9,
       "cutoff": 0.05,
       "realizedPpcr": 0.911467,
       "performance": [
@@ -10494,7 +10269,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.96,
+      "value": 0.91,
+      "cutoff": 0.05,
+      "realizedPpcr": 0.911467,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 926
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 163
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.149679
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.458163
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.981928
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.092945
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.92,
       "cutoff": 0.04,
       "realizedPpcr": 0.928533,
       "performance": [
@@ -10539,7 +10359,7 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.97,
+      "value": 0.93,
       "cutoff": 0.03,
       "realizedPpcr": 0.9456,
       "performance": [
@@ -10584,7 +10404,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.98,
+      "value": 0.94,
+      "cutoff": 0.03,
+      "realizedPpcr": 0.9456,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 990
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 99
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.090909
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.441624
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.970588
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.053493
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.95,
       "cutoff": 0.02,
       "realizedPpcr": 0.9632,
       "performance": [
@@ -10629,7 +10494,52 @@
     {
       "evaluationId": "Model A",
       "type": "ppcr",
-      "value": 0.99,
+      "value": 0.96,
+      "cutoff": 0.02,
+      "realizedPpcr": 0.9632,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 1023
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 66
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.060606
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.433555
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.956522
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.034243
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.97,
       "cutoff": 0.01,
       "realizedPpcr": 0.981333,
       "performance": [
@@ -10668,6 +10578,96 @@
         {
           "metricId": "lift",
           "estimate": 1.015132
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.98,
+      "cutoff": 0.01,
+      "realizedPpcr": 0.981333,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 783
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 1057
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 32
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 3
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.996183
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.029385
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.425543
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.914286
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.015132
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A",
+      "type": "ppcr",
+      "value": 0.99,
+      "cutoff": 0.0,
+      "realizedPpcr": 1.0,
+      "performance": [
+        {
+          "metricId": "true_positives",
+          "estimate": 786
+        },
+        {
+          "metricId": "false_positives",
+          "estimate": 1089
+        },
+        {
+          "metricId": "true_negatives",
+          "estimate": 0
+        },
+        {
+          "metricId": "false_negatives",
+          "estimate": 0
+        },
+        {
+          "metricId": "sensitivity",
+          "estimate": 1.0
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.0
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.4192
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.0
         }
       ]
     },

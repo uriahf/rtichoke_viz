@@ -22,11 +22,10 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
         "nNegative": bin0_neg
     })
 
-    # Display intervals from 0.00 to 1.00 in steps of 0.01
     for i in range(0, 100):
         lower = round(i * 0.01, 2)
         upper = round((i + 1) * 0.01, 2)
-        x = (i + 0.5) / 100.0  # midpoint
+        x = (i + 0.5) / 100.0
 
         if i == 0:
             pos_count = 2
@@ -54,7 +53,26 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
 
     return bins
 
-def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
+def find_empirical_cutoff_for_ppcr(bins, requested_ppcr, total_n):
+    if requested_ppcr <= 0:
+        return 1.0
+    if requested_ppcr >= 1.0:
+        return 0.0
+
+    target_count = total_n * requested_ppcr
+    cum = 0
+    non_zero_bins = [b for b in bins if not (b["lower"] == 0 and b["upper"] == 0)]
+    sorted_bins_desc = sorted(non_zero_bins, key=lambda b: b["upper"], reverse=True)
+
+    for b in sorted_bins_desc:
+        bin_count = b["nPositive"] + b["nNegative"]
+        cum += bin_count
+        if cum >= target_count:
+            return b["lower"]
+
+    return 0.0
+
+def calculate_operating_points(eval_id, bins, thresholds, ppcr_grid):
     total_positives = sum(b["nPositive"] for b in bins)
     total_negatives = sum(b["nNegative"] for b in bins)
     total_n = total_positives + total_negatives
@@ -62,7 +80,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
 
     ops = []
 
-    # Threshold operating points (exact 0.01 grid)
+    # Threshold operating points
     for cut in thresholds:
         tp = 0
         fp = 0
@@ -103,8 +121,10 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
             ]
         })
 
-    # PPCR operating points with explicitly mapped cutoffs
-    for p_req, cut in ppcr_mappings:
+    # PPCR operating points with empirical quantile cutoff derivation Q_(1-p)(score)
+    for p_req in ppcr_grid:
+        cut = find_empirical_cutoff_for_ppcr(bins, p_req, total_n)
+
         tp = 0
         fp = 0
         fn = 0
@@ -180,11 +200,9 @@ def create_rank_bins_from_ops(eval_id, ops):
 def generate_single_spec():
     bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
     thresholds = [round(i * 0.01, 2) for i in range(101)]
-
     ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_mappings = [(p, round(1.0 - p, 2)) for p in ppcr_grid]
 
-    ops = calculate_operating_points("Model A", bins, thresholds, ppcr_mappings)
+    ops = calculate_operating_points("Model A", bins, thresholds, ppcr_grid)
     rank_bins = create_rank_bins_from_ops("Model A", ops)
 
     return {
@@ -213,11 +231,10 @@ def generate_multi_spec():
 
     thresholds = [round(i * 0.01, 2) for i in range(101)]
     ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_mappings = [(p, round(1.0 - p, 2)) for p in ppcr_grid]
 
-    ops_a = calculate_operating_points("Model A", bins_a, thresholds, ppcr_mappings)
-    ops_b = calculate_operating_points("Model B", bins_b, thresholds, ppcr_mappings)
-    ops_sub = calculate_operating_points("Model A (High Risk)", bins_sub, thresholds, ppcr_mappings)
+    ops_a = calculate_operating_points("Model A", bins_a, thresholds, ppcr_grid)
+    ops_b = calculate_operating_points("Model B", bins_b, thresholds, ppcr_grid)
+    ops_sub = calculate_operating_points("Model A (High Risk)", bins_sub, thresholds, ppcr_grid)
 
     rank_bins_a = create_rank_bins_from_ops("Model A", ops_a)
     rank_bins_b = create_rank_bins_from_ops("Model B", ops_b)
@@ -272,4 +289,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    print("Successfully updated realistic prediction distribution fixtures.")
+    print("Successfully updated realistic prediction distribution fixtures with empirical quantile PPCR cutoff derivation.")

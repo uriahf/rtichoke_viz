@@ -15,17 +15,23 @@ import type { ReportSpecV1_1 } from "../src/spec/report.js";
 import { RTICHOKE_BROWSER_THEME } from "../src/render/v2.js";
 
 describe("PredictionDistribution Manager Review Requirements Tests", () => {
-  it("1. proves no user-facing 'Realized PPCR' remains in labels, readouts, tooltips, or accessibility text", () => {
+  it("1. proves no user-facing 'Realized PPCR' or 'Total' header labels remain in confusion matrix", () => {
     const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
     const htmlText = el.innerHTML;
     expect(htmlText).not.toContain("Realized PPCR");
     expect(htmlText).not.toContain("realized_ppcr");
+
+    // Check that rightmost column header and bottom row header do not contain "Total" text
+    const rightColHeader = el.querySelector(".rtichoke-pd-matrix__col-header--blank")!;
+    expect(rightColHeader.textContent).toBe("");
+
+    const bottomRowHeader = el.querySelector(".rtichoke-pd-matrix__row-header--blank")!;
+    expect(bottomRowHeader.textContent).toBe("");
   });
 
   it("2. proves requested PPCR controls the visible PPCR boundary (cutoffX = 1 - requested_ppcr)", () => {
     const spec = visualFixture as PredictionDistributionSpec;
     const prep = preparePredictionDistributionPlotData(spec, "Model A", "ppcr", 0.20, 2);
-    // cutoffX = 1 - 0.20 = 0.80
     expect(prep.cutoffX).toBe(0.80);
   });
 
@@ -104,17 +110,49 @@ describe("PredictionDistribution Manager Review Requirements Tests", () => {
     expect(count2).toBe(200);
   });
 
-  it("5 & 6. proves histogram y-axis label is Count and Mirrored count ticks are non-negative", () => {
-    const spec = visualFixture as PredictionDistributionSpec;
-    const prep = preparePredictionDistributionPlotData(spec, "Model A", "probability_threshold", 0.5, 2);
-    expect(prep.yAxisLabel).toBe("Count");
+  it("5. proves stable matrix cell structure: TP/FP/FN/TN semantic labels sit in dedicated stationary element across different digit widths", () => {
+    const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
+    const tpLabel = el.querySelector(".rtichoke-prediction-distribution__cell--tp .rtichoke-pd-cell-label")!;
+    expect(tpLabel.textContent).toBe("TP");
 
-    const el = renderPredictionDistribution(spec);
-    const mirroredRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='mirrored']")!;
-    mirroredRadio.checked = true;
-    mirroredRadio.dispatchEvent(new Event("change"));
+    const fpLabel = el.querySelector(".rtichoke-prediction-distribution__cell--fp .rtichoke-pd-cell-label")!;
+    expect(fpLabel.textContent).toBe("FP");
 
-    expect(el.querySelector(".rtichoke-prediction-distribution__chart")).not.toBeNull();
+    const fnLabel = el.querySelector(".rtichoke-prediction-distribution__cell--fn .rtichoke-pd-cell-label")!;
+    expect(fnLabel.textContent).toBe("FN");
+
+    const tnLabel = el.querySelector(".rtichoke-prediction-distribution__cell--tn .rtichoke-pd-cell-label")!;
+    expect(tnLabel.textContent).toBe("TN");
+  });
+
+  it("6. proves conditional percentage denominators and suppression behavior", () => {
+    const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
+
+    // 1. All Observations -> All 4 cells have percentages over total N
+    const tpPctAll = el.querySelector(".rtichoke-prediction-distribution__cell--tp .rtichoke-pd-cell-pct")?.textContent;
+    const tnPctAll = el.querySelector(".rtichoke-prediction-distribution__cell--tn .rtichoke-pd-cell-pct")?.textContent;
+    expect(tpPctAll).not.toBe("");
+    expect(tnPctAll).not.toBe("");
+
+    // 2. Select Predicted Positives -> Top row (TP, FP) shows percentages; bottom row (FN, TN) suppressed
+    const predPosRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='predicted_positives']")!;
+    predPosRadio.checked = true;
+    predPosRadio.dispatchEvent(new Event("change"));
+
+    const tpPctPredPos = el.querySelector(".rtichoke-prediction-distribution__cell--tp .rtichoke-pd-cell-pct")?.textContent;
+    const fnPctPredPos = el.querySelector(".rtichoke-prediction-distribution__cell--fn .rtichoke-pd-cell-pct")?.textContent;
+    expect(tpPctPredPos).not.toBe("");
+    expect(fnPctPredPos).toBe("");
+
+    // 3. Select Real Positives -> Left column (TP, FN) shows percentages; right column (FP, TN) suppressed
+    const realPosRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='real_positives']")!;
+    realPosRadio.checked = true;
+    realPosRadio.dispatchEvent(new Event("change"));
+
+    const fnPctRealPos = el.querySelector(".rtichoke-prediction-distribution__cell--fn .rtichoke-pd-cell-pct")?.textContent;
+    const tnPctRealPos = el.querySelector(".rtichoke-prediction-distribution__cell--tn .rtichoke-pd-cell-pct")?.textContent;
+    expect(fnPctRealPos).not.toBe("");
+    expect(tnPctRealPos).toBe("");
   });
 
   it("7. proves zero-score display still preserves exact cutoff semantics across sub-interval boundaries", () => {
@@ -136,11 +174,9 @@ describe("PredictionDistribution Manager Review Requirements Tests", () => {
   it("8. proves matrix interior colors change with Color Bars By while marginal total colors remain stable", () => {
     const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
 
-    // Default mode: Confusion Matrix Cell
     const tpCell = el.querySelector<HTMLElement>(".rtichoke-prediction-distribution__cell--tp .rtichoke-pd-cell-bar")!;
     const defaultTpBarColor = tpCell.style.backgroundColor;
 
-    // Switch to Observed Outcome mode
     const obsRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='observed_outcome']")!;
     obsRadio.checked = true;
     obsRadio.dispatchEvent(new Event("change"));
@@ -157,10 +193,10 @@ describe("PredictionDistribution Manager Review Requirements Tests", () => {
     expect(defaultPdTheme.observedNegative).toBe("#E0E0E0");
 
     const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
-    const totRealPosCellBar = el.querySelectorAll<HTMLElement>(".rtichoke-pd-matrix__tot-row td")[0].querySelector<HTMLElement>(".rtichoke-pd-cell-bar")!;
+    const totRealPosCellBar = el.querySelectorAll<HTMLElement>(".rtichoke-pd-matrix tr")[3].querySelectorAll<HTMLElement>("td")[0].querySelector<HTMLElement>(".rtichoke-pd-cell-bar")!;
     expect(totRealPosCellBar.style.backgroundColor).toBe("rgb(76, 84, 84)");
 
-    const totRealNegCellBar = el.querySelectorAll<HTMLElement>(".rtichoke-pd-matrix__tot-row td")[1].querySelector<HTMLElement>(".rtichoke-pd-cell-bar")!;
+    const totRealNegCellBar = el.querySelectorAll<HTMLElement>(".rtichoke-pd-matrix tr")[3].querySelectorAll<HTMLElement>("td")[1].querySelector<HTMLElement>(".rtichoke-pd-cell-bar")!;
     expect(totRealNegCellBar.style.backgroundColor).toBe("rgb(224, 224, 224)");
   });
 
@@ -197,51 +233,50 @@ describe("PredictionDistribution Manager Review Requirements Tests", () => {
     };
 
     const el = renderPredictionDistribution(customSpec);
-    const metricsRowText = el.querySelector(".rtichoke-pd-metrics-row")?.textContent;
+    const metricsTableText = el.querySelector(".rtichoke-pd-metrics-table")?.textContent;
 
-    expect(metricsRowText).toContain("88.8%");
-    expect(metricsRowText).toContain("77.7%");
-    expect(metricsRowText).toContain("66.6%");
-    expect(metricsRowText).toContain("55.5%");
-    expect(metricsRowText).toContain("2.34");
+    expect(metricsTableText).toContain("88.8%");
+    expect(metricsTableText).toContain("77.7%");
+    expect(metricsTableText).toContain("66.6%");
+    expect(metricsTableText).toContain("55.5%");
+    expect(metricsTableText).toContain("2.34");
   });
 
   it("14, 15, 16 & 17. proves conditioning metric emphasis mappings (Predicted Positive -> PPV + Lift; Predicted Negative -> NPV; Real Positive -> Sens; Real Negative -> Spec)", () => {
     const el = renderPredictionDistribution(visualFixture as PredictionDistributionSpec);
 
+    // 1. Select Predicted Positive -> PPV and Lift emphasized
     const predPosRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='predicted_positives']")!;
     predPosRadio.checked = true;
     predPosRadio.dispatchEvent(new Event("change"));
 
-    const cardsPredPos = el.querySelectorAll(".rtichoke-pd-metric-card");
-    const ppvCard = Array.from(cardsPredPos).find((c) => c.textContent?.includes("PPV"));
-    const liftCard = Array.from(cardsPredPos).find((c) => c.textContent?.includes("Lift"));
-    expect(ppvCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
-    expect(liftCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
+    const emphasizedHeadersPredPos = Array.from(el.querySelectorAll(".rtichoke-pd-metric--emphasized-header")).map(th => th.textContent);
+    expect(emphasizedHeadersPredPos).toContain("PPV");
+    expect(emphasizedHeadersPredPos).toContain("Lift");
 
+    // 2. Select Predicted Negative -> NPV emphasized
     const predNegRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='predicted_negatives']")!;
     predNegRadio.checked = true;
     predNegRadio.dispatchEvent(new Event("change"));
 
-    const cardsPredNeg = el.querySelectorAll(".rtichoke-pd-metric-card");
-    const npvCard = Array.from(cardsPredNeg).find((c) => c.textContent?.includes("NPV"));
-    expect(npvCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
+    const emphasizedHeadersPredNeg = Array.from(el.querySelectorAll(".rtichoke-pd-metric--emphasized-header")).map(th => th.textContent);
+    expect(emphasizedHeadersPredNeg).toEqual(["NPV"]);
 
+    // 3. Select Real Positive -> Sensitivity emphasized
     const realPosRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='real_positives']")!;
     realPosRadio.checked = true;
     realPosRadio.dispatchEvent(new Event("change"));
 
-    const cardsRealPos = el.querySelectorAll(".rtichoke-pd-metric-card");
-    const sensCard = Array.from(cardsRealPos).find((c) => c.textContent?.includes("Sensitivity"));
-    expect(sensCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
+    const emphasizedHeadersRealPos = Array.from(el.querySelectorAll(".rtichoke-pd-metric--emphasized-header")).map(th => th.textContent);
+    expect(emphasizedHeadersRealPos).toEqual(["Sensitivity"]);
 
+    // 4. Select Real Negative -> Specificity emphasized
     const realNegRadio = el.querySelector<HTMLInputElement>("input[type='radio'][value='real_negatives']")!;
     realNegRadio.checked = true;
     realNegRadio.dispatchEvent(new Event("change"));
 
-    const cardsRealNeg = el.querySelectorAll(".rtichoke-pd-metric-card");
-    const specCard = Array.from(cardsRealNeg).find((c) => c.textContent?.includes("Specificity"));
-    expect(specCard?.classList.contains("rtichoke-pd-metric-card--emphasized")).toBe(true);
+    const emphasizedHeadersRealNeg = Array.from(el.querySelectorAll(".rtichoke-pd-metric--emphasized-header")).map(th => th.textContent);
+    expect(emphasizedHeadersRealNeg).toEqual(["Specificity"]);
   });
 
   it("18. proves display-mode switching (Stacked <-> Mirrored) preserves operating-point, conditioning, color, and model/population selection", () => {

@@ -539,7 +539,7 @@ export function preparePredictionDistributionPlotData(
     }
     yMax = Math.max(1, Math.ceil(maxBinCount * 1.15));
   } else {
-    // Requested PPCR boundary: boundary = 1 - requested_ppcr
+    // Display boundary on rank axis = 1 - requested PPCR
     cutoffX = 1 - currentValue;
     xAxisLabel = "Risk Percentile";
 
@@ -1241,7 +1241,20 @@ export function renderPredictionDistribution(
       const { tp, fp, tn, fn, totalPositives, totalNegatives, totalPredictedPos, totalPredictedNeg } = confusion;
 
       const table = document.createElement("table");
-      table.className = "rtichoke-prediction-distribution__table rtichoke-pd-matrix";
+      table.className = "rtichoke-pd-matrix";
+
+      // Enforce equal column widths for data columns
+      const colGroup = document.createElement("colgroup");
+      const colControl = document.createElement("col");
+      colControl.style.width = "28%";
+      const colData1 = document.createElement("col");
+      colData1.style.width = "24%";
+      const colData2 = document.createElement("col");
+      colData2.style.width = "24%";
+      const colData3 = document.createElement("col");
+      colData3.style.width = "24%";
+      colGroup.append(colControl, colData1, colData2, colData3);
+      table.append(colGroup);
 
       const createCondRadioLabel = (
         val: PredictionDistributionConditioning,
@@ -1291,42 +1304,16 @@ export function renderPredictionDistribution(
       }`;
       thRealNeg.append(createCondRadioLabel("real_negatives", "Real Negative"));
 
+      // NO visible "Total" label on rightmost column header
       const thTot = document.createElement("th");
-      thTot.className = "rtichoke-pd-matrix__col-header";
-      thTot.textContent = "Total";
+      thTot.className = "rtichoke-pd-matrix__col-header rtichoke-pd-matrix__col-header--blank";
 
       trH.append(thCorner, thRealPos, thRealNeg, thTot);
       thead.append(trH);
 
       const tbody = document.createElement("tbody");
 
-      const setCellContent = (
-        td: HTMLTableCellElement,
-        text: string,
-        countVal: number,
-        barColor: string,
-      ) => {
-        td.replaceChildren();
-        td.style.backgroundColor = "#ffffff";
-        td.style.color = theme.axis.color;
-
-        const pct = totalN > 0 ? (countVal / totalN) * 100 : 0;
-
-        const bar = document.createElement("div");
-        bar.className = "rtichoke-pd-cell-bar";
-        bar.style.width = `${pct}%`;
-        bar.style.backgroundColor = barColor;
-
-        const textSpan = document.createElement("span");
-        textSpan.className = "rtichoke-pd-cell-text";
-        textSpan.textContent = text;
-
-        td.append(bar, textSpan);
-      };
-
       // Cell colors based on Color Bars By choice:
-      // Observed Outcome mode: Real Positives (#4C5454) vs Real Negatives (#E0E0E0)
-      // Confusion Matrix Cell mode: TP/TN green family vs FP/FN pink family
       const cellTpColor =
         currentColorMode === "observed_outcome"
           ? theme.predictionDistribution.observedPositive
@@ -1345,12 +1332,129 @@ export function renderPredictionDistribution(
           : cellColors.tn;
 
       // Stable Marginal Colors:
-      // Real Positive margin = #4C5454
-      // Real Negative margin = #E0E0E0
-      // Predicted Positive, Predicted Negative, Grand Total = neutral grey (#E5E7EB)
       const realPosMarginColor = theme.predictionDistribution.observedPositive;
       const realNegMarginColor = theme.predictionDistribution.observedNegative;
       const neutralMarginColor = "#E5E7EB";
+
+      // Helper for conditional percentages:
+      // Computes formatted percentage or null if suppressed
+      const getPercentageText = (
+        cellType: "TP" | "FP" | "TN" | "FN",
+      ): string | null => {
+        if (totalN === 0) return null;
+        switch (currentConditioning) {
+          case "all_observations": {
+            const count =
+              cellType === "TP"
+                ? tp
+                : cellType === "FP"
+                  ? fp
+                  : cellType === "TN"
+                    ? tn
+                    : fn;
+            return `(${(count / totalN * 100).toFixed(1)}%)`;
+          }
+          case "predicted_positives": {
+            const denom = tp + fp;
+            if (denom === 0) return null;
+            if (cellType === "TP") return `(${(tp / denom * 100).toFixed(1)}%)`;
+            if (cellType === "FP") return `(${(fp / denom * 100).toFixed(1)}%)`;
+            return null; // Suppress percentages in Predicted Negative row
+          }
+          case "predicted_negatives": {
+            const denom = tn + fn;
+            if (denom === 0) return null;
+            if (cellType === "TN") return `(${(tn / denom * 100).toFixed(1)}%)`;
+            if (cellType === "FN") return `(${(fn / denom * 100).toFixed(1)}%)`;
+            return null; // Suppress percentages in Predicted Positive row
+          }
+          case "real_positives": {
+            const denom = tp + fn;
+            if (denom === 0) return null;
+            if (cellType === "TP") return `(${(tp / denom * 100).toFixed(1)}%)`;
+            if (cellType === "FN") return `(${(fn / denom * 100).toFixed(1)}%)`;
+            return null; // Suppress percentages in Real Negative column
+          }
+          case "real_negatives": {
+            const denom = tn + fp;
+            if (denom === 0) return null;
+            if (cellType === "TN") return `(${(tn / denom * 100).toFixed(1)}%)`;
+            if (cellType === "FP") return `(${(fp / denom * 100).toFixed(1)}%)`;
+            return null; // Suppress percentages in Real Positive column
+          }
+        }
+      };
+
+      // Helper for rendering stable cell layout:
+      // Fixed semantic label region [TP/FP/TN/FN] + right-aligned count/percentage
+      const renderInteriorCell = (
+        td: HTMLTableCellElement,
+        labelStr: "TP" | "FP" | "TN" | "FN",
+        countVal: number,
+        barColor: string,
+      ) => {
+        td.replaceChildren();
+        td.className = `rtichoke-prediction-distribution__cell--${labelStr.toLowerCase()} rtichoke-pd-matrix__cell`;
+        td.style.backgroundColor = "#ffffff";
+        td.style.color = theme.axis.color;
+
+        const pctWidth = totalN > 0 ? (countVal / totalN) * 100 : 0;
+
+        const bar = document.createElement("div");
+        bar.className = "rtichoke-pd-cell-bar";
+        bar.style.width = `${pctWidth}%`;
+        bar.style.backgroundColor = barColor;
+
+        const content = document.createElement("div");
+        content.className = "rtichoke-pd-cell-content";
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "rtichoke-pd-cell-label";
+        labelSpan.textContent = labelStr;
+
+        const numDiv = document.createElement("div");
+        numDiv.className = "rtichoke-pd-cell-num";
+
+        const countSpan = document.createElement("span");
+        countSpan.className = "rtichoke-pd-cell-count";
+        countSpan.textContent = countVal.toLocaleString();
+
+        const pctText = getPercentageText(labelStr);
+        const pctSpan = document.createElement("span");
+        pctSpan.className = "rtichoke-pd-cell-pct";
+        pctSpan.textContent = pctText ?? "";
+
+        numDiv.append(countSpan, pctSpan);
+        content.append(labelSpan, numDiv);
+        td.append(bar, content);
+      };
+
+      const renderMarginCell = (
+        td: HTMLTableCellElement,
+        countVal: number,
+        barColor: string,
+      ) => {
+        td.replaceChildren();
+        td.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
+        td.style.backgroundColor = "#ffffff";
+
+        const pctWidth = totalN > 0 ? (countVal / totalN) * 100 : 0;
+
+        const bar = document.createElement("div");
+        bar.className = "rtichoke-pd-cell-bar";
+        bar.style.width = `${pctWidth}%`;
+        bar.style.backgroundColor = barColor;
+
+        const content = document.createElement("div");
+        content.className = "rtichoke-pd-cell-content rtichoke-pd-cell-content--margin";
+
+        const countSpan = document.createElement("span");
+        countSpan.className = "rtichoke-pd-cell-count";
+        countSpan.textContent = countVal.toLocaleString();
+
+        content.append(countSpan);
+        td.append(bar, content);
+      };
 
       // Predicted Positive Row
       const trPredPos = document.createElement("tr");
@@ -1365,31 +1469,13 @@ export function renderPredictionDistribution(
       thPredPos.append(createCondRadioLabel("predicted_positives", "Predicted Positive"));
 
       const tdTp = document.createElement("td");
-      tdTp.className = "rtichoke-prediction-distribution__cell--tp rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTp,
-        `TP = ${tp.toLocaleString()}`,
-        tp,
-        cellTpColor,
-      );
+      renderInteriorCell(tdTp, "TP", tp, cellTpColor);
 
       const tdFp = document.createElement("td");
-      tdFp.className = "rtichoke-prediction-distribution__cell--fp rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdFp,
-        `FP = ${fp.toLocaleString()}`,
-        fp,
-        cellFpColor,
-      );
+      renderInteriorCell(tdFp, "FP", fp, cellFpColor);
 
       const tdTotPredPos = document.createElement("td");
-      tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTotPredPos,
-        totalPredictedPos.toLocaleString(),
-        totalPredictedPos,
-        neutralMarginColor,
-      );
+      renderMarginCell(tdTotPredPos, totalPredictedPos, neutralMarginColor);
 
       trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
 
@@ -1406,68 +1492,31 @@ export function renderPredictionDistribution(
       thPredNeg.append(createCondRadioLabel("predicted_negatives", "Predicted Negative"));
 
       const tdFn = document.createElement("td");
-      tdFn.className = "rtichoke-prediction-distribution__cell--fn rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdFn,
-        `FN = ${fn.toLocaleString()}`,
-        fn,
-        cellFnColor,
-      );
+      renderInteriorCell(tdFn, "FN", fn, cellFnColor);
 
       const tdTn = document.createElement("td");
-      tdTn.className = "rtichoke-prediction-distribution__cell--tn rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTn,
-        `TN = ${tn.toLocaleString()}`,
-        tn,
-        cellTnColor,
-      );
+      renderInteriorCell(tdTn, "TN", tn, cellTnColor);
 
       const tdTotPredNeg = document.createElement("td");
-      tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTotPredNeg,
-        totalPredictedNeg.toLocaleString(),
-        totalPredictedNeg,
-        neutralMarginColor,
-      );
+      renderMarginCell(tdTotPredNeg, totalPredictedNeg, neutralMarginColor);
 
       trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
 
-      // Total Row
+      // Total Row (NO visible "Total" label on bottom header)
       const trTot = document.createElement("tr");
       trTot.className = "rtichoke-pd-matrix__tot-row";
 
       const thTotLabel = document.createElement("th");
-      thTotLabel.className = "rtichoke-pd-matrix__row-header";
-      thTotLabel.textContent = "Total";
+      thTotLabel.className = "rtichoke-pd-matrix__row-header rtichoke-pd-matrix__row-header--blank";
 
       const tdTotRealPos = document.createElement("td");
-      tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTotRealPos,
-        totalPositives.toLocaleString(),
-        totalPositives,
-        realPosMarginColor,
-      );
+      renderMarginCell(tdTotRealPos, totalPositives, realPosMarginColor);
 
       const tdTotRealNeg = document.createElement("td");
-      tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTotRealNeg,
-        totalNegatives.toLocaleString(),
-        totalNegatives,
-        realNegMarginColor,
-      );
+      renderMarginCell(tdTotRealNeg, totalNegatives, realNegMarginColor);
 
       const tdTotN = document.createElement("td");
-      tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      setCellContent(
-        tdTotN,
-        totalN.toLocaleString(),
-        totalN,
-        neutralMarginColor,
-      );
+      renderMarginCell(tdTotN, totalN, neutralMarginColor);
 
       trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
 
@@ -1477,82 +1526,79 @@ export function renderPredictionDistribution(
       summaryDiv.append(table);
     }
 
-    // Render Performance Metrics Readout matching Performance Table visual grammar
-    // 5 metrics: Sensitivity, Specificity, PPV, NPV, Lift
+    // Render Performance Metrics Readout reusing Performance Table design vocabulary
     if (performanceMetrics) {
-      const metricReadout = document.createElement("div");
-      metricReadout.className = "rtichoke-pd-metrics-row";
+      const metricsContainer = document.createElement("div");
+      metricsContainer.className = "rtichoke-pd-metrics-container rtichoke-performance-table";
 
-      const renderMetricCard = (
-        lbl: string,
-        val: number | null,
-        isEmphasized: boolean,
-        isRatio: boolean = false,
-      ) => {
-        const card = document.createElement("div");
-        card.className = `rtichoke-pd-metric-card ${
-          isEmphasized ? "rtichoke-pd-metric-card--emphasized" : ""
+      const metricsTable = document.createElement("table");
+      metricsTable.className = "rtichoke-performance-table__table rtichoke-pd-metrics-table";
+
+      const mHead = document.createElement("thead");
+      const mHeadRow = document.createElement("tr");
+
+      const metricDefs = [
+        { id: "sensitivity", label: "Sensitivity", val: performanceMetrics.sensitivity, isEmphasized: currentConditioning === "real_positives", isRatio: false },
+        { id: "specificity", label: "Specificity", val: performanceMetrics.specificity, isEmphasized: currentConditioning === "real_negatives", isRatio: false },
+        { id: "ppv", label: "PPV", val: performanceMetrics.ppv, isEmphasized: currentConditioning === "predicted_positives", isRatio: false },
+        { id: "npv", label: "NPV", val: performanceMetrics.npv, isEmphasized: currentConditioning === "predicted_negatives", isRatio: false },
+        { id: "lift", label: "Lift", val: performanceMetrics.lift, isEmphasized: currentConditioning === "predicted_positives", isRatio: true },
+      ];
+
+      for (const m of metricDefs) {
+        const th = document.createElement("th");
+        th.className = `rtichoke-performance-table__metric-header ${
+          m.isEmphasized ? "rtichoke-pd-metric--emphasized-header" : ""
+        }`;
+        th.textContent = m.label;
+        mHeadRow.append(th);
+      }
+      mHead.append(mHeadRow);
+
+      const mBody = document.createElement("tbody");
+      const mBodyRow = document.createElement("tr");
+
+      for (const m of metricDefs) {
+        const td = document.createElement("td");
+        td.className = `rtichoke-performance-table__metric ${
+          m.isEmphasized ? "rtichoke-pd-metric--emphasized-cell" : ""
         }`;
 
-        const l = document.createElement("div");
-        l.className = "rtichoke-pd-metric-card__label";
-        l.textContent = lbl;
-
-        const v = document.createElement("div");
-        v.className = "rtichoke-pd-metric-card__value";
-        if (val !== null && val !== undefined) {
-          v.textContent = isRatio ? val.toFixed(2) : (val * 100).toFixed(1) + "%";
-        } else {
-          v.textContent = "—";
+        let text = "—";
+        if (m.val !== null && m.val !== undefined) {
+          text = m.isRatio ? m.val.toFixed(2) : (m.val * 100).toFixed(1) + "%";
         }
 
-        const barBg = document.createElement("div");
-        barBg.className = "rtichoke-pd-metric-card__bar-bg";
+        if (m.val !== null && m.val !== undefined && isFinite(m.val)) {
+          const bar = document.createElement("div");
+          bar.className = "rtichoke-performance-table__bar";
 
-        const barFill = document.createElement("div");
-        barFill.className = "rtichoke-pd-metric-card__bar-fill";
-        if (val !== null && val !== undefined) {
-          const fillPct = isRatio ? Math.min(100, (val / 3) * 100) : Math.min(100, val * 100);
-          barFill.style.width = `${fillPct}%`;
-        } else {
-          barFill.style.width = "0%";
+          const fill = document.createElement("div");
+          fill.className = "rtichoke-performance-table__bar-fill rtichoke-performance-table__bar-fill--positive";
+
+          // Shared Performance Table Lift scaling behavior (pct = est / maxLift * 100)
+          const fillPct = m.isRatio
+            ? Math.min(100, (m.val / 3) * 100)
+            : Math.min(100, m.val * 100);
+
+          fill.style.width = `${fillPct}%`;
+          bar.append(fill);
+          td.append(bar);
         }
 
-        barBg.append(barFill);
-        card.append(l, v, barBg);
-        return card;
-      };
+        const textSpan = document.createElement("span");
+        textSpan.className = "rtichoke-performance-table__cell-text";
+        textSpan.textContent = text;
+        td.append(textSpan);
 
-      metricReadout.append(
-        renderMetricCard(
-          "Sensitivity",
-          performanceMetrics.sensitivity,
-          currentConditioning === "real_positives",
-        ),
-        renderMetricCard(
-          "Specificity",
-          performanceMetrics.specificity,
-          currentConditioning === "real_negatives",
-        ),
-        renderMetricCard(
-          "PPV",
-          performanceMetrics.ppv,
-          currentConditioning === "predicted_positives",
-        ),
-        renderMetricCard(
-          "NPV",
-          performanceMetrics.npv,
-          currentConditioning === "predicted_negatives",
-        ),
-        renderMetricCard(
-          "Lift",
-          performanceMetrics.lift,
-          currentConditioning === "predicted_positives",
-          true,
-        ),
-      );
+        mBodyRow.append(td);
+      }
 
-      summaryDiv.append(metricReadout);
+      mBody.append(mBodyRow);
+      metricsTable.append(mHead, mBody);
+      metricsContainer.append(metricsTable);
+
+      summaryDiv.append(metricsContainer);
     }
   };
 
