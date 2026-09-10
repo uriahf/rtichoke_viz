@@ -14,6 +14,62 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
     ).not.toThrow();
   });
 
+  it("accepts and validates primary golden rankBins oracle fixture with explicit empty stratum [0.40, 0.60]", () => {
+    const goldenRankBinsFixture: PredictionDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "prediction_distribution",
+      title: "Golden rankBins Oracle Fixture",
+      evaluations: [{ id: "Model A", model: "Model A", population: "Overall" }],
+      bins: [
+        { evaluationId: "Model A", lower: 0, upper: 0, includeLower: true, includeUpper: true, nPositive: 0, nNegative: 0 },
+        { evaluationId: "Model A", lower: 0, upper: 1, includeLower: false, includeUpper: true, nPositive: 5, nNegative: 4 },
+      ],
+      rankBins: [
+        { evaluationId: "Model A", rankLower: 0.0, rankUpper: 0.2, positiveMass: 1, negativeMass: 1 },
+        { evaluationId: "Model A", rankLower: 0.2, rankUpper: 0.4, positiveMass: 2, negativeMass: 2 },
+        { evaluationId: "Model A", rankLower: 0.4, rankUpper: 0.6, positiveMass: 0, negativeMass: 0 },
+        { evaluationId: "Model A", rankLower: 0.6, rankUpper: 0.8, positiveMass: 1, negativeMass: 0 },
+        { evaluationId: "Model A", rankLower: 0.8, rankUpper: 1.0, positiveMass: 1, negativeMass: 1 },
+      ],
+      operatingPoints: [
+        { evaluationId: "Model A", type: "probability_threshold", value: 0, cutoff: 0, realizedPpcr: 1 },
+        { evaluationId: "Model A", type: "probability_threshold", value: 1, cutoff: 1, realizedPpcr: 0 },
+      ],
+    };
+
+    expect(() =>
+      assertPredictionDistributionReferentialIntegrity(goldenRankBinsFixture),
+    ).not.toThrow();
+  });
+
+  it("accepts and validates N < q golden rankBins oracle fixture with multiple empty strata", () => {
+    const smallNLessQFixture: PredictionDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "prediction_distribution",
+      title: "N < q rankBins Oracle Fixture",
+      evaluations: [{ id: "Model A", model: "Model A", population: "Overall" }],
+      bins: [
+        { evaluationId: "Model A", lower: 0, upper: 0, includeLower: true, includeUpper: true, nPositive: 0, nNegative: 0 },
+        { evaluationId: "Model A", lower: 0, upper: 1, includeLower: false, includeUpper: true, nPositive: 2, nNegative: 1 },
+      ],
+      rankBins: [
+        { evaluationId: "Model A", rankLower: 0.0, rankUpper: 0.2, positiveMass: 0, negativeMass: 1 },
+        { evaluationId: "Model A", rankLower: 0.2, rankUpper: 0.4, positiveMass: 0, negativeMass: 0 },
+        { evaluationId: "Model A", rankLower: 0.4, rankUpper: 0.6, positiveMass: 1, negativeMass: 0 },
+        { evaluationId: "Model A", rankLower: 0.6, rankUpper: 0.8, positiveMass: 0, negativeMass: 0 },
+        { evaluationId: "Model A", rankLower: 0.8, rankUpper: 1.0, positiveMass: 1, negativeMass: 0 },
+      ],
+      operatingPoints: [
+        { evaluationId: "Model A", type: "probability_threshold", value: 0, cutoff: 0, realizedPpcr: 1 },
+        { evaluationId: "Model A", type: "probability_threshold", value: 1, cutoff: 1, realizedPpcr: 0 },
+      ],
+    };
+
+    expect(() =>
+      assertPredictionDistributionReferentialIntegrity(smallNLessQFixture),
+    ).not.toThrow();
+  });
+
   it("accepts valid PPCR tie golden fixture with requested != realized PPCR", () => {
     expect(() =>
       assertPredictionDistributionReferentialIntegrity(

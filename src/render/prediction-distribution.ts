@@ -463,19 +463,7 @@ export function preparePredictionDistributionPlotData(
       const popUpper = rBin.rankUpper;
       const totalMass = rBin.positiveMass + rBin.negativeMass;
 
-      // Classification is determined by operating-point boundary in rank space (1 - requested PPCR)
-      const rankMid = (popLower + popUpper) / 2;
-      const isPredictedPositive = rankMid >= (1 - currentValue);
-
-      const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
-      const posCellLabel = isPredictedPositive
-        ? "True Positive (TP)"
-        : "False Negative (FN)";
-      const negCell: "FP" | "TN" = isPredictedPositive ? "FP" : "TN";
-      const negCellLabel = isPredictedPositive
-        ? "False Positive (FP)"
-        : "True Negative (TN)";
-
+      // Unclassified rank bin representation directly from producer-owned rankBins
       if (totalMass > 0) {
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
 
@@ -485,15 +473,14 @@ export function preparePredictionDistributionPlotData(
             x2: popUpper,
             category: "Observed Positives",
             count: rBin.positiveMass,
-            classificationCell: posCell,
-            cellLabel: posCellLabel,
-            isPredictedPositive,
+            classificationCell: "TP",
+            cellLabel: "Observed Positive",
+            isPredictedPositive: true,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Positive"],
               ["Count", rBin.positiveMass],
-              ["Classification", posCellLabel],
             ]),
           });
         }
@@ -504,15 +491,14 @@ export function preparePredictionDistributionPlotData(
             x2: popUpper,
             category: "Observed Negatives",
             count: rBin.negativeMass,
-            classificationCell: negCell,
-            cellLabel: negCellLabel,
-            isPredictedPositive,
+            classificationCell: "TN",
+            cellLabel: "Observed Negative",
+            isPredictedPositive: false,
             title: tooltip(digits, [
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Negative"],
               ["Count", rBin.negativeMass],
-              ["Classification", negCellLabel],
             ]),
           });
         }
