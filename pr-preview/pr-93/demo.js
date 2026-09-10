@@ -20688,12 +20688,14 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
     const specMetric = getMetric("specificity");
     const ppv = getMetric("ppv");
     const npv = getMetric("npv");
-    if (sens !== null || specMetric !== null || ppv !== null || npv !== null) {
+    const lift = getMetric("lift");
+    if (sens !== null || specMetric !== null || ppv !== null || npv !== null || lift !== null) {
       performanceMetrics = {
         sensitivity: sens,
         specificity: specMetric,
         ppv,
-        npv
+        npv,
+        lift
       };
     }
     if (tp !== null && fp !== null && tn !== null && fn !== null) {
@@ -20717,7 +20719,6 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
   const evalLabel = evalSpec?.label ?? evalSpec?.model ?? evalSpec?.population ?? evalId;
   const ordinaryPlotData = [];
   const zeroAtomPlotData = [];
-  let cumCount = 0;
   if (dim === "probability_threshold") {
     const bin0 = evalBins.find((b) => b.lower === 0 && b.upper === 0);
     const nonZeroBins = evalBins.filter((b) => !(b.lower === 0 && b.upper === 0));
@@ -20762,7 +20763,6 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
       const bin = nonZeroBins[i];
       const x12 = i === 0 ? 0 : bin.lower;
       const x2 = bin.upper;
-      const intervalWidth = x2 - x12;
       const intervalLabel = `[${x12.toFixed(digits)}, ${x2.toFixed(digits)}]`;
       if (i === 0 && bin0) {
         const isBin0PredictedPos = cutoff === 0 ? true : bin0.upper > cutoff;
@@ -20779,12 +20779,10 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
         const combinedNeg = bin0.nNegative + bin.nNegative;
         if (bin0PosCell === bin1PosCell) {
           if (combinedPos > 0) {
-            const posDensity = combinedPos / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Positives",
-              density: posDensity,
               count: combinedPos,
               classificationCell: bin1PosCell,
               cellLabel: bin1PosLabel,
@@ -20794,19 +20792,16 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", combinedPos],
-                ["Count Density", posDensity.toFixed(digits)],
                 ["Classification", bin1PosLabel]
               ])
             });
           }
         } else {
           if (bin0.nPositive > 0) {
-            const posDensity0 = bin0.nPositive / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Positives",
-              density: posDensity0,
               count: bin0.nPositive,
               classificationCell: bin0PosCell,
               cellLabel: bin0PosLabel,
@@ -20816,18 +20811,15 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", bin0.nPositive],
-                ["Count Density", posDensity0.toFixed(digits)],
                 ["Classification", bin0PosLabel]
               ])
             });
           }
           if (bin.nPositive > 0) {
-            const posDensity1 = bin.nPositive / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Positives",
-              density: posDensity1,
               count: bin.nPositive,
               classificationCell: bin1PosCell,
               cellLabel: bin1PosLabel,
@@ -20837,7 +20829,6 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", bin.nPositive],
-                ["Count Density", posDensity1.toFixed(digits)],
                 ["Classification", bin1PosLabel]
               ])
             });
@@ -20845,12 +20836,10 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
         }
         if (bin0NegCell === bin1NegCell) {
           if (combinedNeg > 0) {
-            const negDensity = combinedNeg / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Negatives",
-              density: negDensity,
               count: combinedNeg,
               classificationCell: bin1NegCell,
               cellLabel: bin1NegLabel,
@@ -20860,19 +20849,16 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", combinedNeg],
-                ["Count Density", negDensity.toFixed(digits)],
                 ["Classification", bin1NegLabel]
               ])
             });
           }
         } else {
           if (bin0.nNegative > 0) {
-            const negDensity0 = bin0.nNegative / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Negatives",
-              density: negDensity0,
               count: bin0.nNegative,
               classificationCell: bin0NegCell,
               cellLabel: bin0NegLabel,
@@ -20882,18 +20868,15 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", bin0.nNegative],
-                ["Count Density", negDensity0.toFixed(digits)],
                 ["Classification", bin0NegLabel]
               ])
             });
           }
           if (bin.nNegative > 0) {
-            const negDensity1 = bin.nNegative / intervalWidth;
             ordinaryPlotData.push({
               x1: x12,
               x2,
               category: "Observed Negatives",
-              density: negDensity1,
               count: bin.nNegative,
               classificationCell: bin1NegCell,
               cellLabel: bin1NegLabel,
@@ -20903,7 +20886,6 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", bin.nNegative],
-                ["Count Density", negDensity1.toFixed(digits)],
                 ["Classification", bin1NegLabel]
               ])
             });
@@ -20916,12 +20898,10 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
         const negCell = isPredictedPositive ? "FP" : "TN";
         const negCellLabel = isPredictedPositive ? "False Positive (FP)" : "True Negative (TN)";
         if (bin.nPositive > 0) {
-          const posDensity = bin.nPositive / intervalWidth;
           ordinaryPlotData.push({
             x1: x12,
             x2,
             category: "Observed Positives",
-            density: posDensity,
             count: bin.nPositive,
             classificationCell: posCell,
             cellLabel: posCellLabel,
@@ -20931,18 +20911,15 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Positive"],
               ["Count", bin.nPositive],
-              ["Count Density", posDensity.toFixed(digits)],
               ["Classification", posCellLabel]
             ])
           });
         }
         if (bin.nNegative > 0) {
-          const negDensity = bin.nNegative / intervalWidth;
           ordinaryPlotData.push({
             x1: x12,
             x2,
             category: "Observed Negatives",
-            density: negDensity,
             count: bin.nNegative,
             classificationCell: negCell,
             cellLabel: negCellLabel,
@@ -20952,7 +20929,6 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Negative"],
               ["Count", bin.nNegative],
-              ["Count Density", negDensity.toFixed(digits)],
               ["Classification", negCellLabel]
             ])
           });
@@ -20966,7 +20942,7 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
       const popUpper = rBin.rankUpper;
       const totalMass = rBin.positiveMass + rBin.negativeMass;
       const rankMid = (popLower + popUpper) / 2;
-      const isPredictedPositive = rankMid >= 1 - realizedPpcr;
+      const isPredictedPositive = rankMid >= 1 - currentValue;
       const posCell = isPredictedPositive ? "TP" : "FN";
       const posCellLabel = isPredictedPositive ? "True Positive (TP)" : "False Negative (FN)";
       const negCell = isPredictedPositive ? "FP" : "TN";
@@ -20974,12 +20950,10 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
       if (totalMass > 0) {
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
         if (rBin.positiveMass > 0) {
-          const frac = rBin.positiveMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Positives",
-            density: frac,
             count: rBin.positiveMass,
             classificationCell: posCell,
             cellLabel: posCellLabel,
@@ -20988,19 +20962,16 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Positive"],
-              ["Positive Mass", rBin.positiveMass.toFixed(digits)],
-              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Count", rBin.positiveMass],
               ["Classification", posCellLabel]
             ])
           });
         }
         if (rBin.negativeMass > 0) {
-          const frac = rBin.negativeMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Negatives",
-            density: frac,
             count: rBin.negativeMass,
             classificationCell: negCell,
             cellLabel: negCellLabel,
@@ -21009,8 +20980,7 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Negative"],
-              ["Negative Mass", rBin.negativeMass.toFixed(digits)],
-              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Count", rBin.negativeMass],
               ["Classification", negCellLabel]
             ])
           });
@@ -21020,26 +20990,32 @@ function preparePredictionDistributionPlotData(spec, evalId, dim, currentValue, 
   }
   let cutoffX = cutoff;
   let xAxisLabel = "Prediction Score";
-  let yAxisLabel = "Count density";
+  const yAxisLabel = "Count";
   let yMax = 1;
   if (dim === "probability_threshold") {
     cutoffX = cutoff;
     xAxisLabel = "Prediction Score";
-    yAxisLabel = "Count density";
-    let maxBinDensity = 0;
+    let maxBinCount = 0;
     const binsByLower = /* @__PURE__ */ new Map();
     for (const d of ordinaryPlotData) {
-      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
+      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.count);
     }
-    for (const totalDensity of binsByLower.values()) {
-      maxBinDensity = Math.max(maxBinDensity, totalDensity);
+    for (const totalCount of binsByLower.values()) {
+      maxBinCount = Math.max(maxBinCount, totalCount);
     }
-    yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
+    yMax = Math.max(1, Math.ceil(maxBinCount * 1.15));
   } else {
-    cutoffX = 1 - realizedPpcr;
+    cutoffX = 1 - currentValue;
     xAxisLabel = "Risk Percentile";
-    yAxisLabel = "Outcome fraction";
-    yMax = 1.18;
+    let maxRankBinCount = 0;
+    const rankBinsByLower = /* @__PURE__ */ new Map();
+    for (const d of ordinaryPlotData) {
+      rankBinsByLower.set(d.x1, (rankBinsByLower.get(d.x1) ?? 0) + d.count);
+    }
+    for (const totalCount of rankBinsByLower.values()) {
+      maxRankBinCount = Math.max(maxRankBinCount, totalCount);
+    }
+    yMax = Math.max(1, Math.ceil(maxRankBinCount * 1.15));
   }
   return {
     evalId,
@@ -21367,7 +21343,6 @@ function renderPredictionDistribution(spec, options = {}) {
     );
     const {
       cutoff,
-      realizedPpcr,
       cutoffX,
       xAxisLabel,
       yAxisLabel,
@@ -21395,7 +21370,7 @@ function renderPredictionDistribution(spec, options = {}) {
       );
     }
     const marks2 = [];
-    const cutoffTextLabel = currentDim === "probability_threshold" ? `Cutoff = ${cutoff.toFixed(digits)}` : `Realized PPCR = ${realizedPpcr.toFixed(digits)}`;
+    const cutoffTextLabel = currentDim === "probability_threshold" ? `Cutoff = ${cutoff.toFixed(digits)}` : `PPCR = ${currentValue.toFixed(digits)}`;
     const effectiveYMax = currentDisplayMode === "mirrored" ? yMax : yMax;
     const effectiveYMin = currentDisplayMode === "mirrored" ? -yMax : 0;
     marks2.push(
@@ -21487,7 +21462,7 @@ function renderPredictionDistribution(spec, options = {}) {
           stackY({
             x1: "x1",
             x2: "x2",
-            y: "density",
+            y: "count",
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -21513,7 +21488,7 @@ function renderPredictionDistribution(spec, options = {}) {
             x1: "x1",
             x2: "x2",
             y1: 0,
-            y2: "density",
+            y2: "count",
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -21530,7 +21505,7 @@ function renderPredictionDistribution(spec, options = {}) {
             x1: "x1",
             x2: "x2",
             y1: 0,
-            y2: (d) => -d.density,
+            y2: (d) => -d.count,
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -21604,18 +21579,10 @@ function renderPredictionDistribution(spec, options = {}) {
         return labelEl;
       };
       const thead = document.createElement("thead");
-      const trH1 = document.createElement("tr");
+      const trH = document.createElement("tr");
       const thCorner = document.createElement("th");
       thCorner.className = "rtichoke-pd-matrix__corner";
       thCorner.append(createCondRadioLabel("all_observations", "All Observations"));
-      const thSpanner = document.createElement("th");
-      thSpanner.colSpan = 2;
-      thSpanner.className = "rtichoke-pd-matrix__spanner";
-      thSpanner.textContent = "REAL OUTCOME";
-      const thEmpty = document.createElement("th");
-      trH1.append(thCorner, thSpanner, thEmpty);
-      const trH2 = document.createElement("tr");
-      const thH2Empty = document.createElement("th");
       const thRealPos = document.createElement("th");
       thRealPos.className = `rtichoke-pd-matrix__col-header ${currentConditioning === "real_positives" ? "rtichoke-pd-matrix__col-header--active" : ""}`;
       thRealPos.append(createCondRadioLabel("real_positives", "Real Positive"));
@@ -21625,8 +21592,8 @@ function renderPredictionDistribution(spec, options = {}) {
       const thTot = document.createElement("th");
       thTot.className = "rtichoke-pd-matrix__col-header";
       thTot.textContent = "Total";
-      trH2.append(thH2Empty, thRealPos, thRealNeg, thTot);
-      thead.append(trH1, trH2);
+      trH.append(thCorner, thRealPos, thRealNeg, thTot);
+      thead.append(trH);
       const tbody = document.createElement("tbody");
       const setCellContent = (td, text2, countVal, barColor) => {
         td.replaceChildren();
@@ -21642,10 +21609,13 @@ function renderPredictionDistribution(spec, options = {}) {
         textSpan.textContent = text2;
         td.append(bar, textSpan);
       };
-      const cellFnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fn : theme.predictionDistribution.observedPositive;
-      const cellTpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tp : theme.predictionDistribution.observedPositive;
-      const cellTnColor = currentColorMode === "confusion_matrix_cell" ? cellColors.tn : theme.predictionDistribution.observedNegative;
-      const cellFpColor = currentColorMode === "confusion_matrix_cell" ? cellColors.fp : theme.predictionDistribution.observedNegative;
+      const cellTpColor = currentColorMode === "observed_outcome" ? theme.predictionDistribution.observedPositive : cellColors.tp;
+      const cellFnColor = currentColorMode === "observed_outcome" ? theme.predictionDistribution.observedPositive : cellColors.fn;
+      const cellFpColor = currentColorMode === "observed_outcome" ? theme.predictionDistribution.observedNegative : cellColors.fp;
+      const cellTnColor = currentColorMode === "observed_outcome" ? theme.predictionDistribution.observedNegative : cellColors.tn;
+      const realPosMarginColor = theme.predictionDistribution.observedPositive;
+      const realNegMarginColor = theme.predictionDistribution.observedNegative;
+      const neutralMarginColor = "#E5E7EB";
       const trPredPos = document.createElement("tr");
       if (currentConditioning === "predicted_positives") {
         trPredPos.className = "rtichoke-pd-matrix__row--active";
@@ -21671,7 +21641,12 @@ function renderPredictionDistribution(spec, options = {}) {
       );
       const tdTotPredPos = document.createElement("td");
       tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotPredPos.textContent = totalPredictedPos.toLocaleString();
+      setCellContent(
+        tdTotPredPos,
+        totalPredictedPos.toLocaleString(),
+        totalPredictedPos,
+        neutralMarginColor
+      );
       trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
       const trPredNeg = document.createElement("tr");
       if (currentConditioning === "predicted_negatives") {
@@ -21698,7 +21673,12 @@ function renderPredictionDistribution(spec, options = {}) {
       );
       const tdTotPredNeg = document.createElement("td");
       tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotPredNeg.textContent = totalPredictedNeg.toLocaleString();
+      setCellContent(
+        tdTotPredNeg,
+        totalPredictedNeg.toLocaleString(),
+        totalPredictedNeg,
+        neutralMarginColor
+      );
       trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
       const trTot = document.createElement("tr");
       trTot.className = "rtichoke-pd-matrix__tot-row";
@@ -21707,13 +21687,28 @@ function renderPredictionDistribution(spec, options = {}) {
       thTotLabel.textContent = "Total";
       const tdTotRealPos = document.createElement("td");
       tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotRealPos.textContent = totalPositives.toLocaleString();
+      setCellContent(
+        tdTotRealPos,
+        totalPositives.toLocaleString(),
+        totalPositives,
+        realPosMarginColor
+      );
       const tdTotRealNeg = document.createElement("td");
       tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotRealNeg.textContent = totalNegatives.toLocaleString();
+      setCellContent(
+        tdTotRealNeg,
+        totalNegatives.toLocaleString(),
+        totalNegatives,
+        realNegMarginColor
+      );
       const tdTotN = document.createElement("td");
       tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotN.textContent = totalN.toLocaleString();
+      setCellContent(
+        tdTotN,
+        totalN.toLocaleString(),
+        totalN,
+        neutralMarginColor
+      );
       trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
       tbody.append(trPredPos, trPredNeg, trTot);
       table.append(thead, tbody);
@@ -21722,7 +21717,7 @@ function renderPredictionDistribution(spec, options = {}) {
     if (performanceMetrics) {
       const metricReadout = document.createElement("div");
       metricReadout.className = "rtichoke-pd-metrics-row";
-      const renderMetricCard = (lbl, val, isEmphasized) => {
+      const renderMetricCard = (lbl, val, isEmphasized, isRatio = false) => {
         const card = document.createElement("div");
         card.className = `rtichoke-pd-metric-card ${isEmphasized ? "rtichoke-pd-metric-card--emphasized" : ""}`;
         const l = document.createElement("div");
@@ -21730,24 +21725,33 @@ function renderPredictionDistribution(spec, options = {}) {
         l.textContent = lbl;
         const v = document.createElement("div");
         v.className = "rtichoke-pd-metric-card__value";
-        v.textContent = val !== null ? (val * 100).toFixed(1) + "%" : "\u2014";
+        if (val !== null && val !== void 0) {
+          v.textContent = isRatio ? val.toFixed(2) : (val * 100).toFixed(1) + "%";
+        } else {
+          v.textContent = "\u2014";
+        }
         const barBg = document.createElement("div");
         barBg.className = "rtichoke-pd-metric-card__bar-bg";
         const barFill = document.createElement("div");
         barFill.className = "rtichoke-pd-metric-card__bar-fill";
-        barFill.style.width = val !== null ? `${Math.min(100, val * 100)}%` : "0%";
+        if (val !== null && val !== void 0) {
+          const fillPct = isRatio ? Math.min(100, val / 3 * 100) : Math.min(100, val * 100);
+          barFill.style.width = `${fillPct}%`;
+        } else {
+          barFill.style.width = "0%";
+        }
         barBg.append(barFill);
         card.append(l, v, barBg);
         return card;
       };
       metricReadout.append(
         renderMetricCard(
-          "Sens",
+          "Sensitivity",
           performanceMetrics.sensitivity,
           currentConditioning === "real_positives"
         ),
         renderMetricCard(
-          "Spec",
+          "Specificity",
           performanceMetrics.specificity,
           currentConditioning === "real_negatives"
         ),
@@ -21760,6 +21764,12 @@ function renderPredictionDistribution(spec, options = {}) {
           "NPV",
           performanceMetrics.npv,
           currentConditioning === "predicted_negatives"
+        ),
+        renderMetricCard(
+          "Lift",
+          performanceMetrics.lift,
+          currentConditioning === "predicted_positives",
+          true
         )
       );
       summaryDiv.append(metricReadout);
@@ -31341,6 +31351,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     },
@@ -31382,6 +31396,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914286
+        },
+        {
+          metricId: "lift",
+          estimate: 1.015132
         }
       ]
     },
@@ -31423,6 +31441,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.956522
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034243
         }
       ]
     },
@@ -31464,6 +31486,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970588
+        },
+        {
+          metricId: "lift",
+          estimate: 1.053493
         }
       ]
     },
@@ -31505,6 +31531,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977612
+        },
+        {
+          metricId: "lift",
+          estimate: 1.072857
         }
       ]
     },
@@ -31546,6 +31576,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981928
+        },
+        {
+          metricId: "lift",
+          estimate: 1.092945
         }
       ]
     },
@@ -31587,6 +31621,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.984772
+        },
+        {
+          metricId: "lift",
+          estimate: 1.113137
         }
       ]
     },
@@ -31628,6 +31666,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986784
+        },
+        {
+          metricId: "lift",
+          estimate: 1.1334
         }
       ]
     },
@@ -31669,6 +31711,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.988281
+        },
+        {
+          metricId: "lift",
+          estimate: 1.153702
         }
       ]
     },
@@ -31710,6 +31756,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989474
+        },
+        {
+          metricId: "lift",
+          estimate: 1.174744
         }
       ]
     },
@@ -31751,6 +31801,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990415
+        },
+        {
+          metricId: "lift",
+          estimate: 1.195803
         }
       ]
     },
@@ -31792,6 +31846,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991176
+        },
+        {
+          metricId: "lift",
+          estimate: 1.216836
         }
       ]
     },
@@ -31833,6 +31891,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991826
+        },
+        {
+          metricId: "lift",
+          estimate: 1.238623
         }
       ]
     },
@@ -31874,6 +31936,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992366
+        },
+        {
+          metricId: "lift",
+          estimate: 1.260353
         }
       ]
     },
@@ -31915,6 +31981,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992823
+        },
+        {
+          metricId: "lift",
+          estimate: 1.281979
         }
       ]
     },
@@ -31956,6 +32026,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993228
+        },
+        {
+          metricId: "lift",
+          estimate: 1.30436
         }
       ]
     },
@@ -31997,6 +32071,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993576
+        },
+        {
+          metricId: "lift",
+          estimate: 1.326593
         }
       ]
     },
@@ -32038,6 +32116,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.99389
+        },
+        {
+          metricId: "lift",
+          estimate: 1.349598
         }
       ]
     },
@@ -32079,6 +32161,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992233
+        },
+        {
+          metricId: "lift",
+          estimate: 1.37166
         }
       ]
     },
@@ -32120,6 +32206,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990706
+        },
+        {
+          metricId: "lift",
+          estimate: 1.393472
         }
       ]
     },
@@ -32161,6 +32251,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989305
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416048
         }
       ]
     },
@@ -32202,6 +32296,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.987993
+        },
+        {
+          metricId: "lift",
+          estimate: 1.438314
         }
       ]
     },
@@ -32243,6 +32341,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986777
+        },
+        {
+          metricId: "lift",
+          estimate: 1.461351
         }
       ]
     },
@@ -32284,6 +32386,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.985623
+        },
+        {
+          metricId: "lift",
+          estimate: 1.484012
         }
       ]
     },
@@ -32325,6 +32431,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.98452
+        },
+        {
+          metricId: "lift",
+          estimate: 1.506221
         }
       ]
     },
@@ -32366,6 +32476,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.983483
+        },
+        {
+          metricId: "lift",
+          estimate: 1.529164
         }
       ]
     },
@@ -32407,6 +32521,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.982482
+        },
+        {
+          metricId: "lift",
+          estimate: 1.551575
         }
       ]
     },
@@ -32448,6 +32566,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981534
+        },
+        {
+          metricId: "lift",
+          estimate: 1.574713
         }
       ]
     },
@@ -32489,6 +32611,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.980609
+        },
+        {
+          metricId: "lift",
+          estimate: 1.597227
         }
       ]
     },
@@ -32530,6 +32656,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.978408
+        },
+        {
+          metricId: "lift",
+          estimate: 1.619781
         }
       ]
     },
@@ -32571,6 +32701,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.976285
+        },
+        {
+          metricId: "lift",
+          estimate: 1.641632
         }
       ]
     },
@@ -32612,6 +32746,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.97426
+        },
+        {
+          metricId: "lift",
+          estimate: 1.664199
         }
       ]
     },
@@ -32653,6 +32791,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972292
+        },
+        {
+          metricId: "lift",
+          estimate: 1.685957
         }
       ]
     },
@@ -32694,6 +32836,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970407
+        },
+        {
+          metricId: "lift",
+          estimate: 1.70841
         }
       ]
     },
@@ -32735,6 +32881,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.968561
+        },
+        {
+          metricId: "lift",
+          estimate: 1.72994
         }
       ]
     },
@@ -32776,6 +32926,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.966785
+        },
+        {
+          metricId: "lift",
+          estimate: 1.752138
         }
       ]
     },
@@ -32817,6 +32971,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.963912
+        },
+        {
+          metricId: "lift",
+          estimate: 1.772687
         }
       ]
     },
@@ -32858,6 +33016,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961143
+        },
+        {
+          metricId: "lift",
+          estimate: 1.793893
         }
       ]
     },
@@ -32899,6 +33061,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.958427
+        },
+        {
+          metricId: "lift",
+          estimate: 1.813946
         }
       ]
     },
@@ -32940,6 +33106,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.955801
+        },
+        {
+          metricId: "lift",
+          estimate: 1.834619
         }
       ]
     },
@@ -32981,6 +33151,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953261
+        },
+        {
+          metricId: "lift",
+          estimate: 1.855941
         }
       ]
     },
@@ -33022,6 +33196,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.950749
+        },
+        {
+          metricId: "lift",
+          estimate: 1.875948
         }
       ]
     },
@@ -33063,6 +33241,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.947313
+        },
+        {
+          metricId: "lift",
+          estimate: 1.896032
         }
       ]
     },
@@ -33104,6 +33286,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.943925
+        },
+        {
+          metricId: "lift",
+          estimate: 1.914675
         }
       ]
     },
@@ -33145,6 +33331,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.940635
+        },
+        {
+          metricId: "lift",
+          estimate: 1.933899
         }
       ]
     },
@@ -33186,6 +33376,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.937437
+        },
+        {
+          metricId: "lift",
+          estimate: 1.953732
         }
       ]
     },
@@ -33227,6 +33421,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.934263
+        },
+        {
+          metricId: "lift",
+          estimate: 1.971937
         }
       ]
     },
@@ -33268,6 +33466,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.930255
+        },
+        {
+          metricId: "lift",
+          estimate: 1.990233
         }
       ]
     },
@@ -33309,6 +33511,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.926285
+        },
+        {
+          metricId: "lift",
+          estimate: 2.006756
         }
       ]
     },
@@ -33350,6 +33556,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922414
+        },
+        {
+          metricId: "lift",
+          estimate: 2.023796
         }
       ]
     },
@@ -33391,6 +33601,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.918638
+        },
+        {
+          metricId: "lift",
+          estimate: 2.041378
         }
       ]
     },
@@ -33432,6 +33646,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914019
+        },
+        {
+          metricId: "lift",
+          estimate: 2.056564
         }
       ]
     },
@@ -33473,6 +33691,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.909511
+        },
+        {
+          metricId: "lift",
+          estimate: 2.072249
         }
       ]
     },
@@ -33514,6 +33736,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.905109
+        },
+        {
+          metricId: "lift",
+          estimate: 2.088458
         }
       ]
     },
@@ -33555,6 +33781,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.900722
+        },
+        {
+          metricId: "lift",
+          estimate: 2.102471
         }
       ]
     },
@@ -33596,6 +33826,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.895629
+        },
+        {
+          metricId: "lift",
+          estimate: 2.116574
         }
       ]
     },
@@ -33637,6 +33871,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.890653
+        },
+        {
+          metricId: "lift",
+          estimate: 2.131172
         }
       ]
     },
@@ -33678,6 +33916,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.885789
+        },
+        {
+          metricId: "lift",
+          estimate: 2.146291
         }
       ]
     },
@@ -33719,6 +33961,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.880932
+        },
+        {
+          metricId: "lift",
+          estimate: 2.158941
         }
       ]
     },
@@ -33760,6 +34006,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.875427
+        },
+        {
+          metricId: "lift",
+          estimate: 2.171718
         }
       ]
     },
@@ -33801,6 +34051,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870042
+        },
+        {
+          metricId: "lift",
+          estimate: 2.184976
         }
       ]
     },
@@ -33842,6 +34096,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.864775
+        },
+        {
+          metricId: "lift",
+          estimate: 2.198744
         }
       ]
     },
@@ -33883,6 +34141,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858794
+        },
+        {
+          metricId: "lift",
+          estimate: 2.209458
         }
       ]
     },
@@ -33924,6 +34186,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.852941
+        },
+        {
+          metricId: "lift",
+          estimate: 2.2206
         }
       ]
     },
@@ -33965,6 +34231,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.847211
+        },
+        {
+          metricId: "lift",
+          estimate: 2.232196
         }
       ]
     },
@@ -34006,6 +34276,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.840927
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244048
         }
       ]
     },
@@ -34047,6 +34321,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.834652
+        },
+        {
+          metricId: "lift",
+          estimate: 2.252752
         }
       ]
     },
@@ -34088,6 +34366,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.828504
+        },
+        {
+          metricId: "lift",
+          estimate: 2.261833
         }
       ]
     },
@@ -34129,6 +34411,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.821844
+        },
+        {
+          metricId: "lift",
+          estimate: 2.271123
         }
       ]
     },
@@ -34170,6 +34456,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.815326
+        },
+        {
+          metricId: "lift",
+          estimate: 2.280869
         }
       ]
     },
@@ -34211,6 +34501,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.808946
+        },
+        {
+          metricId: "lift",
+          estimate: 2.291106
         }
       ]
     },
@@ -34252,6 +34546,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.80195
+        },
+        {
+          metricId: "lift",
+          estimate: 2.29747
         }
       ]
     },
@@ -34293,6 +34591,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7951
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304172
         }
       ]
     },
@@ -34334,6 +34636,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.788391
+        },
+        {
+          metricId: "lift",
+          estimate: 2.311239
         }
       ]
     },
@@ -34375,6 +34681,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.78125
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318568
         }
       ]
     },
@@ -34416,6 +34726,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.774263
+        },
+        {
+          metricId: "lift",
+          estimate: 2.326352
         }
       ]
     },
@@ -34457,6 +34771,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.767425
+        },
+        {
+          metricId: "lift",
+          estimate: 2.334633
         }
       ]
     },
@@ -34498,6 +34816,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.760028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.338207
         }
       ]
     },
@@ -34539,6 +34861,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.752786
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342025
         }
       ]
     },
@@ -34580,6 +34906,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.745179
+        },
+        {
+          metricId: "lift",
+          estimate: 2.34602
         }
       ]
     },
@@ -34621,6 +34951,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.737738
+        },
+        {
+          metricId: "lift",
+          estimate: 2.350329
         }
       ]
     },
@@ -34662,6 +34996,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729966
+        },
+        {
+          metricId: "lift",
+          estimate: 2.354913
         }
       ]
     },
@@ -34703,6 +35041,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.72237
+        },
+        {
+          metricId: "lift",
+          estimate: 2.359914
         }
       ]
     },
@@ -34744,6 +35086,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.714944
+        },
+        {
+          metricId: "lift",
+          estimate: 2.365394
         }
       ]
     },
@@ -34785,6 +35131,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.707222
+        },
+        {
+          metricId: "lift",
+          estimate: 2.371381
         }
       ]
     },
@@ -34826,6 +35176,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.699678
+        },
+        {
+          metricId: "lift",
+          estimate: 2.378042
         }
       ]
     },
@@ -34867,6 +35221,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.691868
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -34908,6 +35266,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.684045
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -34949,6 +35311,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.675978
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -34990,6 +35356,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.668098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35031,6 +35401,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.66
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35072,6 +35446,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.652096
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35113,6 +35491,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.643998
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35154,6 +35536,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.636098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35195,6 +35581,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.628028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35236,6 +35626,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.620159
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35277,6 +35671,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.612142
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35318,6 +35716,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.604329
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35359,6 +35761,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.596386
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35400,6 +35806,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.588649
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35441,6 +35851,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.5808
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -35482,6 +35896,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.5808
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -35523,6 +35941,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.588649
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35564,6 +35986,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.596386
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35605,6 +36031,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.604329
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35646,6 +36076,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.612142
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35687,6 +36121,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.620159
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35728,6 +36166,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.628028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35769,6 +36211,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.636098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35810,6 +36256,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.643998
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35851,6 +36301,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.652096
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35892,6 +36346,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.66
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35933,6 +36391,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.668098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -35974,6 +36436,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.675978
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -36015,6 +36481,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.684045
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -36056,6 +36526,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.691868
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -36097,6 +36571,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.699678
+        },
+        {
+          metricId: "lift",
+          estimate: 2.378042
         }
       ]
     },
@@ -36138,6 +36616,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.707222
+        },
+        {
+          metricId: "lift",
+          estimate: 2.371381
         }
       ]
     },
@@ -36179,6 +36661,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.714944
+        },
+        {
+          metricId: "lift",
+          estimate: 2.365394
         }
       ]
     },
@@ -36220,6 +36706,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.72237
+        },
+        {
+          metricId: "lift",
+          estimate: 2.359914
         }
       ]
     },
@@ -36261,6 +36751,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729966
+        },
+        {
+          metricId: "lift",
+          estimate: 2.354913
         }
       ]
     },
@@ -36302,6 +36796,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.737738
+        },
+        {
+          metricId: "lift",
+          estimate: 2.350329
         }
       ]
     },
@@ -36343,6 +36841,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.745179
+        },
+        {
+          metricId: "lift",
+          estimate: 2.34602
         }
       ]
     },
@@ -36384,6 +36886,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.752786
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342025
         }
       ]
     },
@@ -36425,6 +36931,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.760028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.338207
         }
       ]
     },
@@ -36466,6 +36976,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.767425
+        },
+        {
+          metricId: "lift",
+          estimate: 2.334633
         }
       ]
     },
@@ -36507,6 +37021,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.774263
+        },
+        {
+          metricId: "lift",
+          estimate: 2.326352
         }
       ]
     },
@@ -36548,6 +37066,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.78125
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318568
         }
       ]
     },
@@ -36589,6 +37111,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.788391
+        },
+        {
+          metricId: "lift",
+          estimate: 2.311239
         }
       ]
     },
@@ -36630,6 +37156,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7951
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304172
         }
       ]
     },
@@ -36671,6 +37201,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.80195
+        },
+        {
+          metricId: "lift",
+          estimate: 2.29747
         }
       ]
     },
@@ -36712,6 +37246,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.808946
+        },
+        {
+          metricId: "lift",
+          estimate: 2.291106
         }
       ]
     },
@@ -36753,6 +37291,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.815326
+        },
+        {
+          metricId: "lift",
+          estimate: 2.280869
         }
       ]
     },
@@ -36794,6 +37336,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.821844
+        },
+        {
+          metricId: "lift",
+          estimate: 2.271123
         }
       ]
     },
@@ -36835,6 +37381,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.828504
+        },
+        {
+          metricId: "lift",
+          estimate: 2.261833
         }
       ]
     },
@@ -36876,6 +37426,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.834652
+        },
+        {
+          metricId: "lift",
+          estimate: 2.252752
         }
       ]
     },
@@ -36917,6 +37471,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.840927
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244048
         }
       ]
     },
@@ -36958,6 +37516,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.847211
+        },
+        {
+          metricId: "lift",
+          estimate: 2.232196
         }
       ]
     },
@@ -36999,6 +37561,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.852941
+        },
+        {
+          metricId: "lift",
+          estimate: 2.2206
         }
       ]
     },
@@ -37040,6 +37606,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858794
+        },
+        {
+          metricId: "lift",
+          estimate: 2.209458
         }
       ]
     },
@@ -37081,6 +37651,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.864775
+        },
+        {
+          metricId: "lift",
+          estimate: 2.198744
         }
       ]
     },
@@ -37122,6 +37696,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870042
+        },
+        {
+          metricId: "lift",
+          estimate: 2.184976
         }
       ]
     },
@@ -37163,6 +37741,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.875427
+        },
+        {
+          metricId: "lift",
+          estimate: 2.171718
         }
       ]
     },
@@ -37204,6 +37786,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.880932
+        },
+        {
+          metricId: "lift",
+          estimate: 2.158941
         }
       ]
     },
@@ -37245,6 +37831,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.885789
+        },
+        {
+          metricId: "lift",
+          estimate: 2.146291
         }
       ]
     },
@@ -37286,6 +37876,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.890653
+        },
+        {
+          metricId: "lift",
+          estimate: 2.131172
         }
       ]
     },
@@ -37327,6 +37921,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.895629
+        },
+        {
+          metricId: "lift",
+          estimate: 2.116574
         }
       ]
     },
@@ -37368,6 +37966,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.900722
+        },
+        {
+          metricId: "lift",
+          estimate: 2.102471
         }
       ]
     },
@@ -37409,6 +38011,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.905109
+        },
+        {
+          metricId: "lift",
+          estimate: 2.088458
         }
       ]
     },
@@ -37450,6 +38056,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.909511
+        },
+        {
+          metricId: "lift",
+          estimate: 2.072249
         }
       ]
     },
@@ -37491,6 +38101,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914019
+        },
+        {
+          metricId: "lift",
+          estimate: 2.056564
         }
       ]
     },
@@ -37532,6 +38146,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.918638
+        },
+        {
+          metricId: "lift",
+          estimate: 2.041378
         }
       ]
     },
@@ -37573,6 +38191,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922414
+        },
+        {
+          metricId: "lift",
+          estimate: 2.023796
         }
       ]
     },
@@ -37614,6 +38236,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.926285
+        },
+        {
+          metricId: "lift",
+          estimate: 2.006756
         }
       ]
     },
@@ -37655,6 +38281,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.930255
+        },
+        {
+          metricId: "lift",
+          estimate: 1.990233
         }
       ]
     },
@@ -37696,6 +38326,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.934263
+        },
+        {
+          metricId: "lift",
+          estimate: 1.971937
         }
       ]
     },
@@ -37737,6 +38371,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.937437
+        },
+        {
+          metricId: "lift",
+          estimate: 1.953732
         }
       ]
     },
@@ -37778,6 +38416,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.940635
+        },
+        {
+          metricId: "lift",
+          estimate: 1.933899
         }
       ]
     },
@@ -37819,6 +38461,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.943925
+        },
+        {
+          metricId: "lift",
+          estimate: 1.914675
         }
       ]
     },
@@ -37860,6 +38506,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.947313
+        },
+        {
+          metricId: "lift",
+          estimate: 1.896032
         }
       ]
     },
@@ -37901,6 +38551,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.950749
+        },
+        {
+          metricId: "lift",
+          estimate: 1.875948
         }
       ]
     },
@@ -37942,6 +38596,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953261
+        },
+        {
+          metricId: "lift",
+          estimate: 1.855941
         }
       ]
     },
@@ -37983,6 +38641,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.955801
+        },
+        {
+          metricId: "lift",
+          estimate: 1.834619
         }
       ]
     },
@@ -38024,6 +38686,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.958427
+        },
+        {
+          metricId: "lift",
+          estimate: 1.813946
         }
       ]
     },
@@ -38065,6 +38731,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961143
+        },
+        {
+          metricId: "lift",
+          estimate: 1.793893
         }
       ]
     },
@@ -38106,6 +38776,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.963912
+        },
+        {
+          metricId: "lift",
+          estimate: 1.772687
         }
       ]
     },
@@ -38147,6 +38821,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.966785
+        },
+        {
+          metricId: "lift",
+          estimate: 1.752138
         }
       ]
     },
@@ -38188,6 +38866,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.968561
+        },
+        {
+          metricId: "lift",
+          estimate: 1.72994
         }
       ]
     },
@@ -38229,6 +38911,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970407
+        },
+        {
+          metricId: "lift",
+          estimate: 1.70841
         }
       ]
     },
@@ -38270,6 +38956,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972292
+        },
+        {
+          metricId: "lift",
+          estimate: 1.685957
         }
       ]
     },
@@ -38311,6 +39001,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.97426
+        },
+        {
+          metricId: "lift",
+          estimate: 1.664199
         }
       ]
     },
@@ -38352,6 +39046,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.976285
+        },
+        {
+          metricId: "lift",
+          estimate: 1.641632
         }
       ]
     },
@@ -38393,6 +39091,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.978408
+        },
+        {
+          metricId: "lift",
+          estimate: 1.619781
         }
       ]
     },
@@ -38434,6 +39136,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.980609
+        },
+        {
+          metricId: "lift",
+          estimate: 1.597227
         }
       ]
     },
@@ -38475,6 +39181,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981534
+        },
+        {
+          metricId: "lift",
+          estimate: 1.574713
         }
       ]
     },
@@ -38516,6 +39226,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.982482
+        },
+        {
+          metricId: "lift",
+          estimate: 1.551575
         }
       ]
     },
@@ -38557,6 +39271,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.983483
+        },
+        {
+          metricId: "lift",
+          estimate: 1.529164
         }
       ]
     },
@@ -38598,6 +39316,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.98452
+        },
+        {
+          metricId: "lift",
+          estimate: 1.506221
         }
       ]
     },
@@ -38639,6 +39361,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.985623
+        },
+        {
+          metricId: "lift",
+          estimate: 1.484012
         }
       ]
     },
@@ -38680,6 +39406,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986777
+        },
+        {
+          metricId: "lift",
+          estimate: 1.461351
         }
       ]
     },
@@ -38721,6 +39451,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.987993
+        },
+        {
+          metricId: "lift",
+          estimate: 1.438314
         }
       ]
     },
@@ -38762,6 +39496,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989305
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416048
         }
       ]
     },
@@ -38803,6 +39541,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990706
+        },
+        {
+          metricId: "lift",
+          estimate: 1.393472
         }
       ]
     },
@@ -38844,6 +39586,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992233
+        },
+        {
+          metricId: "lift",
+          estimate: 1.37166
         }
       ]
     },
@@ -38885,6 +39631,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.99389
+        },
+        {
+          metricId: "lift",
+          estimate: 1.349598
         }
       ]
     },
@@ -38926,6 +39676,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993576
+        },
+        {
+          metricId: "lift",
+          estimate: 1.326593
         }
       ]
     },
@@ -38967,6 +39721,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993228
+        },
+        {
+          metricId: "lift",
+          estimate: 1.30436
         }
       ]
     },
@@ -39008,6 +39766,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992823
+        },
+        {
+          metricId: "lift",
+          estimate: 1.281979
         }
       ]
     },
@@ -39049,6 +39811,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992366
+        },
+        {
+          metricId: "lift",
+          estimate: 1.260353
         }
       ]
     },
@@ -39090,6 +39856,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991826
+        },
+        {
+          metricId: "lift",
+          estimate: 1.238623
         }
       ]
     },
@@ -39131,6 +39901,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991176
+        },
+        {
+          metricId: "lift",
+          estimate: 1.216836
         }
       ]
     },
@@ -39172,6 +39946,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990415
+        },
+        {
+          metricId: "lift",
+          estimate: 1.195803
         }
       ]
     },
@@ -39213,6 +39991,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989474
+        },
+        {
+          metricId: "lift",
+          estimate: 1.174744
         }
       ]
     },
@@ -39254,6 +40036,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.988281
+        },
+        {
+          metricId: "lift",
+          estimate: 1.153702
         }
       ]
     },
@@ -39295,6 +40081,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986784
+        },
+        {
+          metricId: "lift",
+          estimate: 1.1334
         }
       ]
     },
@@ -39336,6 +40126,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.984772
+        },
+        {
+          metricId: "lift",
+          estimate: 1.113137
         }
       ]
     },
@@ -39377,6 +40171,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981928
+        },
+        {
+          metricId: "lift",
+          estimate: 1.092945
         }
       ]
     },
@@ -39418,6 +40216,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977612
+        },
+        {
+          metricId: "lift",
+          estimate: 1.072857
         }
       ]
     },
@@ -39459,6 +40261,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970588
+        },
+        {
+          metricId: "lift",
+          estimate: 1.053493
         }
       ]
     },
@@ -39500,6 +40306,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.956522
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034243
         }
       ]
     },
@@ -39541,6 +40351,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914286
+        },
+        {
+          metricId: "lift",
+          estimate: 1.015132
         }
       ]
     },
@@ -39582,6 +40396,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     },
@@ -39623,6 +40441,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     },
@@ -39664,6 +40486,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.9
+        },
+        {
+          metricId: "lift",
+          estimate: 1.008489
         }
       ]
     },
@@ -39705,6 +40531,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953125
+        },
+        {
+          metricId: "lift",
+          estimate: 1.021403
         }
       ]
     },
@@ -39746,6 +40576,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.969388
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034653
         }
       ]
     },
@@ -39787,6 +40621,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977273
+        },
+        {
+          metricId: "lift",
+          estimate: 1.048251
         }
       ]
     },
@@ -39828,6 +40666,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.975904
+        },
+        {
+          metricId: "lift",
+          estimate: 1.061275
         }
       ]
     },
@@ -39869,6 +40711,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.975
+        },
+        {
+          metricId: "lift",
+          estimate: 1.07465
         }
       ]
     },
@@ -39910,6 +40756,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.974249
+        },
+        {
+          metricId: "lift",
+          estimate: 1.087953
         }
       ]
     },
@@ -39951,6 +40801,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.973684
+        },
+        {
+          metricId: "lift",
+          estimate: 1.101614
         }
       ]
     },
@@ -39992,6 +40846,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.973154
+        },
+        {
+          metricId: "lift",
+          estimate: 1.115188
         }
       ]
     },
@@ -40033,6 +40891,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972727
+        },
+        {
+          metricId: "lift",
+          estimate: 1.129124
         }
       ]
     },
@@ -40074,6 +40936,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.969697
+        },
+        {
+          metricId: "lift",
+          estimate: 1.14291
         }
       ]
     },
@@ -40115,6 +40981,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.967089
+        },
+        {
+          metricId: "lift",
+          estimate: 1.156589
         }
       ]
     },
@@ -40156,6 +41026,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.964871
+        },
+        {
+          metricId: "lift",
+          estimate: 1.17065
         }
       ]
     },
@@ -40197,6 +41071,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.962882
+        },
+        {
+          metricId: "lift",
+          estimate: 1.184585
         }
       ]
     },
@@ -40238,6 +41116,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961145
+        },
+        {
+          metricId: "lift",
+          estimate: 1.198908
         }
       ]
     },
@@ -40279,6 +41161,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.957774
+        },
+        {
+          metricId: "lift",
+          estimate: 1.213098
         }
       ]
     },
@@ -40320,6 +41206,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.95471
+        },
+        {
+          metricId: "lift",
+          estimate: 1.227141
         }
       ]
     },
@@ -40361,6 +41251,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.951973
+        },
+        {
+          metricId: "lift",
+          estimate: 1.241592
         }
       ]
     },
@@ -40402,6 +41296,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.949429
+        },
+        {
+          metricId: "lift",
+          estimate: 1.255872
         }
       ]
     },
@@ -40443,6 +41341,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.945652
+        },
+        {
+          metricId: "lift",
+          estimate: 1.270025
         }
       ]
     },
@@ -40484,6 +41386,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.942222
+        },
+        {
+          metricId: "lift",
+          estimate: 1.284607
         }
       ]
     },
@@ -40525,6 +41431,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.939007
+        },
+        {
+          metricId: "lift",
+          estimate: 1.298992
         }
       ]
     },
@@ -40566,6 +41476,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.936054
+        },
+        {
+          metricId: "lift",
+          estimate: 1.313813
         }
       ]
     },
@@ -40607,6 +41521,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.933246
+        },
+        {
+          metricId: "lift",
+          estimate: 1.328409
         }
       ]
     },
@@ -40648,6 +41566,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.929471
+        },
+        {
+          metricId: "lift",
+          estimate: 1.3429
         }
       ]
     },
@@ -40689,6 +41611,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.925971
+        },
+        {
+          metricId: "lift",
+          estimate: 1.35785
         }
       ]
     },
@@ -40730,6 +41656,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922626
+        },
+        {
+          metricId: "lift",
+          estimate: 1.372545
         }
       ]
     },
@@ -40771,6 +41701,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.919501
+        },
+        {
+          metricId: "lift",
+          estimate: 1.387704
         }
       ]
     },
@@ -40812,6 +41746,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.915477
+        },
+        {
+          metricId: "lift",
+          estimate: 1.402026
         }
       ]
     },
@@ -40853,6 +41791,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.911702
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416816
         }
       ]
     },
@@ -40894,6 +41836,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.908153
+        },
+        {
+          metricId: "lift",
+          estimate: 1.432095
         }
       ]
     },
@@ -40935,6 +41881,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.904714
+        },
+        {
+          metricId: "lift",
+          estimate: 1.447049
         }
       ]
     },
@@ -40976,6 +41926,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.901463
+        },
+        {
+          metricId: "lift",
+          estimate: 1.462497
         }
       ]
     },
@@ -41017,6 +41971,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.897436
+        },
+        {
+          metricId: "lift",
+          estimate: 1.477029
         }
       ]
     },
@@ -41058,6 +42016,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.893617
+        },
+        {
+          metricId: "lift",
+          estimate: 1.492058
         }
       ]
     },
@@ -41099,6 +42061,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.889991
+        },
+        {
+          metricId: "lift",
+          estimate: 1.50761
         }
       ]
     },
@@ -41140,6 +42106,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.886444
+        },
+        {
+          metricId: "lift",
+          estimate: 1.522749
         }
       ]
     },
@@ -41181,6 +42151,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.882302
+        },
+        {
+          metricId: "lift",
+          estimate: 1.537865
         }
       ]
     },
@@ -41222,6 +42196,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.878356
+        },
+        {
+          metricId: "lift",
+          estimate: 1.553536
         }
       ]
     },
@@ -41263,6 +42241,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.874487
+        },
+        {
+          metricId: "lift",
+          estimate: 1.568746
         }
       ]
     },
@@ -41304,6 +42286,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870787
+        },
+        {
+          metricId: "lift",
+          estimate: 1.584513
         }
       ]
     },
@@ -41345,6 +42331,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.866457
+        },
+        {
+          metricId: "lift",
+          estimate: 1.599215
         }
       ]
     },
@@ -41386,6 +42376,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.862308
+        },
+        {
+          metricId: "lift",
+          estimate: 1.614477
         }
       ]
     },
@@ -41427,6 +42421,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858327
+        },
+        {
+          metricId: "lift",
+          estimate: 1.630331
         }
       ]
     },
@@ -41468,6 +42466,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.854398
+        },
+        {
+          metricId: "lift",
+          estimate: 1.645606
         }
       ]
     },
@@ -41509,6 +42511,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.85
+        },
+        {
+          metricId: "lift",
+          estimate: 1.660929
         }
       ]
     },
@@ -41550,6 +42556,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.845771
+        },
+        {
+          metricId: "lift",
+          estimate: 1.676883
         }
       ]
     },
@@ -41591,6 +42601,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.841591
+        },
+        {
+          metricId: "lift",
+          estimate: 1.69219
         }
       ]
     },
@@ -41632,6 +42646,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.83756
+        },
+        {
+          metricId: "lift",
+          estimate: 1.708129
         }
       ]
     },
@@ -41673,6 +42691,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.832997
+        },
+        {
+          metricId: "lift",
+          estimate: 1.722802
         }
       ]
     },
@@ -41714,6 +42736,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.82859
+        },
+        {
+          metricId: "lift",
+          estimate: 1.738106
         }
       ]
     },
@@ -41755,6 +42781,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.824333
+        },
+        {
+          metricId: "lift",
+          estimate: 1.754084
         }
       ]
     },
@@ -41796,6 +42826,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.819578
+        },
+        {
+          metricId: "lift",
+          estimate: 1.768712
         }
       ]
     },
@@ -41837,6 +42871,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.814978
+        },
+        {
+          metricId: "lift",
+          estimate: 1.784012
         }
       ]
     },
@@ -41878,6 +42916,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.810526
+        },
+        {
+          metricId: "lift",
+          estimate: 1.800034
         }
       ]
     },
@@ -41919,6 +42961,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.806098
+        },
+        {
+          metricId: "lift",
+          estimate: 1.815144
         }
       ]
     },
@@ -41960,6 +43006,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.801321
+        },
+        {
+          metricId: "lift",
+          estimate: 1.83044
         }
       ]
     },
@@ -42001,6 +43051,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.79669
+        },
+        {
+          metricId: "lift",
+          estimate: 1.846509
         }
       ]
     },
@@ -42042,6 +43096,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.792079
+        },
+        {
+          metricId: "lift",
+          estimate: 1.861554
         }
       ]
     },
@@ -42083,6 +43141,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7876
+        },
+        {
+          metricId: "lift",
+          estimate: 1.877369
         }
       ]
     },
@@ -42124,6 +43186,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.782683
+        },
+        {
+          metricId: "lift",
+          estimate: 1.891502
         }
       ]
     },
@@ -42165,6 +43231,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.777902
+        },
+        {
+          metricId: "lift",
+          estimate: 1.906397
         }
       ]
     },
@@ -42206,6 +43276,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.773253
+        },
+        {
+          metricId: "lift",
+          estimate: 1.922119
         }
       ]
     },
@@ -42247,6 +43321,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.768604
+        },
+        {
+          metricId: "lift",
+          estimate: 1.936528
         }
       ]
     },
@@ -42288,6 +43366,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.763666
+        },
+        {
+          metricId: "lift",
+          estimate: 1.951232
         }
       ]
     },
@@ -42329,6 +43411,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.758858
+        },
+        {
+          metricId: "lift",
+          estimate: 1.966824
         }
       ]
     },
@@ -42370,6 +43456,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.754047
+        },
+        {
+          metricId: "lift",
+          estimate: 1.98092
         }
       ]
     },
@@ -42411,6 +43501,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.748969
+        },
+        {
+          metricId: "lift",
+          estimate: 1.995376
         }
       ]
     },
@@ -42452,6 +43546,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.74402
+        },
+        {
+          metricId: "lift",
+          estimate: 2.01079
         }
       ]
     },
@@ -42493,6 +43591,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.739065
+        },
+        {
+          metricId: "lift",
+          estimate: 2.024484
         }
       ]
     },
@@ -42534,6 +43636,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.734228
+        },
+        {
+          metricId: "lift",
+          estimate: 2.039109
         }
       ]
     },
@@ -42575,6 +43681,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729146
+        },
+        {
+          metricId: "lift",
+          estimate: 2.05427
         }
       ]
     },
@@ -42616,6 +43726,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.724054
+        },
+        {
+          metricId: "lift",
+          estimate: 2.067434
         }
       ]
     },
@@ -42657,6 +43771,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.71908
+        },
+        {
+          metricId: "lift",
+          estimate: 2.081597
         }
       ]
     },
@@ -42698,6 +43816,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.71388
+        },
+        {
+          metricId: "lift",
+          estimate: 2.096391
         }
       ]
     },
@@ -42739,6 +43861,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.708665
+        },
+        {
+          metricId: "lift",
+          estimate: 2.108838
         }
       ]
     },
@@ -42780,6 +43906,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.703566
+        },
+        {
+          metricId: "lift",
+          estimate: 2.12235
         }
       ]
     },
@@ -42821,6 +43951,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.69858
+        },
+        {
+          metricId: "lift",
+          estimate: 2.137074
         }
       ]
     },
@@ -42862,6 +43996,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.693388
+        },
+        {
+          metricId: "lift",
+          estimate: 2.152711
         }
       ]
     },
@@ -42903,6 +44041,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.688172
+        },
+        {
+          metricId: "lift",
+          estimate: 2.165501
         }
       ]
     },
@@ -42944,6 +44086,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.683067
+        },
+        {
+          metricId: "lift",
+          estimate: 2.179617
         }
       ]
     },
@@ -42985,6 +44131,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.677773
+        },
+        {
+          metricId: "lift",
+          estimate: 2.194829
         }
       ]
     },
@@ -43026,6 +44176,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.672451
+        },
+        {
+          metricId: "lift",
+          estimate: 2.20654
         }
       ]
     },
@@ -43067,6 +44221,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.667239
+        },
+        {
+          metricId: "lift",
+          estimate: 2.219692
         }
       ]
     },
@@ -43108,6 +44266,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.662133
+        },
+        {
+          metricId: "lift",
+          estimate: 2.234569
         }
       ]
     },
@@ -43149,6 +44311,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.65671
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244542
         }
       ]
     },
@@ -43190,6 +44356,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.651395
+        },
+        {
+          metricId: "lift",
+          estimate: 2.25602
         }
       ]
     },
@@ -43231,6 +44401,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.646186
+        },
+        {
+          metricId: "lift",
+          estimate: 2.269372
         }
       ]
     },
@@ -43272,6 +44446,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.640816
+        },
+        {
+          metricId: "lift",
+          estimate: 2.284702
         }
       ]
     },
@@ -43313,6 +44491,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.635408
+        },
+        {
+          metricId: "lift",
+          estimate: 2.293773
         }
       ]
     },
@@ -43354,6 +44536,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.630104
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304815
         }
       ]
     },
@@ -43395,6 +44581,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.624901
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318547
         }
       ]
     },
@@ -43436,6 +44626,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.619552
+        },
+        {
+          metricId: "lift",
+          estimate: 2.335767
         }
       ]
     },
@@ -43477,6 +44671,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.614158
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342907
         }
       ]
     },
@@ -43518,6 +44716,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.608863
+        },
+        {
+          metricId: "lift",
+          estimate: 2.35281
         }
       ]
     },
@@ -43559,6 +44761,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.603435
+        },
+        {
+          metricId: "lift",
+          estimate: 2.367225
         }
       ]
     },
@@ -43600,6 +44806,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.59811
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43641,6 +44851,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.592731
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43682,6 +44896,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.587231
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43723,6 +44941,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.581832
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -43764,6 +44986,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.581832
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -43805,6 +45031,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.587231
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43846,6 +45076,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.592731
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43887,6 +45121,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.59811
+        },
+        {
+          metricId: "lift",
+          estimate: 2.391381
         }
       ]
     },
@@ -43928,6 +45166,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.603435
+        },
+        {
+          metricId: "lift",
+          estimate: 2.367225
         }
       ]
     },
@@ -43969,6 +45211,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.608863
+        },
+        {
+          metricId: "lift",
+          estimate: 2.35281
         }
       ]
     },
@@ -44010,6 +45256,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.614158
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342907
         }
       ]
     },
@@ -44051,6 +45301,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.619552
+        },
+        {
+          metricId: "lift",
+          estimate: 2.335767
         }
       ]
     },
@@ -44092,6 +45346,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.624901
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318547
         }
       ]
     },
@@ -44133,6 +45391,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.630104
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304815
         }
       ]
     },
@@ -44174,6 +45436,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.635408
+        },
+        {
+          metricId: "lift",
+          estimate: 2.293773
         }
       ]
     },
@@ -44215,6 +45481,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.640816
+        },
+        {
+          metricId: "lift",
+          estimate: 2.284702
         }
       ]
     },
@@ -44256,6 +45526,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.646186
+        },
+        {
+          metricId: "lift",
+          estimate: 2.269372
         }
       ]
     },
@@ -44297,6 +45571,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.651395
+        },
+        {
+          metricId: "lift",
+          estimate: 2.25602
         }
       ]
     },
@@ -44338,6 +45616,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.65671
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244542
         }
       ]
     },
@@ -44379,6 +45661,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.662133
+        },
+        {
+          metricId: "lift",
+          estimate: 2.234569
         }
       ]
     },
@@ -44420,6 +45706,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.667239
+        },
+        {
+          metricId: "lift",
+          estimate: 2.219692
         }
       ]
     },
@@ -44461,6 +45751,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.672451
+        },
+        {
+          metricId: "lift",
+          estimate: 2.20654
         }
       ]
     },
@@ -44502,6 +45796,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.677773
+        },
+        {
+          metricId: "lift",
+          estimate: 2.194829
         }
       ]
     },
@@ -44543,6 +45841,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.683067
+        },
+        {
+          metricId: "lift",
+          estimate: 2.179617
         }
       ]
     },
@@ -44584,6 +45886,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.688172
+        },
+        {
+          metricId: "lift",
+          estimate: 2.165501
         }
       ]
     },
@@ -44625,6 +45931,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.693388
+        },
+        {
+          metricId: "lift",
+          estimate: 2.152711
         }
       ]
     },
@@ -44666,6 +45976,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.69858
+        },
+        {
+          metricId: "lift",
+          estimate: 2.137074
         }
       ]
     },
@@ -44707,6 +46021,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.703566
+        },
+        {
+          metricId: "lift",
+          estimate: 2.12235
         }
       ]
     },
@@ -44748,6 +46066,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.708665
+        },
+        {
+          metricId: "lift",
+          estimate: 2.108838
         }
       ]
     },
@@ -44789,6 +46111,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.71388
+        },
+        {
+          metricId: "lift",
+          estimate: 2.096391
         }
       ]
     },
@@ -44830,6 +46156,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.71908
+        },
+        {
+          metricId: "lift",
+          estimate: 2.081597
         }
       ]
     },
@@ -44871,6 +46201,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.724054
+        },
+        {
+          metricId: "lift",
+          estimate: 2.067434
         }
       ]
     },
@@ -44912,6 +46246,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729146
+        },
+        {
+          metricId: "lift",
+          estimate: 2.05427
         }
       ]
     },
@@ -44953,6 +46291,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.734228
+        },
+        {
+          metricId: "lift",
+          estimate: 2.039109
         }
       ]
     },
@@ -44994,6 +46336,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.739065
+        },
+        {
+          metricId: "lift",
+          estimate: 2.024484
         }
       ]
     },
@@ -45035,6 +46381,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.74402
+        },
+        {
+          metricId: "lift",
+          estimate: 2.01079
         }
       ]
     },
@@ -45076,6 +46426,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.748969
+        },
+        {
+          metricId: "lift",
+          estimate: 1.995376
         }
       ]
     },
@@ -45117,6 +46471,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.754047
+        },
+        {
+          metricId: "lift",
+          estimate: 1.98092
         }
       ]
     },
@@ -45158,6 +46516,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.758858
+        },
+        {
+          metricId: "lift",
+          estimate: 1.966824
         }
       ]
     },
@@ -45199,6 +46561,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.763666
+        },
+        {
+          metricId: "lift",
+          estimate: 1.951232
         }
       ]
     },
@@ -45240,6 +46606,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.768604
+        },
+        {
+          metricId: "lift",
+          estimate: 1.936528
         }
       ]
     },
@@ -45281,6 +46651,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.773253
+        },
+        {
+          metricId: "lift",
+          estimate: 1.922119
         }
       ]
     },
@@ -45322,6 +46696,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.777902
+        },
+        {
+          metricId: "lift",
+          estimate: 1.906397
         }
       ]
     },
@@ -45363,6 +46741,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.782683
+        },
+        {
+          metricId: "lift",
+          estimate: 1.891502
         }
       ]
     },
@@ -45404,6 +46786,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7876
+        },
+        {
+          metricId: "lift",
+          estimate: 1.877369
         }
       ]
     },
@@ -45445,6 +46831,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.792079
+        },
+        {
+          metricId: "lift",
+          estimate: 1.861554
         }
       ]
     },
@@ -45486,6 +46876,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.79669
+        },
+        {
+          metricId: "lift",
+          estimate: 1.846509
         }
       ]
     },
@@ -45527,6 +46921,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.801321
+        },
+        {
+          metricId: "lift",
+          estimate: 1.83044
         }
       ]
     },
@@ -45568,6 +46966,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.806098
+        },
+        {
+          metricId: "lift",
+          estimate: 1.815144
         }
       ]
     },
@@ -45609,6 +47011,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.810526
+        },
+        {
+          metricId: "lift",
+          estimate: 1.800034
         }
       ]
     },
@@ -45650,6 +47056,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.814978
+        },
+        {
+          metricId: "lift",
+          estimate: 1.784012
         }
       ]
     },
@@ -45691,6 +47101,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.819578
+        },
+        {
+          metricId: "lift",
+          estimate: 1.768712
         }
       ]
     },
@@ -45732,6 +47146,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.824333
+        },
+        {
+          metricId: "lift",
+          estimate: 1.754084
         }
       ]
     },
@@ -45773,6 +47191,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.82859
+        },
+        {
+          metricId: "lift",
+          estimate: 1.738106
         }
       ]
     },
@@ -45814,6 +47236,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.832997
+        },
+        {
+          metricId: "lift",
+          estimate: 1.722802
         }
       ]
     },
@@ -45855,6 +47281,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.83756
+        },
+        {
+          metricId: "lift",
+          estimate: 1.708129
         }
       ]
     },
@@ -45896,6 +47326,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.841591
+        },
+        {
+          metricId: "lift",
+          estimate: 1.69219
         }
       ]
     },
@@ -45937,6 +47371,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.845771
+        },
+        {
+          metricId: "lift",
+          estimate: 1.676883
         }
       ]
     },
@@ -45978,6 +47416,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.85
+        },
+        {
+          metricId: "lift",
+          estimate: 1.660929
         }
       ]
     },
@@ -46019,6 +47461,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.854398
+        },
+        {
+          metricId: "lift",
+          estimate: 1.645606
         }
       ]
     },
@@ -46060,6 +47506,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858327
+        },
+        {
+          metricId: "lift",
+          estimate: 1.630331
         }
       ]
     },
@@ -46101,6 +47551,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.862308
+        },
+        {
+          metricId: "lift",
+          estimate: 1.614477
         }
       ]
     },
@@ -46142,6 +47596,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.866457
+        },
+        {
+          metricId: "lift",
+          estimate: 1.599215
         }
       ]
     },
@@ -46183,6 +47641,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870787
+        },
+        {
+          metricId: "lift",
+          estimate: 1.584513
         }
       ]
     },
@@ -46224,6 +47686,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.874487
+        },
+        {
+          metricId: "lift",
+          estimate: 1.568746
         }
       ]
     },
@@ -46265,6 +47731,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.878356
+        },
+        {
+          metricId: "lift",
+          estimate: 1.553536
         }
       ]
     },
@@ -46306,6 +47776,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.882302
+        },
+        {
+          metricId: "lift",
+          estimate: 1.537865
         }
       ]
     },
@@ -46347,6 +47821,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.886444
+        },
+        {
+          metricId: "lift",
+          estimate: 1.522749
         }
       ]
     },
@@ -46388,6 +47866,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.889991
+        },
+        {
+          metricId: "lift",
+          estimate: 1.50761
         }
       ]
     },
@@ -46429,6 +47911,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.893617
+        },
+        {
+          metricId: "lift",
+          estimate: 1.492058
         }
       ]
     },
@@ -46470,6 +47956,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.897436
+        },
+        {
+          metricId: "lift",
+          estimate: 1.477029
         }
       ]
     },
@@ -46511,6 +48001,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.901463
+        },
+        {
+          metricId: "lift",
+          estimate: 1.462497
         }
       ]
     },
@@ -46552,6 +48046,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.904714
+        },
+        {
+          metricId: "lift",
+          estimate: 1.447049
         }
       ]
     },
@@ -46593,6 +48091,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.908153
+        },
+        {
+          metricId: "lift",
+          estimate: 1.432095
         }
       ]
     },
@@ -46634,6 +48136,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.911702
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416816
         }
       ]
     },
@@ -46675,6 +48181,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.915477
+        },
+        {
+          metricId: "lift",
+          estimate: 1.402026
         }
       ]
     },
@@ -46716,6 +48226,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.919501
+        },
+        {
+          metricId: "lift",
+          estimate: 1.387704
         }
       ]
     },
@@ -46757,6 +48271,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922626
+        },
+        {
+          metricId: "lift",
+          estimate: 1.372545
         }
       ]
     },
@@ -46798,6 +48316,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.925971
+        },
+        {
+          metricId: "lift",
+          estimate: 1.35785
         }
       ]
     },
@@ -46839,6 +48361,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.929471
+        },
+        {
+          metricId: "lift",
+          estimate: 1.3429
         }
       ]
     },
@@ -46880,6 +48406,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.933246
+        },
+        {
+          metricId: "lift",
+          estimate: 1.328409
         }
       ]
     },
@@ -46921,6 +48451,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.936054
+        },
+        {
+          metricId: "lift",
+          estimate: 1.313813
         }
       ]
     },
@@ -46962,6 +48496,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.939007
+        },
+        {
+          metricId: "lift",
+          estimate: 1.298992
         }
       ]
     },
@@ -47003,6 +48541,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.942222
+        },
+        {
+          metricId: "lift",
+          estimate: 1.284607
         }
       ]
     },
@@ -47044,6 +48586,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.945652
+        },
+        {
+          metricId: "lift",
+          estimate: 1.270025
         }
       ]
     },
@@ -47085,6 +48631,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.949429
+        },
+        {
+          metricId: "lift",
+          estimate: 1.255872
         }
       ]
     },
@@ -47126,6 +48676,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.951973
+        },
+        {
+          metricId: "lift",
+          estimate: 1.241592
         }
       ]
     },
@@ -47167,6 +48721,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.95471
+        },
+        {
+          metricId: "lift",
+          estimate: 1.227141
         }
       ]
     },
@@ -47208,6 +48766,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.957774
+        },
+        {
+          metricId: "lift",
+          estimate: 1.213098
         }
       ]
     },
@@ -47249,6 +48811,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961145
+        },
+        {
+          metricId: "lift",
+          estimate: 1.198908
         }
       ]
     },
@@ -47290,6 +48856,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.962882
+        },
+        {
+          metricId: "lift",
+          estimate: 1.184585
         }
       ]
     },
@@ -47331,6 +48901,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.964871
+        },
+        {
+          metricId: "lift",
+          estimate: 1.17065
         }
       ]
     },
@@ -47372,6 +48946,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.967089
+        },
+        {
+          metricId: "lift",
+          estimate: 1.156589
         }
       ]
     },
@@ -47413,6 +48991,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.969697
+        },
+        {
+          metricId: "lift",
+          estimate: 1.14291
         }
       ]
     },
@@ -47454,6 +49036,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972727
+        },
+        {
+          metricId: "lift",
+          estimate: 1.129124
         }
       ]
     },
@@ -47495,6 +49081,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.973154
+        },
+        {
+          metricId: "lift",
+          estimate: 1.115188
         }
       ]
     },
@@ -47536,6 +49126,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.973684
+        },
+        {
+          metricId: "lift",
+          estimate: 1.101614
         }
       ]
     },
@@ -47577,6 +49171,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.974249
+        },
+        {
+          metricId: "lift",
+          estimate: 1.087953
         }
       ]
     },
@@ -47618,6 +49216,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.975
+        },
+        {
+          metricId: "lift",
+          estimate: 1.07465
         }
       ]
     },
@@ -47659,6 +49261,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.975904
+        },
+        {
+          metricId: "lift",
+          estimate: 1.061275
         }
       ]
     },
@@ -47700,6 +49306,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977273
+        },
+        {
+          metricId: "lift",
+          estimate: 1.048251
         }
       ]
     },
@@ -47741,6 +49351,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.969388
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034653
         }
       ]
     },
@@ -47782,6 +49396,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953125
+        },
+        {
+          metricId: "lift",
+          estimate: 1.021403
         }
       ]
     },
@@ -47823,6 +49441,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.9
+        },
+        {
+          metricId: "lift",
+          estimate: 1.008489
         }
       ]
     },
@@ -47864,6 +49486,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     },
@@ -47905,6 +49531,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     },
@@ -47946,6 +49576,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914286
+        },
+        {
+          metricId: "lift",
+          estimate: 1.015132
         }
       ]
     },
@@ -47987,6 +49621,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.956522
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034243
         }
       ]
     },
@@ -48028,6 +49666,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970588
+        },
+        {
+          metricId: "lift",
+          estimate: 1.053493
         }
       ]
     },
@@ -48069,6 +49711,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977612
+        },
+        {
+          metricId: "lift",
+          estimate: 1.072857
         }
       ]
     },
@@ -48110,6 +49756,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981928
+        },
+        {
+          metricId: "lift",
+          estimate: 1.092945
         }
       ]
     },
@@ -48151,6 +49801,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.984772
+        },
+        {
+          metricId: "lift",
+          estimate: 1.113137
         }
       ]
     },
@@ -48192,6 +49846,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986784
+        },
+        {
+          metricId: "lift",
+          estimate: 1.1334
         }
       ]
     },
@@ -48233,6 +49891,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.988281
+        },
+        {
+          metricId: "lift",
+          estimate: 1.153702
         }
       ]
     },
@@ -48274,6 +49936,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989474
+        },
+        {
+          metricId: "lift",
+          estimate: 1.174744
         }
       ]
     },
@@ -48315,6 +49981,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990415
+        },
+        {
+          metricId: "lift",
+          estimate: 1.195803
         }
       ]
     },
@@ -48356,6 +50026,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991176
+        },
+        {
+          metricId: "lift",
+          estimate: 1.216836
         }
       ]
     },
@@ -48397,6 +50071,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991826
+        },
+        {
+          metricId: "lift",
+          estimate: 1.238623
         }
       ]
     },
@@ -48438,6 +50116,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992366
+        },
+        {
+          metricId: "lift",
+          estimate: 1.260353
         }
       ]
     },
@@ -48479,6 +50161,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992823
+        },
+        {
+          metricId: "lift",
+          estimate: 1.281979
         }
       ]
     },
@@ -48520,6 +50206,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993228
+        },
+        {
+          metricId: "lift",
+          estimate: 1.30436
         }
       ]
     },
@@ -48561,6 +50251,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993576
+        },
+        {
+          metricId: "lift",
+          estimate: 1.326593
         }
       ]
     },
@@ -48602,6 +50296,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.99389
+        },
+        {
+          metricId: "lift",
+          estimate: 1.349598
         }
       ]
     },
@@ -48643,6 +50341,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992233
+        },
+        {
+          metricId: "lift",
+          estimate: 1.37166
         }
       ]
     },
@@ -48684,6 +50386,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990706
+        },
+        {
+          metricId: "lift",
+          estimate: 1.393472
         }
       ]
     },
@@ -48725,6 +50431,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989305
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416048
         }
       ]
     },
@@ -48766,6 +50476,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.987993
+        },
+        {
+          metricId: "lift",
+          estimate: 1.438314
         }
       ]
     },
@@ -48807,6 +50521,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986777
+        },
+        {
+          metricId: "lift",
+          estimate: 1.461351
         }
       ]
     },
@@ -48848,6 +50566,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.985623
+        },
+        {
+          metricId: "lift",
+          estimate: 1.484012
         }
       ]
     },
@@ -48889,6 +50611,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.98452
+        },
+        {
+          metricId: "lift",
+          estimate: 1.506221
         }
       ]
     },
@@ -48930,6 +50656,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.983483
+        },
+        {
+          metricId: "lift",
+          estimate: 1.529164
         }
       ]
     },
@@ -48971,6 +50701,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.982482
+        },
+        {
+          metricId: "lift",
+          estimate: 1.551575
         }
       ]
     },
@@ -49012,6 +50746,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981534
+        },
+        {
+          metricId: "lift",
+          estimate: 1.574713
         }
       ]
     },
@@ -49053,6 +50791,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.980609
+        },
+        {
+          metricId: "lift",
+          estimate: 1.597227
         }
       ]
     },
@@ -49094,6 +50836,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.978408
+        },
+        {
+          metricId: "lift",
+          estimate: 1.619781
         }
       ]
     },
@@ -49135,6 +50881,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.976285
+        },
+        {
+          metricId: "lift",
+          estimate: 1.641632
         }
       ]
     },
@@ -49176,6 +50926,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.97426
+        },
+        {
+          metricId: "lift",
+          estimate: 1.664199
         }
       ]
     },
@@ -49217,6 +50971,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972292
+        },
+        {
+          metricId: "lift",
+          estimate: 1.685957
         }
       ]
     },
@@ -49258,6 +51016,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970407
+        },
+        {
+          metricId: "lift",
+          estimate: 1.70841
         }
       ]
     },
@@ -49299,6 +51061,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.968561
+        },
+        {
+          metricId: "lift",
+          estimate: 1.72994
         }
       ]
     },
@@ -49340,6 +51106,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.966785
+        },
+        {
+          metricId: "lift",
+          estimate: 1.752138
         }
       ]
     },
@@ -49381,6 +51151,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.963912
+        },
+        {
+          metricId: "lift",
+          estimate: 1.772687
         }
       ]
     },
@@ -49422,6 +51196,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961143
+        },
+        {
+          metricId: "lift",
+          estimate: 1.793893
         }
       ]
     },
@@ -49463,6 +51241,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.958427
+        },
+        {
+          metricId: "lift",
+          estimate: 1.813946
         }
       ]
     },
@@ -49504,6 +51286,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.955801
+        },
+        {
+          metricId: "lift",
+          estimate: 1.834619
         }
       ]
     },
@@ -49545,6 +51331,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953261
+        },
+        {
+          metricId: "lift",
+          estimate: 1.855941
         }
       ]
     },
@@ -49586,6 +51376,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.950749
+        },
+        {
+          metricId: "lift",
+          estimate: 1.875948
         }
       ]
     },
@@ -49627,6 +51421,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.947313
+        },
+        {
+          metricId: "lift",
+          estimate: 1.896032
         }
       ]
     },
@@ -49668,6 +51466,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.943925
+        },
+        {
+          metricId: "lift",
+          estimate: 1.914675
         }
       ]
     },
@@ -49709,6 +51511,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.940635
+        },
+        {
+          metricId: "lift",
+          estimate: 1.933899
         }
       ]
     },
@@ -49750,6 +51556,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.937437
+        },
+        {
+          metricId: "lift",
+          estimate: 1.953732
         }
       ]
     },
@@ -49791,6 +51601,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.934263
+        },
+        {
+          metricId: "lift",
+          estimate: 1.971937
         }
       ]
     },
@@ -49832,6 +51646,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.930255
+        },
+        {
+          metricId: "lift",
+          estimate: 1.990233
         }
       ]
     },
@@ -49873,6 +51691,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.926285
+        },
+        {
+          metricId: "lift",
+          estimate: 2.006756
         }
       ]
     },
@@ -49914,6 +51736,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922414
+        },
+        {
+          metricId: "lift",
+          estimate: 2.023796
         }
       ]
     },
@@ -49955,6 +51781,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.918638
+        },
+        {
+          metricId: "lift",
+          estimate: 2.041378
         }
       ]
     },
@@ -49996,6 +51826,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914019
+        },
+        {
+          metricId: "lift",
+          estimate: 2.056564
         }
       ]
     },
@@ -50037,6 +51871,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.909511
+        },
+        {
+          metricId: "lift",
+          estimate: 2.072249
         }
       ]
     },
@@ -50078,6 +51916,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.905109
+        },
+        {
+          metricId: "lift",
+          estimate: 2.088458
         }
       ]
     },
@@ -50119,6 +51961,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.900722
+        },
+        {
+          metricId: "lift",
+          estimate: 2.102471
         }
       ]
     },
@@ -50160,6 +52006,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.895629
+        },
+        {
+          metricId: "lift",
+          estimate: 2.116574
         }
       ]
     },
@@ -50201,6 +52051,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.890653
+        },
+        {
+          metricId: "lift",
+          estimate: 2.131172
         }
       ]
     },
@@ -50242,6 +52096,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.885789
+        },
+        {
+          metricId: "lift",
+          estimate: 2.146291
         }
       ]
     },
@@ -50283,6 +52141,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.880932
+        },
+        {
+          metricId: "lift",
+          estimate: 2.158941
         }
       ]
     },
@@ -50324,6 +52186,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.875427
+        },
+        {
+          metricId: "lift",
+          estimate: 2.171718
         }
       ]
     },
@@ -50365,6 +52231,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870042
+        },
+        {
+          metricId: "lift",
+          estimate: 2.184976
         }
       ]
     },
@@ -50406,6 +52276,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.864775
+        },
+        {
+          metricId: "lift",
+          estimate: 2.198744
         }
       ]
     },
@@ -50447,6 +52321,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858794
+        },
+        {
+          metricId: "lift",
+          estimate: 2.209458
         }
       ]
     },
@@ -50488,6 +52366,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.852941
+        },
+        {
+          metricId: "lift",
+          estimate: 2.2206
         }
       ]
     },
@@ -50529,6 +52411,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.847211
+        },
+        {
+          metricId: "lift",
+          estimate: 2.232196
         }
       ]
     },
@@ -50570,6 +52456,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.840927
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244048
         }
       ]
     },
@@ -50611,6 +52501,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.834652
+        },
+        {
+          metricId: "lift",
+          estimate: 2.252752
         }
       ]
     },
@@ -50652,6 +52546,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.828504
+        },
+        {
+          metricId: "lift",
+          estimate: 2.261833
         }
       ]
     },
@@ -50693,6 +52591,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.821844
+        },
+        {
+          metricId: "lift",
+          estimate: 2.271123
         }
       ]
     },
@@ -50734,6 +52636,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.815326
+        },
+        {
+          metricId: "lift",
+          estimate: 2.280869
         }
       ]
     },
@@ -50775,6 +52681,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.808946
+        },
+        {
+          metricId: "lift",
+          estimate: 2.291106
         }
       ]
     },
@@ -50816,6 +52726,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.80195
+        },
+        {
+          metricId: "lift",
+          estimate: 2.29747
         }
       ]
     },
@@ -50857,6 +52771,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7951
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304172
         }
       ]
     },
@@ -50898,6 +52816,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.788391
+        },
+        {
+          metricId: "lift",
+          estimate: 2.311239
         }
       ]
     },
@@ -50939,6 +52861,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.78125
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318568
         }
       ]
     },
@@ -50980,6 +52906,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.774263
+        },
+        {
+          metricId: "lift",
+          estimate: 2.326352
         }
       ]
     },
@@ -51021,6 +52951,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.767425
+        },
+        {
+          metricId: "lift",
+          estimate: 2.334633
         }
       ]
     },
@@ -51062,6 +52996,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.760028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.338207
         }
       ]
     },
@@ -51103,6 +53041,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.752786
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342025
         }
       ]
     },
@@ -51144,6 +53086,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.745179
+        },
+        {
+          metricId: "lift",
+          estimate: 2.34602
         }
       ]
     },
@@ -51185,6 +53131,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.737738
+        },
+        {
+          metricId: "lift",
+          estimate: 2.350329
         }
       ]
     },
@@ -51226,6 +53176,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729966
+        },
+        {
+          metricId: "lift",
+          estimate: 2.354913
         }
       ]
     },
@@ -51267,6 +53221,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.72237
+        },
+        {
+          metricId: "lift",
+          estimate: 2.359914
         }
       ]
     },
@@ -51308,6 +53266,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.714944
+        },
+        {
+          metricId: "lift",
+          estimate: 2.365394
         }
       ]
     },
@@ -51349,6 +53311,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.707222
+        },
+        {
+          metricId: "lift",
+          estimate: 2.371381
         }
       ]
     },
@@ -51390,6 +53356,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.699678
+        },
+        {
+          metricId: "lift",
+          estimate: 2.378042
         }
       ]
     },
@@ -51431,6 +53401,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.691868
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51472,6 +53446,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.684045
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51513,6 +53491,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.675978
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51554,6 +53536,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.668098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51595,6 +53581,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.66
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51636,6 +53626,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.652096
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51677,6 +53671,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.643998
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51718,6 +53716,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.636098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51759,6 +53761,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.628028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51800,6 +53806,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.620159
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51841,6 +53851,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.612142
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51882,6 +53896,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.604329
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51923,6 +53941,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.596386
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -51964,6 +53986,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.588649
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52005,6 +54031,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.5808
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -52046,6 +54076,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.5808
+        },
+        {
+          metricId: "lift",
+          estimate: 0
         }
       ]
     },
@@ -52087,6 +54121,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.588649
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52128,6 +54166,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.596386
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52169,6 +54211,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.604329
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52210,6 +54256,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.612142
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52251,6 +54301,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.620159
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52292,6 +54346,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.628028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52333,6 +54391,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.636098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52374,6 +54436,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.643998
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52415,6 +54481,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.652096
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52456,6 +54526,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.66
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52497,6 +54571,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.668098
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52538,6 +54616,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.675978
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52579,6 +54661,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.684045
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52620,6 +54706,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.691868
+        },
+        {
+          metricId: "lift",
+          estimate: 2.385496
         }
       ]
     },
@@ -52661,6 +54751,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.699678
+        },
+        {
+          metricId: "lift",
+          estimate: 2.378042
         }
       ]
     },
@@ -52702,6 +54796,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.707222
+        },
+        {
+          metricId: "lift",
+          estimate: 2.371381
         }
       ]
     },
@@ -52743,6 +54841,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.714944
+        },
+        {
+          metricId: "lift",
+          estimate: 2.365394
         }
       ]
     },
@@ -52784,6 +54886,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.72237
+        },
+        {
+          metricId: "lift",
+          estimate: 2.359914
         }
       ]
     },
@@ -52825,6 +54931,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.729966
+        },
+        {
+          metricId: "lift",
+          estimate: 2.354913
         }
       ]
     },
@@ -52866,6 +54976,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.737738
+        },
+        {
+          metricId: "lift",
+          estimate: 2.350329
         }
       ]
     },
@@ -52907,6 +55021,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.745179
+        },
+        {
+          metricId: "lift",
+          estimate: 2.34602
         }
       ]
     },
@@ -52948,6 +55066,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.752786
+        },
+        {
+          metricId: "lift",
+          estimate: 2.342025
         }
       ]
     },
@@ -52989,6 +55111,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.760028
+        },
+        {
+          metricId: "lift",
+          estimate: 2.338207
         }
       ]
     },
@@ -53030,6 +55156,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.767425
+        },
+        {
+          metricId: "lift",
+          estimate: 2.334633
         }
       ]
     },
@@ -53071,6 +55201,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.774263
+        },
+        {
+          metricId: "lift",
+          estimate: 2.326352
         }
       ]
     },
@@ -53112,6 +55246,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.78125
+        },
+        {
+          metricId: "lift",
+          estimate: 2.318568
         }
       ]
     },
@@ -53153,6 +55291,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.788391
+        },
+        {
+          metricId: "lift",
+          estimate: 2.311239
         }
       ]
     },
@@ -53194,6 +55336,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.7951
+        },
+        {
+          metricId: "lift",
+          estimate: 2.304172
         }
       ]
     },
@@ -53235,6 +55381,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.80195
+        },
+        {
+          metricId: "lift",
+          estimate: 2.29747
         }
       ]
     },
@@ -53276,6 +55426,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.808946
+        },
+        {
+          metricId: "lift",
+          estimate: 2.291106
         }
       ]
     },
@@ -53317,6 +55471,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.815326
+        },
+        {
+          metricId: "lift",
+          estimate: 2.280869
         }
       ]
     },
@@ -53358,6 +55516,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.821844
+        },
+        {
+          metricId: "lift",
+          estimate: 2.271123
         }
       ]
     },
@@ -53399,6 +55561,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.828504
+        },
+        {
+          metricId: "lift",
+          estimate: 2.261833
         }
       ]
     },
@@ -53440,6 +55606,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.834652
+        },
+        {
+          metricId: "lift",
+          estimate: 2.252752
         }
       ]
     },
@@ -53481,6 +55651,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.840927
+        },
+        {
+          metricId: "lift",
+          estimate: 2.244048
         }
       ]
     },
@@ -53522,6 +55696,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.847211
+        },
+        {
+          metricId: "lift",
+          estimate: 2.232196
         }
       ]
     },
@@ -53563,6 +55741,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.852941
+        },
+        {
+          metricId: "lift",
+          estimate: 2.2206
         }
       ]
     },
@@ -53604,6 +55786,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.858794
+        },
+        {
+          metricId: "lift",
+          estimate: 2.209458
         }
       ]
     },
@@ -53645,6 +55831,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.864775
+        },
+        {
+          metricId: "lift",
+          estimate: 2.198744
         }
       ]
     },
@@ -53686,6 +55876,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.870042
+        },
+        {
+          metricId: "lift",
+          estimate: 2.184976
         }
       ]
     },
@@ -53727,6 +55921,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.875427
+        },
+        {
+          metricId: "lift",
+          estimate: 2.171718
         }
       ]
     },
@@ -53768,6 +55966,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.880932
+        },
+        {
+          metricId: "lift",
+          estimate: 2.158941
         }
       ]
     },
@@ -53809,6 +56011,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.885789
+        },
+        {
+          metricId: "lift",
+          estimate: 2.146291
         }
       ]
     },
@@ -53850,6 +56056,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.890653
+        },
+        {
+          metricId: "lift",
+          estimate: 2.131172
         }
       ]
     },
@@ -53891,6 +56101,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.895629
+        },
+        {
+          metricId: "lift",
+          estimate: 2.116574
         }
       ]
     },
@@ -53932,6 +56146,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.900722
+        },
+        {
+          metricId: "lift",
+          estimate: 2.102471
         }
       ]
     },
@@ -53973,6 +56191,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.905109
+        },
+        {
+          metricId: "lift",
+          estimate: 2.088458
         }
       ]
     },
@@ -54014,6 +56236,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.909511
+        },
+        {
+          metricId: "lift",
+          estimate: 2.072249
         }
       ]
     },
@@ -54055,6 +56281,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914019
+        },
+        {
+          metricId: "lift",
+          estimate: 2.056564
         }
       ]
     },
@@ -54096,6 +56326,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.918638
+        },
+        {
+          metricId: "lift",
+          estimate: 2.041378
         }
       ]
     },
@@ -54137,6 +56371,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.922414
+        },
+        {
+          metricId: "lift",
+          estimate: 2.023796
         }
       ]
     },
@@ -54178,6 +56416,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.926285
+        },
+        {
+          metricId: "lift",
+          estimate: 2.006756
         }
       ]
     },
@@ -54219,6 +56461,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.930255
+        },
+        {
+          metricId: "lift",
+          estimate: 1.990233
         }
       ]
     },
@@ -54260,6 +56506,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.934263
+        },
+        {
+          metricId: "lift",
+          estimate: 1.971937
         }
       ]
     },
@@ -54301,6 +56551,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.937437
+        },
+        {
+          metricId: "lift",
+          estimate: 1.953732
         }
       ]
     },
@@ -54342,6 +56596,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.940635
+        },
+        {
+          metricId: "lift",
+          estimate: 1.933899
         }
       ]
     },
@@ -54383,6 +56641,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.943925
+        },
+        {
+          metricId: "lift",
+          estimate: 1.914675
         }
       ]
     },
@@ -54424,6 +56686,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.947313
+        },
+        {
+          metricId: "lift",
+          estimate: 1.896032
         }
       ]
     },
@@ -54465,6 +56731,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.950749
+        },
+        {
+          metricId: "lift",
+          estimate: 1.875948
         }
       ]
     },
@@ -54506,6 +56776,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.953261
+        },
+        {
+          metricId: "lift",
+          estimate: 1.855941
         }
       ]
     },
@@ -54547,6 +56821,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.955801
+        },
+        {
+          metricId: "lift",
+          estimate: 1.834619
         }
       ]
     },
@@ -54588,6 +56866,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.958427
+        },
+        {
+          metricId: "lift",
+          estimate: 1.813946
         }
       ]
     },
@@ -54629,6 +56911,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.961143
+        },
+        {
+          metricId: "lift",
+          estimate: 1.793893
         }
       ]
     },
@@ -54670,6 +56956,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.963912
+        },
+        {
+          metricId: "lift",
+          estimate: 1.772687
         }
       ]
     },
@@ -54711,6 +57001,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.966785
+        },
+        {
+          metricId: "lift",
+          estimate: 1.752138
         }
       ]
     },
@@ -54752,6 +57046,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.968561
+        },
+        {
+          metricId: "lift",
+          estimate: 1.72994
         }
       ]
     },
@@ -54793,6 +57091,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970407
+        },
+        {
+          metricId: "lift",
+          estimate: 1.70841
         }
       ]
     },
@@ -54834,6 +57136,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.972292
+        },
+        {
+          metricId: "lift",
+          estimate: 1.685957
         }
       ]
     },
@@ -54875,6 +57181,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.97426
+        },
+        {
+          metricId: "lift",
+          estimate: 1.664199
         }
       ]
     },
@@ -54916,6 +57226,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.976285
+        },
+        {
+          metricId: "lift",
+          estimate: 1.641632
         }
       ]
     },
@@ -54957,6 +57271,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.978408
+        },
+        {
+          metricId: "lift",
+          estimate: 1.619781
         }
       ]
     },
@@ -54998,6 +57316,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.980609
+        },
+        {
+          metricId: "lift",
+          estimate: 1.597227
         }
       ]
     },
@@ -55039,6 +57361,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981534
+        },
+        {
+          metricId: "lift",
+          estimate: 1.574713
         }
       ]
     },
@@ -55080,6 +57406,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.982482
+        },
+        {
+          metricId: "lift",
+          estimate: 1.551575
         }
       ]
     },
@@ -55121,6 +57451,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.983483
+        },
+        {
+          metricId: "lift",
+          estimate: 1.529164
         }
       ]
     },
@@ -55162,6 +57496,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.98452
+        },
+        {
+          metricId: "lift",
+          estimate: 1.506221
         }
       ]
     },
@@ -55203,6 +57541,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.985623
+        },
+        {
+          metricId: "lift",
+          estimate: 1.484012
         }
       ]
     },
@@ -55244,6 +57586,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986777
+        },
+        {
+          metricId: "lift",
+          estimate: 1.461351
         }
       ]
     },
@@ -55285,6 +57631,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.987993
+        },
+        {
+          metricId: "lift",
+          estimate: 1.438314
         }
       ]
     },
@@ -55326,6 +57676,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989305
+        },
+        {
+          metricId: "lift",
+          estimate: 1.416048
         }
       ]
     },
@@ -55367,6 +57721,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990706
+        },
+        {
+          metricId: "lift",
+          estimate: 1.393472
         }
       ]
     },
@@ -55408,6 +57766,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992233
+        },
+        {
+          metricId: "lift",
+          estimate: 1.37166
         }
       ]
     },
@@ -55449,6 +57811,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.99389
+        },
+        {
+          metricId: "lift",
+          estimate: 1.349598
         }
       ]
     },
@@ -55490,6 +57856,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993576
+        },
+        {
+          metricId: "lift",
+          estimate: 1.326593
         }
       ]
     },
@@ -55531,6 +57901,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.993228
+        },
+        {
+          metricId: "lift",
+          estimate: 1.30436
         }
       ]
     },
@@ -55572,6 +57946,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992823
+        },
+        {
+          metricId: "lift",
+          estimate: 1.281979
         }
       ]
     },
@@ -55613,6 +57991,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.992366
+        },
+        {
+          metricId: "lift",
+          estimate: 1.260353
         }
       ]
     },
@@ -55654,6 +58036,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991826
+        },
+        {
+          metricId: "lift",
+          estimate: 1.238623
         }
       ]
     },
@@ -55695,6 +58081,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.991176
+        },
+        {
+          metricId: "lift",
+          estimate: 1.216836
         }
       ]
     },
@@ -55736,6 +58126,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.990415
+        },
+        {
+          metricId: "lift",
+          estimate: 1.195803
         }
       ]
     },
@@ -55777,6 +58171,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.989474
+        },
+        {
+          metricId: "lift",
+          estimate: 1.174744
         }
       ]
     },
@@ -55818,6 +58216,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.988281
+        },
+        {
+          metricId: "lift",
+          estimate: 1.153702
         }
       ]
     },
@@ -55859,6 +58261,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.986784
+        },
+        {
+          metricId: "lift",
+          estimate: 1.1334
         }
       ]
     },
@@ -55900,6 +58306,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.984772
+        },
+        {
+          metricId: "lift",
+          estimate: 1.113137
         }
       ]
     },
@@ -55941,6 +58351,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.981928
+        },
+        {
+          metricId: "lift",
+          estimate: 1.092945
         }
       ]
     },
@@ -55982,6 +58396,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.977612
+        },
+        {
+          metricId: "lift",
+          estimate: 1.072857
         }
       ]
     },
@@ -56023,6 +58441,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.970588
+        },
+        {
+          metricId: "lift",
+          estimate: 1.053493
         }
       ]
     },
@@ -56064,6 +58486,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.956522
+        },
+        {
+          metricId: "lift",
+          estimate: 1.034243
         }
       ]
     },
@@ -56105,6 +58531,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0.914286
+        },
+        {
+          metricId: "lift",
+          estimate: 1.015132
         }
       ]
     },
@@ -56146,6 +58576,10 @@ var prediction_distribution_visual_default = {
         {
           metricId: "npv",
           estimate: 0
+        },
+        {
+          metricId: "lift",
+          estimate: 1
         }
       ]
     }
