@@ -43,6 +43,7 @@ export interface PredictionDistributionPreparedData {
     specificity: number | null;
     ppv: number | null;
     npv: number | null;
+    lift: number | null;
   } | null;
   confusion: {
     tp: number;
@@ -58,7 +59,6 @@ export interface PredictionDistributionPreparedData {
     x1: number;
     x2: number;
     category: "Observed Positives" | "Observed Negatives";
-    density: number;
     count: number;
     title: string;
     classificationCell: "TP" | "FP" | "TN" | "FN";
@@ -75,31 +75,6 @@ export interface PredictionDistributionPreparedData {
 }
 
 let pdInstanceCounter = 0;
-
-export function isDarkColor(color: string): boolean {
-  if (!color) return false;
-  let hex = color.trim();
-  if (hex.startsWith("#")) {
-    hex = hex.substring(1);
-  }
-  if (hex.length === 3) {
-    hex = hex
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  }
-  if (hex.length !== 6) {
-    return false;
-  }
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
-    return false;
-  }
-  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  return lum < 0.45;
-}
 
 export function resolveConfusionCellColors(
   theme: PredictionDistributionTheme,
@@ -180,8 +155,6 @@ export function preparePredictionDistributionPlotData(
   let confusion: PredictionDistributionPreparedData["confusion"] = null;
 
   // STRICT PRODUCER-OWNED STATISTICS
-  // If activeOp.performance is present, consume supplied canonical metrics directly.
-  // Do NOT perform fallback bin summation for performance metrics or confusion quantities.
   if (activeOp?.performance && activeOp.performance.length > 0) {
     const getMetric = (id: string): number | null => {
       const p = activeOp.performance?.find((item) => item.metricId === id);
@@ -199,18 +172,21 @@ export function preparePredictionDistributionPlotData(
     const specMetric = getMetric("specificity");
     const ppv = getMetric("ppv");
     const npv = getMetric("npv");
+    const lift = getMetric("lift");
 
     if (
       sens !== null ||
       specMetric !== null ||
       ppv !== null ||
-      npv !== null
+      npv !== null ||
+      lift !== null
     ) {
       performanceMetrics = {
         sensitivity: sens,
         specificity: specMetric,
         ppv: ppv,
         npv: npv,
+        lift: lift,
       };
     }
 
@@ -242,11 +218,7 @@ export function preparePredictionDistributionPlotData(
   const zeroAtomPlotData: PredictionDistributionPreparedData["zeroAtomPlotData"] =
     [];
 
-  let cumCount = 0;
-
   if (dim === "probability_threshold") {
-    // Process bins for threshold view
-    // Score zero mass bin0 [0, 0] is visually incorporated into the first displayed histogram interval [0, upper1)
     const bin0 = evalBins.find((b) => b.lower === 0 && b.upper === 0);
     const nonZeroBins = evalBins.filter((b) => !(b.lower === 0 && b.upper === 0));
 
@@ -293,45 +265,34 @@ export function preparePredictionDistributionPlotData(
       }
     }
 
-    // Process all non-zero probability bins
     for (let i = 0; i < nonZeroBins.length; i++) {
       const bin = nonZeroBins[i];
       const x1 = i === 0 ? 0 : bin.lower;
       const x2 = bin.upper;
-      const intervalWidth = x2 - x1;
       const intervalLabel = `[${x1.toFixed(digits)}, ${x2.toFixed(digits)}]`;
 
-      // If this is the first non-zero bin (i == 0), evaluate bin0 and bin1 contributions separately
       if (i === 0 && bin0) {
-        // Bin 0 contribution (score = 0)
         const isBin0PredictedPos = cutoff === 0 ? true : bin0.upper > cutoff;
         const bin0PosCell: "TP" | "FN" = isBin0PredictedPos ? "TP" : "FN";
         const bin0PosLabel = isBin0PredictedPos ? "True Positive (TP)" : "False Negative (FN)";
         const bin0NegCell: "FP" | "TN" = isBin0PredictedPos ? "FP" : "TN";
         const bin0NegLabel = isBin0PredictedPos ? "False Positive (FP)" : "True Negative (TN)";
 
-        // Bin 1 contribution (0 < score <= upper1)
         const isBin1PredictedPos = cutoff === 0 ? true : bin.upper > cutoff;
         const bin1PosCell: "TP" | "FN" = isBin1PredictedPos ? "TP" : "FN";
         const bin1PosLabel = isBin1PredictedPos ? "True Positive (TP)" : "False Negative (FN)";
         const bin1NegCell: "FP" | "TN" = isBin1PredictedPos ? "FP" : "TN";
         const bin1NegLabel = isBin1PredictedPos ? "False Positive (FP)" : "True Negative (TN)";
 
-        // Combine counts for total interval count density
         const combinedPos = bin0.nPositive + bin.nPositive;
         const combinedNeg = bin0.nNegative + bin.nNegative;
 
-        // Preserve exact classification semantics for bin0 [0, 0] and bin1 (0, upper1]
-        // when cutoffs lie inside the first interval (e.g. cutoff == 0 vs cutoff == 0.005)
         if (bin0PosCell === bin1PosCell) {
-          // Same cell classification for positives: aggregate into one mark
           if (combinedPos > 0) {
-            const posDensity = combinedPos / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Positives",
-              density: posDensity,
               count: combinedPos,
               classificationCell: bin1PosCell,
               cellLabel: bin1PosLabel,
@@ -341,20 +302,16 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", combinedPos],
-                ["Count Density", posDensity.toFixed(digits)],
                 ["Classification", bin1PosLabel],
               ]),
             });
           }
         } else {
-          // Differing cell classification across sub-interval boundaries: push distinct stacked pieces
           if (bin0.nPositive > 0) {
-            const posDensity0 = bin0.nPositive / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Positives",
-              density: posDensity0,
               count: bin0.nPositive,
               classificationCell: bin0PosCell,
               cellLabel: bin0PosLabel,
@@ -364,18 +321,15 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", bin0.nPositive],
-                ["Count Density", posDensity0.toFixed(digits)],
                 ["Classification", bin0PosLabel],
               ]),
             });
           }
           if (bin.nPositive > 0) {
-            const posDensity1 = bin.nPositive / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Positives",
-              density: posDensity1,
               count: bin.nPositive,
               classificationCell: bin1PosCell,
               cellLabel: bin1PosLabel,
@@ -385,7 +339,6 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Positive"],
                 ["Count", bin.nPositive],
-                ["Count Density", posDensity1.toFixed(digits)],
                 ["Classification", bin1PosLabel],
               ]),
             });
@@ -393,14 +346,11 @@ export function preparePredictionDistributionPlotData(
         }
 
         if (bin0NegCell === bin1NegCell) {
-          // Same cell classification for negatives: aggregate into one mark
           if (combinedNeg > 0) {
-            const negDensity = combinedNeg / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Negatives",
-              density: negDensity,
               count: combinedNeg,
               classificationCell: bin1NegCell,
               cellLabel: bin1NegLabel,
@@ -410,20 +360,16 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", combinedNeg],
-                ["Count Density", negDensity.toFixed(digits)],
                 ["Classification", bin1NegLabel],
               ]),
             });
           }
         } else {
-          // Differing cell classification across sub-interval boundaries: push distinct stacked pieces
           if (bin0.nNegative > 0) {
-            const negDensity0 = bin0.nNegative / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Negatives",
-              density: negDensity0,
               count: bin0.nNegative,
               classificationCell: bin0NegCell,
               cellLabel: bin0NegLabel,
@@ -433,18 +379,15 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", bin0.nNegative],
-                ["Count Density", negDensity0.toFixed(digits)],
                 ["Classification", bin0NegLabel],
               ]),
             });
           }
           if (bin.nNegative > 0) {
-            const negDensity1 = bin.nNegative / intervalWidth;
             ordinaryPlotData.push({
               x1,
               x2,
               category: "Observed Negatives",
-              density: negDensity1,
               count: bin.nNegative,
               classificationCell: bin1NegCell,
               cellLabel: bin1NegLabel,
@@ -454,7 +397,6 @@ export function preparePredictionDistributionPlotData(
                 ["Score Interval", intervalLabel],
                 ["Outcome", "Observed Negative"],
                 ["Count", bin.nNegative],
-                ["Count Density", negDensity1.toFixed(digits)],
                 ["Classification", bin1NegLabel],
               ]),
             });
@@ -472,12 +414,10 @@ export function preparePredictionDistributionPlotData(
           : "True Negative (TN)";
 
         if (bin.nPositive > 0) {
-          const posDensity = bin.nPositive / intervalWidth;
           ordinaryPlotData.push({
             x1,
             x2,
             category: "Observed Positives",
-            density: posDensity,
             count: bin.nPositive,
             classificationCell: posCell,
             cellLabel: posCellLabel,
@@ -487,19 +427,16 @@ export function preparePredictionDistributionPlotData(
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Positive"],
               ["Count", bin.nPositive],
-              ["Count Density", posDensity.toFixed(digits)],
               ["Classification", posCellLabel],
             ]),
           });
         }
 
         if (bin.nNegative > 0) {
-          const negDensity = bin.nNegative / intervalWidth;
           ordinaryPlotData.push({
             x1,
             x2,
             category: "Observed Negatives",
-            density: negDensity,
             count: bin.nNegative,
             classificationCell: negCell,
             cellLabel: negCellLabel,
@@ -509,7 +446,6 @@ export function preparePredictionDistributionPlotData(
               ["Score Interval", intervalLabel],
               ["Outcome", "Observed Negative"],
               ["Count", bin.nNegative],
-              ["Count Density", negDensity.toFixed(digits)],
               ["Classification", negCellLabel],
             ]),
           });
@@ -518,7 +454,6 @@ export function preparePredictionDistributionPlotData(
     }
   } else {
     // PPCR / Risk Percentile mode
-    // Consume producer-owned rankBins directly.
     const evalRankBins = (spec.rankBins ?? [])
       .filter((b) => b.evaluationId === evalId)
       .sort((a, b) => a.rankLower - b.rankLower);
@@ -528,9 +463,9 @@ export function preparePredictionDistributionPlotData(
       const popUpper = rBin.rankUpper;
       const totalMass = rBin.positiveMass + rBin.negativeMass;
 
-      // Classification is determined by operating-point boundary in rank space (1 - realizedPpcr)
+      // Classification is determined by operating-point boundary in rank space (1 - requested PPCR)
       const rankMid = (popLower + popUpper) / 2;
-      const isPredictedPositive = rankMid >= (1 - realizedPpcr);
+      const isPredictedPositive = rankMid >= (1 - currentValue);
 
       const posCell: "TP" | "FN" = isPredictedPositive ? "TP" : "FN";
       const posCellLabel = isPredictedPositive
@@ -545,12 +480,10 @@ export function preparePredictionDistributionPlotData(
         const rankIntervalStr = `[${popLower.toFixed(digits)}, ${popUpper.toFixed(digits)}]`;
 
         if (rBin.positiveMass > 0) {
-          const frac = rBin.positiveMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Positives",
-            density: frac,
             count: rBin.positiveMass,
             classificationCell: posCell,
             cellLabel: posCellLabel,
@@ -559,20 +492,17 @@ export function preparePredictionDistributionPlotData(
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Positive"],
-              ["Positive Mass", rBin.positiveMass.toFixed(digits)],
-              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Count", rBin.positiveMass],
               ["Classification", posCellLabel],
             ]),
           });
         }
 
         if (rBin.negativeMass > 0) {
-          const frac = rBin.negativeMass / totalMass;
           ordinaryPlotData.push({
             x1: popLower,
             x2: popUpper,
             category: "Observed Negatives",
-            density: frac,
             count: rBin.negativeMass,
             classificationCell: negCell,
             cellLabel: negCellLabel,
@@ -581,8 +511,7 @@ export function preparePredictionDistributionPlotData(
               ["Evaluation", evalLabel],
               ["Population Rank Percentile", rankIntervalStr],
               ["Outcome", "Observed Negative"],
-              ["Negative Mass", rBin.negativeMass.toFixed(digits)],
-              ["Outcome Fraction", `${(frac * 100).toFixed(1)}%`],
+              ["Count", rBin.negativeMass],
               ["Classification", negCellLabel],
             ]),
           });
@@ -593,28 +522,36 @@ export function preparePredictionDistributionPlotData(
 
   let cutoffX = cutoff;
   let xAxisLabel = "Prediction Score";
-  let yAxisLabel = "Count density";
+  const yAxisLabel = "Count";
   let yMax = 1;
 
   if (dim === "probability_threshold") {
     cutoffX = cutoff;
     xAxisLabel = "Prediction Score";
-    yAxisLabel = "Count density";
 
-    let maxBinDensity = 0;
+    let maxBinCount = 0;
     const binsByLower = new Map<number, number>();
     for (const d of ordinaryPlotData) {
-      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.density);
+      binsByLower.set(d.x1, (binsByLower.get(d.x1) ?? 0) + d.count);
     }
-    for (const totalDensity of binsByLower.values()) {
-      maxBinDensity = Math.max(maxBinDensity, totalDensity);
+    for (const totalCount of binsByLower.values()) {
+      maxBinCount = Math.max(maxBinCount, totalCount);
     }
-    yMax = Math.max(1, Math.ceil(maxBinDensity * 1.18));
+    yMax = Math.max(1, Math.ceil(maxBinCount * 1.15));
   } else {
-    cutoffX = 1 - realizedPpcr;
+    // Requested PPCR boundary: boundary = 1 - requested_ppcr
+    cutoffX = 1 - currentValue;
     xAxisLabel = "Risk Percentile";
-    yAxisLabel = "Outcome fraction";
-    yMax = 1.18;
+
+    let maxRankBinCount = 0;
+    const rankBinsByLower = new Map<number, number>();
+    for (const d of ordinaryPlotData) {
+      rankBinsByLower.set(d.x1, (rankBinsByLower.get(d.x1) ?? 0) + d.count);
+    }
+    for (const totalCount of rankBinsByLower.values()) {
+      maxRankBinCount = Math.max(maxRankBinCount, totalCount);
+    }
+    yMax = Math.max(1, Math.ceil(maxRankBinCount * 1.15));
   }
 
   return {
@@ -851,7 +788,6 @@ export function renderPredictionDistribution(
     }
     evalSelect.value = currentEvalId;
 
-    // Single "Reference Group" selector replacing independent Model and Population selectors
     if (spec.evaluations.length > 1) {
       const refGroupOptions = spec.evaluations.map((e) => ({
         value: e.id,
@@ -934,12 +870,6 @@ export function renderPredictionDistribution(
 
   controlsDiv.append(evalControlContainer, presentationControlContainer);
 
-  // Re-ordered Component Hierarchy:
-  // 1. Controls
-  // 2. Summary Section (Confusion Matrix + Performance Metric Readout) ABOVE plot
-  // 3. Operating Point Slider
-  // 4. Legend
-  // 5. Plot SVG
   container.append(
     controlsDiv,
     summaryDiv,
@@ -1064,7 +994,6 @@ export function renderPredictionDistribution(
 
     const {
       cutoff,
-      realizedPpcr,
       cutoffX,
       xAxisLabel,
       yAxisLabel,
@@ -1080,7 +1009,6 @@ export function renderPredictionDistribution(
       currentConditioning,
     );
 
-    // Update legend (In Confusion Matrix Cell mode, permanent 4-item legend is removed)
     legendDiv.replaceChildren();
     if (currentColorMode === "observed_outcome") {
       legendDiv.append(
@@ -1100,7 +1028,7 @@ export function renderPredictionDistribution(
     const cutoffTextLabel =
       currentDim === "probability_threshold"
         ? `Cutoff = ${cutoff.toFixed(digits)}`
-        : `Realized PPCR = ${realizedPpcr.toFixed(digits)}`;
+        : `PPCR = ${currentValue.toFixed(digits)}`;
 
     const effectiveYMax = currentDisplayMode === "mirrored" ? yMax : yMax;
     const effectiveYMin = currentDisplayMode === "mirrored" ? -yMax : 0;
@@ -1204,7 +1132,7 @@ export function renderPredictionDistribution(
           Plot.stackY({
             x1: "x1",
             x2: "x2",
-            y: "density",
+            y: "count",
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -1236,7 +1164,7 @@ export function renderPredictionDistribution(
             x1: "x1",
             x2: "x2",
             y1: 0,
-            y2: "density",
+            y2: "count",
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -1254,7 +1182,7 @@ export function renderPredictionDistribution(
             x1: "x1",
             x2: "x2",
             y1: 0,
-            y2: (d) => -d.density,
+            y2: (d) => -d.count,
             fill: "fill",
             fillOpacity: "fillOpacity",
             stroke: theme.axis.color,
@@ -1308,7 +1236,7 @@ export function renderPredictionDistribution(
 
     summaryDiv.replaceChildren();
 
-    // Render Confusion Matrix Table (ABOVE plot) if confusion data is supplied
+    // Render Confusion Matrix Table matching Performance Table visual grammar
     if (confusion) {
       const { tp, fp, tn, fn, totalPositives, totalNegatives, totalPredictedPos, totalPredictedNeg } = confusion;
 
@@ -1345,21 +1273,11 @@ export function renderPredictionDistribution(
       };
 
       const thead = document.createElement("thead");
-      const trH1 = document.createElement("tr");
+      const trH = document.createElement("tr");
+
       const thCorner = document.createElement("th");
       thCorner.className = "rtichoke-pd-matrix__corner";
       thCorner.append(createCondRadioLabel("all_observations", "All Observations"));
-
-      const thSpanner = document.createElement("th");
-      thSpanner.colSpan = 2;
-      thSpanner.className = "rtichoke-pd-matrix__spanner";
-      thSpanner.textContent = "REAL OUTCOME";
-
-      const thEmpty = document.createElement("th");
-      trH1.append(thCorner, thSpanner, thEmpty);
-
-      const trH2 = document.createElement("tr");
-      const thH2Empty = document.createElement("th");
 
       const thRealPos = document.createElement("th");
       thRealPos.className = `rtichoke-pd-matrix__col-header ${
@@ -1377,8 +1295,8 @@ export function renderPredictionDistribution(
       thTot.className = "rtichoke-pd-matrix__col-header";
       thTot.textContent = "Total";
 
-      trH2.append(thH2Empty, thRealPos, thRealNeg, thTot);
-      thead.append(trH1, trH2);
+      trH.append(thCorner, thRealPos, thRealNeg, thTot);
+      thead.append(trH);
 
       const tbody = document.createElement("tbody");
 
@@ -1406,22 +1324,33 @@ export function renderPredictionDistribution(
         td.append(bar, textSpan);
       };
 
-      const cellFnColor =
-        currentColorMode === "confusion_matrix_cell"
-          ? cellColors.fn
-          : theme.predictionDistribution.observedPositive;
+      // Cell colors based on Color Bars By choice:
+      // Observed Outcome mode: Real Positives (#4C5454) vs Real Negatives (#E0E0E0)
+      // Confusion Matrix Cell mode: TP/TN green family vs FP/FN pink family
       const cellTpColor =
-        currentColorMode === "confusion_matrix_cell"
-          ? cellColors.tp
-          : theme.predictionDistribution.observedPositive;
-      const cellTnColor =
-        currentColorMode === "confusion_matrix_cell"
-          ? cellColors.tn
-          : theme.predictionDistribution.observedNegative;
+        currentColorMode === "observed_outcome"
+          ? theme.predictionDistribution.observedPositive
+          : cellColors.tp;
+      const cellFnColor =
+        currentColorMode === "observed_outcome"
+          ? theme.predictionDistribution.observedPositive
+          : cellColors.fn;
       const cellFpColor =
-        currentColorMode === "confusion_matrix_cell"
-          ? cellColors.fp
-          : theme.predictionDistribution.observedNegative;
+        currentColorMode === "observed_outcome"
+          ? theme.predictionDistribution.observedNegative
+          : cellColors.fp;
+      const cellTnColor =
+        currentColorMode === "observed_outcome"
+          ? theme.predictionDistribution.observedNegative
+          : cellColors.tn;
+
+      // Stable Marginal Colors:
+      // Real Positive margin = #4C5454
+      // Real Negative margin = #E0E0E0
+      // Predicted Positive, Predicted Negative, Grand Total = neutral grey (#E5E7EB)
+      const realPosMarginColor = theme.predictionDistribution.observedPositive;
+      const realNegMarginColor = theme.predictionDistribution.observedNegative;
+      const neutralMarginColor = "#E5E7EB";
 
       // Predicted Positive Row
       const trPredPos = document.createElement("tr");
@@ -1455,7 +1384,12 @@ export function renderPredictionDistribution(
 
       const tdTotPredPos = document.createElement("td");
       tdTotPredPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotPredPos.textContent = totalPredictedPos.toLocaleString();
+      setCellContent(
+        tdTotPredPos,
+        totalPredictedPos.toLocaleString(),
+        totalPredictedPos,
+        neutralMarginColor,
+      );
 
       trPredPos.append(thPredPos, tdTp, tdFp, tdTotPredPos);
 
@@ -1491,7 +1425,12 @@ export function renderPredictionDistribution(
 
       const tdTotPredNeg = document.createElement("td");
       tdTotPredNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotPredNeg.textContent = totalPredictedNeg.toLocaleString();
+      setCellContent(
+        tdTotPredNeg,
+        totalPredictedNeg.toLocaleString(),
+        totalPredictedNeg,
+        neutralMarginColor,
+      );
 
       trPredNeg.append(thPredNeg, tdFn, tdTn, tdTotPredNeg);
 
@@ -1505,15 +1444,30 @@ export function renderPredictionDistribution(
 
       const tdTotRealPos = document.createElement("td");
       tdTotRealPos.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotRealPos.textContent = totalPositives.toLocaleString();
+      setCellContent(
+        tdTotRealPos,
+        totalPositives.toLocaleString(),
+        totalPositives,
+        realPosMarginColor,
+      );
 
       const tdTotRealNeg = document.createElement("td");
       tdTotRealNeg.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotRealNeg.textContent = totalNegatives.toLocaleString();
+      setCellContent(
+        tdTotRealNeg,
+        totalNegatives.toLocaleString(),
+        totalNegatives,
+        realNegMarginColor,
+      );
 
       const tdTotN = document.createElement("td");
       tdTotN.className = "rtichoke-prediction-distribution__cell--total rtichoke-pd-matrix__cell";
-      tdTotN.textContent = totalN.toLocaleString();
+      setCellContent(
+        tdTotN,
+        totalN.toLocaleString(),
+        totalN,
+        neutralMarginColor,
+      );
 
       trTot.append(thTotLabel, tdTotRealPos, tdTotRealNeg, tdTotN);
 
@@ -1523,7 +1477,8 @@ export function renderPredictionDistribution(
       summaryDiv.append(table);
     }
 
-    // Render Performance Metric Readout (Sens, Spec, PPV, NPV) if available
+    // Render Performance Metrics Readout matching Performance Table visual grammar
+    // 5 metrics: Sensitivity, Specificity, PPV, NPV, Lift
     if (performanceMetrics) {
       const metricReadout = document.createElement("div");
       metricReadout.className = "rtichoke-pd-metrics-row";
@@ -1532,6 +1487,7 @@ export function renderPredictionDistribution(
         lbl: string,
         val: number | null,
         isEmphasized: boolean,
+        isRatio: boolean = false,
       ) => {
         const card = document.createElement("div");
         card.className = `rtichoke-pd-metric-card ${
@@ -1544,14 +1500,23 @@ export function renderPredictionDistribution(
 
         const v = document.createElement("div");
         v.className = "rtichoke-pd-metric-card__value";
-        v.textContent = val !== null ? (val * 100).toFixed(1) + "%" : "—";
+        if (val !== null && val !== undefined) {
+          v.textContent = isRatio ? val.toFixed(2) : (val * 100).toFixed(1) + "%";
+        } else {
+          v.textContent = "—";
+        }
 
         const barBg = document.createElement("div");
         barBg.className = "rtichoke-pd-metric-card__bar-bg";
 
         const barFill = document.createElement("div");
         barFill.className = "rtichoke-pd-metric-card__bar-fill";
-        barFill.style.width = val !== null ? `${Math.min(100, val * 100)}%` : "0%";
+        if (val !== null && val !== undefined) {
+          const fillPct = isRatio ? Math.min(100, (val / 3) * 100) : Math.min(100, val * 100);
+          barFill.style.width = `${fillPct}%`;
+        } else {
+          barFill.style.width = "0%";
+        }
 
         barBg.append(barFill);
         card.append(l, v, barBg);
@@ -1560,12 +1525,12 @@ export function renderPredictionDistribution(
 
       metricReadout.append(
         renderMetricCard(
-          "Sens",
+          "Sensitivity",
           performanceMetrics.sensitivity,
           currentConditioning === "real_positives",
         ),
         renderMetricCard(
-          "Spec",
+          "Specificity",
           performanceMetrics.specificity,
           currentConditioning === "real_negatives",
         ),
@@ -1578,6 +1543,12 @@ export function renderPredictionDistribution(
           "NPV",
           performanceMetrics.npv,
           currentConditioning === "predicted_negatives",
+        ),
+        renderMetricCard(
+          "Lift",
+          performanceMetrics.lift,
+          currentConditioning === "predicted_positives",
+          true,
         ),
       );
 

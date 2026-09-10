@@ -1664,6 +1664,10 @@
         {
           "metricId": "npv",
           "estimate": 0
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.0
         }
       ]
     },
@@ -1705,6 +1709,10 @@
         {
           "metricId": "npv",
           "estimate": 0.914286
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.015132
         }
       ]
     },
@@ -1746,6 +1754,10 @@
         {
           "metricId": "npv",
           "estimate": 0.956522
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.034243
         }
       ]
     },
@@ -1787,6 +1799,10 @@
         {
           "metricId": "npv",
           "estimate": 0.970588
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.053493
         }
       ]
     },
@@ -1828,6 +1844,10 @@
         {
           "metricId": "npv",
           "estimate": 0.977612
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.072857
         }
       ]
     },
@@ -1869,6 +1889,10 @@
         {
           "metricId": "npv",
           "estimate": 0.981928
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.092945
         }
       ]
     },
@@ -1910,6 +1934,10 @@
         {
           "metricId": "npv",
           "estimate": 0.984772
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.113137
         }
       ]
     },
@@ -1951,6 +1979,10 @@
         {
           "metricId": "npv",
           "estimate": 0.986784
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.1334
         }
       ]
     },
@@ -1992,6 +2024,10 @@
         {
           "metricId": "npv",
           "estimate": 0.988281
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.153702
         }
       ]
     },
@@ -2033,6 +2069,10 @@
         {
           "metricId": "npv",
           "estimate": 0.989474
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.174744
         }
       ]
     },
@@ -2074,6 +2114,10 @@
         {
           "metricId": "npv",
           "estimate": 0.990415
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.195803
         }
       ]
     },
@@ -2115,6 +2159,10 @@
         {
           "metricId": "npv",
           "estimate": 0.991176
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.216836
         }
       ]
     },
@@ -2156,6 +2204,10 @@
         {
           "metricId": "npv",
           "estimate": 0.991826
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.238623
         }
       ]
     },
@@ -2197,6 +2249,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992366
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.260353
         }
       ]
     },
@@ -2238,6 +2294,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992823
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.281979
         }
       ]
     },
@@ -2279,6 +2339,10 @@
         {
           "metricId": "npv",
           "estimate": 0.993228
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.30436
         }
       ]
     },
@@ -2320,6 +2384,10 @@
         {
           "metricId": "npv",
           "estimate": 0.993576
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.326593
         }
       ]
     },
@@ -2361,6 +2429,10 @@
         {
           "metricId": "npv",
           "estimate": 0.99389
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.349598
         }
       ]
     },
@@ -2402,6 +2474,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992233
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.37166
         }
       ]
     },
@@ -2443,6 +2519,10 @@
         {
           "metricId": "npv",
           "estimate": 0.990706
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.393472
         }
       ]
     },
@@ -2484,6 +2564,10 @@
         {
           "metricId": "npv",
           "estimate": 0.989305
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.416048
         }
       ]
     },
@@ -2525,6 +2609,10 @@
         {
           "metricId": "npv",
           "estimate": 0.987993
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.438314
         }
       ]
     },
@@ -2566,6 +2654,10 @@
         {
           "metricId": "npv",
           "estimate": 0.986777
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.461351
         }
       ]
     },
@@ -2607,6 +2699,10 @@
         {
           "metricId": "npv",
           "estimate": 0.985623
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.484012
         }
       ]
     },
@@ -2648,6 +2744,10 @@
         {
           "metricId": "npv",
           "estimate": 0.98452
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.506221
         }
       ]
     },
@@ -2689,6 +2789,10 @@
         {
           "metricId": "npv",
           "estimate": 0.983483
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.529164
         }
       ]
     },
@@ -2730,6 +2834,10 @@
         {
           "metricId": "npv",
           "estimate": 0.982482
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.551575
         }
       ]
     },
@@ -2771,6 +2879,10 @@
         {
           "metricId": "npv",
           "estimate": 0.981534
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.574713
         }
       ]
     },
@@ -2812,6 +2924,10 @@
         {
           "metricId": "npv",
           "estimate": 0.980609
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.597227
         }
       ]
     },
@@ -2853,6 +2969,10 @@
         {
           "metricId": "npv",
           "estimate": 0.978408
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.619781
         }
       ]
     },
@@ -2894,6 +3014,10 @@
         {
           "metricId": "npv",
           "estimate": 0.976285
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.641632
         }
       ]
     },
@@ -2935,6 +3059,10 @@
         {
           "metricId": "npv",
           "estimate": 0.97426
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.664199
         }
       ]
     },
@@ -2976,6 +3104,10 @@
         {
           "metricId": "npv",
           "estimate": 0.972292
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.685957
         }
       ]
     },
@@ -3017,6 +3149,10 @@
         {
           "metricId": "npv",
           "estimate": 0.970407
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.70841
         }
       ]
     },
@@ -3058,6 +3194,10 @@
         {
           "metricId": "npv",
           "estimate": 0.968561
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.72994
         }
       ]
     },
@@ -3099,6 +3239,10 @@
         {
           "metricId": "npv",
           "estimate": 0.966785
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.752138
         }
       ]
     },
@@ -3140,6 +3284,10 @@
         {
           "metricId": "npv",
           "estimate": 0.963912
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.772687
         }
       ]
     },
@@ -3181,6 +3329,10 @@
         {
           "metricId": "npv",
           "estimate": 0.961143
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.793893
         }
       ]
     },
@@ -3222,6 +3374,10 @@
         {
           "metricId": "npv",
           "estimate": 0.958427
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.813946
         }
       ]
     },
@@ -3263,6 +3419,10 @@
         {
           "metricId": "npv",
           "estimate": 0.955801
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.834619
         }
       ]
     },
@@ -3304,6 +3464,10 @@
         {
           "metricId": "npv",
           "estimate": 0.953261
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.855941
         }
       ]
     },
@@ -3345,6 +3509,10 @@
         {
           "metricId": "npv",
           "estimate": 0.950749
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.875948
         }
       ]
     },
@@ -3386,6 +3554,10 @@
         {
           "metricId": "npv",
           "estimate": 0.947313
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.896032
         }
       ]
     },
@@ -3427,6 +3599,10 @@
         {
           "metricId": "npv",
           "estimate": 0.943925
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.914675
         }
       ]
     },
@@ -3468,6 +3644,10 @@
         {
           "metricId": "npv",
           "estimate": 0.940635
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.933899
         }
       ]
     },
@@ -3509,6 +3689,10 @@
         {
           "metricId": "npv",
           "estimate": 0.937437
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.953732
         }
       ]
     },
@@ -3550,6 +3734,10 @@
         {
           "metricId": "npv",
           "estimate": 0.934263
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.971937
         }
       ]
     },
@@ -3591,6 +3779,10 @@
         {
           "metricId": "npv",
           "estimate": 0.930255
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.990233
         }
       ]
     },
@@ -3632,6 +3824,10 @@
         {
           "metricId": "npv",
           "estimate": 0.926285
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.006756
         }
       ]
     },
@@ -3673,6 +3869,10 @@
         {
           "metricId": "npv",
           "estimate": 0.922414
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.023796
         }
       ]
     },
@@ -3714,6 +3914,10 @@
         {
           "metricId": "npv",
           "estimate": 0.918638
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.041378
         }
       ]
     },
@@ -3755,6 +3959,10 @@
         {
           "metricId": "npv",
           "estimate": 0.914019
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.056564
         }
       ]
     },
@@ -3796,6 +4004,10 @@
         {
           "metricId": "npv",
           "estimate": 0.909511
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.072249
         }
       ]
     },
@@ -3837,6 +4049,10 @@
         {
           "metricId": "npv",
           "estimate": 0.905109
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.088458
         }
       ]
     },
@@ -3878,6 +4094,10 @@
         {
           "metricId": "npv",
           "estimate": 0.900722
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.102471
         }
       ]
     },
@@ -3919,6 +4139,10 @@
         {
           "metricId": "npv",
           "estimate": 0.895629
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.116574
         }
       ]
     },
@@ -3960,6 +4184,10 @@
         {
           "metricId": "npv",
           "estimate": 0.890653
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.131172
         }
       ]
     },
@@ -4001,6 +4229,10 @@
         {
           "metricId": "npv",
           "estimate": 0.885789
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.146291
         }
       ]
     },
@@ -4042,6 +4274,10 @@
         {
           "metricId": "npv",
           "estimate": 0.880932
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.158941
         }
       ]
     },
@@ -4083,6 +4319,10 @@
         {
           "metricId": "npv",
           "estimate": 0.875427
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.171718
         }
       ]
     },
@@ -4124,6 +4364,10 @@
         {
           "metricId": "npv",
           "estimate": 0.870042
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.184976
         }
       ]
     },
@@ -4165,6 +4409,10 @@
         {
           "metricId": "npv",
           "estimate": 0.864775
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.198744
         }
       ]
     },
@@ -4206,6 +4454,10 @@
         {
           "metricId": "npv",
           "estimate": 0.858794
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.209458
         }
       ]
     },
@@ -4247,6 +4499,10 @@
         {
           "metricId": "npv",
           "estimate": 0.852941
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.2206
         }
       ]
     },
@@ -4288,6 +4544,10 @@
         {
           "metricId": "npv",
           "estimate": 0.847211
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.232196
         }
       ]
     },
@@ -4329,6 +4589,10 @@
         {
           "metricId": "npv",
           "estimate": 0.840927
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.244048
         }
       ]
     },
@@ -4370,6 +4634,10 @@
         {
           "metricId": "npv",
           "estimate": 0.834652
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.252752
         }
       ]
     },
@@ -4411,6 +4679,10 @@
         {
           "metricId": "npv",
           "estimate": 0.828504
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.261833
         }
       ]
     },
@@ -4452,6 +4724,10 @@
         {
           "metricId": "npv",
           "estimate": 0.821844
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.271123
         }
       ]
     },
@@ -4493,6 +4769,10 @@
         {
           "metricId": "npv",
           "estimate": 0.815326
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.280869
         }
       ]
     },
@@ -4534,6 +4814,10 @@
         {
           "metricId": "npv",
           "estimate": 0.808946
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.291106
         }
       ]
     },
@@ -4575,6 +4859,10 @@
         {
           "metricId": "npv",
           "estimate": 0.80195
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.29747
         }
       ]
     },
@@ -4616,6 +4904,10 @@
         {
           "metricId": "npv",
           "estimate": 0.7951
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.304172
         }
       ]
     },
@@ -4657,6 +4949,10 @@
         {
           "metricId": "npv",
           "estimate": 0.788391
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.311239
         }
       ]
     },
@@ -4698,6 +4994,10 @@
         {
           "metricId": "npv",
           "estimate": 0.78125
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.318568
         }
       ]
     },
@@ -4739,6 +5039,10 @@
         {
           "metricId": "npv",
           "estimate": 0.774263
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.326352
         }
       ]
     },
@@ -4780,6 +5084,10 @@
         {
           "metricId": "npv",
           "estimate": 0.767425
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.334633
         }
       ]
     },
@@ -4821,6 +5129,10 @@
         {
           "metricId": "npv",
           "estimate": 0.760028
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.338207
         }
       ]
     },
@@ -4862,6 +5174,10 @@
         {
           "metricId": "npv",
           "estimate": 0.752786
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.342025
         }
       ]
     },
@@ -4903,6 +5219,10 @@
         {
           "metricId": "npv",
           "estimate": 0.745179
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.34602
         }
       ]
     },
@@ -4944,6 +5264,10 @@
         {
           "metricId": "npv",
           "estimate": 0.737738
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.350329
         }
       ]
     },
@@ -4985,6 +5309,10 @@
         {
           "metricId": "npv",
           "estimate": 0.729966
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.354913
         }
       ]
     },
@@ -5026,6 +5354,10 @@
         {
           "metricId": "npv",
           "estimate": 0.72237
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.359914
         }
       ]
     },
@@ -5067,6 +5399,10 @@
         {
           "metricId": "npv",
           "estimate": 0.714944
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.365394
         }
       ]
     },
@@ -5108,6 +5444,10 @@
         {
           "metricId": "npv",
           "estimate": 0.707222
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.371381
         }
       ]
     },
@@ -5149,6 +5489,10 @@
         {
           "metricId": "npv",
           "estimate": 0.699678
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.378042
         }
       ]
     },
@@ -5190,6 +5534,10 @@
         {
           "metricId": "npv",
           "estimate": 0.691868
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5231,6 +5579,10 @@
         {
           "metricId": "npv",
           "estimate": 0.684045
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5272,6 +5624,10 @@
         {
           "metricId": "npv",
           "estimate": 0.675978
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5313,6 +5669,10 @@
         {
           "metricId": "npv",
           "estimate": 0.668098
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5354,6 +5714,10 @@
         {
           "metricId": "npv",
           "estimate": 0.66
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5395,6 +5759,10 @@
         {
           "metricId": "npv",
           "estimate": 0.652096
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5436,6 +5804,10 @@
         {
           "metricId": "npv",
           "estimate": 0.643998
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5477,6 +5849,10 @@
         {
           "metricId": "npv",
           "estimate": 0.636098
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5518,6 +5894,10 @@
         {
           "metricId": "npv",
           "estimate": 0.628028
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5559,6 +5939,10 @@
         {
           "metricId": "npv",
           "estimate": 0.620159
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5600,6 +5984,10 @@
         {
           "metricId": "npv",
           "estimate": 0.612142
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5641,6 +6029,10 @@
         {
           "metricId": "npv",
           "estimate": 0.604329
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5682,6 +6074,10 @@
         {
           "metricId": "npv",
           "estimate": 0.596386
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5723,6 +6119,10 @@
         {
           "metricId": "npv",
           "estimate": 0.588649
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5764,6 +6164,10 @@
         {
           "metricId": "npv",
           "estimate": 0.5808
+        },
+        {
+          "metricId": "lift",
+          "estimate": 0.0
         }
       ]
     },
@@ -5805,6 +6209,10 @@
         {
           "metricId": "npv",
           "estimate": 0.5808
+        },
+        {
+          "metricId": "lift",
+          "estimate": 0.0
         }
       ]
     },
@@ -5846,6 +6254,10 @@
         {
           "metricId": "npv",
           "estimate": 0.588649
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5887,6 +6299,10 @@
         {
           "metricId": "npv",
           "estimate": 0.596386
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5928,6 +6344,10 @@
         {
           "metricId": "npv",
           "estimate": 0.604329
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -5969,6 +6389,10 @@
         {
           "metricId": "npv",
           "estimate": 0.612142
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6010,6 +6434,10 @@
         {
           "metricId": "npv",
           "estimate": 0.620159
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6051,6 +6479,10 @@
         {
           "metricId": "npv",
           "estimate": 0.628028
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6092,6 +6524,10 @@
         {
           "metricId": "npv",
           "estimate": 0.636098
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6133,6 +6569,10 @@
         {
           "metricId": "npv",
           "estimate": 0.643998
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6174,6 +6614,10 @@
         {
           "metricId": "npv",
           "estimate": 0.652096
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6215,6 +6659,10 @@
         {
           "metricId": "npv",
           "estimate": 0.66
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6256,6 +6704,10 @@
         {
           "metricId": "npv",
           "estimate": 0.668098
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6297,6 +6749,10 @@
         {
           "metricId": "npv",
           "estimate": 0.675978
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6338,6 +6794,10 @@
         {
           "metricId": "npv",
           "estimate": 0.684045
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6379,6 +6839,10 @@
         {
           "metricId": "npv",
           "estimate": 0.691868
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.385496
         }
       ]
     },
@@ -6420,6 +6884,10 @@
         {
           "metricId": "npv",
           "estimate": 0.699678
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.378042
         }
       ]
     },
@@ -6461,6 +6929,10 @@
         {
           "metricId": "npv",
           "estimate": 0.707222
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.371381
         }
       ]
     },
@@ -6502,6 +6974,10 @@
         {
           "metricId": "npv",
           "estimate": 0.714944
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.365394
         }
       ]
     },
@@ -6543,6 +7019,10 @@
         {
           "metricId": "npv",
           "estimate": 0.72237
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.359914
         }
       ]
     },
@@ -6584,6 +7064,10 @@
         {
           "metricId": "npv",
           "estimate": 0.729966
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.354913
         }
       ]
     },
@@ -6625,6 +7109,10 @@
         {
           "metricId": "npv",
           "estimate": 0.737738
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.350329
         }
       ]
     },
@@ -6666,6 +7154,10 @@
         {
           "metricId": "npv",
           "estimate": 0.745179
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.34602
         }
       ]
     },
@@ -6707,6 +7199,10 @@
         {
           "metricId": "npv",
           "estimate": 0.752786
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.342025
         }
       ]
     },
@@ -6748,6 +7244,10 @@
         {
           "metricId": "npv",
           "estimate": 0.760028
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.338207
         }
       ]
     },
@@ -6789,6 +7289,10 @@
         {
           "metricId": "npv",
           "estimate": 0.767425
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.334633
         }
       ]
     },
@@ -6830,6 +7334,10 @@
         {
           "metricId": "npv",
           "estimate": 0.774263
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.326352
         }
       ]
     },
@@ -6871,6 +7379,10 @@
         {
           "metricId": "npv",
           "estimate": 0.78125
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.318568
         }
       ]
     },
@@ -6912,6 +7424,10 @@
         {
           "metricId": "npv",
           "estimate": 0.788391
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.311239
         }
       ]
     },
@@ -6953,6 +7469,10 @@
         {
           "metricId": "npv",
           "estimate": 0.7951
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.304172
         }
       ]
     },
@@ -6994,6 +7514,10 @@
         {
           "metricId": "npv",
           "estimate": 0.80195
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.29747
         }
       ]
     },
@@ -7035,6 +7559,10 @@
         {
           "metricId": "npv",
           "estimate": 0.808946
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.291106
         }
       ]
     },
@@ -7076,6 +7604,10 @@
         {
           "metricId": "npv",
           "estimate": 0.815326
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.280869
         }
       ]
     },
@@ -7117,6 +7649,10 @@
         {
           "metricId": "npv",
           "estimate": 0.821844
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.271123
         }
       ]
     },
@@ -7158,6 +7694,10 @@
         {
           "metricId": "npv",
           "estimate": 0.828504
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.261833
         }
       ]
     },
@@ -7199,6 +7739,10 @@
         {
           "metricId": "npv",
           "estimate": 0.834652
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.252752
         }
       ]
     },
@@ -7240,6 +7784,10 @@
         {
           "metricId": "npv",
           "estimate": 0.840927
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.244048
         }
       ]
     },
@@ -7281,6 +7829,10 @@
         {
           "metricId": "npv",
           "estimate": 0.847211
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.232196
         }
       ]
     },
@@ -7322,6 +7874,10 @@
         {
           "metricId": "npv",
           "estimate": 0.852941
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.2206
         }
       ]
     },
@@ -7363,6 +7919,10 @@
         {
           "metricId": "npv",
           "estimate": 0.858794
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.209458
         }
       ]
     },
@@ -7404,6 +7964,10 @@
         {
           "metricId": "npv",
           "estimate": 0.864775
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.198744
         }
       ]
     },
@@ -7445,6 +8009,10 @@
         {
           "metricId": "npv",
           "estimate": 0.870042
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.184976
         }
       ]
     },
@@ -7486,6 +8054,10 @@
         {
           "metricId": "npv",
           "estimate": 0.875427
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.171718
         }
       ]
     },
@@ -7527,6 +8099,10 @@
         {
           "metricId": "npv",
           "estimate": 0.880932
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.158941
         }
       ]
     },
@@ -7568,6 +8144,10 @@
         {
           "metricId": "npv",
           "estimate": 0.885789
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.146291
         }
       ]
     },
@@ -7609,6 +8189,10 @@
         {
           "metricId": "npv",
           "estimate": 0.890653
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.131172
         }
       ]
     },
@@ -7650,6 +8234,10 @@
         {
           "metricId": "npv",
           "estimate": 0.895629
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.116574
         }
       ]
     },
@@ -7691,6 +8279,10 @@
         {
           "metricId": "npv",
           "estimate": 0.900722
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.102471
         }
       ]
     },
@@ -7732,6 +8324,10 @@
         {
           "metricId": "npv",
           "estimate": 0.905109
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.088458
         }
       ]
     },
@@ -7773,6 +8369,10 @@
         {
           "metricId": "npv",
           "estimate": 0.909511
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.072249
         }
       ]
     },
@@ -7814,6 +8414,10 @@
         {
           "metricId": "npv",
           "estimate": 0.914019
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.056564
         }
       ]
     },
@@ -7855,6 +8459,10 @@
         {
           "metricId": "npv",
           "estimate": 0.918638
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.041378
         }
       ]
     },
@@ -7896,6 +8504,10 @@
         {
           "metricId": "npv",
           "estimate": 0.922414
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.023796
         }
       ]
     },
@@ -7937,6 +8549,10 @@
         {
           "metricId": "npv",
           "estimate": 0.926285
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.006756
         }
       ]
     },
@@ -7978,6 +8594,10 @@
         {
           "metricId": "npv",
           "estimate": 0.930255
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.990233
         }
       ]
     },
@@ -8019,6 +8639,10 @@
         {
           "metricId": "npv",
           "estimate": 0.934263
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.971937
         }
       ]
     },
@@ -8060,6 +8684,10 @@
         {
           "metricId": "npv",
           "estimate": 0.937437
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.953732
         }
       ]
     },
@@ -8101,6 +8729,10 @@
         {
           "metricId": "npv",
           "estimate": 0.940635
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.933899
         }
       ]
     },
@@ -8142,6 +8774,10 @@
         {
           "metricId": "npv",
           "estimate": 0.943925
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.914675
         }
       ]
     },
@@ -8183,6 +8819,10 @@
         {
           "metricId": "npv",
           "estimate": 0.947313
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.896032
         }
       ]
     },
@@ -8224,6 +8864,10 @@
         {
           "metricId": "npv",
           "estimate": 0.950749
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.875948
         }
       ]
     },
@@ -8265,6 +8909,10 @@
         {
           "metricId": "npv",
           "estimate": 0.953261
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.855941
         }
       ]
     },
@@ -8306,6 +8954,10 @@
         {
           "metricId": "npv",
           "estimate": 0.955801
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.834619
         }
       ]
     },
@@ -8347,6 +8999,10 @@
         {
           "metricId": "npv",
           "estimate": 0.958427
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.813946
         }
       ]
     },
@@ -8388,6 +9044,10 @@
         {
           "metricId": "npv",
           "estimate": 0.961143
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.793893
         }
       ]
     },
@@ -8429,6 +9089,10 @@
         {
           "metricId": "npv",
           "estimate": 0.963912
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.772687
         }
       ]
     },
@@ -8470,6 +9134,10 @@
         {
           "metricId": "npv",
           "estimate": 0.966785
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.752138
         }
       ]
     },
@@ -8511,6 +9179,10 @@
         {
           "metricId": "npv",
           "estimate": 0.968561
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.72994
         }
       ]
     },
@@ -8552,6 +9224,10 @@
         {
           "metricId": "npv",
           "estimate": 0.970407
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.70841
         }
       ]
     },
@@ -8593,6 +9269,10 @@
         {
           "metricId": "npv",
           "estimate": 0.972292
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.685957
         }
       ]
     },
@@ -8634,6 +9314,10 @@
         {
           "metricId": "npv",
           "estimate": 0.97426
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.664199
         }
       ]
     },
@@ -8675,6 +9359,10 @@
         {
           "metricId": "npv",
           "estimate": 0.976285
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.641632
         }
       ]
     },
@@ -8716,6 +9404,10 @@
         {
           "metricId": "npv",
           "estimate": 0.978408
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.619781
         }
       ]
     },
@@ -8757,6 +9449,10 @@
         {
           "metricId": "npv",
           "estimate": 0.980609
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.597227
         }
       ]
     },
@@ -8798,6 +9494,10 @@
         {
           "metricId": "npv",
           "estimate": 0.981534
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.574713
         }
       ]
     },
@@ -8839,6 +9539,10 @@
         {
           "metricId": "npv",
           "estimate": 0.982482
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.551575
         }
       ]
     },
@@ -8880,6 +9584,10 @@
         {
           "metricId": "npv",
           "estimate": 0.983483
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.529164
         }
       ]
     },
@@ -8921,6 +9629,10 @@
         {
           "metricId": "npv",
           "estimate": 0.98452
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.506221
         }
       ]
     },
@@ -8962,6 +9674,10 @@
         {
           "metricId": "npv",
           "estimate": 0.985623
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.484012
         }
       ]
     },
@@ -9003,6 +9719,10 @@
         {
           "metricId": "npv",
           "estimate": 0.986777
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.461351
         }
       ]
     },
@@ -9044,6 +9764,10 @@
         {
           "metricId": "npv",
           "estimate": 0.987993
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.438314
         }
       ]
     },
@@ -9085,6 +9809,10 @@
         {
           "metricId": "npv",
           "estimate": 0.989305
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.416048
         }
       ]
     },
@@ -9126,6 +9854,10 @@
         {
           "metricId": "npv",
           "estimate": 0.990706
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.393472
         }
       ]
     },
@@ -9167,6 +9899,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992233
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.37166
         }
       ]
     },
@@ -9208,6 +9944,10 @@
         {
           "metricId": "npv",
           "estimate": 0.99389
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.349598
         }
       ]
     },
@@ -9249,6 +9989,10 @@
         {
           "metricId": "npv",
           "estimate": 0.993576
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.326593
         }
       ]
     },
@@ -9290,6 +10034,10 @@
         {
           "metricId": "npv",
           "estimate": 0.993228
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.30436
         }
       ]
     },
@@ -9331,6 +10079,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992823
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.281979
         }
       ]
     },
@@ -9372,6 +10124,10 @@
         {
           "metricId": "npv",
           "estimate": 0.992366
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.260353
         }
       ]
     },
@@ -9413,6 +10169,10 @@
         {
           "metricId": "npv",
           "estimate": 0.991826
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.238623
         }
       ]
     },
@@ -9454,6 +10214,10 @@
         {
           "metricId": "npv",
           "estimate": 0.991176
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.216836
         }
       ]
     },
@@ -9495,6 +10259,10 @@
         {
           "metricId": "npv",
           "estimate": 0.990415
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.195803
         }
       ]
     },
@@ -9536,6 +10304,10 @@
         {
           "metricId": "npv",
           "estimate": 0.989474
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.174744
         }
       ]
     },
@@ -9577,6 +10349,10 @@
         {
           "metricId": "npv",
           "estimate": 0.988281
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.153702
         }
       ]
     },
@@ -9618,6 +10394,10 @@
         {
           "metricId": "npv",
           "estimate": 0.986784
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.1334
         }
       ]
     },
@@ -9659,6 +10439,10 @@
         {
           "metricId": "npv",
           "estimate": 0.984772
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.113137
         }
       ]
     },
@@ -9700,6 +10484,10 @@
         {
           "metricId": "npv",
           "estimate": 0.981928
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.092945
         }
       ]
     },
@@ -9741,6 +10529,10 @@
         {
           "metricId": "npv",
           "estimate": 0.977612
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.072857
         }
       ]
     },
@@ -9782,6 +10574,10 @@
         {
           "metricId": "npv",
           "estimate": 0.970588
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.053493
         }
       ]
     },
@@ -9823,6 +10619,10 @@
         {
           "metricId": "npv",
           "estimate": 0.956522
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.034243
         }
       ]
     },
@@ -9864,6 +10664,10 @@
         {
           "metricId": "npv",
           "estimate": 0.914286
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.015132
         }
       ]
     },
@@ -9905,6 +10709,10 @@
         {
           "metricId": "npv",
           "estimate": 0
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.0
         }
       ]
     }

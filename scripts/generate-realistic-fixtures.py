@@ -58,6 +58,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
     total_positives = sum(b["nPositive"] for b in bins)
     total_negatives = sum(b["nNegative"] for b in bins)
     total_n = total_positives + total_negatives
+    prev = total_positives / total_n if total_n > 0 else 0.1
 
     ops = []
 
@@ -81,6 +82,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
         spec = tn / total_negatives if total_negatives > 0 else 0
         ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
         npv = tn / (tn + fn) if (tn + fn) > 0 else 0
+        lift = ppv / prev if prev > 0 else 1.0
 
         ops.append({
             "evaluationId": eval_id,
@@ -97,6 +99,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
                 {"metricId": "specificity", "estimate": round(spec, 6)},
                 {"metricId": "ppv", "estimate": round(ppv, 6)},
                 {"metricId": "npv", "estimate": round(npv, 6)},
+                {"metricId": "lift", "estimate": round(lift, 6)},
             ]
         })
 
@@ -120,6 +123,7 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
         spec = tn / total_negatives if total_negatives > 0 else 0
         ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
         npv = tn / (tn + fn) if (tn + fn) > 0 else 0
+        lift = ppv / prev if prev > 0 else 1.0
 
         ops.append({
             "evaluationId": eval_id,
@@ -136,18 +140,17 @@ def calculate_operating_points(eval_id, bins, thresholds, ppcr_mappings):
                 {"metricId": "specificity", "estimate": round(spec, 6)},
                 {"metricId": "ppv", "estimate": round(ppv, 6)},
                 {"metricId": "npv", "estimate": round(npv, 6)},
+                {"metricId": "lift", "estimate": round(lift, 6)},
             ]
         })
 
     return ops
 
 def create_rank_bins_from_ops(eval_id, ops):
-    # Derive empirical PPCR strata directly from differences between successive PPCR operating points
     ppcr_ops = [op for op in ops if op["type"] == "ppcr"]
     ppcr_ops.sort(key=lambda op: op["value"])
 
     rank_bins = []
-    # For requested PPCR grid p_0=0, p_1=0.01, ..., p_K=1.00
     for i in range(len(ppcr_ops) - 1):
         op_prev = ppcr_ops[i]
         op_curr = ppcr_ops[i + 1]
@@ -161,8 +164,6 @@ def create_rank_bins_from_ops(eval_id, ops):
         tp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "true_positives")
         fp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "false_positives")
 
-        # Note: Higher requested PPCR selects lower thresholds (more predicted positives).
-        # When moving from r_lower (e.g. 0.0) to r_upper (e.g. 0.1), TP and FP increase.
         pos_mass = max(0.0, float(tp_curr - tp_prev))
         neg_mass = max(0.0, float(fp_curr - fp_prev))
 
@@ -180,9 +181,7 @@ def generate_single_spec():
     bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
     thresholds = [round(i * 0.01, 2) for i in range(101)]
 
-    # 101 PPCR operating points (0.00 to 1.00 in steps of 0.01)
     ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
-    # Map requested PPCR p to empirical cutoff (1 - p)
     ppcr_mappings = [(p, round(1.0 - p, 2)) for p in ppcr_grid]
 
     ops = calculate_operating_points("Model A", bins, thresholds, ppcr_mappings)
@@ -273,4 +272,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    print("Successfully updated realistic prediction distribution fixtures with producer-owned rankBins derived from PPCR operating points.")
+    print("Successfully updated realistic prediction distribution fixtures.")
