@@ -23,8 +23,8 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
       bins: [
         { evaluationId: "Model A", lower: 0, upper: 0, includeLower: true, includeUpper: true, nPositive: 0, nNegative: 0 },
         { evaluationId: "Model A", lower: 0, upper: 0.2, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 1 },
-        { evaluationId: "Model A", lower: 0.2, upper: 0.6, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 2 },
-        { evaluationId: "Model A", lower: 0.6, upper: 0.8, includeLower: false, includeUpper: true, nPositive: 2, nNegative: 0 },
+        { evaluationId: "Model A", lower: 0.2, upper: 0.6, includeLower: false, includeUpper: true, nPositive: 2, nNegative: 2 },
+        { evaluationId: "Model A", lower: 0.6, upper: 0.8, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 0 },
         { evaluationId: "Model A", lower: 0.8, upper: 1.0, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 1 },
       ],
       rankBins: [
