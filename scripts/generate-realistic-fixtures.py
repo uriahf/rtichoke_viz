@@ -1,16 +1,54 @@
 import json
 import math
+import random
 
-def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
+def generate_individual_observations(n_total=3000, model_type='high', seed=42):
+    random.seed(seed)
+    obs = []
+    # Include realistic exact zero score mass
+    n_zero = 15 if model_type == 'high' else (10 if model_type == 'moderate' else 12)
+    for _ in range(n_zero):
+        outcome = 1 if random.random() < 0.05 else 0
+        obs.append({'score': 0.0, 'outcome': outcome})
+
+    # Generate smooth continuous score distributions
+    while len(obs) < n_total:
+        if model_type == 'high':
+            z = random.gauss(0, 1.2)
+            score = 1.0 / (1.0 + math.exp(-z))
+            prob = 1.0 / (1.0 + math.exp(-(z - 0.4)))
+        elif model_type == 'moderate':
+            z = random.gauss(0, 1.0)
+            score = 1.0 / (1.0 + math.exp(-z))
+            prob = 1.0 / (1.0 + math.exp(-(z * 0.7 - 0.2)))
+        else:
+            z = random.gauss(0.2, 1.1)
+            score = 1.0 / (1.0 + math.exp(-z))
+            prob = 1.0 / (1.0 + math.exp(-(z * 0.9 - 0.1)))
+
+        score = max(0.0001, min(0.9999, score))
+        outcome = 1 if random.random() < prob else 0
+        obs.append({'score': score, 'outcome': outcome})
+
+    obs.sort(key=lambda x: x['score'])
+    return obs
+
+def r_type7_quantile(sorted_scores, p):
+    n = len(sorted_scores)
+    if n == 0: return 0.0
+    if p <= 0: return sorted_scores[0]
+    if p >= 1: return sorted_scores[-1]
+    idx = (n - 1) * p
+    j = int(math.floor(idx))
+    gamma = idx - j
+    if j >= n - 1: return sorted_scores[-1]
+    return (1.0 - gamma) * sorted_scores[j] + gamma * sorted_scores[j + 1]
+
+def create_score_histogram_bins(obs, eval_id):
     bins = []
-
     # Bin 0: [0, 0]
-    if model_quality == "high":
-        bin0_pos = 1
-        bin0_neg = 14
-    else:
-        bin0_pos = 1
-        bin0_neg = 9
+    bin0_pos = sum(1 for x in obs if x['score'] == 0.0 and x['outcome'] == 1)
+    bin0_neg = sum(1 for x in obs if x['score'] == 0.0 and x['outcome'] == 0)
 
     bins.append({
         "evaluationId": eval_id,
@@ -22,24 +60,17 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
         "nNegative": bin0_neg
     })
 
-    for i in range(0, 100):
+    for i in range(100):
         lower = round(i * 0.01, 2)
         upper = round((i + 1) * 0.01, 2)
-        x = (i + 0.5) / 100.0
 
-        if i == 0:
-            pos_count = 2
-            neg_count = 18
-        else:
-            if model_quality == "high":
-                pos_weight = math.pow(x, 2.2)
-                neg_weight = math.pow(1.0 - x, 2.2)
-            else:
-                pos_weight = math.pow(x, 1.2)
-                neg_weight = math.pow(1.0 - x, 1.2)
-
-            pos_count = max(0, int(round(pos_weight * 25)))
-            neg_count = max(0, int(round(neg_weight * 35)))
+        pos_count = 0
+        neg_count = 0
+        for x in obs:
+            s = x['score']
+            if lower < s <= upper:
+                if x['outcome'] == 1: pos_count += 1
+                else: neg_count += 1
 
         bins.append({
             "evaluationId": eval_id,
@@ -53,157 +84,143 @@ def create_fine_eval_bins(eval_id, n_total=3000, model_quality="high"):
 
     return bins
 
-def find_empirical_cutoff_for_ppcr(bins, requested_ppcr, total_n):
-    if requested_ppcr <= 0:
-        return 1.0
-    if requested_ppcr >= 1.0:
-        return 0.0
-
-    target_count = total_n * requested_ppcr
-    cum = 0
-    non_zero_bins = [b for b in bins if not (b["lower"] == 0 and b["upper"] == 0)]
-    sorted_bins_desc = sorted(non_zero_bins, key=lambda b: b["upper"], reverse=True)
-
-    for b in sorted_bins_desc:
-        bin_count = b["nPositive"] + b["nNegative"]
-        cum += bin_count
-        if cum >= target_count:
-            return b["lower"]
-
-    return 0.0
-
-def calculate_operating_points(eval_id, bins, thresholds, ppcr_grid):
-    total_positives = sum(b["nPositive"] for b in bins)
-    total_negatives = sum(b["nNegative"] for b in bins)
-    total_n = total_positives + total_negatives
-    prev = total_positives / total_n if total_n > 0 else 0.1
-
-    ops = []
-
-    # Threshold operating points
-    for cut in thresholds:
-        tp = 0
-        fp = 0
-        fn = 0
-        tn = 0
-        for b in bins:
-            is_pos = True if cut == 0 else b["upper"] > cut
-            if is_pos:
-                tp += b["nPositive"]
-                fp += b["nNegative"]
-            else:
-                fn += b["nPositive"]
-                tn += b["nNegative"]
-
-        realized_ppcr = (tp + fp) / total_n
-        sens = tp / total_positives if total_positives > 0 else 0
-        spec = tn / total_negatives if total_negatives > 0 else 0
-        ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
-        npv = tn / (tn + fn) if (tn + fn) > 0 else 0
-        lift = ppv / prev if prev > 0 else 1.0
-
-        ops.append({
-            "evaluationId": eval_id,
-            "type": "probability_threshold",
-            "value": round(cut, 2),
-            "cutoff": round(cut, 2),
-            "realizedPpcr": round(realized_ppcr, 6),
-            "performance": [
-                {"metricId": "true_positives", "estimate": tp},
-                {"metricId": "false_positives", "estimate": fp},
-                {"metricId": "true_negatives", "estimate": tn},
-                {"metricId": "false_negatives", "estimate": fn},
-                {"metricId": "sensitivity", "estimate": round(sens, 6)},
-                {"metricId": "specificity", "estimate": round(spec, 6)},
-                {"metricId": "ppv", "estimate": round(ppv, 6)},
-                {"metricId": "npv", "estimate": round(npv, 6)},
-                {"metricId": "lift", "estimate": round(lift, 6)},
-            ]
-        })
-
-    # PPCR operating points with empirical quantile cutoff derivation Q_(1-p)(score)
-    for p_req in ppcr_grid:
-        cut = find_empirical_cutoff_for_ppcr(bins, p_req, total_n)
-
-        tp = 0
-        fp = 0
-        fn = 0
-        tn = 0
-        for b in bins:
-            is_pos = True if cut == 0 else b["upper"] > cut
-            if is_pos:
-                tp += b["nPositive"]
-                fp += b["nNegative"]
-            else:
-                fn += b["nPositive"]
-                tn += b["nNegative"]
-
-        realized_ppcr = (tp + fp) / total_n
-        sens = tp / total_positives if total_positives > 0 else 0
-        spec = tn / total_negatives if total_negatives > 0 else 0
-        ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
-        npv = tn / (tn + fn) if (tn + fn) > 0 else 0
-        lift = ppv / prev if prev > 0 else 1.0
-
-        ops.append({
-            "evaluationId": eval_id,
-            "type": "ppcr",
-            "value": round(p_req, 2),
-            "cutoff": round(cut, 2),
-            "realizedPpcr": round(realized_ppcr, 6),
-            "performance": [
-                {"metricId": "true_positives", "estimate": tp},
-                {"metricId": "false_positives", "estimate": fp},
-                {"metricId": "true_negatives", "estimate": tn},
-                {"metricId": "false_negatives", "estimate": fn},
-                {"metricId": "sensitivity", "estimate": round(sens, 6)},
-                {"metricId": "specificity", "estimate": round(spec, 6)},
-                {"metricId": "ppv", "estimate": round(ppv, 6)},
-                {"metricId": "npv", "estimate": round(npv, 6)},
-                {"metricId": "lift", "estimate": round(lift, 6)},
-            ]
-        })
-
-    return ops
-
-def create_rank_bins_from_ops(eval_id, ops):
-    ppcr_ops = [op for op in ops if op["type"] == "ppcr"]
-    ppcr_ops.sort(key=lambda op: op["value"])
+def create_producer_rank_bins(obs, eval_id, by=0.01):
+    scores = [x['score'] for x in obs]
+    n_grid = int(round(1.0 / by))
+    q_bounds = [r_type7_quantile(scores, i * by) for i in range(n_grid + 1)]
 
     rank_bins = []
-    for i in range(len(ppcr_ops) - 1):
-        op_prev = ppcr_ops[i]
-        op_curr = ppcr_ops[i + 1]
+    for i in range(n_grid):
+        r_lower = round(i * by, 4)
+        r_upper = round((i + 1) * by, 4)
+        q_low = q_bounds[i]
+        q_high = q_bounds[i + 1]
 
-        r_lower = round(op_prev["value"], 4)
-        r_upper = round(op_curr["value"], 4)
-
-        tp_prev = next(m["estimate"] for m in op_prev["performance"] if m["metricId"] == "true_positives")
-        fp_prev = next(m["estimate"] for m in op_prev["performance"] if m["metricId"] == "false_positives")
-
-        tp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "true_positives")
-        fp_curr = next(m["estimate"] for m in op_curr["performance"] if m["metricId"] == "false_positives")
-
-        pos_mass = max(0.0, float(tp_curr - tp_prev))
-        neg_mass = max(0.0, float(fp_curr - fp_prev))
+        pos_mass = 0
+        neg_mass = 0
+        for item in obs:
+            s = item['score']
+            in_bin = (q_low <= s <= q_high) if i == 0 else (q_low < s <= q_high)
+            if in_bin:
+                if item['outcome'] == 1: pos_mass += 1
+                else: neg_mass += 1
 
         rank_bins.append({
-            "evaluationId": eval_id,
-            "rankLower": r_lower,
-            "rankUpper": r_upper,
-            "positiveMass": pos_mass,
-            "negativeMass": neg_mass
+            'evaluationId': eval_id,
+            'rankLower': r_lower,
+            'rankUpper': r_upper,
+            'positiveMass': pos_mass,
+            'negativeMass': neg_mass
         })
-
     return rank_bins
 
-def generate_single_spec():
-    bins = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
-    thresholds = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
+def find_bin_cutoff_for_ppcr(bins, p_req, total_n):
+    if p_req <= 0:
+        return 1.0
+    if p_req >= 1.0:
+        return 0.0
+    target_count = total_n * p_req
+    cum = 0
+    non_zero_bins = [b for b in bins if not (b['lower'] == 0 and b['upper'] == 0)]
+    for b in reversed(non_zero_bins):
+        cum += b['nPositive'] + b['nNegative']
+        if cum >= target_count:
+            return b['lower']
+    return 0.0
 
-    ops = calculate_operating_points("Model A", bins, thresholds, ppcr_grid)
-    rank_bins = create_rank_bins_from_ops("Model A", ops)
+def calculate_producer_ops(obs, eval_id, bins, thresholds, ppcr_grid):
+    n_total = len(obs)
+    n_pos_total = sum(1 for x in obs if x['outcome'] == 1)
+    n_neg_total = n_total - n_pos_total
+    prev = n_pos_total / n_total if n_total > 0 else 0.1
+
+    ops = []
+    # Threshold operating points
+    for cut in thresholds:
+        tp, fp, fn, tn = 0, 0, 0, 0
+        for b in bins:
+            is_pos = True if cut == 0 else b['upper'] > cut
+            if is_pos:
+                tp += b['nPositive']
+                fp += b['nNegative']
+            else:
+                fn += b['nPositive']
+                tn += b['nNegative']
+
+        realized_ppcr = (tp + fp) / n_total
+        sens = tp / n_pos_total if n_pos_total > 0 else 0
+        spec = tn / n_neg_total if n_neg_total > 0 else 0
+        ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0
+        lift = ppv / prev if prev > 0 else 1.0
+
+        ops.append({
+            'evaluationId': eval_id,
+            'type': 'probability_threshold',
+            'value': round(cut, 2),
+            'cutoff': round(cut, 2),
+            'realizedPpcr': round(realized_ppcr, 6),
+            'performance': [
+                {'metricId': 'true_positives', 'estimate': tp},
+                {'metricId': 'false_positives', 'estimate': fp},
+                {'metricId': 'true_negatives', 'estimate': tn},
+                {'metricId': 'false_negatives', 'estimate': fn},
+                {'metricId': 'sensitivity', 'estimate': round(sens, 6)},
+                {'metricId': 'specificity', 'estimate': round(spec, 6)},
+                {'metricId': 'ppv', 'estimate': round(ppv, 6)},
+                {'metricId': 'npv', 'estimate': round(npv, 6)},
+                {'metricId': 'lift', 'estimate': round(lift, 6)},
+            ]
+        })
+
+    # PPCR operating points with bin-boundary cutoffs to guarantee referential integrity
+    for p_req in ppcr_grid:
+        bin_cutoff = find_bin_cutoff_for_ppcr(bins, p_req, n_total)
+
+        tp, fp, fn, tn = 0, 0, 0, 0
+        for b in bins:
+            is_pos = True if bin_cutoff == 0 else b['upper'] > bin_cutoff
+            if is_pos:
+                tp += b['nPositive']
+                fp += b['nNegative']
+            else:
+                fn += b['nPositive']
+                tn += b['nNegative']
+
+        realized_ppcr = (tp + fp) / n_total
+        sens = tp / n_pos_total if n_pos_total > 0 else 0
+        spec = tn / n_neg_total if n_neg_total > 0 else 0
+        ppv = tp / (tp + fp) if (tp + fp) > 0 else 0
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0
+        lift = ppv / prev if prev > 0 else 1.0
+
+        ops.append({
+            'evaluationId': eval_id,
+            'type': 'ppcr',
+            'value': round(p_req, 2),
+            'cutoff': round(bin_cutoff, 2),
+            'realizedPpcr': round(realized_ppcr, 6),
+            'performance': [
+                {'metricId': 'true_positives', 'estimate': tp},
+                {'metricId': 'false_positives', 'estimate': fp},
+                {'metricId': 'true_negatives', 'estimate': tn},
+                {'metricId': 'false_negatives', 'estimate': fn},
+                {'metricId': 'sensitivity', 'estimate': round(sens, 6)},
+                {'metricId': 'specificity', 'estimate': round(spec, 6)},
+                {'metricId': 'ppv', 'estimate': round(ppv, 6)},
+                {'metricId': 'npv', 'estimate': round(npv, 6)},
+                {'metricId': 'lift', 'estimate': round(lift, 6)},
+            ]
+        })
+    return ops
+
+def generate_single_spec():
+    obs = generate_individual_observations(3000, 'high', seed=42)
+    bins = create_score_histogram_bins(obs, "Model A")
+    grid = [round(i * 0.01, 2) for i in range(101)]
+
+    ops = calculate_producer_ops(obs, "Model A", bins, grid, grid)
+    rank_bins = create_producer_rank_bins(obs, "Model A", 0.01)
 
     return {
         "schemaVersion": "2.0",
@@ -225,24 +242,23 @@ def generate_single_spec():
     }
 
 def generate_multi_spec():
-    bins_a = create_fine_eval_bins("Model A", n_total=3000, model_quality="high")
-    bins_b = create_fine_eval_bins("Model B", n_total=3000, model_quality="moderate")
-    bins_sub = create_fine_eval_bins("Model A (High Risk)", n_total=2000, model_quality="high")
+    obs_a = generate_individual_observations(3000, 'high', seed=42)
+    obs_b = generate_individual_observations(3000, 'moderate', seed=101)
+    obs_sub = generate_individual_observations(2000, 'high_risk', seed=202)
 
-    thresholds = [round(i * 0.01, 2) for i in range(101)]
-    ppcr_grid = [round(i * 0.01, 2) for i in range(101)]
+    bins_a = create_score_histogram_bins(obs_a, "Model A")
+    bins_b = create_score_histogram_bins(obs_b, "Model B")
+    bins_sub = create_score_histogram_bins(obs_sub, "Model A (High Risk)")
 
-    ops_a = calculate_operating_points("Model A", bins_a, thresholds, ppcr_grid)
-    ops_b = calculate_operating_points("Model B", bins_b, thresholds, ppcr_grid)
-    ops_sub = calculate_operating_points("Model A (High Risk)", bins_sub, thresholds, ppcr_grid)
+    grid = [round(i * 0.01, 2) for i in range(101)]
 
-    rank_bins_a = create_rank_bins_from_ops("Model A", ops_a)
-    rank_bins_b = create_rank_bins_from_ops("Model B", ops_b)
-    rank_bins_sub = create_rank_bins_from_ops("Model A (High Risk)", ops_sub)
+    ops_a = calculate_producer_ops(obs_a, "Model A", bins_a, grid, grid)
+    ops_b = calculate_producer_ops(obs_b, "Model B", bins_b, grid, grid)
+    ops_sub = calculate_producer_ops(obs_sub, "Model A (High Risk)", bins_sub, grid, grid)
 
-    all_bins = bins_a + bins_b + bins_sub
-    all_rank_bins = rank_bins_a + rank_bins_b + rank_bins_sub
-    all_ops = ops_a + ops_b + ops_sub
+    rank_bins_a = create_producer_rank_bins(obs_a, "Model A", 0.01)
+    rank_bins_b = create_producer_rank_bins(obs_b, "Model B", 0.01)
+    rank_bins_sub = create_producer_rank_bins(obs_sub, "Model A (High Risk)", 0.01)
 
     return {
         "schemaVersion": "2.0",
@@ -271,9 +287,9 @@ def generate_multi_spec():
         "operatingPoint": {
             "dimension": "probability_threshold"
         },
-        "bins": all_bins,
-        "rankBins": all_rank_bins,
-        "operatingPoints": all_ops
+        "bins": bins_a + bins_b + bins_sub,
+        "rankBins": rank_bins_a + rank_bins_b + rank_bins_sub,
+        "operatingPoints": ops_a + ops_b + ops_sub
     }
 
 if __name__ == "__main__":
@@ -289,4 +305,4 @@ if __name__ == "__main__":
     with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
         json.dump(multi_spec, f, indent=2)
 
-    print("Successfully updated realistic prediction distribution fixtures with empirical quantile PPCR cutoff derivation.")
+    print("Successfully generated observation-level realistic prediction distribution fixtures!")
