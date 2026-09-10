@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prediction Distribution Manager Review Preview</title>
+  <link rel="stylesheet" href="../dist/rtichoke-viz.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background-color: #f9fafb;
+    }
+    .preview-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 2rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-container">
+    <h1>Prediction Distribution (Manager Review Preview)</h1>
+    <div id="chart"></div>
+  </div>
+
+  <script type="module">
+    import { renderPredictionDistribution } from "../dist/rtichoke-viz.js";
+
+    async function load() {
+      const res = await fetch("../fixtures/v2/prediction-distribution-multi.json");
+      const spec = await res.json();
+      const el = renderPredictionDistribution(spec);
+      document.getElementById("chart").appendChild(el);
+    }
+    load();
+  </script>
+</body>
+</html>
