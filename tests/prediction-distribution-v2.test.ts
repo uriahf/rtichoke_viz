@@ -22,7 +22,10 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
       evaluations: [{ id: "Model A", model: "Model A", population: "Overall" }],
       bins: [
         { evaluationId: "Model A", lower: 0, upper: 0, includeLower: true, includeUpper: true, nPositive: 0, nNegative: 0 },
-        { evaluationId: "Model A", lower: 0, upper: 1, includeLower: false, includeUpper: true, nPositive: 5, nNegative: 4 },
+        { evaluationId: "Model A", lower: 0, upper: 0.2, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 1 },
+        { evaluationId: "Model A", lower: 0.2, upper: 0.6, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 2 },
+        { evaluationId: "Model A", lower: 0.6, upper: 0.8, includeLower: false, includeUpper: true, nPositive: 2, nNegative: 0 },
+        { evaluationId: "Model A", lower: 0.8, upper: 1.0, includeLower: false, includeUpper: true, nPositive: 1, nNegative: 1 },
       ],
       rankBins: [
         { evaluationId: "Model A", rankLower: 0.0, rankUpper: 0.2, positiveMass: 1, negativeMass: 1 },
@@ -32,14 +35,44 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
         { evaluationId: "Model A", rankLower: 0.8, rankUpper: 1.0, positiveMass: 1, negativeMass: 1 },
       ],
       operatingPoints: [
-        { evaluationId: "Model A", type: "probability_threshold", value: 0, cutoff: 0, realizedPpcr: 1 },
-        { evaluationId: "Model A", type: "probability_threshold", value: 1, cutoff: 1, realizedPpcr: 0 },
+        { evaluationId: "Model A", type: "ppcr", value: 0.0, cutoff: 1.0, realizedPpcr: 0.0, performance: [{ metricId: "true_positives", estimate: 0 }, { metricId: "false_positives", estimate: 0 }, { metricId: "true_negatives", estimate: 4 }, { metricId: "false_negatives", estimate: 5 }] },
+        { evaluationId: "Model A", type: "ppcr", value: 0.2, cutoff: 0.8, realizedPpcr: 2 / 9, performance: [{ metricId: "true_positives", estimate: 1 }, { metricId: "false_positives", estimate: 1 }, { metricId: "true_negatives", estimate: 3 }, { metricId: "false_negatives", estimate: 4 }] },
+        { evaluationId: "Model A", type: "ppcr", value: 0.4, cutoff: 0.6, realizedPpcr: 3 / 9, performance: [{ metricId: "true_positives", estimate: 2 }, { metricId: "false_positives", estimate: 1 }, { metricId: "true_negatives", estimate: 3 }, { metricId: "false_negatives", estimate: 3 }] },
+        { evaluationId: "Model A", type: "ppcr", value: 0.6, cutoff: 0.6, realizedPpcr: 3 / 9, performance: [{ metricId: "true_positives", estimate: 2 }, { metricId: "false_positives", estimate: 1 }, { metricId: "true_negatives", estimate: 3 }, { metricId: "false_negatives", estimate: 3 }] },
+        { evaluationId: "Model A", type: "ppcr", value: 0.8, cutoff: 0.2, realizedPpcr: 7 / 9, performance: [{ metricId: "true_positives", estimate: 4 }, { metricId: "false_positives", estimate: 3 }, { metricId: "true_negatives", estimate: 1 }, { metricId: "false_negatives", estimate: 1 }] },
+        { evaluationId: "Model A", type: "ppcr", value: 1.0, cutoff: 0.0, realizedPpcr: 1.0, performance: [{ metricId: "true_positives", estimate: 5 }, { metricId: "false_positives", estimate: 4 }, { metricId: "true_negatives", estimate: 0 }, { metricId: "false_negatives", estimate: 0 }] },
       ],
     };
 
     expect(() =>
       assertPredictionDistributionReferentialIntegrity(goldenRankBinsFixture),
     ).not.toThrow();
+
+    // Regression check: Verify complete rank-bin partition matches producer operating-point TP/FP/TN/FN at EVERY grid point
+    const grid = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
+    const rankBins = goldenRankBinsFixture.rankBins!;
+
+    for (const p of grid) {
+      const cutoffRank = 1 - p;
+      let tp = 0, fp = 0, fn = 0, tn = 0;
+      for (const bin of rankBins) {
+        if (bin.rankLower >= cutoffRank - 1e-9) {
+          tp += bin.positiveMass;
+          fp += bin.negativeMass;
+        } else {
+          fn += bin.positiveMass;
+          tn += bin.negativeMass;
+        }
+      }
+
+      const op = goldenRankBinsFixture.operatingPoints.find(item => Math.abs(item.value - p) < 1e-6)!;
+      const getPerf = (id: string) => op.performance!.find(item => item.metricId === id)!.estimate!;
+
+      expect(tp).toBe(getPerf("true_positives"));
+      expect(fp).toBe(getPerf("false_positives"));
+      expect(tn).toBe(getPerf("true_negatives"));
+      expect(fn).toBe(getPerf("false_negatives"));
+    }
   });
 
   it("accepts and validates N < q golden rankBins oracle fixture with multiple empty strata", () => {
