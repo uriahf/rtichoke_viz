@@ -14,6 +14,38 @@ describe("PredictionDistributionSpec Referential Integrity Validation", () => {
     ).not.toThrow();
   });
 
+  it("validates that all 101 PPCR operating points in committed realistic single/multi fixtures match complete rank-bin partitions exactly", () => {
+    const checkSpecEquivalence = (spec: any) => {
+      for (const evalSpec of spec.evaluations) {
+        const evalId = evalSpec.id;
+        const rankBins = (spec.rankBins ?? []).filter((b: any) => b.evaluationId === evalId);
+        const ppcrOps = (spec.operatingPoints ?? []).filter((op: any) => op.evaluationId === evalId && op.type === "ppcr");
+
+        for (const op of ppcrOps) {
+          const val = op.value;
+          const boundary = Math.round((1.0 - val) * 10000) / 10000;
+
+          const highRankBins = rankBins.filter((b: any) => b.rankLower >= boundary - 1e-9);
+          const lowRankBins = rankBins.filter((b: any) => b.rankLower < boundary - 1e-9);
+
+          const expectedTp = highRankBins.reduce((sum: number, b: any) => sum + b.positiveMass, 0);
+          const expectedFp = highRankBins.reduce((sum: number, b: any) => sum + b.negativeMass, 0);
+          const expectedFn = lowRankBins.reduce((sum: number, b: any) => sum + b.positiveMass, 0);
+          const expectedTn = lowRankBins.reduce((sum: number, b: any) => sum + b.negativeMass, 0);
+
+          const getPerf = (id: string) => op.performance.find((m: any) => m.metricId === id).estimate;
+
+          expect(expectedTp).toBe(getPerf("true_positives"));
+          expect(expectedFp).toBe(getPerf("false_positives"));
+          expect(expectedTn).toBe(getPerf("true_negatives"));
+          expect(expectedFn).toBe(getPerf("false_negatives"));
+        }
+      }
+    };
+
+    checkSpecEquivalence(multiFixture);
+  });
+
   it("accepts and validates primary golden rankBins oracle fixture with explicit empty stratum [0.40, 0.60]", () => {
     const goldenRankBinsFixture: PredictionDistributionSpec = {
       schemaVersion: "2.0",

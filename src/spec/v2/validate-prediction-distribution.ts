@@ -179,31 +179,33 @@ export function assertPredictionDistributionReferentialIntegrity(
 
     // Match operating-point cutoff to canonical interval upper boundary and validate realizedPpcr
     for (const op of ops) {
-      if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
-        throw new Error(
-          `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`,
-        );
-      }
+      if (op.type === "probability_threshold") {
+        if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
+          throw new Error(
+            `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`,
+          );
+        }
 
-      // Reconstruct predicted positive count from canonical bins
-      let predictedPositive = 0;
-      if (op.cutoff === 0) {
-        // Cutoff zero: everyone is predicted positive
-        predictedPositive = totalCount;
-      } else {
-        // Nonzero cutoff: predicted positive if bin upper > cutoff
-        for (const bin of bins) {
-          if (bin.upper > op.cutoff) {
-            predictedPositive += bin.nPositive + bin.nNegative;
+        // Reconstruct predicted positive count from canonical bins
+        let predictedPositive = 0;
+        if (op.cutoff === 0) {
+          // Cutoff zero: everyone is predicted positive
+          predictedPositive = totalCount;
+        } else {
+          // Nonzero cutoff: predicted positive if bin upper > cutoff
+          for (const bin of bins) {
+            if (bin.upper > op.cutoff) {
+              predictedPositive += bin.nPositive + bin.nNegative;
+            }
           }
         }
-      }
 
-      const expectedRealizedPpcr = predictedPositive / totalCount;
-      if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
-        throw new Error(
-          `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`,
-        );
+        const expectedRealizedPpcr = predictedPositive / totalCount;
+        if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
+          throw new Error(
+            `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`,
+          );
+        }
       }
     }
   }

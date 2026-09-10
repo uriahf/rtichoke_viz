@@ -33,16 +33,23 @@ def generate_individual_observations(n_total=3000, model_type='high', seed=42):
     obs.sort(key=lambda x: x['score'])
     return obs
 
-def r_type7_quantile(sorted_scores, p):
+def type7_quantile(sorted_scores, probability):
     n = len(sorted_scores)
-    if n == 0: return 0.0
-    if p <= 0: return sorted_scores[0]
-    if p >= 1: return sorted_scores[-1]
-    idx = (n - 1) * p
-    j = int(math.floor(idx))
-    gamma = idx - j
-    if j >= n - 1: return sorted_scores[-1]
-    return (1.0 - gamma) * sorted_scores[j] + gamma * sorted_scores[j + 1]
+    if n == 0:
+        return 0.0
+    if probability <= 0:
+        return sorted_scores[0]
+    if probability >= 1:
+        return sorted_scores[-1]
+
+    h = (n - 1) * probability
+    lower_index = math.floor(h)
+    interpolation_weight = h - lower_index
+
+    return (
+        (1 - interpolation_weight) * sorted_scores[lower_index]
+        + interpolation_weight * sorted_scores[lower_index + 1]
+    )
 
 def create_score_histogram_bins(obs, eval_id):
     bins = []
@@ -85,22 +92,23 @@ def create_score_histogram_bins(obs, eval_id):
     return bins
 
 def create_producer_rank_bins(obs, eval_id, by=0.01):
-    scores = [x['score'] for x in obs]
+    scores = sorted(x['score'] for x in obs)
     n_grid = int(round(1.0 / by))
-    q_bounds = [r_type7_quantile(scores, i * by) for i in range(n_grid + 1)]
+    grid = [i * by for i in range(n_grid + 1)]
+    q_bounds = [type7_quantile(scores, p) for p in grid]
 
     rank_bins = []
-    for i in range(n_grid):
-        r_lower = round(i * by, 4)
-        r_upper = round((i + 1) * by, 4)
-        q_low = q_bounds[i]
-        q_high = q_bounds[i + 1]
+    for rank_index in range(n_grid):
+        r_lower = round(rank_index * by, 4)
+        r_upper = round((rank_index + 1) * by, 4)
+        lower_score_boundary = q_bounds[rank_index]
+        upper_score_boundary = q_bounds[rank_index + 1]
 
         pos_mass = 0
         neg_mass = 0
         for item in obs:
             s = item['score']
-            in_bin = (q_low <= s <= q_high) if i == 0 else (q_low < s <= q_high)
+            in_bin = (lower_score_boundary <= s <= upper_score_boundary) if rank_index == 0 else (lower_score_boundary < s <= upper_score_boundary)
             if in_bin:
                 if item['outcome'] == 1: pos_mass += 1
                 else: neg_mass += 1
@@ -114,25 +122,12 @@ def create_producer_rank_bins(obs, eval_id, by=0.01):
         })
     return rank_bins
 
-def find_bin_cutoff_for_ppcr(bins, p_req, total_n):
-    if p_req <= 0:
-        return 1.0
-    if p_req >= 1.0:
-        return 0.0
-    target_count = total_n * p_req
-    cum = 0
-    non_zero_bins = [b for b in bins if not (b['lower'] == 0 and b['upper'] == 0)]
-    for b in reversed(non_zero_bins):
-        cum += b['nPositive'] + b['nNegative']
-        if cum >= target_count:
-            return b['lower']
-    return 0.0
-
 def calculate_producer_ops(obs, eval_id, bins, thresholds, ppcr_grid):
     n_total = len(obs)
     n_pos_total = sum(1 for x in obs if x['outcome'] == 1)
     n_neg_total = n_total - n_pos_total
     prev = n_pos_total / n_total if n_total > 0 else 0.1
+    scores = sorted(x['score'] for x in obs)
 
     ops = []
     # Threshold operating points
@@ -173,19 +168,22 @@ def calculate_producer_ops(obs, eval_id, bins, thresholds, ppcr_grid):
             ]
         })
 
-    # PPCR operating points with bin-boundary cutoffs to guarantee referential integrity
+    # Exact R producer PPCR operating points with full-precision Type-7 quantile classification
     for p_req in ppcr_grid:
-        bin_cutoff = find_bin_cutoff_for_ppcr(bins, p_req, n_total)
+        if p_req == 0:
+            predicted_positive = [False for _ in obs]
+            cutoff = max(x['score'] for x in obs)
+        elif p_req == 1:
+            predicted_positive = [True for _ in obs]
+            cutoff = 0.0
+        else:
+            cutoff = type7_quantile(scores, 1.0 - p_req)
+            predicted_positive = [x['score'] > cutoff for x in obs]
 
-        tp, fp, fn, tn = 0, 0, 0, 0
-        for b in bins:
-            is_pos = True if bin_cutoff == 0 else b['upper'] > bin_cutoff
-            if is_pos:
-                tp += b['nPositive']
-                fp += b['nNegative']
-            else:
-                fn += b['nPositive']
-                tn += b['nNegative']
+        tp = sum(1 for item, is_pos in zip(obs, predicted_positive) if is_pos and item['outcome'] == 1)
+        fp = sum(1 for item, is_pos in zip(obs, predicted_positive) if is_pos and item['outcome'] == 0)
+        fn = sum(1 for item, is_pos in zip(obs, predicted_positive) if not is_pos and item['outcome'] == 1)
+        tn = sum(1 for item, is_pos in zip(obs, predicted_positive) if not is_pos and item['outcome'] == 0)
 
         realized_ppcr = (tp + fp) / n_total
         sens = tp / n_pos_total if n_pos_total > 0 else 0
@@ -198,7 +196,7 @@ def calculate_producer_ops(obs, eval_id, bins, thresholds, ppcr_grid):
             'evaluationId': eval_id,
             'type': 'ppcr',
             'value': round(p_req, 2),
-            'cutoff': round(bin_cutoff, 2),
+            'cutoff': round(cutoff, 4),
             'realizedPpcr': round(realized_ppcr, 6),
             'performance': [
                 {'metricId': 'true_positives', 'estimate': tp},
