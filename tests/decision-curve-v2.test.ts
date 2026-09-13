@@ -9,7 +9,7 @@ import timeMulti from "../fixtures/v2/decision-curve-time-multi.json" with { typ
 import roc from "../fixtures/v2/roc.json" with { type: "json" };
 import { ReportSpecSchema } from "../src/spec/report.js";
 import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
-import { DecisionCurveV2SpecSchema } from "../src/spec/v2/decision-curve.js";
+import { DecisionCurveV2SpecSchema, type DecisionCurveV2Spec } from "../src/spec/v2/decision-curve.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
 const fixtures = [single, sharedPopulation, populations, equalPrevalence, modelUnknown];
@@ -105,10 +105,10 @@ describe("v2 decision curve semantics", () => {
     duplicate.references.push(structuredClone(timeMulti.references[1]));
     expect(() => assertV2ReferentialIntegrity(duplicate as RtichokeChartSpecV2)).toThrow("duplicate Treat All owner");
 
-    const wrongScope = structuredClone(timeMulti) as unknown as RtichokeChartSpecV2;
+    const wrongScope = structuredClone(timeMulti) as unknown as DecisionCurveV2Spec;
     Object.assign(wrongScope.references![1], { scope: "population" });
     delete (wrongScope.references![1] as { horizon?: number }).horizon;
-    expect(() => assertV2ReferentialIntegrity(wrongScope)).toThrow("must use population_horizon scope");
+    expect(() => assertV2ReferentialIntegrity(wrongScope as RtichokeChartSpecV2)).toThrow("must use population_horizon scope");
   });
 
   it("rejects incomplete or duplicate evaluation-by-horizon coverage", () => {

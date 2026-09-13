@@ -1,9 +1,15 @@
 import type { RtichokeChartSpecV2 } from "./chart.js";
 import type { DecisionCurveV2Reference, DecisionCurveV2Spec } from "./decision-curve.js";
 import type { InterventionsAvoidedV2Reference, InterventionsAvoidedV2Spec } from "./interventions-avoided.js";
+import { assertPredictionDistributionReferentialIntegrity } from "./validate-prediction-distribution.js";
 
 /** Validate cross-object identity references that JSON Schema cannot express. */
 export function assertV2ReferentialIntegrity(spec: RtichokeChartSpecV2): void {
+  if (spec.type === "prediction_distribution") {
+    assertPredictionDistributionReferentialIntegrity(spec);
+    return;
+  }
+
   const evaluationIds = new Set(spec.evaluations.map((evaluation) => evaluation.id));
   const seriesIds = new Set<string>();
 
