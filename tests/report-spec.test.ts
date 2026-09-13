@@ -75,9 +75,9 @@ describe("canonical ReportSpec", () => {
   });
 
   it("leaves equal-valued references with distinct semantic owners untouched", () => {
-    const spec = chart(gainsEqualPrevalence);
+    const spec = chart(gainsEqualPrevalence) as any;
     const references = spec.references ?? [];
-    const populations = references.flatMap((reference) =>
+    const populations = references.flatMap((reference: any) =>
       "population" in reference ? [reference.population] : [],
     );
     expect(references.length).toBeGreaterThan(1);
@@ -109,7 +109,7 @@ describe("canonical ReportSpec", () => {
   });
 
   it("does not make equal evaluation ids report-global identity", () => {
-    const chartSpec = chart(roc);
+    const chartSpec = chart(roc) as any;
     const tableSpec = table();
     chartSpec.evaluations[0].id = "evaluation-1";
     chartSpec.series[0].evaluationId = "evaluation-1";

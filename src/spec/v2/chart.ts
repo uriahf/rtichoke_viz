@@ -5,6 +5,7 @@ import { GainsV2SpecSchema } from "./gains.js";
 import { InterventionsAvoidedV2SpecSchema } from "./interventions-avoided.js";
 import { LiftV2SpecSchema } from "./lift.js";
 import { PrecisionRecallV2SpecSchema } from "./precision_recall.js";
+import { PredictionDistributionSpecSchema } from "./prediction-distribution.js";
 import { RocV2SpecSchema } from "./roc.js";
 
 /** Canonical v2 union with explicit evaluation and reference ownership. */
@@ -17,6 +18,7 @@ export const RtichokeChartSpecV2Schema = Type.Union(
     LiftV2SpecSchema,
     DecisionCurveV2SpecSchema,
     InterventionsAvoidedV2SpecSchema,
+    PredictionDistributionSpecSchema,
   ],
   {
     $id: "https://rtichoke.dev/schema/viz/2.0.json",

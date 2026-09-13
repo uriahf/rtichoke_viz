@@ -8,7 +8,7 @@ import single from "../fixtures/v2/interventions-avoided-single.json" with { typ
 import roc from "../fixtures/v2/roc.json" with { type: "json" };
 import { ReportSpecSchema } from "../src/spec/report.js";
 import { RtichokeChartSpecV2Schema, type RtichokeChartSpecV2 } from "../src/spec/v2/chart.js";
-import { InterventionsAvoidedV2SpecSchema } from "../src/spec/v2/interventions-avoided.js";
+import { InterventionsAvoidedV2SpecSchema, type InterventionsAvoidedV2Spec } from "../src/spec/v2/interventions-avoided.js";
 import { assertV2ReferentialIntegrity } from "../src/spec/v2/validate.js";
 
 const fixtures = [single, sharedPopulation, populations, equalPrevalence, modelUnknown];
@@ -167,14 +167,14 @@ describe("v2 interventions avoided semantics", () => {
   });
 
   it("rejects incorrect Treat None ownership and scopes", () => {
-    const wrongScopeStatic = structuredClone(single) as unknown as RtichokeChartSpecV2;
+    const wrongScopeStatic = structuredClone(single) as unknown as InterventionsAvoidedV2Spec;
     Object.assign(wrongScopeStatic.references![1], { scope: "population_horizon", horizon: 5 });
-    expect(() => assertV2ReferentialIntegrity(wrongScopeStatic)).toThrow("static interventions avoided Treat None must use population scope");
+    expect(() => assertV2ReferentialIntegrity(wrongScopeStatic as RtichokeChartSpecV2)).toThrow("static interventions avoided Treat None must use population scope");
 
-    const wrongScopeTD = structuredClone(tdSharedPopulation) as unknown as RtichokeChartSpecV2;
+    const wrongScopeTD = structuredClone(tdSharedPopulation) as unknown as InterventionsAvoidedV2Spec;
     Object.assign(wrongScopeTD.references![1], { scope: "population" });
     delete (wrongScopeTD.references![1] as { horizon?: number }).horizon;
-    expect(() => assertV2ReferentialIntegrity(wrongScopeTD)).toThrow("time-dependent interventions avoided Treat None must use population_horizon scope");
+    expect(() => assertV2ReferentialIntegrity(wrongScopeTD as RtichokeChartSpecV2)).toThrow("time-dependent interventions avoided Treat None must use population_horizon scope");
   });
 
   it("rejects missing or duplicate population × horizon Treat None references", () => {
