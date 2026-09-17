@@ -29,10 +29,14 @@ describe("PredictionDistribution Manager Review Requirements Tests", () => {
     expect(bottomRowHeader.textContent).toBe("");
   });
 
-  it("2. proves requested PPCR controls the visible PPCR boundary (cutoffX = 1 - requested_ppcr)", () => {
+  it("2. proves requested PPCR controls the visible PPCR boundary (cutoffX = 1 - requested_ppcr) and sets x-axis label to 'Prediction Percentile'", () => {
     const spec = visualFixture as PredictionDistributionSpec;
-    const prep = preparePredictionDistributionPlotData(spec, "Model A", "ppcr", 0.20, 2);
-    expect(prep.cutoffX).toBe(0.80);
+    const prepPpcr = preparePredictionDistributionPlotData(spec, "Model A", "ppcr", 0.20, 2);
+    expect(prepPpcr.cutoffX).toBe(0.80);
+    expect(prepPpcr.xAxisLabel).toBe("Prediction Percentile");
+
+    const prepThreshold = preparePredictionDistributionPlotData(spec, "Model A", "probability_threshold", 0.20, 2);
+    expect(prepThreshold.xAxisLabel).toBe("Prediction Score");
   });
 
   it("3. proves adjacent requested PPCR values may have the same cutoff/classification", () => {
