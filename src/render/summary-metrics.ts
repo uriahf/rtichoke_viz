@@ -127,7 +127,7 @@ export function renderSummaryMetrics(
     } else if (item.metric === "event_risk") {
       const population = populations.get(item.owner.populationId)!;
       ownerLabel = population.label;
-      metricLabel = "Event Risk";
+      metricLabel = "Event Probability";
       horizon = item.horizon;
       tr.dataset.metric = "event_risk";
       tr.dataset.populationId = item.owner.populationId;

@@ -196,7 +196,7 @@ describe("SummaryMetrics browser renderer", () => {
       expect(rows[7].style.display).toBe("none"); // event_risk h=2
     });
 
-    it("renders null event_risk estimate as em dash", () => {
+    it("renders null event_risk estimate as em dash and uses neutral 'Event Probability' metric label", () => {
       const s = specV1_1();
       s.metrics.push({
         metric: "event_risk",
@@ -209,9 +209,11 @@ describe("SummaryMetrics browser renderer", () => {
       const rows = [...root.querySelectorAll("tbody tr")];
       const lastRow = rows[rows.length - 1];
       expect(lastRow.getAttribute("data-metric")).toBe("event_risk");
-      expect(
-        lastRow.querySelector(".rtichoke-summary-metrics__metric")?.textContent,
-      ).toBe("Event Risk");
+      const metricText = lastRow.querySelector(
+        ".rtichoke-summary-metrics__metric",
+      )?.textContent;
+      expect(metricText).toBe("Event Probability");
+      expect(metricText).not.toBe("Event Risk");
       const estimateCell = lastRow.querySelector(
         ".rtichoke-summary-metrics__estimate",
       );

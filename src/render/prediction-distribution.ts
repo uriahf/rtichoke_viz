@@ -453,7 +453,7 @@ export function preparePredictionDistributionPlotData(
       }
     }
   } else {
-    // PPCR / Risk Percentile mode
+    // PPCR / Prediction Percentile mode
     const evalRankBins = (spec.rankBins ?? [])
       .filter((b) => b.evaluationId === evalId)
       .sort((a, b) => a.rankLower - b.rankLower);
@@ -540,7 +540,7 @@ export function preparePredictionDistributionPlotData(
   } else {
     // Display boundary on rank axis = 1 - requested PPCR
     cutoffX = 1 - currentValue;
-    xAxisLabel = "Risk Percentile";
+    xAxisLabel = "Prediction Percentile";
 
     let maxRankBinCount = 0;
     const rankBinsByLower = new Map<number, number>();
