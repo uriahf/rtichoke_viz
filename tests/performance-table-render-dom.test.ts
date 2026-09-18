@@ -242,6 +242,80 @@ describe("performance table browser renderer parity", () => {
     }
   });
 
+  describe("Model / Population identity circular badges", () => {
+    it("renders circular badges with stable palette colors mapped by unique identity", () => {
+      const identitySpec: PerformanceTableSpec = {
+        schemaVersion: "2.0",
+        type: "performance_table",
+        evaluations: [
+          { id: "e1", model: "Model A", population: "Pop 1" },
+          { id: "e2", model: "Model B", population: "Pop 1" },
+          { id: "e3", model: "Model C", population: "Pop 1" },
+          { id: "e4", model: "Model D", population: "Pop 1" },
+          { id: "e5", model: "Model E", population: "Pop 1" },
+          { id: "e6", model: "Model A", population: "Pop 1" },
+        ],
+        metrics: [{ id: "sensitivity", label: "Sensitivity" }],
+        rows: [
+          { evaluationId: "e1", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.8 }] },
+          { evaluationId: "e2", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.7 }] },
+          { evaluationId: "e3", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.6 }] },
+          { evaluationId: "e4", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.5 }] },
+          { evaluationId: "e5", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.4 }] },
+          { evaluationId: "e6", operatingPoint: { type: "probability_threshold", value: 0.5 }, values: [{ metricId: "sensitivity", estimate: 0.6 }] },
+        ],
+      };
+
+      const dom = new JSDOM("", { url: "http://localhost/" });
+      const root = renderPerformanceTable(identitySpec, dom.window.document);
+
+      const modelCells = [...root.querySelectorAll(".rtichoke-performance-table__model")];
+      expect(modelCells).toHaveLength(6);
+
+      const badges = modelCells.map((cell) => cell.querySelector(".rtichoke-performance-table__badge") as HTMLElement);
+      expect(badges.every((b) => b !== null)).toBe(true);
+
+      // Decorative badges must have aria-hidden="true"
+      expect(badges[0].getAttribute("aria-hidden")).toBe("true");
+
+      // Model text label remains present alongside badge
+      expect(modelCells[0].textContent).toContain("Model A");
+      expect(modelCells[4].textContent).toContain("Model E");
+
+      // Verify colors according to established rtichoke palette sequence
+      const colorRow0 = badges[0].style.backgroundColor; // Model A (1st identity) -> #1b9e77
+      const colorRow1 = badges[1].style.backgroundColor; // Model B (2nd identity) -> #d95f02
+      const colorRow4 = badges[4].style.backgroundColor; // Model E (5th identity) -> #07004D
+      const colorRow5 = badges[5].style.backgroundColor; // Model A (1st identity repeated) -> #1b9e77
+
+      expect(colorRow0).toBe(colorRow5); // Model A color consistency
+      expect(colorRow0).toBe("rgb(27, 158, 119)");  // #1b9e77 in rgb
+      expect(colorRow1).toBe("rgb(217, 95, 2)");    // #d95f02 in rgb
+      expect(colorRow4).toBe("rgb(7, 0, 77)");      // #07004D in rgb
+
+      // Re-rendering produces identical stable color assignment
+      const root2 = renderPerformanceTable(identitySpec, dom.window.document);
+      const reBadge0 = root2.querySelector(".rtichoke-performance-table__model .rtichoke-performance-table__badge") as HTMLElement;
+      expect(reBadge0.style.backgroundColor).toBe(colorRow0);
+    });
+
+    it("omits identity badges when identity columns are not displayed", () => {
+      const singleModelSpec: PerformanceTableSpec = {
+        schemaVersion: "2.0",
+        type: "performance_table",
+        evaluations: [{ id: "e1", model: "Model A", population: "Pop A" }],
+        metrics: [{ id: "sensitivity", label: "Sensitivity" }],
+        rows: [{ evaluationId: "e1", operatingPoint: { type: "probability_threshold", value: 0.2 }, values: [{ metricId: "sensitivity", estimate: 0.8 }] }],
+      };
+
+      const dom = new JSDOM("", { url: "http://localhost/" });
+      const root = renderPerformanceTable(singleModelSpec, dom.window.document);
+
+      expect(root.querySelector(".rtichoke-performance-table__badge")).toBeNull();
+      expect(root.querySelector(".rtichoke-performance-table__model")).toBeNull();
+    });
+  });
+
   it("rejects referential-integrity failures before rendering", () => {
     const value = spec();
     value.rows[0].evaluationId = "missing-evaluation";
