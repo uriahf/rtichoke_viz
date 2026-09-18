@@ -16,6 +16,11 @@ WORKDIR="${TMP_DIR}/repo"
 cp -R . "${WORKDIR}"
 cd "${WORKDIR}"
 
+# Ensure full commit history in test environment
+if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+  git fetch --unshallow -q || true
+fi
+
 VERSION="$(node -p "require('./package.json').version")"
 BUNDLE="rtichoke-viz-${VERSION}"
 V0222_ARTIFACT_COMMIT="14697da3e3cc0a3fdcf2d9872971b0f948382d80"
