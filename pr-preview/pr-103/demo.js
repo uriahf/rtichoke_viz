@@ -19631,6 +19631,17 @@ function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
     tip: true
   });
 }
+var DEFAULT_HISTOGRAM_HEIGHT = RTICHOKE_BROWSER_THEME.height - Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
+function equalScalePlotHeight(width, margins, xDomain = [0, 1], yDomain = [0, 1], marginBottom) {
+  const innerWidth = width - margins.left - margins.right;
+  const xSpan = Math.abs(xDomain[1] - xDomain[0]);
+  const ySpan = Math.abs(yDomain[1] - yDomain[0]);
+  const safeXSpan = Number.isFinite(xSpan) && xSpan > 0 ? xSpan : 1;
+  const safeYSpan = Number.isFinite(ySpan) && ySpan > 0 ? ySpan : 1;
+  const innerHeight = innerWidth * (safeYSpan / safeXSpan);
+  const bottom2 = marginBottom ?? margins.bottom;
+  return Math.round(margins.top + innerHeight + bottom2);
+}
 function themedPlot(options, theme) {
   const plot2 = plot(options);
   for (const label of plot2.querySelectorAll(
@@ -19710,11 +19721,20 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       );
     }
   }
+  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const yDomain = spec.yAxis.domain ?? [0, 1];
+  const height = equalScalePlotHeight(
+    theme.width,
+    theme.margins,
+    xDomain,
+    yDomain
+  );
   return themedPlot(
     {
       ...basePlotOptions(resolved, spec),
-      x: axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
-      y: axisOptions2(theme, spec.yAxis.label, spec.yAxis.domain),
+      height,
+      x: axisOptions2(theme, spec.xAxis.label, xDomain),
+      y: axisOptions2(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks2, theme)
     },
     theme
@@ -19780,22 +19800,30 @@ function renderCalibrationV2(spec, options = {}) {
       })
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
-  const mainHeight = hasDistribution ? Math.round(theme.height * 0.8) : theme.height;
   const observedValues = data.map((datum2) => datum2.observed).filter(Number.isFinite);
   const yDomain = spec.yAxis.domain ?? [
     Math.min(0, ...observedValues),
     Math.max(1, ...observedValues)
   ];
+  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
+  const mainHeight = equalScalePlotHeight(
+    theme.width,
+    theme.margins,
+    xDomain,
+    yDomain,
+    mainMarginBottom
+  );
   const calibration = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       height: mainHeight,
-      marginBottom: hasDistribution ? 8 : theme.margins.bottom,
+      marginBottom: mainMarginBottom,
       x: hasDistribution ? {
-        ...axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+        ...axisOptions2(theme, spec.xAxis.label, xDomain),
         axis: null,
         label: null
-      } : axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+      } : axisOptions2(theme, spec.xAxis.label, xDomain),
       y: axisOptions2(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks2, theme)
     },
@@ -19815,10 +19843,10 @@ function renderCalibrationV2(spec, options = {}) {
   const histogram = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
-      height: theme.height - mainHeight,
+      height: DEFAULT_HISTOGRAM_HEIGHT,
       marginTop: 0,
       marginBottom: theme.margins.bottom,
-      x: axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+      x: axisOptions2(theme, spec.xAxis.label, xDomain),
       y: {
         label: null,
         grid: false,
@@ -20171,6 +20199,16 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
 
 // src/render/performance-table.ts
 var MISSING = "\u2014";
+var RTICHOKE_PALETTE = [
+  "#1b9e77",
+  "#d95f02",
+  "#7570b3",
+  "#e7298a",
+  "#66a61e",
+  "#e6ab02",
+  "#a6761d",
+  "#666666"
+];
 var PRIMARY_METRIC_ORDER = [
   { id: "sensitivity", defaultLabel: "Sensitivity" },
   { id: "specificity", defaultLabel: "Specificity" },
@@ -20179,11 +20217,19 @@ var PRIMARY_METRIC_ORDER = [
   { id: "lift", defaultLabel: "Lift" },
   { id: "net_benefit", defaultLabel: "Net Benefit" }
 ];
-function cell(document2, text2, className) {
+function cell(document2, text2, className, badgeColor) {
   const element = document2.createElement("td");
   const contentSpan = document2.createElement("span");
   contentSpan.className = "rtichoke-performance-table__cell-text";
-  contentSpan.textContent = text2;
+  if (badgeColor) {
+    const badge = document2.createElement("span");
+    badge.className = "rtichoke-performance-table__badge";
+    badge.setAttribute("aria-hidden", "true");
+    badge.style.backgroundColor = badgeColor;
+    contentSpan.append(badge);
+  }
+  const textNode = document2.createTextNode(text2);
+  contentSpan.append(textNode);
   element.append(contentSpan);
   if (className) element.className = className;
   return element;
@@ -20309,6 +20355,22 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
   const showPopulation = distinctPopulations.size > 1;
   const renderModelCol = showModel;
   const renderPopulationCol = showPopulation || !showModel && distinctModels.size === 0 && distinctPopulations.size > 1;
+  const modelColorMap = /* @__PURE__ */ new Map();
+  let modelColorIdx = 0;
+  for (const ev of spec.evaluations) {
+    if (ev.model && !modelColorMap.has(ev.model)) {
+      modelColorMap.set(ev.model, RTICHOKE_PALETTE[modelColorIdx % RTICHOKE_PALETTE.length]);
+      modelColorIdx++;
+    }
+  }
+  const popColorMap = /* @__PURE__ */ new Map();
+  let popColorIdx = 0;
+  for (const ev of spec.evaluations) {
+    if (ev.population && !popColorMap.has(ev.population)) {
+      popColorMap.set(ev.population, RTICHOKE_PALETTE[popColorIdx % RTICHOKE_PALETTE.length]);
+      popColorIdx++;
+    }
+  }
   const showEvaluationLabel = spec.evaluations.some((e) => {
     if (!e.label) return false;
     if (showModel && e.label !== e.model) return true;
@@ -20530,10 +20592,14 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
     }
     tr.append(toggleTd);
     if (renderModelCol) {
-      tr.append(cell(document2, evaluation?.model ?? MISSING, "rtichoke-performance-table__model"));
+      const modelVal = evaluation?.model ?? MISSING;
+      const badgeColor = evaluation?.model ? modelColorMap.get(evaluation.model) : void 0;
+      tr.append(cell(document2, modelVal, "rtichoke-performance-table__model", badgeColor));
     }
     if (renderPopulationCol) {
-      tr.append(cell(document2, evaluation?.population ?? MISSING, "rtichoke-performance-table__population"));
+      const popVal = evaluation?.population ?? MISSING;
+      const badgeColor = evaluation?.population ? popColorMap.get(evaluation.population) : void 0;
+      tr.append(cell(document2, popVal, "rtichoke-performance-table__population", badgeColor));
     }
     if (showEvaluationLabel) {
       tr.append(cell(document2, evaluation?.label ?? evaluation?.id ?? MISSING, "rtichoke-performance-table__evaluation"));
