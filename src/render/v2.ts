@@ -744,8 +744,8 @@ function equalScalePlotHeight(
   marginBottom?: number,
 ): number {
   const innerWidth = width - margins.left - margins.right;
-  const xSpan = xDomain[1] - xDomain[0];
-  const ySpan = yDomain[1] - yDomain[0];
+  const xSpan = Math.abs(xDomain[1] - xDomain[0]);
+  const ySpan = Math.abs(yDomain[1] - yDomain[0]);
   const safeXSpan = Number.isFinite(xSpan) && xSpan > 0 ? xSpan : 1;
   const safeYSpan = Number.isFinite(ySpan) && ySpan > 0 ? ySpan : 1;
   const innerHeight = innerWidth * (safeYSpan / safeXSpan);
@@ -850,8 +850,8 @@ function renderRocChart(
     {
       ...basePlotOptions(resolved, spec),
       height,
-      x: axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
-      y: axisOptions(theme, spec.yAxis.label, spec.yAxis.domain),
+      x: axisOptions(theme, spec.xAxis.label, xDomain),
+      y: axisOptions(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks, theme),
     },
     theme,
@@ -949,11 +949,11 @@ export function renderCalibrationV2(
       marginBottom: mainMarginBottom,
       x: hasDistribution
         ? {
-            ...axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
+            ...axisOptions(theme, spec.xAxis.label, xDomain),
             axis: null,
             label: null,
           }
-        : axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
+        : axisOptions(theme, spec.xAxis.label, xDomain),
       y: axisOptions(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks, theme),
     },
@@ -976,7 +976,7 @@ export function renderCalibrationV2(
       height: DEFAULT_HISTOGRAM_HEIGHT,
       marginTop: 0,
       marginBottom: theme.margins.bottom,
-      x: axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
+      x: axisOptions(theme, spec.xAxis.label, xDomain),
       y: {
         label: null,
         grid: false,

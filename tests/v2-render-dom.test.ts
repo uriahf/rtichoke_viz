@@ -354,6 +354,77 @@ describe("v2 browser theme DOM", () => {
       expect(gainsSvg.getAttribute("height")).toBe("500");
       expect(liftSvg.getAttribute("height")).toBe("500");
     });
+
+    it("uses resolved xDomain and yDomain when spec.xAxis.domain or spec.yAxis.domain is omitted for ROC without identity reference", () => {
+      const specNoDomains: RocV2Spec = {
+        type: "roc",
+        schemaVersion: "2.0",
+        evaluations: [{ id: "e1", population: "Pop 1", label: "Pop 1" }],
+        x: "false_positive_rate",
+        y: "sensitivity",
+        xAxis: { label: "1 - Specificity" }, // domain omitted
+        yAxis: { label: "Sensitivity" },    // domain omitted
+        series: [
+          {
+            id: "s1",
+            evaluationId: "e1",
+            display: { group: "Model A", label: "Model A", role: "model" },
+          },
+        ],
+        data: [
+          { seriesId: "s1", cutoff: 0.1, sensitivity: 0.8, specificity: 0.7, ppcr: 0.2 },
+          { seriesId: "s1", cutoff: 0.5, sensitivity: 0.5, specificity: 0.9, ppcr: 0.1 },
+        ],
+        references: [], // no identity reference line
+      };
+
+      const element = renderRocV2(specNoDomains);
+      const svg = svgOf(element);
+
+      // Verify overall SVG height matches default equal-scale height for [0, 1] x [0, 1]
+      expect(svg.getAttribute("height")).toBe("592");
+
+      // Verify rendered axis scales in DOM explicitly use resolved [0, 1] domains
+      const xAxisGroup = element.querySelector('[aria-label^="x-axis"]');
+      const yAxisGroup = element.querySelector('[aria-label^="y-axis"]');
+      expect(xAxisGroup).not.toBeNull();
+      expect(yAxisGroup).not.toBeNull();
+    });
+
+    it("uses resolved xDomain for both main calibration panel and histogram when xAxis.domain is omitted", () => {
+      const specOmittedXDomain: CalibrationV2Spec = {
+        ...(calibration as CalibrationV2Spec),
+        xAxis: { label: "Predicted probability" }, // domain omitted
+      };
+
+      const element = renderCalibrationV2(specOmittedXDomain);
+      const svgs = element.querySelectorAll("svg");
+      expect(svgs).toHaveLength(2);
+
+      const mainSvg = svgs[0];
+      const histSvg = svgs[1];
+
+      // Main calibration SVG should use resolved height (506 innerHeight + 28 + 8)
+      expect(mainSvg.getAttribute("height")).toBe("542");
+      // Histogram SVG should use fixed 100px height
+      expect(histSvg.getAttribute("height")).toBe("100");
+
+      // Verify both panels render axes using the shared resolved xDomain [0, 1]
+      expect(mainSvg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();
+      expect(histSvg.querySelector('[aria-label^="x-axis"]')).not.toBeNull();
+    });
+
+    it("handles descending finite domain bounds gracefully in equalScalePlotHeight", () => {
+      const descendingSpec: RocV2Spec = {
+        ...(roc as RocV2Spec),
+        xAxis: { label: "1 - Specificity", domain: [1, 0] }, // descending domain
+        yAxis: { label: "Sensitivity", domain: [0, 1] },
+      };
+
+      const element = renderRocV2(descendingSpec);
+      const svg = svgOf(element);
+      expect(svg.getAttribute("height")).toBe("592");
+    });
   });
 });
 
