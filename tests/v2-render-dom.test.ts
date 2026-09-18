@@ -191,5 +191,169 @@ describe("v2 browser theme DOM", () => {
     const updatedLines = updatedSvg.querySelectorAll('[aria-label="line"]');
     expect(updatedLines).toHaveLength(2);
   });
+
+  describe("equal-scale geometry for ROC and Calibration", () => {
+    it("enforces innerWidth == innerHeight for default ROC v2", () => {
+      const element = renderRocV2(roc as RocV2Spec);
+      const svg = svgOf(element);
+      const svgWidth = Number(svg.getAttribute("width"));
+      const svgHeight = Number(svg.getAttribute("height"));
+      const marginLeft = 66;
+      const marginRight = 28;
+      const marginTop = 28;
+      const marginBottom = 58;
+
+      const innerWidth = svgWidth - marginLeft - marginRight;
+      const innerHeight = svgHeight - marginTop - marginBottom;
+
+      expect(innerWidth).toBe(506);
+      expect(innerHeight).toBe(506);
+      expect(svgHeight).toBe(592);
+    });
+
+    it("enforces equal pixel scale with custom width, margins, and overridden caller height for ROC", () => {
+      const element = renderRocV2(roc as RocV2Spec, {
+        width: 720,
+        height: 300, // caller-provided height must be overridden by equal-scale geometry
+        theme: {
+          margins: { top: 30, right: 20, bottom: 50, left: 80 },
+        },
+      });
+      const svg = svgOf(element);
+      const svgWidth = Number(svg.getAttribute("width"));
+      const svgHeight = Number(svg.getAttribute("height"));
+      expect(svgWidth).toBe(720);
+
+      const marginLeft = 80;
+      const marginRight = 20;
+      const marginTop = 30;
+      const marginBottom = 50;
+
+      const innerWidth = svgWidth - marginLeft - marginRight; // 720 - 80 - 20 = 620
+      const innerHeight = svgHeight - marginTop - marginBottom; // svgHeight - 30 - 50
+
+      expect(innerWidth).toBe(620);
+      expect(innerHeight).toBe(620);
+      expect(svgHeight).toBe(700);
+    });
+
+    it("enforces equal scale for calibration without distribution histogram", () => {
+      const noDistSpec: CalibrationV2Spec = {
+        ...(calibration as CalibrationV2Spec),
+        distribution: [],
+      };
+      const element = renderCalibrationV2(noDistSpec);
+      const svg = svgOf(element);
+      const svgWidth = Number(svg.getAttribute("width"));
+      const svgHeight = Number(svg.getAttribute("height"));
+
+      const marginLeft = 66;
+      const marginRight = 28;
+      const marginTop = 28;
+      const marginBottom = 58;
+
+      const innerWidth = svgWidth - marginLeft - marginRight; // 506
+      const innerHeight = svgHeight - marginTop - marginBottom;
+
+      expect(innerWidth).toBe(506);
+      expect(innerHeight).toBe(506);
+      expect(svgHeight).toBe(592);
+    });
+
+    it("enforces equal scale for calibration main SVG with histogram auxiliary panel", () => {
+      const element = renderCalibrationV2(calibration as CalibrationV2Spec);
+      const svgs = element.querySelectorAll("svg");
+      expect(svgs).toHaveLength(2);
+
+      const mainSvg = svgs[0];
+      const histSvg = svgs[1];
+
+      const svgWidth = Number(mainSvg.getAttribute("width"));
+      const mainSvgHeight = Number(mainSvg.getAttribute("height"));
+      const histSvgHeight = Number(histSvg.getAttribute("height"));
+
+      const marginLeft = 66;
+      const marginRight = 28;
+      const marginTop = 28;
+      const mainMarginBottom = 8; // histogram presents gap
+
+      const innerWidth = svgWidth - marginLeft - marginRight; // 506
+      const mainInnerHeight = mainSvgHeight - marginTop - mainMarginBottom;
+
+      expect(innerWidth).toBe(506);
+      expect(mainInnerHeight).toBe(506);
+      expect(mainSvgHeight).toBe(542); // 28 + 506 + 8
+      expect(histSvgHeight).toBe(100); // fixed auxiliary height
+    });
+
+    it("calculates inner height proportional to y/x domain span ratio for smooth calibration overshoot", () => {
+      const smoothSpec: CalibrationV2Spec = {
+        type: "calibration",
+        schemaVersion: "2.0",
+        evaluations: [{ id: "e1", population: "Pop 1", label: "Pop 1" }],
+        x: "predicted",
+        y: "observed",
+        xAxis: { label: "Predicted Event Probability", domain: [0, 1] },
+        yAxis: { label: "Observed Event Proportion" },
+        series: [
+          {
+            id: "s1",
+            evaluationId: "e1",
+            display: { group: "Model A", label: "Model A", role: "model" },
+          },
+        ],
+        data: [
+          {
+            seriesId: "s1",
+            predicted: 0.0,
+            observed: -0.01, // overshoot
+            method: "smooth",
+          },
+          {
+            seriesId: "s1",
+            predicted: 0.5,
+            observed: 0.5,
+            method: "smooth",
+          },
+          {
+            seriesId: "s1",
+            predicted: 1.0,
+            observed: 1.02, // overshoot
+            method: "smooth",
+          },
+        ],
+      };
+
+      const element = renderCalibrationV2(smoothSpec);
+      const svg = svgOf(element);
+      const svgWidth = Number(svg.getAttribute("width"));
+      const svgHeight = Number(svg.getAttribute("height"));
+
+      const marginLeft = 66;
+      const marginRight = 28;
+      const marginTop = 28;
+      const marginBottom = 58;
+
+      const innerWidth = svgWidth - marginLeft - marginRight; // 506
+      const xSpan = 1.0 - 0.0; // 1.0
+      const ySpan = 1.02 - -0.01; // 1.03
+      const expectedInnerHeight = Math.round(innerWidth * (ySpan / xSpan)); // Math.round(506 * 1.03) = 521
+
+      const innerHeight = svgHeight - marginTop - marginBottom;
+      expect(innerWidth).toBe(506);
+      expect(innerHeight).toBe(expectedInnerHeight);
+      expect(svgHeight).toBe(28 + expectedInnerHeight + 58);
+    });
+
+    it("ensures non-equal-scale charts retain default theme height", () => {
+      const prSvg = svgOf(renderPrecisionRecallV2(precisionRecall as PrecisionRecallV2Spec));
+      const gainsSvg = svgOf(renderGainsV2(gains as GainsV2Spec));
+      const liftSvg = svgOf(renderLiftV2(singleLift as LiftV2Spec));
+
+      expect(prSvg.getAttribute("height")).toBe("500");
+      expect(gainsSvg.getAttribute("height")).toBe("500");
+      expect(liftSvg.getAttribute("height")).toBe("500");
+    });
+  });
 });
 

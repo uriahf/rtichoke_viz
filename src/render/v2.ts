@@ -732,6 +732,27 @@ export function operatingPointDotMark(
   });
 }
 
+const DEFAULT_HISTOGRAM_HEIGHT =
+  RTICHOKE_BROWSER_THEME.height -
+  Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
+
+function equalScalePlotHeight(
+  width: number,
+  margins: { top: number; right: number; bottom: number; left: number },
+  xDomain: [number, number] = [0, 1],
+  yDomain: [number, number] = [0, 1],
+  marginBottom?: number,
+): number {
+  const innerWidth = width - margins.left - margins.right;
+  const xSpan = xDomain[1] - xDomain[0];
+  const ySpan = yDomain[1] - yDomain[0];
+  const safeXSpan = Number.isFinite(xSpan) && xSpan > 0 ? xSpan : 1;
+  const safeYSpan = Number.isFinite(ySpan) && ySpan > 0 ? ySpan : 1;
+  const innerHeight = innerWidth * (safeYSpan / safeXSpan);
+  const bottom = marginBottom ?? margins.bottom;
+  return Math.round(margins.top + innerHeight + bottom);
+}
+
 export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   const plot = Plot.plot(options);
   for (const label of plot.querySelectorAll<SVGTextElement>(
@@ -816,9 +837,19 @@ function renderRocChart(
       );
     }
   }
+  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const yDomain = spec.yAxis.domain ?? [0, 1];
+  const height = equalScalePlotHeight(
+    theme.width,
+    theme.margins,
+    xDomain,
+    yDomain,
+  );
+
   return themedPlot(
     {
       ...basePlotOptions(resolved, spec),
+      height,
       x: axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
       y: axisOptions(theme, spec.yAxis.label, spec.yAxis.domain),
       marks: finishMarks(marks, theme),
@@ -896,19 +927,26 @@ export function renderCalibrationV2(
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
-  const mainHeight = hasDistribution
-    ? Math.round(theme.height * 0.8)
-    : theme.height;
   const observedValues = data.map((datum) => datum.observed).filter(Number.isFinite);
   const yDomain = spec.yAxis.domain ?? [
     Math.min(0, ...observedValues),
     Math.max(1, ...observedValues),
   ];
+  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
+  const mainHeight = equalScalePlotHeight(
+    theme.width,
+    theme.margins,
+    xDomain,
+    yDomain,
+    mainMarginBottom,
+  );
+
   const calibration = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       height: mainHeight,
-      marginBottom: hasDistribution ? 8 : theme.margins.bottom,
+      marginBottom: mainMarginBottom,
       x: hasDistribution
         ? {
             ...axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
@@ -935,7 +973,7 @@ export function renderCalibrationV2(
   const histogram = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
-      height: theme.height - mainHeight,
+      height: DEFAULT_HISTOGRAM_HEIGHT,
       marginTop: 0,
       marginBottom: theme.margins.bottom,
       x: axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
