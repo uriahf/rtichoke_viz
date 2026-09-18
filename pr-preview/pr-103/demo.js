@@ -20171,16 +20171,6 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
 
 // src/render/performance-table.ts
 var MISSING = "\u2014";
-var RTICHOKE_PALETTE = [
-  "#1b9e77",
-  "#d95f02",
-  "#7570b3",
-  "#e7298a",
-  "#66a61e",
-  "#e6ab02",
-  "#a6761d",
-  "#666666"
-];
 var PRIMARY_METRIC_ORDER = [
   { id: "sensitivity", defaultLabel: "Sensitivity" },
   { id: "specificity", defaultLabel: "Specificity" },
@@ -20189,19 +20179,11 @@ var PRIMARY_METRIC_ORDER = [
   { id: "lift", defaultLabel: "Lift" },
   { id: "net_benefit", defaultLabel: "Net Benefit" }
 ];
-function cell(document2, text2, className, badgeColor) {
+function cell(document2, text2, className) {
   const element = document2.createElement("td");
   const contentSpan = document2.createElement("span");
   contentSpan.className = "rtichoke-performance-table__cell-text";
-  if (badgeColor) {
-    const badge = document2.createElement("span");
-    badge.className = "rtichoke-performance-table__badge";
-    badge.setAttribute("aria-hidden", "true");
-    badge.style.backgroundColor = badgeColor;
-    contentSpan.append(badge);
-  }
-  const textNode = document2.createTextNode(text2);
-  contentSpan.append(textNode);
+  contentSpan.textContent = text2;
   element.append(contentSpan);
   if (className) element.className = className;
   return element;
@@ -20327,22 +20309,6 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
   const showPopulation = distinctPopulations.size > 1;
   const renderModelCol = showModel;
   const renderPopulationCol = showPopulation || !showModel && distinctModels.size === 0 && distinctPopulations.size > 1;
-  const modelColorMap = /* @__PURE__ */ new Map();
-  let modelColorIdx = 0;
-  for (const ev of spec.evaluations) {
-    if (ev.model && !modelColorMap.has(ev.model)) {
-      modelColorMap.set(ev.model, RTICHOKE_PALETTE[modelColorIdx % RTICHOKE_PALETTE.length]);
-      modelColorIdx++;
-    }
-  }
-  const popColorMap = /* @__PURE__ */ new Map();
-  let popColorIdx = 0;
-  for (const ev of spec.evaluations) {
-    if (ev.population && !popColorMap.has(ev.population)) {
-      popColorMap.set(ev.population, RTICHOKE_PALETTE[popColorIdx % RTICHOKE_PALETTE.length]);
-      popColorIdx++;
-    }
-  }
   const showEvaluationLabel = spec.evaluations.some((e) => {
     if (!e.label) return false;
     if (showModel && e.label !== e.model) return true;
@@ -20564,14 +20530,10 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
     }
     tr.append(toggleTd);
     if (renderModelCol) {
-      const modelVal = evaluation?.model ?? MISSING;
-      const badgeColor = evaluation?.model ? modelColorMap.get(evaluation.model) : void 0;
-      tr.append(cell(document2, modelVal, "rtichoke-performance-table__model", badgeColor));
+      tr.append(cell(document2, evaluation?.model ?? MISSING, "rtichoke-performance-table__model"));
     }
     if (renderPopulationCol) {
-      const popVal = evaluation?.population ?? MISSING;
-      const badgeColor = evaluation?.population ? popColorMap.get(evaluation.population) : void 0;
-      tr.append(cell(document2, popVal, "rtichoke-performance-table__population", badgeColor));
+      tr.append(cell(document2, evaluation?.population ?? MISSING, "rtichoke-performance-table__population"));
     }
     if (showEvaluationLabel) {
       tr.append(cell(document2, evaluation?.label ?? evaluation?.id ?? MISSING, "rtichoke-performance-table__evaluation"));
