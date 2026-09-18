@@ -20204,10 +20204,12 @@ var RTICHOKE_PALETTE = [
   "#d95f02",
   "#7570b3",
   "#e7298a",
-  "#66a61e",
-  "#e6ab02",
-  "#a6761d",
-  "#666666"
+  "#07004D",
+  "#E6AB02",
+  "#FE5F55",
+  "#54494B",
+  "#006E90",
+  "#BC96E6"
 ];
 var PRIMARY_METRIC_ORDER = [
   { id: "sensitivity", defaultLabel: "Sensitivity" },
