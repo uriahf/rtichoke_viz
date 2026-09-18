@@ -46,6 +46,9 @@ jobs:
           grep -q '"release/${BUNDLE}.tar.gz"' .github/workflows/release.yml
           grep -q '"release/${BUNDLE}.tar.gz.sha256"' .github/workflows/release.yml
 
+      - name: Run release verification regression suite
+        run: bash scripts/test-release-verification.sh
+
       - run: npm run build:demo
       - uses: actions/setup-python@v5
         with:

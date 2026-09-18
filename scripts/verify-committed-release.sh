@@ -66,10 +66,18 @@ if ! diff -r "${tmp}/${BUNDLE}" "${OUTPUT_DIR}/${BUNDLE}"; then
 fi
 
 # Built output ↔ committed release directory payload parity check
-cmp dist/rtichoke-viz.js "${OUTPUT_DIR}/${BUNDLE}/rtichoke-viz.js"
-cmp dist/rtichoke-viz.css "${OUTPUT_DIR}/${BUNDLE}/rtichoke-viz.css"
-cmp schemas/rtichoke-viz.schema.json "${OUTPUT_DIR}/${BUNDLE}/rtichoke-viz.schema.json"
-cmp schemas/rtichoke-viz-v2.schema.json "${OUTPUT_DIR}/${BUNDLE}/rtichoke-viz-v2.schema.json"
-cmp schemas/rtichoke-viz-report.schema.json "${OUTPUT_DIR}/${BUNDLE}/rtichoke-viz-report.schema.json"
+for file in rtichoke-viz.js rtichoke-viz.css; do
+  if ! cmp -s "dist/${file}" "${OUTPUT_DIR}/${BUNDLE}/${file}"; then
+    echo "Error: Built artifact dist/${file} does not match committed release file ${OUTPUT_DIR}/${BUNDLE}/${file}" >&2
+    exit 1
+  fi
+done
+
+for schema in rtichoke-viz.schema.json rtichoke-viz-v2.schema.json rtichoke-viz-report.schema.json; do
+  if ! cmp -s "schemas/${schema}" "${OUTPUT_DIR}/${BUNDLE}/${schema}"; then
+    echo "Error: Generated schema schemas/${schema} does not match committed release file ${OUTPUT_DIR}/${BUNDLE}/${schema}" >&2
+    exit 1
+  fi
+done
 
 echo "Committed release verification successful for ${BUNDLE} (source commit: ${SOURCE_COMMIT})."

@@ -18,21 +18,24 @@ cd "${WORKDIR}"
 
 VERSION="$(node -p "require('./package.json').version")"
 BUNDLE="rtichoke-viz-${VERSION}"
+V0222_ARTIFACT_COMMIT="14697da3e3cc0a3fdcf2d9872971b0f948382d80"
+VERIFY_SCRIPT="${TMP_DIR}/verify-committed-release.sh"
+cp scripts/verify-committed-release.sh "${VERIFY_SCRIPT}"
 
 # Ensure dist and schemas are built in workdir
 npm run build >/dev/null 2>&1
 npm run schema >/dev/null 2>&1
 
-echo "[1/7] Positive test: Valid committed release artifact..."
-if ! bash scripts/verify-committed-release.sh release >/dev/null 2>&1; then
-  echo "FAIL: Valid committed release verification failed unexpectedly!" >&2
+echo "[1/7] Positive test: Valid committed v0.22.2 release artifact..."
+if ! TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release >/dev/null 2>&1; then
+  echo "FAIL: Valid committed release verification failed unexpectedly for v0.22.2!" >&2
   exit 1
 fi
 echo "  PASS: Valid committed release verified successfully."
 
 echo "[2/7] Negative test 1: Bad archive checksum mismatch..."
 echo "corrupted" >> "release/${BUNDLE}.tar.gz"
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+if ERR="$(TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on checksum mismatch, but succeeded!" >&2
   exit 1
 else
@@ -40,14 +43,14 @@ else
     echo "FAIL: Failed for wrong reason: ${ERR}" >&2
     exit 1
   fi
-  echo "  PASS: Caught bad archive checksum: ${ERR}"
+  echo "  PASS: Caught bad archive checksum."
 fi
 # Restore archive
 git checkout -- "release/${BUNDLE}.tar.gz"
 
 echo "[3/7] Negative test 2: MANIFEST version mismatch..."
 sed -i 's/version=.*/version=0.99.99/' "release/${BUNDLE}/MANIFEST"
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+if ERR="$(TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on MANIFEST version mismatch, but succeeded!" >&2
   exit 1
 else
@@ -55,14 +58,14 @@ else
     echo "FAIL: Failed for wrong reason: ${ERR}" >&2
     exit 1
   fi
-  echo "  PASS: Caught MANIFEST version mismatch: ${ERR}"
+  echo "  PASS: Caught MANIFEST version mismatch."
 fi
 # Restore MANIFEST
 git checkout -- "release/${BUNDLE}/MANIFEST"
 
 echo "[4/7] Negative test 3: Invalid MANIFEST source commit..."
 sed -i 's/commit=.*/commit=deadbeefdeadbeefdeadbeefdeadbeefdeadbeef/' "release/${BUNDLE}/MANIFEST"
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+if ERR="$(TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on invalid source commit, but succeeded!" >&2
   exit 1
 else
@@ -70,15 +73,14 @@ else
     echo "FAIL: Failed for wrong reason: ${ERR}" >&2
     exit 1
   fi
-  echo "  PASS: Caught invalid source commit: ${ERR}"
+  echo "  PASS: Caught invalid source commit."
 fi
 # Restore MANIFEST
 git checkout -- "release/${BUNDLE}/MANIFEST"
 
 echo "[5/7] Negative test 4: Archive payload differs from committed release directory..."
-# Add an extra file to the committed directory without putting it in the tar.gz
 touch "release/${BUNDLE}/extra-file.txt"
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+if ERR="$(TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on archive payload mismatch, but succeeded!" >&2
   exit 1
 else
@@ -86,29 +88,37 @@ else
     echo "FAIL: Failed for wrong reason: ${ERR}" >&2
     exit 1
   fi
-  echo "  PASS: Caught archive payload mismatch: ${ERR}"
+  echo "  PASS: Caught archive payload mismatch."
 fi
 # Remove extra file
 rm "release/${BUNDLE}/extra-file.txt"
 
 echo "[6/7] Negative test 5: Built JS/schema payload differs from committed payload..."
 echo "// drift" >> dist/rtichoke-viz.js
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+if ERR="$(TARGET_COMMIT="${V0222_ARTIFACT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on built output payload mismatch, but succeeded!" >&2
   exit 1
 else
+  if ! echo "${ERR}" | grep -q "Built artifact dist/rtichoke-viz.js does not match committed release file"; then
+    echo "FAIL: Failed for wrong reason: ${ERR}" >&2
+    exit 1
+  fi
   echo "  PASS: Caught built payload mismatch."
 fi
 # Restore dist
 npm run build >/dev/null 2>&1
 
 echo "[7/7] Negative test 6: Source drift outside release/ between SOURCE_COMMIT and TARGET_COMMIT..."
-# Create a dummy commit in test repo that modifies a source file outside release/
+# Create an isolated target commit derived from the valid v0.22.2 artifact state (14697da)
+git reset --hard -q
+git checkout -q "${V0222_ARTIFACT_COMMIT}"
 echo "// drift" >> src/index.ts
 git config user.name "Test"
 git config user.email "test@example.com"
-git commit -am "unrelated source change" >/dev/null 2>&1
-if ERR="$(bash scripts/verify-committed-release.sh release 2>&1)"; then
+git commit -am "isolated non-release source change" >/dev/null 2>&1
+ISOLATED_DRIFT_COMMIT="$(git rev-parse HEAD)"
+
+if ERR="$(TARGET_COMMIT="${ISOLATED_DRIFT_COMMIT}" bash "${VERIFY_SCRIPT}" release 2>&1)"; then
   echo "FAIL: Expected failure on source drift outside release/, but succeeded!" >&2
   exit 1
 else
@@ -116,7 +126,7 @@ else
     echo "FAIL: Failed for wrong reason: ${ERR}" >&2
     exit 1
   fi
-  echo "  PASS: Caught source drift outside release/: ${ERR}"
+  echo "  PASS: Caught isolated source drift outside release/."
 fi
 
 echo "=================================================="
