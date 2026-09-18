@@ -52,14 +52,13 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
       ["Net Benefit", datum.netBenefit],
     ]),
   }));
-  const defaultZeroStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
-  const defaultPathStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: "4,3" };
+  const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
     if (reference.benchmark === "treat_none") {
-      marks.push(Plot.ruleY([0], { ...defaultZeroStyle, title: () => reference.label ?? "Treat None" }));
+      marks.push(Plot.ruleY([0], { ...defaultReferenceStyle, title: () => reference.label ?? "Treat None" }));
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultPathStyle, title: () => reference.label ?? `Treat All — ${reference.population}` }));
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, title: () => reference.label ?? `Treat All — ${reference.population}` }));
     }
   }
   marks.push(

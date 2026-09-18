@@ -60,7 +60,7 @@ describe("Interventions Avoided v2 browser rendering", () => {
     expect(svg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();
   });
 
-  it("renders model geometry plus Treat All and Treat None with role-specific subordinate reference styling", () => {
+  it("renders Treat All and Treat None references using unified theme reference dash style", () => {
     const svg = renderInterventionsAvoidedV2(single as InterventionsAvoidedV2Spec);
     const ruleMark = svg.querySelector('[aria-label="rule"]');
     expect(ruleMark).not.toBeNull();
@@ -68,11 +68,41 @@ describe("Interventions Avoided v2 browser rendering", () => {
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
     expect(lineMarks.length).toBeGreaterThanOrEqual(2);
-    const treatNoneLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "4,3");
+    const treatNoneLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat None"));
     expect(treatNoneLine).not.toBeNull();
+    expect(treatNoneLine?.getAttribute("stroke-dasharray")).toBe("2,3");
+
+    // Verify neither benchmark line uses hard-coded "4,3"
+    const fourThreeLines = [...svg.querySelectorAll("line, path")].filter(
+      (el) => el.getAttribute("stroke-dasharray") === "4,3",
+    );
+    expect(fourThreeLines).toHaveLength(0);
 
     expect(svg.textContent).toContain("Probability Threshold");
     expect(svg.textContent).toContain("Interventions Avoided (per 100)");
+  });
+
+  it("applies custom theme.reference.dash consistently to both zero-rule and path benchmarks", () => {
+    const svg = renderInterventionsAvoidedV2(single as InterventionsAvoidedV2Spec, {
+      theme: {
+        reference: {
+          dash: "6,2",
+        },
+      },
+    });
+    const ruleMark = svg.querySelector('[aria-label="rule"]');
+    expect(ruleMark).not.toBeNull();
+    expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("6,2");
+
+    const lineMarks = svg.querySelectorAll('[aria-label="line"]');
+    const treatNoneLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat None"));
+    expect(treatNoneLine).not.toBeNull();
+    expect(treatNoneLine?.getAttribute("stroke-dasharray")).toBe("6,2");
+
+    // Verify model line remains governed by theme.line (default solid / null dash), not theme.reference
+    const modelLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Series"));
+    expect(modelLine).not.toBeNull();
+    expect(modelLine?.getAttribute("stroke-dasharray")).toBeFalsy();
   });
 
   it("renders two model series while sharing one Treat None reference", () => {
