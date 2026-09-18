@@ -19634,8 +19634,8 @@ function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
 var DEFAULT_HISTOGRAM_HEIGHT = RTICHOKE_BROWSER_THEME.height - Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
 function equalScalePlotHeight(width, margins, xDomain = [0, 1], yDomain = [0, 1], marginBottom) {
   const innerWidth = width - margins.left - margins.right;
-  const xSpan = xDomain[1] - xDomain[0];
-  const ySpan = yDomain[1] - yDomain[0];
+  const xSpan = Math.abs(xDomain[1] - xDomain[0]);
+  const ySpan = Math.abs(yDomain[1] - yDomain[0]);
   const safeXSpan = Number.isFinite(xSpan) && xSpan > 0 ? xSpan : 1;
   const safeYSpan = Number.isFinite(ySpan) && ySpan > 0 ? ySpan : 1;
   const innerHeight = innerWidth * (safeYSpan / safeXSpan);
@@ -19733,8 +19733,8 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
     {
       ...basePlotOptions(resolved, spec),
       height,
-      x: axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
-      y: axisOptions2(theme, spec.yAxis.label, spec.yAxis.domain),
+      x: axisOptions2(theme, spec.xAxis.label, xDomain),
+      y: axisOptions2(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks2, theme)
     },
     theme
@@ -19820,10 +19820,10 @@ function renderCalibrationV2(spec, options = {}) {
       height: mainHeight,
       marginBottom: mainMarginBottom,
       x: hasDistribution ? {
-        ...axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+        ...axisOptions2(theme, spec.xAxis.label, xDomain),
         axis: null,
         label: null
-      } : axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+      } : axisOptions2(theme, spec.xAxis.label, xDomain),
       y: axisOptions2(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks2, theme)
     },
@@ -19846,7 +19846,7 @@ function renderCalibrationV2(spec, options = {}) {
       height: DEFAULT_HISTOGRAM_HEIGHT,
       marginTop: 0,
       marginBottom: theme.margins.bottom,
-      x: axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
+      x: axisOptions2(theme, spec.xAxis.label, xDomain),
       y: {
         label: null,
         grid: false,
