@@ -21,13 +21,30 @@ if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
   git fetch --unshallow -q || true
 fi
 
-VERSION="$(node -p "require('./package.json').version")"
-BUNDLE="rtichoke-viz-${VERSION}"
 V0222_ARTIFACT_COMMIT="14697da3e3cc0a3fdcf2d9872971b0f948382d80"
 VERIFY_SCRIPT="${TMP_DIR}/verify-committed-release.sh"
 cp scripts/verify-committed-release.sh "${VERIFY_SCRIPT}"
 
-# Ensure dist and schemas are built in workdir
+# In the temporary WORKDIR, load the historical v0.22.2 release source/package state
+git checkout -q "${V0222_ARTIFACT_COMMIT}" -- \
+  src/ \
+  package.json \
+  package-lock.json
+
+VERSION="$(node -p "require('./package.json').version")"
+BUNDLE="rtichoke-viz-${VERSION}"
+
+if [[ "${VERSION}" != "0.22.2" ]]; then
+  echo "FAIL: Expected historical regression version to be 0.22.2, got '${VERSION}'" >&2
+  exit 1
+fi
+
+if [[ "${BUNDLE}" != "rtichoke-viz-0.22.2" ]]; then
+  echo "FAIL: Expected historical regression bundle to be rtichoke-viz-0.22.2, got '${BUNDLE}'" >&2
+  exit 1
+fi
+
+# Ensure dist and schemas are built from V0222_ARTIFACT_COMMIT source
 npm run build >/dev/null 2>&1
 npm run schema >/dev/null 2>&1
 
