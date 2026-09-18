@@ -27,7 +27,7 @@ describe("Decision Curve v2 browser rendering", () => {
     expect(svg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();
   });
 
-  it("renders model geometry plus Treat None and Treat All with role-specific subordinate reference styling", () => {
+  it("renders Treat None and Treat All references using unified theme reference dash style", () => {
     const svg = renderDecisionCurveV2(single as DecisionCurveV2Spec);
     const ruleMark = svg.querySelector('[aria-label="rule"]');
     expect(ruleMark).not.toBeNull();
@@ -35,8 +35,38 @@ describe("Decision Curve v2 browser rendering", () => {
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
     expect(lineMarks.length).toBeGreaterThanOrEqual(2);
-    const treatAllLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "4,3");
+    const treatAllLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat All"));
     expect(treatAllLine).not.toBeNull();
+    expect(treatAllLine?.getAttribute("stroke-dasharray")).toBe("2,3");
+
+    // Verify neither benchmark line uses hard-coded "4,3"
+    const fourThreeLines = [...svg.querySelectorAll("line, path")].filter(
+      (el) => el.getAttribute("stroke-dasharray") === "4,3",
+    );
+    expect(fourThreeLines).toHaveLength(0);
+  });
+
+  it("applies custom theme.reference.dash consistently to both zero-rule and path benchmarks", () => {
+    const svg = renderDecisionCurveV2(single as DecisionCurveV2Spec, {
+      theme: {
+        reference: {
+          dash: "6,2",
+        },
+      },
+    });
+    const ruleMark = svg.querySelector('[aria-label="rule"]');
+    expect(ruleMark).not.toBeNull();
+    expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("6,2");
+
+    const lineMarks = svg.querySelectorAll('[aria-label="line"]');
+    const treatAllLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat All"));
+    expect(treatAllLine).not.toBeNull();
+    expect(treatAllLine?.getAttribute("stroke-dasharray")).toBe("6,2");
+
+    // Verify model line remains governed by theme.line (default solid / null dash), not theme.reference
+    const modelLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Series"));
+    expect(modelLine).not.toBeNull();
+    expect(modelLine?.getAttribute("stroke-dasharray")).toBeFalsy();
   });
 
   it("renders two model series while sharing one Treat All reference", () => {
