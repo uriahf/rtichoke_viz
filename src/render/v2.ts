@@ -925,20 +925,23 @@ function renderRocChart(
       if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
     }
 
-    fields.push(
-      ["Sensitivity", datum.sensitivity],
-      ["Specificity", datum.specificity],
-      ["FPR", fpr],
-    );
-
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["FPR", fpr],
         ...buildCarriedPerformanceTooltipFields(
           datum.performance,
           ROC_CARRIED_ORDER,
           theme.tip.digits,
           new Set(["sensitivity", "specificity", "false_positive_rate"]),
         ),
+      );
+    } else {
+      fields.push(
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["False Positive Rate", fpr],
       );
     }
 
