@@ -19522,7 +19522,7 @@ function formatMetricValue(metricId, value, digits) {
   }
   return value.toFixed(digits);
 }
-function buildCarriedPerformanceTooltipFields(performance2, metricOrder, digits) {
+function buildCarriedPerformanceTooltipFields(performance2, metricOrder, digits, omitSet) {
   if (!performance2 || performance2.length === 0) return [];
   const map5 = /* @__PURE__ */ new Map();
   for (const item of performance2) {
@@ -19532,6 +19532,7 @@ function buildCarriedPerformanceTooltipFields(performance2, metricOrder, digits)
   }
   const fields = [];
   for (const metricId of metricOrder) {
+    if (omitSet && omitSet.has(metricId)) continue;
     if (map5.has(metricId)) {
       const val = map5.get(metricId);
       const label = METRIC_LABELS[metricId] ?? metricId;
@@ -19794,19 +19795,19 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       fields.push(["Cutoff", datum2.cutoff]);
       if (datum2.ppcr !== void 0) fields.push(["PPCR", datum2.ppcr]);
     }
+    fields.push(
+      ["Sensitivity", datum2.sensitivity],
+      ["Specificity", datum2.specificity],
+      ["FPR", fpr]
+    );
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
           datum2.performance,
           ROC_CARRIED_ORDER,
-          theme.tip.digits
+          theme.tip.digits,
+          /* @__PURE__ */ new Set(["sensitivity", "specificity", "false_positive_rate"])
         )
-      );
-    } else {
-      fields.push(
-        ["Sensitivity", datum2.sensitivity],
-        ["Specificity", datum2.specificity],
-        ["False Positive Rate", fpr]
       );
     }
     return {
@@ -20021,16 +20022,16 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
         fields.push(["Cutoff", values2.cutoff]);
         if (values2.ppcr !== void 0) fields.push(["PPCR", values2.ppcr]);
       }
+      fields.push(["Sensitivity", values2.sensitivity], ["PPV", values2.ppv]);
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values2.performance,
             PR_CARRIED_ORDER,
-            theme.tip.digits
+            theme.tip.digits,
+            /* @__PURE__ */ new Set(["sensitivity", "ppv"])
           )
         );
-      } else {
-        fields.push(["Sensitivity", values2.sensitivity], ["PPV", values2.ppv]);
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
@@ -20040,16 +20041,16 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
         fields.push(["PPCR", values2.ppcr]);
         fields.push(["Cutoff", values2.cutoff]);
       }
+      fields.push(["Sensitivity", values2.sensitivity]);
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values2.performance,
             GAINS_CARRIED_ORDER,
-            theme.tip.digits
+            theme.tip.digits,
+            /* @__PURE__ */ new Set(["sensitivity"])
           )
         );
-      } else {
-        fields.push(["Sensitivity", values2.sensitivity]);
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
@@ -20059,16 +20060,16 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
         fields.push(["PPCR", values2.ppcr]);
         fields.push(["Cutoff", values2.cutoff]);
       }
+      fields.push(["Lift", values2.lift]);
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values2.performance,
             LIFT_CARRIED_ORDER,
-            theme.tip.digits
+            theme.tip.digits,
+            /* @__PURE__ */ new Set(["lift"])
           )
         );
-      } else {
-        fields.push(["Lift", values2.lift]);
       }
     }
     return {
@@ -20246,18 +20247,18 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
   const data = spec.data.map((datum2) => {
     const fields = [
       ["Series", displayBySeries2.get(datum2.seriesId).label],
-      ["Threshold", datum2.threshold]
+      ["Threshold", datum2.threshold],
+      ["Net Benefit", datum2.netBenefit]
     ];
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
           datum2.performance,
           DECISION_CURVE_CARRIED_ORDER,
-          theme.tip.digits
+          theme.tip.digits,
+          /* @__PURE__ */ new Set(["net_benefit"])
         )
       );
-    } else {
-      fields.push(["Net Benefit", datum2.netBenefit]);
     }
     return {
       ...datum2,
@@ -20340,18 +20341,18 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
   const data = spec.data.map((datum2) => {
     const fields = [
       ["Series", displayBySeries2.get(datum2.seriesId).label],
-      ["Threshold", datum2.threshold]
+      ["Threshold", datum2.threshold],
+      ["Interventions Avoided", datum2.interventionsAvoided]
     ];
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
           datum2.performance,
           INTERVENTIONS_AVOIDED_CARRIED_ORDER,
-          theme.tip.digits
+          theme.tip.digits,
+          /* @__PURE__ */ new Set(["net_benefit_interventions_avoided"])
         )
       );
-    } else {
-      fields.push(["Interventions Avoided", datum2.interventionsAvoided]);
     }
     return {
       ...datum2,
