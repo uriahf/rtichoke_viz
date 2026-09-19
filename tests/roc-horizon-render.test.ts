@@ -126,7 +126,7 @@ describe("horizon-aware ROC v2 rendering", () => {
     expect([...select.options].map((option) => option.value)).toEqual(["5", "10"]);
 
     const initialSvg = svgOf(element);
-    expect(initialSvg.querySelectorAll('[aria-label="line"] path')).toHaveLength(2); // 1 identity line + 1 grouped series path
+    expect(initialSvg.querySelectorAll('[aria-label="line"] path')).toHaveLength(3); // 1 identity line + 2 series paths
     expect(initialSvg.textContent).toContain("1 - Specificity");
     expect(initialSvg.textContent).toContain("Sensitivity");
 
@@ -135,13 +135,13 @@ describe("horizon-aware ROC v2 rendering", () => {
 
     const updatedSvg = svgOf(element);
     expect(updatedSvg).not.toBe(initialSvg);
-    expect(updatedSvg.querySelectorAll('[aria-label="line"] path')).toHaveLength(2);
+    expect(updatedSvg.querySelectorAll('[aria-label="line"] path')).toHaveLength(3);
   });
 
   it("preserves global identity reference across horizon selection", () => {
     const horizon5 = selectHorizonSpec(multiRoc, 5);
     const element = renderRocV2(horizon5);
     const svg = svgOf(element);
-    expect(svg.querySelectorAll('[aria-label="line"] path')).toHaveLength(2); // 1 identity line + 1 grouped series path
+    expect(svg.querySelectorAll('[aria-label="line"] path')).toHaveLength(3); // 1 identity line + 2 series paths
   });
 });

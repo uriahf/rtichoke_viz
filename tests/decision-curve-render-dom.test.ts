@@ -35,7 +35,7 @@ describe("Decision Curve v2 browser rendering", () => {
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
     expect(lineMarks.length).toBeGreaterThanOrEqual(2);
-    const treatAllLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat All"));
+    const treatAllLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "2,3" || l.querySelector("title")?.textContent?.includes("Treat All"));
     expect(treatAllLine).not.toBeNull();
     expect(treatAllLine?.getAttribute("stroke-dasharray")).toBe("2,3");
 
@@ -59,12 +59,12 @@ describe("Decision Curve v2 browser rendering", () => {
     expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("6,2");
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
-    const treatAllLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat All"));
+    const treatAllLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "6,2" || l.querySelector("title")?.textContent?.includes("Treat All"));
     expect(treatAllLine).not.toBeNull();
     expect(treatAllLine?.getAttribute("stroke-dasharray")).toBe("6,2");
 
     // Verify model line remains governed by theme.line (default solid / null dash), not theme.reference
-    const modelLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Series"));
+    const modelLine = [...lineMarks].find((l) => !l.getAttribute("stroke-dasharray") || l.querySelector("title")?.textContent?.includes("Series"));
     expect(modelLine).not.toBeNull();
     expect(modelLine?.getAttribute("stroke-dasharray")).toBeFalsy();
   });

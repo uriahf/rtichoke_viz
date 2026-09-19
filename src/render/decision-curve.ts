@@ -4,6 +4,10 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
+  buildReferenceTooltipMarkOptions,
+  buildStructuredTooltipMarkOptions,
+  DCA_CANONICAL_ORDER,
+  formatNativeNumber,
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
@@ -63,8 +67,8 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   const data = spec.data.map((datum) => {
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
-      ["Threshold", datum.threshold],
-      ["Net Benefit", datum.netBenefit],
+      ["Threshold", formatNativeNumber(datum.threshold, theme.tip.digits)],
+      ["Net Benefit", formatNativeNumber(datum.netBenefit, theme.tip.digits)],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -80,27 +84,31 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
       ...datum,
       group: displayBySeries.get(datum.seriesId)!.group,
       label: displayBySeries.get(datum.seriesId)!.label,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, DCA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
+    const label = reference.benchmark === "treat_none" ? (reference.label ?? "Treat None") : (reference.label ?? `Treat All — ${reference.population}`);
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_none") {
-      marks.push(Plot.ruleY([0], { ...defaultReferenceStyle, title: () => reference.label ?? "Treat None" }));
+      marks.push(Plot.ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, title: () => reference.label ?? `Treat All — ${reference.population}` }));
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
     }
   }
   marks.push(
-    Plot.line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined }),
-    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme),
+    Plot.line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, ...lineTooltipOpts }),
+    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme),
+        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER),
       );
     }
   }
