@@ -57,6 +57,7 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
       ["Threshold", datum.threshold],
+      ["Interventions Avoided", datum.interventionsAvoided],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -64,10 +65,9 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
           datum.performance,
           INTERVENTIONS_AVOIDED_CARRIED_ORDER,
           theme.tip.digits,
+          new Set(["net_benefit_interventions_avoided"]),
         ),
       );
-    } else {
-      fields.push(["Interventions Avoided", datum.interventionsAvoided]);
     }
     return {
       ...datum,

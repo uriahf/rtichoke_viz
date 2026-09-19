@@ -581,6 +581,7 @@ export function buildCarriedPerformanceTooltipFields(
   performance: PerformanceMetricValue[] | undefined,
   metricOrder: PerformanceMetricId[],
   digits: number,
+  omitSet?: Set<PerformanceMetricId>,
 ): Array<[string, unknown]> {
   if (!performance || performance.length === 0) return [];
   const map = new Map<PerformanceMetricId, number | null>();
@@ -592,6 +593,7 @@ export function buildCarriedPerformanceTooltipFields(
 
   const fields: Array<[string, unknown]> = [];
   for (const metricId of metricOrder) {
+    if (omitSet && omitSet.has(metricId)) continue;
     if (map.has(metricId)) {
       const val = map.get(metricId)!;
       const label = METRIC_LABELS[metricId] ?? metricId;
@@ -923,19 +925,20 @@ function renderRocChart(
       if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
     }
 
+    fields.push(
+      ["Sensitivity", datum.sensitivity],
+      ["Specificity", datum.specificity],
+      ["FPR", fpr],
+    );
+
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
           datum.performance,
           ROC_CARRIED_ORDER,
           theme.tip.digits,
+          new Set(["sensitivity", "specificity", "false_positive_rate"]),
         ),
-      );
-    } else {
-      fields.push(
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["False Positive Rate", fpr],
       );
     }
 
@@ -1187,16 +1190,16 @@ function renderLineChart(
         fields.push(["Cutoff", values.cutoff]);
         if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
       }
+      fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values.performance,
             PR_CARRIED_ORDER,
             theme.tip.digits,
+            new Set(["sensitivity", "ppv"]),
           ),
         );
-      } else {
-        fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
@@ -1206,16 +1209,16 @@ function renderLineChart(
         fields.push(["PPCR", values.ppcr]);
         fields.push(["Cutoff", values.cutoff]);
       }
+      fields.push(["Sensitivity", values.sensitivity]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values.performance,
             GAINS_CARRIED_ORDER,
             theme.tip.digits,
+            new Set(["sensitivity"]),
           ),
         );
-      } else {
-        fields.push(["Sensitivity", values.sensitivity]);
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
@@ -1225,16 +1228,16 @@ function renderLineChart(
         fields.push(["PPCR", values.ppcr]);
         fields.push(["Cutoff", values.cutoff]);
       }
+      fields.push(["Lift", values.lift]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
             values.performance,
             LIFT_CARRIED_ORDER,
             theme.tip.digits,
+            new Set(["lift"]),
           ),
         );
-      } else {
-        fields.push(["Lift", values.lift]);
       }
     }
     return {

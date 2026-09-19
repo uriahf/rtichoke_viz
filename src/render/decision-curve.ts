@@ -64,6 +64,7 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
       ["Threshold", datum.threshold],
+      ["Net Benefit", datum.netBenefit],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -71,10 +72,9 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
           datum.performance,
           DECISION_CURVE_CARRIED_ORDER,
           theme.tip.digits,
+          new Set(["net_benefit"]),
         ),
       );
-    } else {
-      fields.push(["Net Benefit", datum.netBenefit]);
     }
     return {
       ...datum,

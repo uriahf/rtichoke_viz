@@ -227,8 +227,8 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
     });
   });
 
-  describe("Tooltip Tests", () => {
-    it("renders exact ordering and formatting for ROC tooltip with carried performance metrics", () => {
+  describe("Tooltip Tests for Full and Partial Performance Payloads", () => {
+    it("renders exact ordering and formatting for ROC tooltip with full carried performance metrics", () => {
       const spec: RocV2Spec = {
         ...baseRocSpec,
         data: [
@@ -253,10 +253,14 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       };
 
       const datum = spec.data[0];
+      const fpr = 1 - datum.specificity;
       const fields: Array<[string, unknown]> = [
         ["Series", "Model A"],
         ["Cutoff", datum.cutoff],
         ["PPCR", datum.ppcr],
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["FPR", fpr],
       ];
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
@@ -276,6 +280,7 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
             "false_negatives",
           ],
           3,
+          new Set(["sensitivity", "specificity", "false_positive_rate"]),
         ),
       );
 
@@ -300,29 +305,80 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       expect(titleText).toBe(expectedLines.join("\n"));
     });
 
-    it("renders exact ordering for Precision-Recall tooltip with carried performance metrics", () => {
-      const spec: PrecisionRecallV2Spec = {
-        ...basePrSpec,
+    it("supplements ROC native fields without duplication when partial performance is supplied", () => {
+      const partialRocSpec: RocV2Spec = {
+        ...baseRocSpec,
         data: [
           {
-            ...basePrSpec.data[0],
-            performance: [
-              { metricId: "sensitivity", estimate: 0.8 },
-              { metricId: "ppv", estimate: 0.75 },
-              { metricId: "specificity", estimate: 0.9 },
-              { metricId: "false_positive_rate", estimate: 0.1 },
-              { metricId: "true_positives", estimate: 80 },
-              { metricId: "false_positives", estimate: 26.667 },
-            ],
+            ...baseRocSpec.data[0],
+            performance: [{ metricId: "true_positives", estimate: 80 }],
           },
         ],
       };
 
-      const datum = spec.data[0];
+      const datum = partialRocSpec.data[0];
+      const fpr = 1 - datum.specificity;
       const fields: Array<[string, unknown]> = [
         ["Series", "Model A"],
         ["Cutoff", datum.cutoff],
         ["PPCR", datum.ppcr],
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["FPR", fpr],
+      ];
+      fields.push(
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          [
+            "sensitivity",
+            "specificity",
+            "false_positive_rate",
+            "ppv",
+            "npv",
+            "lift",
+            "net_benefit",
+            "predicted_positives",
+            "true_positives",
+            "true_negatives",
+            "false_positives",
+            "false_negatives",
+          ],
+          3,
+          new Set(["sensitivity", "specificity", "false_positive_rate"]),
+        ),
+      );
+
+      const titleText = tooltip(3, fields);
+      const expectedLines = [
+        "Series: Model A",
+        "Cutoff: 0.500",
+        "PPCR: 0.300",
+        "Sensitivity: 0.800",
+        "Specificity: 0.900",
+        "FPR: 0.100",
+        "TP: 80",
+      ];
+      expect(titleText).toBe(expectedLines.join("\n"));
+    });
+
+    it("supplements Precision-Recall native fields when partial performance is supplied", () => {
+      const partialPrSpec: PrecisionRecallV2Spec = {
+        ...basePrSpec,
+        data: [
+          {
+            ...basePrSpec.data[0],
+            performance: [{ metricId: "true_negatives", estimate: 900 }],
+          },
+        ],
+      };
+
+      const datum = partialPrSpec.data[0];
+      const fields: Array<[string, unknown]> = [
+        ["Series", "Model A"],
+        ["Cutoff", datum.cutoff],
+        ["PPCR", datum.ppcr],
+        ["Sensitivity", datum.sensitivity],
+        ["PPV", datum.ppv],
       ];
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
@@ -342,6 +398,7 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
             "false_negatives",
           ],
           3,
+          new Set(["sensitivity", "ppv"]),
         ),
       );
 
@@ -352,15 +409,164 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
         "PPCR: 0.300",
         "Sensitivity: 0.800",
         "PPV: 0.750",
-        "Specificity: 0.900",
-        "FPR: 0.100",
-        "TP: 80",
-        "FP: 26.667",
+        "TN: 900",
       ];
       expect(titleText).toBe(expectedLines.join("\n"));
     });
 
-    it("renders exact ordering for Interventions Avoided tooltip with narrower conventional metrics", () => {
+    it("supplements Gains native fields when partial performance is supplied", () => {
+      const partialGainsSpec: GainsV2Spec = {
+        ...baseGainsSpec,
+        data: [
+          {
+            ...baseGainsSpec.data[0],
+            performance: [{ metricId: "ppv", estimate: 0.75 }],
+          },
+        ],
+      };
+
+      const datum = partialGainsSpec.data[0];
+      const fields: Array<[string, unknown]> = [
+        ["Series", "Model A"],
+        ["PPCR", datum.ppcr],
+        ["Cutoff", datum.cutoff],
+        ["Sensitivity", datum.sensitivity],
+      ];
+      fields.push(
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          [
+            "sensitivity",
+            "specificity",
+            "false_positive_rate",
+            "ppv",
+            "npv",
+            "lift",
+            "net_benefit",
+            "predicted_positives",
+            "true_positives",
+            "true_negatives",
+            "false_positives",
+            "false_negatives",
+          ],
+          3,
+          new Set(["sensitivity"]),
+        ),
+      );
+
+      const titleText = tooltip(3, fields);
+      const expectedLines = [
+        "Series: Model A",
+        "PPCR: 0.300",
+        "Cutoff: 0.500",
+        "Sensitivity: 0.800",
+        "PPV: 0.750",
+      ];
+      expect(titleText).toBe(expectedLines.join("\n"));
+    });
+
+    it("supplements Lift native fields when partial performance is supplied", () => {
+      const partialLiftSpec: LiftV2Spec = {
+        ...baseLiftSpec,
+        data: [
+          {
+            ...baseLiftSpec.data[0],
+            performance: [{ metricId: "sensitivity", estimate: 0.8 }],
+          },
+        ],
+      };
+
+      const datum = partialLiftSpec.data[0];
+      const fields: Array<[string, unknown]> = [
+        ["Series", "Model A"],
+        ["PPCR", datum.ppcr],
+        ["Cutoff", datum.cutoff],
+        ["Lift", datum.lift],
+      ];
+      fields.push(
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          [
+            "lift",
+            "sensitivity",
+            "specificity",
+            "false_positive_rate",
+            "ppv",
+            "npv",
+            "net_benefit",
+            "predicted_positives",
+            "true_positives",
+            "true_negatives",
+            "false_positives",
+            "false_negatives",
+          ],
+          3,
+          new Set(["lift"]),
+        ),
+      );
+
+      const titleText = tooltip(3, fields);
+      const expectedLines = [
+        "Series: Model A",
+        "PPCR: 0.300",
+        "Cutoff: 0.500",
+        "Lift: 2.500",
+        "Sensitivity: 0.800",
+      ];
+      expect(titleText).toBe(expectedLines.join("\n"));
+    });
+
+    it("supplements Decision Curve native fields when partial performance is supplied", () => {
+      const partialDcaSpec: DecisionCurveV2Spec = {
+        ...baseDcaSpec,
+        data: [
+          {
+            ...baseDcaSpec.data[0],
+            performance: [{ metricId: "true_positives", estimate: 80 }],
+          },
+        ],
+      };
+
+      const datum = partialDcaSpec.data[0];
+      const fields: Array<[string, unknown]> = [
+        ["Series", "Model A"],
+        ["Threshold", datum.threshold],
+        ["Net Benefit", datum.netBenefit],
+      ];
+      fields.push(
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          [
+            "net_benefit",
+            "ppcr",
+            "sensitivity",
+            "specificity",
+            "false_positive_rate",
+            "ppv",
+            "npv",
+            "lift",
+            "predicted_positives",
+            "true_positives",
+            "true_negatives",
+            "false_positives",
+            "false_negatives",
+          ],
+          3,
+          new Set(["net_benefit"]),
+        ),
+      );
+
+      const titleText = tooltip(3, fields);
+      const expectedLines = [
+        "Series: Model A",
+        "Threshold: 0.200",
+        "Net Benefit: 0.120",
+        "TP: 80",
+      ];
+      expect(titleText).toBe(expectedLines.join("\n"));
+    });
+
+    it("renders exact ordering for Interventions Avoided tooltip without duplicate IA carriage", () => {
       const spec: InterventionsAvoidedV2Spec = {
         ...baseIaSpec,
         data: [
@@ -373,8 +579,6 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
               { metricId: "ppcr", estimate: 0.18 },
               { metricId: "true_negatives", estimate: 820 },
               { metricId: "false_negatives", estimate: 20 },
-              // Extra metrics like sensitivity should be ignored for IA
-              { metricId: "sensitivity", estimate: 0.8 },
             ],
           },
         ],
@@ -384,6 +588,7 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       const fields: Array<[string, unknown]> = [
         ["Series", "Model A"],
         ["Threshold", datum.threshold],
+        ["Interventions Avoided", datum.interventionsAvoided],
       ];
       fields.push(
         ...buildCarriedPerformanceTooltipFields(
@@ -397,6 +602,7 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
             "false_negatives",
           ],
           3,
+          new Set(["net_benefit_interventions_avoided"]),
         ),
       );
 
@@ -410,30 +616,6 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
         "PPCR: 0.180",
         "TN: 820",
         "FN: 20",
-      ];
-      expect(titleText).toBe(expectedLines.join("\n"));
-    });
-
-    it("falls back gracefully when performance is omitted", () => {
-      const datum = baseRocSpec.data[0];
-      const fpr = 1 - datum.specificity;
-      const fields: Array<[string, unknown]> = [
-        ["Series", "Model A"],
-        ["Cutoff", datum.cutoff],
-        ["PPCR", datum.ppcr],
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["False Positive Rate", fpr],
-      ];
-
-      const titleText = tooltip(3, fields);
-      const expectedLines = [
-        "Series: Model A",
-        "Cutoff: 0.500",
-        "PPCR: 0.300",
-        "Sensitivity: 0.800",
-        "Specificity: 0.900",
-        "False Positive Rate: 0.100",
       ];
       expect(titleText).toBe(expectedLines.join("\n"));
     });
