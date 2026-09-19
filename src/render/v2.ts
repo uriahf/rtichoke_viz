@@ -6,6 +6,7 @@ import type { InterventionsAvoidedV2Spec } from "../spec/v2/interventions-avoide
 import type { LiftV2Spec } from "../spec/v2/lift.js";
 import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
 import type { RocV2Spec } from "../spec/v2/roc.js";
+import type { PerformanceMetricId, PerformanceMetricValue } from "../spec/v2/performance-table.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 
 export const RTICHOKE_COLORS = [
@@ -539,6 +540,72 @@ export function seriesRenderData<T extends { seriesId: string }>(
   }));
 }
 
+const METRIC_LABELS: Record<PerformanceMetricId, string> = {
+  true_positives: "TP",
+  true_negatives: "TN",
+  false_positives: "FP",
+  false_negatives: "FN",
+  sensitivity: "Sensitivity",
+  specificity: "Specificity",
+  false_positive_rate: "FPR",
+  ppv: "PPV",
+  npv: "NPV",
+  lift: "Lift",
+  predicted_positives: "Predicted Positives",
+  ppcr: "PPCR",
+  net_benefit: "Net Benefit",
+  net_benefit_interventions_avoided: "Interventions Avoided",
+};
+
+const INTEGER_METRICS = new Set<PerformanceMetricId>([
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+  "predicted_positives",
+]);
+
+export function formatMetricValue(
+  metricId: PerformanceMetricId,
+  value: number | null | undefined,
+  digits: number,
+): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (INTEGER_METRICS.has(metricId)) {
+    return Number.isInteger(value) ? String(value) : value.toFixed(digits);
+  }
+  return value.toFixed(digits);
+}
+
+export function buildCarriedPerformanceTooltipFields(
+  performance: PerformanceMetricValue[] | undefined,
+  metricOrder: PerformanceMetricId[],
+  digits: number,
+  omitSet?: Set<PerformanceMetricId>,
+): Array<[string, unknown]> {
+  if (!performance || performance.length === 0) return [];
+  const map = new Map<PerformanceMetricId, number | null>();
+  for (const item of performance) {
+    if (item.estimate !== undefined && item.estimate !== null) {
+      map.set(item.metricId, item.estimate);
+    }
+  }
+
+  const fields: Array<[string, unknown]> = [];
+  for (const metricId of metricOrder) {
+    if (omitSet && omitSet.has(metricId)) continue;
+    if (map.has(metricId)) {
+      const val = map.get(metricId)!;
+      const label = METRIC_LABELS[metricId] ?? metricId;
+      const formatted = formatMetricValue(metricId, val, digits);
+      if (formatted !== undefined) {
+        fields.push([label, formatted]);
+      }
+    }
+  }
+  return fields;
+}
+
 export function tooltip(digits: number, fields: Array<[string, unknown]>) {
   return fields
     .filter(([, value]) => value !== undefined)
@@ -717,7 +784,7 @@ export function operatingPointDotMark(
   const fill = customTheme?.marker?.fill ?? (isMultiSeries ? "group" : "#f6e3be");
   const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
   const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
-  const r = customTheme?.marker?.radius ?? 7.5;
+  const r = customTheme?.marker?.radius ?? 6;
 
   return Plot.dot(data, {
     className: "rtichoke-selected-operating-point",
@@ -778,6 +845,66 @@ export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   return plot;
 }
 
+const ROC_CARRIED_ORDER: PerformanceMetricId[] = [
+  "sensitivity",
+  "specificity",
+  "false_positive_rate",
+  "ppv",
+  "npv",
+  "lift",
+  "net_benefit",
+  "predicted_positives",
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+];
+
+const PR_CARRIED_ORDER: PerformanceMetricId[] = [
+  "sensitivity",
+  "ppv",
+  "specificity",
+  "false_positive_rate",
+  "npv",
+  "lift",
+  "net_benefit",
+  "predicted_positives",
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+];
+
+const GAINS_CARRIED_ORDER: PerformanceMetricId[] = [
+  "sensitivity",
+  "specificity",
+  "false_positive_rate",
+  "ppv",
+  "npv",
+  "lift",
+  "net_benefit",
+  "predicted_positives",
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+];
+
+const LIFT_CARRIED_ORDER: PerformanceMetricId[] = [
+  "lift",
+  "sensitivity",
+  "specificity",
+  "false_positive_rate",
+  "ppv",
+  "npv",
+  "net_benefit",
+  "predicted_positives",
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+];
+
 function renderRocChart(
   spec: RocV2Spec,
   options: V2RenderOptions = {},
@@ -797,11 +924,27 @@ function renderRocChart(
       fields.push(["Cutoff", datum.cutoff]);
       if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
     }
-    fields.push(
-      ["Sensitivity", datum.sensitivity],
-      ["Specificity", datum.specificity],
-      ["False Positive Rate", fpr],
-    );
+
+    if (datum.performance && datum.performance.length > 0) {
+      fields.push(
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["FPR", fpr],
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          ROC_CARRIED_ORDER,
+          theme.tip.digits,
+          new Set(["sensitivity", "specificity", "false_positive_rate"]),
+        ),
+      );
+    } else {
+      fields.push(
+        ["Sensitivity", datum.sensitivity],
+        ["Specificity", datum.specificity],
+        ["False Positive Rate", fpr],
+      );
+    }
+
     return {
       ...datum,
       false_positive_rate: fpr,
@@ -1030,6 +1173,7 @@ function renderLineChart(
       ppcr?: number;
       ppv?: number;
       lift?: number;
+      performance?: PerformanceMetricValue[];
     }>,
   ).map((datum) => {
     const values = datum as typeof datum & {
@@ -1038,6 +1182,7 @@ function renderLineChart(
       ppcr?: number;
       ppv?: number;
       lift?: number;
+      performance?: PerformanceMetricValue[];
     };
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (spec.type === "precision_recall") {
@@ -1049,6 +1194,16 @@ function renderLineChart(
         if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
       }
       fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
+      if (values.performance && values.performance.length > 0) {
+        fields.push(
+          ...buildCarriedPerformanceTooltipFields(
+            values.performance,
+            PR_CARRIED_ORDER,
+            theme.tip.digits,
+            new Set(["sensitivity", "ppv"]),
+          ),
+        );
+      }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
         fields.push(["Cutoff", values.cutoff]);
@@ -1058,6 +1213,16 @@ function renderLineChart(
         fields.push(["Cutoff", values.cutoff]);
       }
       fields.push(["Sensitivity", values.sensitivity]);
+      if (values.performance && values.performance.length > 0) {
+        fields.push(
+          ...buildCarriedPerformanceTooltipFields(
+            values.performance,
+            GAINS_CARRIED_ORDER,
+            theme.tip.digits,
+            new Set(["sensitivity"]),
+          ),
+        );
+      }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
         fields.push(["Cutoff", values.cutoff]);
@@ -1067,6 +1232,16 @@ function renderLineChart(
         fields.push(["Cutoff", values.cutoff]);
       }
       fields.push(["Lift", values.lift]);
+      if (values.performance && values.performance.length > 0) {
+        fields.push(
+          ...buildCarriedPerformanceTooltipFields(
+            values.performance,
+            LIFT_CARRIED_ORDER,
+            theme.tip.digits,
+            new Set(["lift"]),
+          ),
+        );
+      }
     }
     return {
       ...datum,

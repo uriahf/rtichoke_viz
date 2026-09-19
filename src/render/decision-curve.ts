@@ -1,7 +1,9 @@
 import * as Plot from "@observablehq/plot";
 import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
+import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
+  buildCarriedPerformanceTooltipFields,
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
@@ -13,6 +15,22 @@ import {
   type OperatingPointSupportedSpec,
   type V2RenderOptions,
 } from "./v2.js";
+
+const DECISION_CURVE_CARRIED_ORDER: PerformanceMetricId[] = [
+  "net_benefit",
+  "ppcr",
+  "sensitivity",
+  "specificity",
+  "false_positive_rate",
+  "ppv",
+  "npv",
+  "lift",
+  "predicted_positives",
+  "true_positives",
+  "true_negatives",
+  "false_positives",
+  "false_negatives",
+];
 
 export function renderDecisionCurveV2(spec: DecisionCurveV2Spec, options: V2RenderOptions = {}): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
@@ -42,16 +60,29 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   const { theme } = resolved;
   const displayBySeries = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
-  const data = spec.data.map((datum) => ({
-    ...datum,
-    group: displayBySeries.get(datum.seriesId)!.group,
-    label: displayBySeries.get(datum.seriesId)!.label,
-    title: tooltip(theme.tip.digits, [
+  const data = spec.data.map((datum) => {
+    const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
       ["Threshold", datum.threshold],
       ["Net Benefit", datum.netBenefit],
-    ]),
-  }));
+    ];
+    if (datum.performance && datum.performance.length > 0) {
+      fields.push(
+        ...buildCarriedPerformanceTooltipFields(
+          datum.performance,
+          DECISION_CURVE_CARRIED_ORDER,
+          theme.tip.digits,
+          new Set(["net_benefit"]),
+        ),
+      );
+    }
+    return {
+      ...datum,
+      group: displayBySeries.get(datum.seriesId)!.group,
+      label: displayBySeries.get(datum.seriesId)!.label,
+      title: tooltip(theme.tip.digits, fields),
+    };
+  });
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {

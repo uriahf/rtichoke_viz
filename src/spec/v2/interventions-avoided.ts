@@ -5,11 +5,13 @@ import {
   ThresholdOperatingPointSpecSchema,
   SeriesSpecSchema,
 } from "./common.js";
+import { PerformanceMetricValueSchema } from "./performance-table.js";
 
 export const InterventionsAvoidedV2DatumSchema = Type.Object({
   seriesId: Type.String(),
   threshold: Type.Number({ minimum: 0, maximum: 1 }),
   interventionsAvoided: Type.Number(),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema)),
 });
 
 export const InterventionsAvoidedV2EvaluationSchema = Type.Intersect([
