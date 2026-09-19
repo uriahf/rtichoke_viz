@@ -19795,19 +19795,23 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       fields.push(["Cutoff", datum2.cutoff]);
       if (datum2.ppcr !== void 0) fields.push(["PPCR", datum2.ppcr]);
     }
-    fields.push(
-      ["Sensitivity", datum2.sensitivity],
-      ["Specificity", datum2.specificity],
-      ["FPR", fpr]
-    );
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
+        ["Sensitivity", datum2.sensitivity],
+        ["Specificity", datum2.specificity],
+        ["FPR", fpr],
         ...buildCarriedPerformanceTooltipFields(
           datum2.performance,
           ROC_CARRIED_ORDER,
           theme.tip.digits,
           /* @__PURE__ */ new Set(["sensitivity", "specificity", "false_positive_rate"])
         )
+      );
+    } else {
+      fields.push(
+        ["Sensitivity", datum2.sensitivity],
+        ["Specificity", datum2.specificity],
+        ["False Positive Rate", fpr]
       );
     }
     return {
