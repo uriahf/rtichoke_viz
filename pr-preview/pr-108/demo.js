@@ -19196,14 +19196,6 @@ Mark.prototype.plot = function({ marks: marks2 = [], ...options } = {}) {
 };
 
 // src/render/v2.ts
-if (typeof SVGElement !== "undefined") {
-  const polyfillBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
-  if (!SVGElement.prototype.getBBox) SVGElement.prototype.getBBox = polyfillBBox;
-  if (typeof SVGGElement !== "undefined" && !SVGGElement.prototype.getBBox) SVGGElement.prototype.getBBox = polyfillBBox;
-  if (typeof SVGGraphicsElement !== "undefined" && !SVGGraphicsElement.prototype.getBBox) SVGGraphicsElement.prototype.getBBox = polyfillBBox;
-  if (typeof SVGTextElement !== "undefined" && !SVGTextElement.prototype.getBBox) SVGTextElement.prototype.getBBox = polyfillBBox;
-  if (typeof SVGPathElement !== "undefined" && !SVGPathElement.prototype.getBBox) SVGPathElement.prototype.getBBox = polyfillBBox;
-}
 var RTICHOKE_COLORS = [
   "#1b9e77",
   "#d95f02",
@@ -19599,6 +19591,16 @@ function axisOptions2(theme, label, domain) {
     tickFormat: theme.axis.numberFormat
   };
 }
+function buildReferenceTooltipMarkOptions(label) {
+  return {
+    channels: {
+      ch_0: { value: () => label, label: "Reference" }
+    },
+    tip: {
+      format: { x: false, y: false, z: false, stroke: false, fill: false }
+    }
+  };
+}
 function referenceMarks(spec, theme) {
   const style = {
     stroke: theme.reference.color,
@@ -19608,46 +19610,29 @@ function referenceMarks(spec, theme) {
   const marks2 = [];
   for (const reference of spec.references ?? []) {
     const label = reference.label ?? (reference.type === "identity" ? "Identity" : "Reference");
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.type === "identity") {
-      const points = [{ x: 0, y: 0, label }, { x: 1, y: 1, label }];
       marks2.push(
-        line(points, { x: "x", y: "y", ...style, title: () => label }),
-        tip(
-          points,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
+        line(
+          [
+            { x: 0, y: 0 },
+            { x: 1, y: 1 }
+          ],
+          { x: "x", y: "y", ...style, ...refTipOpts }
         )
       );
     } else if (reference.type === "horizontal" && reference.value !== void 0) {
-      const data = [{ y: reference.value, label }];
       marks2.push(
-        ruleY([reference.value], { ...style, title: () => label }),
-        tip(
-          data,
-          {
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
+        ruleY([reference.value], { ...style, ...refTipOpts })
       );
     } else if (reference.type === "path" && reference.points) {
-      const points = reference.points.map((p) => ({ ...p, label }));
       marks2.push(
-        line(points, { x: "x", y: "y", ...style, title: () => label }),
-        tip(
-          points,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
+        line(reference.points, {
+          x: "x",
+          y: "y",
+          ...style,
+          ...refTipOpts
+        })
       );
     }
   }
@@ -20535,33 +20520,11 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
   const marks2 = [];
   for (const reference of spec.references) {
     const label = reference.benchmark === "treat_none" ? reference.label ?? "Treat None" : reference.label ?? `Treat All \u2014 ${reference.population}`;
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_none") {
-      const ruleData = [{ y: 0, label }];
-      marks2.push(
-        ruleY([0], { ...defaultReferenceStyle, title: () => label }),
-        tip(
-          ruleData,
-          {
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
-      );
+      marks2.push(ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
     } else {
-      const pathPoints = reference.points.map((p) => ({ ...p, label }));
-      marks2.push(
-        line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
-        tip(
-          pathPoints,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
-      );
+      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
     }
   }
   marks2.push(
@@ -20655,33 +20618,11 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
   const marks2 = [];
   for (const reference of spec.references) {
     const label = reference.benchmark === "treat_all" ? reference.label ?? "Treat All" : reference.label ?? `Treat None \u2014 ${reference.population}`;
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_all") {
-      const ruleData = [{ y: 0, label }];
-      marks2.push(
-        ruleY([0], { ...defaultReferenceStyle, title: () => label }),
-        tip(
-          ruleData,
-          {
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
-      );
+      marks2.push(ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
     } else {
-      const pathPoints = reference.points.map((p) => ({ ...p, label }));
-      marks2.push(
-        line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
-        tip(
-          pathPoints,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false }
-          }
-        )
-      );
+      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
     }
   }
   marks2.push(
