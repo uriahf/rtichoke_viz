@@ -9,14 +9,6 @@ import type { RocV2Spec } from "../spec/v2/roc.js";
 import type { PerformanceMetricId, PerformanceMetricValue } from "../spec/v2/performance-table.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 
-if (typeof SVGElement !== "undefined") {
-  const polyfillBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
-  if (!(SVGElement.prototype as any).getBBox) (SVGElement.prototype as any).getBBox = polyfillBBox;
-  if (typeof SVGGElement !== "undefined" && !(SVGGElement.prototype as any).getBBox) (SVGGElement.prototype as any).getBBox = polyfillBBox;
-  if (typeof SVGGraphicsElement !== "undefined" && !(SVGGraphicsElement.prototype as any).getBBox) (SVGGraphicsElement.prototype as any).getBBox = polyfillBBox;
-  if (typeof SVGTextElement !== "undefined" && !(SVGTextElement.prototype as any).getBBox) (SVGTextElement.prototype as any).getBBox = polyfillBBox;
-  if (typeof SVGPathElement !== "undefined" && !(SVGPathElement.prototype as any).getBBox) (SVGPathElement.prototype as any).getBBox = polyfillBBox;
-}
 
 export const RTICHOKE_COLORS = [
   "#1b9e77",
@@ -684,6 +676,17 @@ function frameMark(theme: V2RendererTheme) {
   });
 }
 
+export function buildReferenceTooltipMarkOptions(label: string) {
+  return {
+    channels: {
+      ch_0: { value: () => label, label: "Reference" },
+    },
+    tip: {
+      format: { x: false, y: false, z: false, stroke: false, fill: false },
+    },
+  };
+}
+
 function referenceMarks(
   spec: SeriesChartSpec,
   theme: V2RendererTheme,
@@ -696,46 +699,29 @@ function referenceMarks(
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references ?? []) {
     const label = reference.label ?? (reference.type === "identity" ? "Identity" : "Reference");
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.type === "identity") {
-      const points = [{ x: 0, y: 0, label }, { x: 1, y: 1, label }];
       marks.push(
-        Plot.line(points, { x: "x", y: "y", ...style, title: () => label }),
-        Plot.tip(
-          points,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false },
-          },
+        Plot.line(
+          [
+            { x: 0, y: 0 },
+            { x: 1, y: 1 },
+          ],
+          { x: "x", y: "y", ...style, ...refTipOpts },
         ),
       );
     } else if (reference.type === "horizontal" && reference.value !== undefined) {
-      const data = [{ y: reference.value, label }];
       marks.push(
-        Plot.ruleY([reference.value], { ...style, title: () => label }),
-        Plot.tip(
-          data,
-          {
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false },
-          },
-        ),
+        Plot.ruleY([reference.value], { ...style, ...refTipOpts }),
       );
     } else if (reference.type === "path" && reference.points) {
-      const points = reference.points.map((p) => ({ ...p, label }));
       marks.push(
-        Plot.line(points, { x: "x", y: "y", ...style, title: () => label }),
-        Plot.tip(
-          points,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false },
-          },
-        ),
+        Plot.line(reference.points, {
+          x: "x",
+          y: "y",
+          ...style,
+          ...refTipOpts,
+        }),
       );
     }
   }

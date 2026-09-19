@@ -711,32 +711,54 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       expect(ppvIdx).toBeLessThan(tpIdx);
     });
 
-    it("renders native structured tip for generic curve reference lines and Decision Curve reference lines", () => {
-      const elementRoc = renderRocV2(baseRocSpec) as HTMLElement;
-      const refLine = elementRoc.querySelector('g[aria-label="line"] path');
-      expect(refLine).not.toBeNull();
-      refLine!.dispatchEvent(
-        new (window as any).PointerEvent("pointermove", {
-          bubbles: true,
-          clientX: 50,
-          clientY: 50,
-        }),
-      );
-      const tipGroup = elementRoc.querySelector('g[aria-label="tip"]');
-      expect(tipGroup).not.toBeNull();
+    it("ensures curve line mark remains interactively hoverable with structured native tip", () => {
+      const element = renderRocV2(baseRocSpec) as HTMLElement;
+      const linePath = element.querySelector('g[aria-label="line"] path');
+      expect(linePath).not.toBeNull();
 
-      const elementDca = renderDecisionCurveV2(baseDcaSpec) as HTMLElement;
-      const refRule = elementDca.querySelector('g[aria-label="rule"] line, g[aria-label="line"] path');
-      expect(refRule).not.toBeNull();
-      refRule!.dispatchEvent(
+      let tipTextEl = element.querySelector('g[aria-label="tip"] text');
+      expect(tipTextEl).toBeNull();
+
+      linePath!.dispatchEvent(
         new (window as any).PointerEvent("pointermove", {
           bubbles: true,
-          clientX: 50,
-          clientY: 50,
+          clientX: 100,
+          clientY: 100,
         }),
       );
-      const tipGroupDca = elementDca.querySelector('g[aria-label="tip"]');
-      expect(tipGroupDca).not.toBeNull();
+
+      tipTextEl = element.querySelector('g[aria-label="tip"] text');
+      expect(tipTextEl).not.toBeNull();
+      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
+        (el) => el.textContent?.trim(),
+      );
+      expect(boldLabels).toEqual(["Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "False Positive Rate"]);
+    });
+
+    it("ensures reference line tips are genuinely hover-driven rather than static annotations", () => {
+      const specWithRef: RocV2Spec = {
+        ...baseRocSpec,
+        references: [{ type: "identity", scope: "global", label: "Random Guess" }],
+      };
+      const element = renderRocV2(specWithRef) as HTMLElement;
+      let boldLabelEl = element.querySelector('g[aria-label="tip"] text tspan[font-weight="bold"]');
+      expect(boldLabelEl).toBeNull();
+
+      const linePaths = Array.from(element.querySelectorAll('g[aria-label="line"] path'));
+      expect(linePaths.length).toBeGreaterThan(0);
+      const refLine = linePaths[0];
+      refLine.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 66,
+          clientY: 534,
+        }),
+      );
+
+      boldLabelEl = element.querySelector('g[aria-label="tip"] text tspan[font-weight="bold"]');
+      expect(boldLabelEl).not.toBeNull();
+      expect(boldLabelEl!.textContent?.trim()).toBe("Reference");
+      expect(element.querySelector('g[aria-label="tip"] text')?.textContent).toContain("Random Guess");
     });
   });
 });

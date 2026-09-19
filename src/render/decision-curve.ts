@@ -4,6 +4,7 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
+  buildReferenceTooltipMarkOptions,
   buildStructuredTooltipMarkOptions,
   DCA_CANONICAL_ORDER,
   formatNativeNumber,
@@ -92,33 +93,11 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
     const label = reference.benchmark === "treat_none" ? (reference.label ?? "Treat None") : (reference.label ?? `Treat All — ${reference.population}`);
+    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_none") {
-      const ruleData = [{ y: 0, label }];
-      marks.push(
-        Plot.ruleY([0], { ...defaultReferenceStyle, title: () => label }),
-        Plot.tip(
-          ruleData,
-          {
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false },
-          },
-        ),
-      );
+      marks.push(Plot.ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
     } else {
-      const pathPoints = reference.points.map((p) => ({ ...p, label }));
-      marks.push(
-        Plot.line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
-        Plot.tip(
-          pathPoints,
-          {
-            x: "x",
-            y: "y",
-            channels: { ch_0: { value: "label", label: "Reference" } },
-            format: { x: false, y: false },
-          },
-        ),
-      );
+      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
     }
   }
   marks.push(
