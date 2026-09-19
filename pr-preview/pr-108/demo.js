@@ -19196,6 +19196,14 @@ Mark.prototype.plot = function({ marks: marks2 = [], ...options } = {}) {
 };
 
 // src/render/v2.ts
+if (typeof SVGElement !== "undefined") {
+  const polyfillBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
+  if (!SVGElement.prototype.getBBox) SVGElement.prototype.getBBox = polyfillBBox;
+  if (typeof SVGGElement !== "undefined" && !SVGGElement.prototype.getBBox) SVGGElement.prototype.getBBox = polyfillBBox;
+  if (typeof SVGGraphicsElement !== "undefined" && !SVGGraphicsElement.prototype.getBBox) SVGGraphicsElement.prototype.getBBox = polyfillBBox;
+  if (typeof SVGTextElement !== "undefined" && !SVGTextElement.prototype.getBBox) SVGTextElement.prototype.getBBox = polyfillBBox;
+  if (typeof SVGPathElement !== "undefined" && !SVGPathElement.prototype.getBBox) SVGPathElement.prototype.getBBox = polyfillBBox;
+}
 var RTICHOKE_COLORS = [
   "#1b9e77",
   "#d95f02",
@@ -19544,16 +19552,13 @@ function buildCarriedPerformanceTooltipFields(performance2, metricOrder, digits,
   }
   return fields;
 }
-function formatTooltipFieldValue(value, digits) {
+function formatNativeNumber(value, digits) {
   if (value === void 0 || value === null) return void 0;
-  if (typeof value === "number") {
-    return Number.isInteger(value) ? String(value) : value.toFixed(digits);
-  }
-  return String(value);
+  return typeof value === "number" ? value.toFixed(digits) : String(value);
 }
 function tooltip(digits, fields) {
   return fields.filter(([, value]) => value !== void 0).map(
-    ([label, value]) => `${label}: ${typeof value === "number" ? Number.isInteger(value) ? String(value) : value.toFixed(digits) : String(value)}`
+    ([label, value]) => `${label}: ${typeof value === "number" ? value.toFixed(digits) : String(value)}`
   ).join("\n");
 }
 function basePlotOptions(resolved, spec) {
@@ -19602,29 +19607,49 @@ function referenceMarks(spec, theme) {
   };
   const marks2 = [];
   for (const reference of spec.references ?? []) {
-    if (reference.type === "identity")
+    const label = reference.label ?? (reference.type === "identity" ? "Identity" : "Reference");
+    if (reference.type === "identity") {
+      const points = [{ x: 0, y: 0, label }, { x: 1, y: 1, label }];
       marks2.push(
-        line(
-          [
-            { x: 0, y: 0 },
-            { x: 1, y: 1 }
-          ],
-          { x: "x", y: "y", ...style, title: reference.label }
+        line(points, { x: "x", y: "y", ...style, title: () => label }),
+        tip(
+          points,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
         )
       );
-    else if (reference.type === "horizontal" && reference.value !== void 0)
+    } else if (reference.type === "horizontal" && reference.value !== void 0) {
+      const data = [{ y: reference.value, label }];
       marks2.push(
-        ruleY([reference.value], { ...style, title: reference.label })
+        ruleY([reference.value], { ...style, title: () => label }),
+        tip(
+          data,
+          {
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
       );
-    else if (reference.type === "path" && reference.points)
+    } else if (reference.type === "path" && reference.points) {
+      const points = reference.points.map((p) => ({ ...p, label }));
       marks2.push(
-        line(reference.points, {
-          x: "x",
-          y: "y",
-          ...style,
-          title: reference.label
-        })
+        line(points, { x: "x", y: "y", ...style, title: () => label }),
+        tip(
+          points,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
       );
+    }
   }
   return marks2;
 }
@@ -19660,18 +19685,26 @@ function thinOrdinaryPoints(data, getSeriesId, targetMax = 40) {
   }
   return result;
 }
-function buildStructuredTooltipMarkOptions(data) {
-  const fieldLabels = [];
-  const seen = /* @__PURE__ */ new Set();
+function buildStructuredTooltipMarkOptions(data, canonicalFieldOrder) {
+  const presentLabels = /* @__PURE__ */ new Set();
   for (const d of data) {
     if (d.tooltipFields) {
       for (const [label] of d.tooltipFields) {
-        if (!seen.has(label)) {
-          seen.add(label);
-          fieldLabels.push(label);
-        }
+        presentLabels.add(label);
       }
     }
+  }
+  const fieldLabels = [];
+  if (canonicalFieldOrder) {
+    for (const label of canonicalFieldOrder) {
+      if (presentLabels.has(label)) {
+        fieldLabels.push(label);
+        presentLabels.delete(label);
+      }
+    }
+  }
+  for (const label of presentLabels) {
+    fieldLabels.push(label);
   }
   const channels = {};
   fieldLabels.forEach((label, idx) => {
@@ -19697,13 +19730,13 @@ function buildStructuredTooltipMarkOptions(data) {
     tip: { format: format3 }
   };
 }
-function ordinaryPointDotMark(data, x2, y2, resolved, customTheme) {
+function ordinaryPointDotMark(data, x2, y2, resolved, customTheme, canonicalFieldOrder) {
   const thinned = thinOrdinaryPoints(data, (d) => d.seriesId, 40);
   const theme = resolved.theme;
   const r = customTheme?.marker?.radius ?? theme.marker.radius;
   const stroke = customTheme?.marker?.stroke ?? theme.marker.stroke;
   const strokeWidth = customTheme?.marker?.strokeWidth ?? theme.marker.strokeWidth;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned);
+  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned, canonicalFieldOrder);
   return dot(thinned, {
     ariaLabel: "ordinary-point",
     x: x2,
@@ -19715,13 +19748,13 @@ function ordinaryPointDotMark(data, x2, y2, resolved, customTheme) {
     ...tooltipOptions
   });
 }
-function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
+function operatingPointDotMark(data, x2, y2, resolved, customTheme, canonicalFieldOrder) {
   const isMultiSeries = resolved.groups.length > 1;
   const fill = customTheme?.marker?.fill ?? (isMultiSeries ? "group" : "#f6e3be");
   const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
   const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
   const r = customTheme?.marker?.radius ?? 6;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(data);
+  const tooltipOptions = buildStructuredTooltipMarkOptions(data, canonicalFieldOrder);
   return dot(data, {
     className: "rtichoke-selected-operating-point",
     x: x2,
@@ -19768,6 +19801,171 @@ function themedPlot(options, theme) {
   }
   return plot2;
 }
+var ROC_CANONICAL_ORDER_THRESHOLD = [
+  "Series",
+  "Cutoff",
+  "PPCR",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "False Positive Rate",
+  "PPV",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var ROC_CANONICAL_ORDER_PPCR = [
+  "Series",
+  "PPCR",
+  "Cutoff",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "False Positive Rate",
+  "PPV",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var PR_CANONICAL_ORDER_THRESHOLD = [
+  "Series",
+  "Cutoff",
+  "PPCR",
+  "Sensitivity",
+  "PPV",
+  "Specificity",
+  "FPR",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var PR_CANONICAL_ORDER_PPCR = [
+  "Series",
+  "PPCR",
+  "Cutoff",
+  "Sensitivity",
+  "PPV",
+  "Specificity",
+  "FPR",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var GAINS_CANONICAL_ORDER_THRESHOLD = [
+  "Series",
+  "Cutoff",
+  "PPCR",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "PPV",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var GAINS_CANONICAL_ORDER_PPCR = [
+  "Series",
+  "PPCR",
+  "Cutoff",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "PPV",
+  "NPV",
+  "Lift",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var LIFT_CANONICAL_ORDER_THRESHOLD = [
+  "Series",
+  "Cutoff",
+  "PPCR",
+  "Lift",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "PPV",
+  "NPV",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var LIFT_CANONICAL_ORDER_PPCR = [
+  "Series",
+  "PPCR",
+  "Cutoff",
+  "Lift",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "PPV",
+  "NPV",
+  "Net Benefit",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var DCA_CANONICAL_ORDER = [
+  "Series",
+  "Threshold",
+  "Net Benefit",
+  "PPCR",
+  "Sensitivity",
+  "Specificity",
+  "FPR",
+  "PPV",
+  "NPV",
+  "Lift",
+  "Predicted Positives",
+  "TP",
+  "TN",
+  "FP",
+  "FN"
+];
+var IA_CANONICAL_ORDER = [
+  "Series",
+  "Threshold",
+  "Interventions Avoided",
+  "Net Benefit",
+  "Predicted Positives",
+  "PPCR",
+  "TN",
+  "FN"
+];
 var ROC_CARRIED_ORDER = [
   "sensitivity",
   "specificity",
@@ -19833,17 +20031,17 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
     const fpr = 1 - datum2.specificity;
     const fields = [["Series", datum2.label]];
     if (opDim === "ppcr") {
-      if (datum2.ppcr !== void 0) fields.push(["PPCR", formatTooltipFieldValue(datum2.ppcr, theme.tip.digits)]);
-      fields.push(["Cutoff", formatTooltipFieldValue(datum2.cutoff, theme.tip.digits)]);
+      if (datum2.ppcr !== void 0) fields.push(["PPCR", formatNativeNumber(datum2.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatNativeNumber(datum2.cutoff, theme.tip.digits)]);
     } else {
-      fields.push(["Cutoff", formatTooltipFieldValue(datum2.cutoff, theme.tip.digits)]);
-      if (datum2.ppcr !== void 0) fields.push(["PPCR", formatTooltipFieldValue(datum2.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatNativeNumber(datum2.cutoff, theme.tip.digits)]);
+      if (datum2.ppcr !== void 0) fields.push(["PPCR", formatNativeNumber(datum2.ppcr, theme.tip.digits)]);
     }
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(datum2.sensitivity, theme.tip.digits)],
-        ["Specificity", formatTooltipFieldValue(datum2.specificity, theme.tip.digits)],
-        ["FPR", formatTooltipFieldValue(fpr, theme.tip.digits)],
+        ["Sensitivity", formatNativeNumber(datum2.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum2.specificity, theme.tip.digits)],
+        ["FPR", formatNativeNumber(fpr, theme.tip.digits)],
         ...buildCarriedPerformanceTooltipFields(
           datum2.performance,
           ROC_CARRIED_ORDER,
@@ -19853,9 +20051,9 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       );
     } else {
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(datum2.sensitivity, theme.tip.digits)],
-        ["Specificity", formatTooltipFieldValue(datum2.specificity, theme.tip.digits)],
-        ["False Positive Rate", formatTooltipFieldValue(fpr, theme.tip.digits)]
+        ["Sensitivity", formatNativeNumber(datum2.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum2.specificity, theme.tip.digits)],
+        ["False Positive Rate", formatNativeNumber(fpr, theme.tip.digits)]
       );
     }
     return {
@@ -19865,6 +20063,8 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
+  const canonicalOrder = opDim === "ppcr" ? ROC_CANONICAL_ORDER_PPCR : ROC_CANONICAL_ORDER_THRESHOLD;
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
   const marks2 = referenceMarks(spec, theme);
   marks2.push(
     line(data, {
@@ -19873,14 +20073,16 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0
+      strokeDasharray: theme.line.dash ?? void 0,
+      ...lineTooltipOpts
     }),
     ordinaryPointDotMark(
       data,
       "false_positive_rate",
       "sensitivity",
       resolved,
-      options.theme
+      options.theme,
+      canonicalOrder
     )
   );
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
@@ -19888,7 +20090,7 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
     const selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme)
+        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme, canonicalOrder)
       );
     }
   }
@@ -20063,15 +20265,15 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
     const fields = [["Series", datum2.label]];
     if (spec.type === "precision_recall") {
       if (opDim === "ppcr") {
-        if (values2.ppcr !== void 0) fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
+        if (values2.ppcr !== void 0) fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
       } else {
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
-        if (values2.ppcr !== void 0) fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
+        if (values2.ppcr !== void 0) fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
       }
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(values2.sensitivity, theme.tip.digits)],
-        ["PPV", formatTooltipFieldValue(values2.ppv, theme.tip.digits)]
+        ["Sensitivity", formatNativeNumber(values2.sensitivity, theme.tip.digits)],
+        ["PPV", formatNativeNumber(values2.ppv, theme.tip.digits)]
       );
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
@@ -20085,13 +20287,13 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
-        fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", formatTooltipFieldValue(values2.sensitivity, theme.tip.digits)]);
+      fields.push(["Sensitivity", formatNativeNumber(values2.sensitivity, theme.tip.digits)]);
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -20104,13 +20306,13 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
-        fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", formatTooltipFieldValue(values2.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values2.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values2.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values2.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Lift", formatTooltipFieldValue(values2.lift, theme.tip.digits)]);
+      fields.push(["Lift", formatNativeNumber(values2.lift, theme.tip.digits)]);
       if (values2.performance && values2.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -20128,6 +20330,15 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
+  let canonicalOrder;
+  if (spec.type === "precision_recall") {
+    canonicalOrder = opDim === "ppcr" ? PR_CANONICAL_ORDER_PPCR : PR_CANONICAL_ORDER_THRESHOLD;
+  } else if (spec.type === "gains") {
+    canonicalOrder = opDim === "probability_threshold" ? GAINS_CANONICAL_ORDER_THRESHOLD : GAINS_CANONICAL_ORDER_PPCR;
+  } else {
+    canonicalOrder = opDim === "probability_threshold" ? LIFT_CANONICAL_ORDER_THRESHOLD : LIFT_CANONICAL_ORDER_PPCR;
+  }
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
   const marks2 = referenceMarks(spec, theme);
   marks2.push(
     line(data, {
@@ -20136,14 +20347,16 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0
+      strokeDasharray: theme.line.dash ?? void 0,
+      ...lineTooltipOpts
     }),
     ordinaryPointDotMark(
       data,
       x2,
       y2,
       resolved,
-      options.theme
+      options.theme,
+      canonicalOrder
     )
   );
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
@@ -20152,7 +20365,7 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
     const selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, x2, y2, resolved, options.theme)
+        operatingPointDotMark(selectedPoints, x2, y2, resolved, options.theme, canonicalOrder)
       );
     }
   }
@@ -20296,8 +20509,8 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
   const data = spec.data.map((datum2) => {
     const fields = [
       ["Series", displayBySeries2.get(datum2.seriesId).label],
-      ["Threshold", formatTooltipFieldValue(datum2.threshold, theme.tip.digits)],
-      ["Net Benefit", formatTooltipFieldValue(datum2.netBenefit, theme.tip.digits)]
+      ["Threshold", formatNativeNumber(datum2.threshold, theme.tip.digits)],
+      ["Net Benefit", formatNativeNumber(datum2.netBenefit, theme.tip.digits)]
     ];
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
@@ -20317,24 +20530,49 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, DCA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks2 = [];
   for (const reference of spec.references) {
+    const label = reference.benchmark === "treat_none" ? reference.label ?? "Treat None" : reference.label ?? `Treat All \u2014 ${reference.population}`;
     if (reference.benchmark === "treat_none") {
-      marks2.push(ruleY([0], { ...defaultReferenceStyle, title: () => reference.label ?? "Treat None" }));
+      const ruleData = [{ y: 0, label }];
+      marks2.push(
+        ruleY([0], { ...defaultReferenceStyle, title: () => label }),
+        tip(
+          ruleData,
+          {
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
+      );
     } else {
-      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, title: () => reference.label ?? `Treat All \u2014 ${reference.population}` }));
+      const pathPoints = reference.points.map((p) => ({ ...p, label }));
+      marks2.push(
+        line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
+        tip(
+          pathPoints,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
+      );
     }
   }
   marks2.push(
-    line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0 }),
-    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme)
+    line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0, ...lineTooltipOpts }),
+    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER)
   );
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
     const selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme)
+        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER)
       );
     }
   }
@@ -20391,8 +20629,8 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
   const data = spec.data.map((datum2) => {
     const fields = [
       ["Series", displayBySeries2.get(datum2.seriesId).label],
-      ["Threshold", typeof datum2.threshold === "number" ? datum2.threshold.toFixed(theme.tip.digits) : String(datum2.threshold)],
-      ["Interventions Avoided", typeof datum2.interventionsAvoided === "number" ? datum2.interventionsAvoided.toFixed(theme.tip.digits) : String(datum2.interventionsAvoided)]
+      ["Threshold", formatNativeNumber(datum2.threshold, theme.tip.digits)],
+      ["Interventions Avoided", formatNativeNumber(datum2.interventionsAvoided, theme.tip.digits)]
     ];
     if (datum2.performance && datum2.performance.length > 0) {
       fields.push(
@@ -20412,24 +20650,49 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
       title: tooltip(theme.tip.digits, fields)
     };
   });
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, IA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks2 = [];
   for (const reference of spec.references) {
+    const label = reference.benchmark === "treat_all" ? reference.label ?? "Treat All" : reference.label ?? `Treat None \u2014 ${reference.population}`;
     if (reference.benchmark === "treat_all") {
-      marks2.push(ruleY([0], { ...defaultReferenceStyle, title: () => reference.label ?? "Treat All" }));
+      const ruleData = [{ y: 0, label }];
+      marks2.push(
+        ruleY([0], { ...defaultReferenceStyle, title: () => label }),
+        tip(
+          ruleData,
+          {
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
+      );
     } else {
-      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, title: () => reference.label ?? `Treat None \u2014 ${reference.population}` }));
+      const pathPoints = reference.points.map((p) => ({ ...p, label }));
+      marks2.push(
+        line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
+        tip(
+          pathPoints,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false }
+          }
+        )
+      );
     }
   }
   marks2.push(
-    line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0 }),
-    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme)
+    line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0, ...lineTooltipOpts }),
+    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER)
   );
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
     const selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme)
+        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER)
       );
     }
   }
