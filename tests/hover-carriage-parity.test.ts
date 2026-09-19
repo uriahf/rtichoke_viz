@@ -50,12 +50,17 @@ function getDomTipLines(element: HTMLElement | SVGSVGElement): string[] {
 
   const tipTextEls = Array.from(element.querySelectorAll('g[aria-label="tip"] text'));
   for (const tipTextEl of tipTextEls) {
-    const tspans = Array.from(tipTextEl.querySelectorAll("tspan"));
-    const lines = tspans
-      .map((ts) => (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim())
-      .filter((line) => line.length > 0);
-    if (lines.length > 0) {
-      return lines;
+    const topTspans = Array.from(tipTextEl.children).filter(
+      (el) => el.tagName.toLowerCase() === "tspan",
+    );
+    if (topTspans.length > 0) {
+      return topTspans.map((ts) => {
+        const boldEl = ts.querySelector('tspan[font-weight="bold"]');
+        const label = boldEl ? boldEl.textContent?.trim() ?? "" : "";
+        const rawText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+        const val = rawText.slice(label.length).trim();
+        return `${label}: ${val}`;
+      });
     }
   }
   return [];
@@ -598,6 +603,58 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       expect(lines).toContain("Series: Model A");
       expect(lines).toContain("Sensitivity: 0.800");
       expect(lines).toContain("TP: 80");
+    });
+  });
+
+  describe("Structured Tooltip DOM Hierarchy & Operating Point Ordering Tests", () => {
+    it("proves native structured tip DOM structure exists with bold label tspans", () => {
+      const element = renderRocV2(baseRocSpec) as HTMLElement;
+      const circle = element.querySelector("circle");
+      expect(circle).not.toBeNull();
+      const cx = Number(circle!.getAttribute("cx") ?? 100);
+      const cy = Number(circle!.getAttribute("cy") ?? 100);
+      circle!.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: cx,
+          clientY: cy,
+        }),
+      );
+
+      const tipTextEl = element.querySelector('g[aria-label="tip"] text');
+      expect(tipTextEl).not.toBeNull();
+      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
+        (el) => el.textContent?.trim(),
+      );
+      expect(boldLabels).toEqual(["Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "False Positive Rate"]);
+    });
+
+    it("renders Cutoff before PPCR when operatingPoint dimension is probability_threshold", () => {
+      const spec: RocV2Spec = {
+        ...baseRocSpec,
+        operatingPoint: { dimension: "probability_threshold" },
+      };
+      const element = renderRocV2(spec) as HTMLElement;
+      const lines = getDomTipLines(element);
+      const cutoffIndex = lines.findIndex((line) => line.startsWith("Cutoff:"));
+      const ppcrIndex = lines.findIndex((line) => line.startsWith("PPCR:"));
+      expect(cutoffIndex).toBeGreaterThan(-1);
+      expect(ppcrIndex).toBeGreaterThan(-1);
+      expect(cutoffIndex).toBeLessThan(ppcrIndex);
+    });
+
+    it("renders PPCR before Cutoff when operatingPoint dimension is ppcr", () => {
+      const spec: RocV2Spec = {
+        ...baseRocSpec,
+        operatingPoint: { dimension: "ppcr" },
+      };
+      const element = renderRocV2(spec) as HTMLElement;
+      const lines = getDomTipLines(element);
+      const cutoffIndex = lines.findIndex((line) => line.startsWith("Cutoff:"));
+      const ppcrIndex = lines.findIndex((line) => line.startsWith("PPCR:"));
+      expect(cutoffIndex).toBeGreaterThan(-1);
+      expect(ppcrIndex).toBeGreaterThan(-1);
+      expect(ppcrIndex).toBeLessThan(cutoffIndex);
     });
   });
 });

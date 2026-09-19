@@ -4,6 +4,7 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
+  formatTooltipFieldValue,
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
@@ -63,8 +64,8 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
   const data = spec.data.map((datum) => {
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
-      ["Threshold", datum.threshold],
-      ["Net Benefit", datum.netBenefit],
+      ["Threshold", formatTooltipFieldValue(datum.threshold, theme.tip.digits)],
+      ["Net Benefit", formatTooltipFieldValue(datum.netBenefit, theme.tip.digits)],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -80,6 +81,7 @@ function renderDecisionCurveChart(spec: DecisionCurveV2Spec, options: V2RenderOp
       ...datum,
       group: displayBySeries.get(datum.seriesId)!.group,
       label: displayBySeries.get(datum.seriesId)!.label,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });

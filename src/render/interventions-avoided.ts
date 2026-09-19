@@ -4,6 +4,7 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
+  formatTooltipFieldValue,
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
@@ -56,8 +57,8 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
   const data = spec.data.map((datum) => {
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
-      ["Threshold", datum.threshold],
-      ["Interventions Avoided", datum.interventionsAvoided],
+      ["Threshold", typeof datum.threshold === "number" ? datum.threshold.toFixed(theme.tip.digits) : String(datum.threshold)],
+      ["Interventions Avoided", typeof datum.interventionsAvoided === "number" ? datum.interventionsAvoided.toFixed(theme.tip.digits) : String(datum.interventionsAvoided)],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -73,6 +74,7 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
       ...datum,
       group: displayBySeries.get(datum.seriesId)!.group,
       label: displayBySeries.get(datum.seriesId)!.label,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });

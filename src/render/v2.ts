@@ -606,12 +606,20 @@ export function buildCarriedPerformanceTooltipFields(
   return fields;
 }
 
+export function formatTooltipFieldValue(value: unknown, digits: number): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? String(value) : value.toFixed(digits);
+  }
+  return String(value);
+}
+
 export function tooltip(digits: number, fields: Array<[string, unknown]>) {
   return fields
     .filter(([, value]) => value !== undefined)
     .map(
       ([label, value]) =>
-        `${label}: ${typeof value === "number" ? value.toFixed(digits) : String(value)}`,
+        `${label}: ${typeof value === "number" ? (Number.isInteger(value) ? String(value) : value.toFixed(digits)) : String(value)}`,
     )
     .join("\n");
 }
@@ -747,7 +755,50 @@ export function thinOrdinaryPoints<T>(
   return result;
 }
 
-export function ordinaryPointDotMark<T extends { seriesId: string }>(
+export function buildStructuredTooltipMarkOptions(
+  data: Array<{ tooltipFields?: Array<[string, unknown]> }>,
+) {
+  const fieldLabels: string[] = [];
+  const seen = new Set<string>();
+  for (const d of data) {
+    if (d.tooltipFields) {
+      for (const [label] of d.tooltipFields) {
+        if (!seen.has(label)) {
+          seen.add(label);
+          fieldLabels.push(label);
+        }
+      }
+    }
+  }
+
+  const channels: Record<string, { value: (d: any) => any; label: string }> = {};
+  fieldLabels.forEach((label, idx) => {
+    channels[`ch_${idx}`] = {
+      value: (d: any) => {
+        if (!d.tooltipFields) return undefined;
+        const entry = d.tooltipFields.find(([l]: [string, unknown]) => l === label);
+        return entry ? entry[1] : undefined;
+      },
+      label,
+    };
+  });
+
+  const format: Record<string, boolean> = {
+    x: false,
+    y: false,
+    z: false,
+    stroke: false,
+    fill: false,
+    r: false,
+  };
+
+  return {
+    channels,
+    tip: { format },
+  };
+}
+
+export function ordinaryPointDotMark<T extends { seriesId: string; tooltipFields?: Array<[string, unknown]> }>(
   data: T[],
   x: string,
   y: string,
@@ -759,6 +810,7 @@ export function ordinaryPointDotMark<T extends { seriesId: string }>(
   const r = customTheme?.marker?.radius ?? theme.marker.radius;
   const stroke = customTheme?.marker?.stroke ?? theme.marker.stroke;
   const strokeWidth = customTheme?.marker?.strokeWidth ?? theme.marker.strokeWidth;
+  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned);
 
   return Plot.dot(thinned, {
     ariaLabel: "ordinary-point",
@@ -768,8 +820,7 @@ export function ordinaryPointDotMark<T extends { seriesId: string }>(
     stroke,
     strokeWidth,
     r,
-    title: (d: any) => d.title,
-    tip: true,
+    ...tooltipOptions,
   });
 }
 
@@ -785,6 +836,7 @@ export function operatingPointDotMark(
   const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
   const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
   const r = customTheme?.marker?.radius ?? 6;
+  const tooltipOptions = buildStructuredTooltipMarkOptions(data);
 
   return Plot.dot(data, {
     className: "rtichoke-selected-operating-point",
@@ -794,8 +846,7 @@ export function operatingPointDotMark(
     stroke,
     strokeWidth,
     r,
-    title: (d: any) => d.title,
-    tip: true,
+    ...tooltipOptions,
   });
 }
 
@@ -918,18 +969,18 @@ function renderRocChart(
     const fpr = 1 - datum.specificity;
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (opDim === "ppcr") {
-      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
-      fields.push(["Cutoff", datum.cutoff]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(datum.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatTooltipFieldValue(datum.cutoff, theme.tip.digits)]);
     } else {
-      fields.push(["Cutoff", datum.cutoff]);
-      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
+      fields.push(["Cutoff", formatTooltipFieldValue(datum.cutoff, theme.tip.digits)]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(datum.ppcr, theme.tip.digits)]);
     }
 
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["FPR", fpr],
+        ["Sensitivity", formatTooltipFieldValue(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatTooltipFieldValue(datum.specificity, theme.tip.digits)],
+        ["FPR", formatTooltipFieldValue(fpr, theme.tip.digits)],
         ...buildCarriedPerformanceTooltipFields(
           datum.performance,
           ROC_CARRIED_ORDER,
@@ -939,15 +990,16 @@ function renderRocChart(
       );
     } else {
       fields.push(
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["False Positive Rate", fpr],
+        ["Sensitivity", formatTooltipFieldValue(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatTooltipFieldValue(datum.specificity, theme.tip.digits)],
+        ["False Positive Rate", formatTooltipFieldValue(fpr, theme.tip.digits)],
       );
     }
 
     return {
       ...datum,
       false_positive_rate: fpr,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });
@@ -960,8 +1012,6 @@ function renderRocChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: (d: any) => d.title,
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,
@@ -1187,13 +1237,16 @@ function renderLineChart(
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (spec.type === "precision_recall") {
       if (opDim === "ppcr") {
-        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
       } else {
-        fields.push(["Cutoff", values.cutoff]);
-        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
+      fields.push(
+        ["Sensitivity", formatTooltipFieldValue(values.sensitivity, theme.tip.digits)],
+        ["PPV", formatTooltipFieldValue(values.ppv, theme.tip.digits)],
+      );
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1206,13 +1259,13 @@ function renderLineChart(
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", values.cutoff]);
-        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", values.sensitivity]);
+      fields.push(["Sensitivity", formatTooltipFieldValue(values.sensitivity, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1225,13 +1278,13 @@ function renderLineChart(
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", values.cutoff]);
-        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Lift", values.lift]);
+      fields.push(["Lift", formatTooltipFieldValue(values.lift, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1245,6 +1298,7 @@ function renderLineChart(
     }
     return {
       ...datum,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });
@@ -1257,8 +1311,6 @@ function renderLineChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: (d: any) => d.title,
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,
