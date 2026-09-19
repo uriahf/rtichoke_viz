@@ -17,13 +17,12 @@ import {
 import { renderDecisionCurveV2 } from "../src/render/decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "../src/render/interventions-avoided.js";
 
-if (typeof SVGElement !== "undefined" && !(SVGElement.prototype as any).getBBox) {
-  (SVGElement.prototype as any).getBBox = () => ({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 20,
-  });
+if (typeof SVGElement !== "undefined") {
+  const polyfillBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
+  if (!(SVGElement.prototype as any).getBBox) (SVGElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGGElement !== "undefined" && !(SVGGElement.prototype as any).getBBox) (SVGGElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGTextElement !== "undefined" && !(SVGTextElement.prototype as any).getBBox) (SVGTextElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGPathElement !== "undefined" && !(SVGPathElement.prototype as any).getBBox) (SVGPathElement.prototype as any).getBBox = polyfillBBox;
 }
 
 function getDomTipLines(element: HTMLElement | SVGSVGElement): string[] {
@@ -54,9 +53,12 @@ function getDomTipLines(element: HTMLElement | SVGSVGElement): string[] {
       (el) => el.tagName.toLowerCase() === "tspan",
     );
     if (topTspans.length > 0) {
+      const boldEl = topTspans[0].querySelector('tspan[font-weight="bold"]');
+      const firstLabel = boldEl ? boldEl.textContent?.trim() ?? "" : "";
+      if (firstLabel === "Reference") continue;
       return topTspans.map((ts) => {
-        const boldEl = ts.querySelector('tspan[font-weight="bold"]');
-        const label = boldEl ? boldEl.textContent?.trim() ?? "" : "";
+        const bold = ts.querySelector('tspan[font-weight="bold"]');
+        const label = bold ? bold.textContent?.trim() ?? "" : "";
         const rawText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
         const val = rawText.slice(label.length).trim();
         return `${label}: ${val}`;
@@ -655,6 +657,86 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       expect(cutoffIndex).toBeGreaterThan(-1);
       expect(ppcrIndex).toBeGreaterThan(-1);
       expect(ppcrIndex).toBeLessThan(cutoffIndex);
+    });
+
+    it("ensures canonical field order is strictly deterministic when rows contain heterogeneous partial performance payloads", () => {
+      const spec: RocV2Spec = {
+        ...baseRocSpec,
+        data: [
+          {
+            seriesId: "ser-1",
+            cutoff: 0.8,
+            ppcr: 0.1,
+            sensitivity: 0.4,
+            specificity: 0.95,
+            performance: [{ metricId: "true_positives", estimate: 40 }],
+          },
+          {
+            seriesId: "ser-1",
+            cutoff: 0.5,
+            ppcr: 0.3,
+            sensitivity: 0.8,
+            specificity: 0.9,
+            performance: [
+              { metricId: "ppv", estimate: 0.444 },
+              { metricId: "true_positives", estimate: 80 },
+            ],
+          },
+        ],
+      };
+      const element = renderRocV2(spec) as HTMLElement;
+      const circles = Array.from(element.querySelectorAll("circle"));
+      expect(circles.length).toBeGreaterThan(1);
+
+      const targetCircle = circles[1];
+      const cx = Number(targetCircle.getAttribute("cx") ?? 100);
+      const cy = Number(targetCircle.getAttribute("cy") ?? 100);
+      targetCircle.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: cx,
+          clientY: cy,
+        }),
+      );
+
+      const tipTextEl = element.querySelector('g[aria-label="tip"] text');
+      expect(tipTextEl).not.toBeNull();
+      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
+        (el) => el.textContent?.trim(),
+      );
+      const ppvIdx = boldLabels.indexOf("PPV");
+      const tpIdx = boldLabels.indexOf("TP");
+      expect(ppvIdx).toBeGreaterThan(-1);
+      expect(tpIdx).toBeGreaterThan(-1);
+      expect(ppvIdx).toBeLessThan(tpIdx);
+    });
+
+    it("renders native structured tip for generic curve reference lines and Decision Curve reference lines", () => {
+      const elementRoc = renderRocV2(baseRocSpec) as HTMLElement;
+      const refLine = elementRoc.querySelector('g[aria-label="line"] path');
+      expect(refLine).not.toBeNull();
+      refLine!.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 50,
+          clientY: 50,
+        }),
+      );
+      const tipGroup = elementRoc.querySelector('g[aria-label="tip"]');
+      expect(tipGroup).not.toBeNull();
+
+      const elementDca = renderDecisionCurveV2(baseDcaSpec) as HTMLElement;
+      const refRule = elementDca.querySelector('g[aria-label="rule"] line, g[aria-label="line"] path');
+      expect(refRule).not.toBeNull();
+      refRule!.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 50,
+          clientY: 50,
+        }),
+      );
+      const tipGroupDca = elementDca.querySelector('g[aria-label="tip"]');
+      expect(tipGroupDca).not.toBeNull();
     });
   });
 });

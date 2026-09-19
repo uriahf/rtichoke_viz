@@ -4,7 +4,9 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
-  formatTooltipFieldValue,
+  buildStructuredTooltipMarkOptions,
+  formatNativeNumber,
+  IA_CANONICAL_ORDER,
   operatingPointDotMark,
   ordinaryPointDotMark,
   renderWithHorizonSelection,
@@ -57,8 +59,8 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
   const data = spec.data.map((datum) => {
     const fields: Array<[string, unknown]> = [
       ["Series", displayBySeries.get(datum.seriesId)!.label],
-      ["Threshold", typeof datum.threshold === "number" ? datum.threshold.toFixed(theme.tip.digits) : String(datum.threshold)],
-      ["Interventions Avoided", typeof datum.interventionsAvoided === "number" ? datum.interventionsAvoided.toFixed(theme.tip.digits) : String(datum.interventionsAvoided)],
+      ["Threshold", formatNativeNumber(datum.threshold, theme.tip.digits)],
+      ["Interventions Avoided", formatNativeNumber(datum.interventionsAvoided, theme.tip.digits)],
     ];
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
@@ -78,24 +80,49 @@ function renderInterventionsAvoidedChart(spec: InterventionsAvoidedV2Spec, optio
       title: tooltip(theme.tip.digits, fields),
     };
   });
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, IA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references) {
+    const label = reference.benchmark === "treat_all" ? (reference.label ?? "Treat All") : (reference.label ?? `Treat None — ${reference.population}`);
     if (reference.benchmark === "treat_all") {
-      marks.push(Plot.ruleY([0], { ...defaultReferenceStyle, title: () => reference.label ?? "Treat All" }));
+      const ruleData = [{ y: 0, label }];
+      marks.push(
+        Plot.ruleY([0], { ...defaultReferenceStyle, title: () => label }),
+        Plot.tip(
+          ruleData,
+          {
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false },
+          },
+        ),
+      );
     } else {
-      marks.push(Plot.line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, title: () => reference.label ?? `Treat None — ${reference.population}` }));
+      const pathPoints = reference.points.map((p) => ({ ...p, label }));
+      marks.push(
+        Plot.line(pathPoints, { x: "x", y: "y", ...defaultReferenceStyle, title: () => label }),
+        Plot.tip(
+          pathPoints,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false },
+          },
+        ),
+      );
     }
   }
   marks.push(
-    Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined }),
-    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme),
+    Plot.line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? undefined, ...lineTooltipOpts }),
+    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const selectedPoints = data.filter((datum) => datum.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme),
+        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER),
       );
     }
   }

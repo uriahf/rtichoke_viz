@@ -9,6 +9,15 @@ import type { RocV2Spec } from "../spec/v2/roc.js";
 import type { PerformanceMetricId, PerformanceMetricValue } from "../spec/v2/performance-table.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 
+if (typeof SVGElement !== "undefined") {
+  const polyfillBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
+  if (!(SVGElement.prototype as any).getBBox) (SVGElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGGElement !== "undefined" && !(SVGGElement.prototype as any).getBBox) (SVGGElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGGraphicsElement !== "undefined" && !(SVGGraphicsElement.prototype as any).getBBox) (SVGGraphicsElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGTextElement !== "undefined" && !(SVGTextElement.prototype as any).getBBox) (SVGTextElement.prototype as any).getBBox = polyfillBBox;
+  if (typeof SVGPathElement !== "undefined" && !(SVGPathElement.prototype as any).getBBox) (SVGPathElement.prototype as any).getBBox = polyfillBBox;
+}
+
 export const RTICHOKE_COLORS = [
   "#1b9e77",
   "#d95f02",
@@ -606,12 +615,9 @@ export function buildCarriedPerformanceTooltipFields(
   return fields;
 }
 
-export function formatTooltipFieldValue(value: unknown, digits: number): string | undefined {
+export function formatNativeNumber(value: unknown, digits: number): string | undefined {
   if (value === undefined || value === null) return undefined;
-  if (typeof value === "number") {
-    return Number.isInteger(value) ? String(value) : value.toFixed(digits);
-  }
-  return String(value);
+  return typeof value === "number" ? value.toFixed(digits) : String(value);
 }
 
 export function tooltip(digits: number, fields: Array<[string, unknown]>) {
@@ -619,7 +625,7 @@ export function tooltip(digits: number, fields: Array<[string, unknown]>) {
     .filter(([, value]) => value !== undefined)
     .map(
       ([label, value]) =>
-        `${label}: ${typeof value === "number" ? (Number.isInteger(value) ? String(value) : value.toFixed(digits)) : String(value)}`,
+        `${label}: ${typeof value === "number" ? value.toFixed(digits) : String(value)}`,
     )
     .join("\n");
 }
@@ -689,29 +695,49 @@ function referenceMarks(
   };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references ?? []) {
-    if (reference.type === "identity")
+    const label = reference.label ?? (reference.type === "identity" ? "Identity" : "Reference");
+    if (reference.type === "identity") {
+      const points = [{ x: 0, y: 0, label }, { x: 1, y: 1, label }];
       marks.push(
-        Plot.line(
-          [
-            { x: 0, y: 0 },
-            { x: 1, y: 1 },
-          ],
-          { x: "x", y: "y", ...style, title: reference.label },
+        Plot.line(points, { x: "x", y: "y", ...style, title: () => label }),
+        Plot.tip(
+          points,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false },
+          },
         ),
       );
-    else if (reference.type === "horizontal" && reference.value !== undefined)
+    } else if (reference.type === "horizontal" && reference.value !== undefined) {
+      const data = [{ y: reference.value, label }];
       marks.push(
-        Plot.ruleY([reference.value], { ...style, title: reference.label }),
+        Plot.ruleY([reference.value], { ...style, title: () => label }),
+        Plot.tip(
+          data,
+          {
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false },
+          },
+        ),
       );
-    else if (reference.type === "path" && reference.points)
+    } else if (reference.type === "path" && reference.points) {
+      const points = reference.points.map((p) => ({ ...p, label }));
       marks.push(
-        Plot.line(reference.points, {
-          x: "x",
-          y: "y",
-          ...style,
-          title: reference.label,
-        }),
+        Plot.line(points, { x: "x", y: "y", ...style, title: () => label }),
+        Plot.tip(
+          points,
+          {
+            x: "x",
+            y: "y",
+            channels: { ch_0: { value: "label", label: "Reference" } },
+            format: { x: false, y: false },
+          },
+        ),
       );
+    }
   }
   return marks;
 }
@@ -757,18 +783,28 @@ export function thinOrdinaryPoints<T>(
 
 export function buildStructuredTooltipMarkOptions(
   data: Array<{ tooltipFields?: Array<[string, unknown]> }>,
+  canonicalFieldOrder?: string[],
 ) {
-  const fieldLabels: string[] = [];
-  const seen = new Set<string>();
+  const presentLabels = new Set<string>();
   for (const d of data) {
     if (d.tooltipFields) {
       for (const [label] of d.tooltipFields) {
-        if (!seen.has(label)) {
-          seen.add(label);
-          fieldLabels.push(label);
-        }
+        presentLabels.add(label);
       }
     }
+  }
+
+  const fieldLabels: string[] = [];
+  if (canonicalFieldOrder) {
+    for (const label of canonicalFieldOrder) {
+      if (presentLabels.has(label)) {
+        fieldLabels.push(label);
+        presentLabels.delete(label);
+      }
+    }
+  }
+  for (const label of presentLabels) {
+    fieldLabels.push(label);
   }
 
   const channels: Record<string, { value: (d: any) => any; label: string }> = {};
@@ -804,13 +840,14 @@ export function ordinaryPointDotMark<T extends { seriesId: string; tooltipFields
   y: string,
   resolved: ResolvedV2RenderOptions,
   customTheme?: V2ThemeOptions,
+  canonicalFieldOrder?: string[],
 ): Plot.Markish {
   const thinned = thinOrdinaryPoints(data, (d) => d.seriesId, 40);
   const theme = resolved.theme;
   const r = customTheme?.marker?.radius ?? theme.marker.radius;
   const stroke = customTheme?.marker?.stroke ?? theme.marker.stroke;
   const strokeWidth = customTheme?.marker?.strokeWidth ?? theme.marker.strokeWidth;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned);
+  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned, canonicalFieldOrder);
 
   return Plot.dot(thinned, {
     ariaLabel: "ordinary-point",
@@ -830,13 +867,14 @@ export function operatingPointDotMark(
   y: string,
   resolved: ResolvedV2RenderOptions,
   customTheme?: V2ThemeOptions,
+  canonicalFieldOrder?: string[],
 ): Plot.Markish {
   const isMultiSeries = resolved.groups.length > 1;
   const fill = customTheme?.marker?.fill ?? (isMultiSeries ? "group" : "#f6e3be");
   const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
   const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
   const r = customTheme?.marker?.radius ?? 6;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(data);
+  const tooltipOptions = buildStructuredTooltipMarkOptions(data, canonicalFieldOrder);
 
   return Plot.dot(data, {
     className: "rtichoke-selected-operating-point",
@@ -895,6 +933,42 @@ export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   }
   return plot;
 }
+
+export const ROC_CANONICAL_ORDER_THRESHOLD = [
+  "Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "FPR", "False Positive Rate", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+export const ROC_CANONICAL_ORDER_PPCR = [
+  "Series", "PPCR", "Cutoff", "Sensitivity", "Specificity", "FPR", "False Positive Rate", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+
+export const PR_CANONICAL_ORDER_THRESHOLD = [
+  "Series", "Cutoff", "PPCR", "Sensitivity", "PPV", "Specificity", "FPR", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+export const PR_CANONICAL_ORDER_PPCR = [
+  "Series", "PPCR", "Cutoff", "Sensitivity", "PPV", "Specificity", "FPR", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+
+export const GAINS_CANONICAL_ORDER_THRESHOLD = [
+  "Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+export const GAINS_CANONICAL_ORDER_PPCR = [
+  "Series", "PPCR", "Cutoff", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+
+export const LIFT_CANONICAL_ORDER_THRESHOLD = [
+  "Series", "Cutoff", "PPCR", "Lift", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+export const LIFT_CANONICAL_ORDER_PPCR = [
+  "Series", "PPCR", "Cutoff", "Lift", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+
+export const DCA_CANONICAL_ORDER = [
+  "Series", "Threshold", "Net Benefit", "PPCR", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Predicted Positives", "TP", "TN", "FP", "FN"
+];
+
+export const IA_CANONICAL_ORDER = [
+  "Series", "Threshold", "Interventions Avoided", "Net Benefit", "Predicted Positives", "PPCR", "TN", "FN"
+];
 
 const ROC_CARRIED_ORDER: PerformanceMetricId[] = [
   "sensitivity",
@@ -969,18 +1043,18 @@ function renderRocChart(
     const fpr = 1 - datum.specificity;
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (opDim === "ppcr") {
-      if (datum.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(datum.ppcr, theme.tip.digits)]);
-      fields.push(["Cutoff", formatTooltipFieldValue(datum.cutoff, theme.tip.digits)]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(datum.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatNativeNumber(datum.cutoff, theme.tip.digits)]);
     } else {
-      fields.push(["Cutoff", formatTooltipFieldValue(datum.cutoff, theme.tip.digits)]);
-      if (datum.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(datum.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatNativeNumber(datum.cutoff, theme.tip.digits)]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(datum.ppcr, theme.tip.digits)]);
     }
 
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(datum.sensitivity, theme.tip.digits)],
-        ["Specificity", formatTooltipFieldValue(datum.specificity, theme.tip.digits)],
-        ["FPR", formatTooltipFieldValue(fpr, theme.tip.digits)],
+        ["Sensitivity", formatNativeNumber(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum.specificity, theme.tip.digits)],
+        ["FPR", formatNativeNumber(fpr, theme.tip.digits)],
         ...buildCarriedPerformanceTooltipFields(
           datum.performance,
           ROC_CARRIED_ORDER,
@@ -990,9 +1064,9 @@ function renderRocChart(
       );
     } else {
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(datum.sensitivity, theme.tip.digits)],
-        ["Specificity", formatTooltipFieldValue(datum.specificity, theme.tip.digits)],
-        ["False Positive Rate", formatTooltipFieldValue(fpr, theme.tip.digits)],
+        ["Sensitivity", formatNativeNumber(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum.specificity, theme.tip.digits)],
+        ["False Positive Rate", formatNativeNumber(fpr, theme.tip.digits)],
       );
     }
 
@@ -1003,6 +1077,8 @@ function renderRocChart(
       title: tooltip(theme.tip.digits, fields),
     };
   });
+  const canonicalOrder = opDim === "ppcr" ? ROC_CANONICAL_ORDER_PPCR : ROC_CANONICAL_ORDER_THRESHOLD;
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -1012,6 +1088,7 @@ function renderRocChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
+      ...lineTooltipOpts,
     }),
     ordinaryPointDotMark(
       data,
@@ -1019,6 +1096,7 @@ function renderRocChart(
       "sensitivity",
       resolved,
       options.theme,
+      canonicalOrder,
     ),
   );
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
@@ -1026,7 +1104,7 @@ function renderRocChart(
     const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme),
+        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme, canonicalOrder),
       );
     }
   }
@@ -1237,15 +1315,15 @@ function renderLineChart(
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (spec.type === "precision_recall") {
       if (opDim === "ppcr") {
-        if (values.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       } else {
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
-        if (values.ppcr !== undefined) fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       }
       fields.push(
-        ["Sensitivity", formatTooltipFieldValue(values.sensitivity, theme.tip.digits)],
-        ["PPV", formatTooltipFieldValue(values.ppv, theme.tip.digits)],
+        ["Sensitivity", formatNativeNumber(values.sensitivity, theme.tip.digits)],
+        ["PPV", formatNativeNumber(values.ppv, theme.tip.digits)],
       );
       if (values.performance && values.performance.length > 0) {
         fields.push(
@@ -1259,13 +1337,13 @@ function renderLineChart(
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
-        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", formatTooltipFieldValue(values.sensitivity, theme.tip.digits)]);
+      fields.push(["Sensitivity", formatNativeNumber(values.sensitivity, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1278,13 +1356,13 @@ function renderLineChart(
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
-        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", formatTooltipFieldValue(values.ppcr, theme.tip.digits)]);
-        fields.push(["Cutoff", formatTooltipFieldValue(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Lift", formatTooltipFieldValue(values.lift, theme.tip.digits)]);
+      fields.push(["Lift", formatNativeNumber(values.lift, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1302,6 +1380,16 @@ function renderLineChart(
       title: tooltip(theme.tip.digits, fields),
     };
   });
+  let canonicalOrder: string[];
+  if (spec.type === "precision_recall") {
+    canonicalOrder = opDim === "ppcr" ? PR_CANONICAL_ORDER_PPCR : PR_CANONICAL_ORDER_THRESHOLD;
+  } else if (spec.type === "gains") {
+    canonicalOrder = opDim === "probability_threshold" ? GAINS_CANONICAL_ORDER_THRESHOLD : GAINS_CANONICAL_ORDER_PPCR;
+  } else {
+    canonicalOrder = opDim === "probability_threshold" ? LIFT_CANONICAL_ORDER_THRESHOLD : LIFT_CANONICAL_ORDER_PPCR;
+  }
+  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
+
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -1311,6 +1399,7 @@ function renderLineChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
+      ...lineTooltipOpts,
     }),
     ordinaryPointDotMark(
       data,
@@ -1318,6 +1407,7 @@ function renderLineChart(
       y,
       resolved,
       options.theme,
+      canonicalOrder,
     ),
   );
   if (selectedOperatingPointValue !== undefined && (spec as OperatingPointSupportedSpec).operatingPoint) {
@@ -1326,7 +1416,7 @@ function renderLineChart(
     const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
-        operatingPointDotMark(selectedPoints, x, y, resolved, options.theme),
+        operatingPointDotMark(selectedPoints, x, y, resolved, options.theme, canonicalOrder),
       );
     }
   }
