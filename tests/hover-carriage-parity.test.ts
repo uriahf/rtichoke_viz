@@ -43,10 +43,11 @@ function getDomTipLines(element: HTMLElement | SVGSVGElement): string[] {
   const textEl = element.querySelector<SVGTextElement>("g.rtichoke-hover-tooltip text");
   if (!textEl) return [];
 
-  const tspans = Array.from(textEl.querySelectorAll("tspan"));
-  const lineTspans = tspans.filter((ts) => ts.getAttribute("x") === "0");
+  const topTspans = Array.from(textEl.children).filter(
+    (el) => el.tagName.toLowerCase() === "tspan",
+  );
 
-  return lineTspans.map((ts) => {
+  return topTspans.map((ts) => {
     const bold = ts.querySelector('tspan[font-weight="bold"]');
     const label = bold ? bold.textContent?.replace(":", "").trim() ?? "" : "";
     const fullText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();

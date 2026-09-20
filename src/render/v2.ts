@@ -1017,11 +1017,10 @@ export function installCurveHoverLayer(
       posY = svgH - margins.bottom - boxH;
     }
 
-    text.selectAll<SVGTSpanElement, unknown>("tspan").each(function () {
-      if (this.parentNode === textNode) {
-        select(this).attr("x", posX + paddingX);
-      }
-    });
+    text.children; // direct tspan children
+    select(textNode)
+      .selectAll<SVGTSpanElement, unknown>("text > tspan")
+      .attr("x", posX + paddingX);
 
     rect
       .attr("x", posX)
