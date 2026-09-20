@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { CalibrationV2Spec } from "../src/spec/v2/calibration.js";
 import type { SummaryMetricsSpec } from "../src/spec/v2/summary-metrics.js";
@@ -25,13 +27,9 @@ if (typeof SVGElement !== "undefined") {
   if (typeof SVGPathElement !== "undefined" && !(SVGPathElement.prototype as any).getBBox) (SVGPathElement.prototype as any).getBBox = polyfillBBox;
 }
 
-function getDomTipFields(element: HTMLElement | SVGSVGElement): { labels: string[]; bgFill: string | null } {
-  const target =
-    element.querySelector<SVGElement>("circle.rtichoke-hover-point-target") ||
-    element.querySelector<SVGElement>("path.rtichoke-hover-line-target") ||
-    element.querySelector<SVGElement>(".rtichoke-hover-ref-target");
-
-  if (!target) return { labels: [], bgFill: null };
+function getDomTipLinesAndFill(element: HTMLElement | SVGSVGElement, selector = "circle.rtichoke-hover-point-target"): { lines: string[]; bgFill: string | null } {
+  const target = element.querySelector<SVGElement>(selector);
+  if (!target) return { lines: [], bgFill: null };
 
   target.dispatchEvent(
     new (window as any).PointerEvent("pointermove", {
@@ -45,18 +43,21 @@ function getDomTipFields(element: HTMLElement | SVGSVGElement): { labels: string
   const bgFill = bgRect ? bgRect.getAttribute("fill") : null;
 
   const textEl = element.querySelector<SVGTextElement>("g.rtichoke-hover-tooltip text");
-  if (!textEl) return { labels: [], bgFill };
+  if (!textEl) return { lines: [], bgFill };
 
   const topTspans = Array.from(textEl.children).filter(
     (el) => el.tagName.toLowerCase() === "tspan",
   );
 
-  const labels = topTspans.map((ts) => {
+  const lines = topTspans.map((ts) => {
     const bold = ts.querySelector('tspan[font-weight="bold"]');
-    return bold ? bold.textContent?.replace(":", "").trim() ?? "" : "";
+    const label = bold ? bold.textContent?.replace(":", "").trim() ?? "" : "";
+    const fullText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+    const val = fullText.slice((bold?.textContent ?? "").length).trim();
+    return `${label}: ${val}`;
   });
 
-  return { labels, bgFill };
+  return { lines, bgFill };
 }
 
 const singleModelDiscreteCalibration: CalibrationV2Spec = {
@@ -120,16 +121,41 @@ const twoModelSmoothCalibration: CalibrationV2Spec = {
 
 describe("Visual Convergence Requirements", () => {
   describe("Calibration Main Plot Hover Convergence", () => {
-    it("1. renders single-model discrete calibration with D3 hover targets and exact field order", () => {
+    it("1. preserves exact Calibration numeric formatting (Predicted, Observed, Events, Total formatted with theme.tip.digits)", () => {
       const element = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
-      const { labels, bgFill } = getDomTipFields(element);
+      const { lines, bgFill } = getDomTipLinesAndFill(element);
 
-      expect(labels).toEqual(["Series", "Predicted", "Observed", "Events", "Total"]);
-      // Single model resolves to "#000000" in single-series mode
+      const expectedLines = [
+        "Series: Model A",
+        "Predicted: 0.200",
+        "Observed: 0.180",
+        "Events: 10.000",
+        "Total: 55.000",
+      ];
+      expect(lines).toEqual(expectedLines);
       expect(bgFill).toBe("#000000");
     });
 
-    it("2. renders two-model smooth calibration with distinct model tooltip backgrounds matching colorByGroup", () => {
+    it("2. tests smooth Calibration line-target hover directly and asserts nearest datum, exact field order, and series background", () => {
+      const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
+
+      const lineTargets = Array.from(element.querySelectorAll<SVGElement>("path.rtichoke-hover-line-target"));
+      expect(lineTargets.length).toBeGreaterThanOrEqual(2);
+
+      // Trigger line hover on first smooth model line
+      const { lines, bgFill } = getDomTipLinesAndFill(element, "path.rtichoke-hover-line-target");
+
+      expect(lines).toEqual([
+        "Series: Model A",
+        "Predicted: 0.100",
+        "Observed: 0.120",
+        "Events: 12.000",
+        "Total: 100.000",
+      ]);
+      expect(bgFill).toBe("#1b9e77");
+    });
+
+    it("3. renders two-model smooth calibration with distinct model tooltip backgrounds matching colorByGroup", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
 
       const pointTargets = Array.from(element.querySelectorAll<SVGElement>("circle.rtichoke-hover-point-target"));
@@ -150,7 +176,7 @@ describe("Visual Convergence Requirements", () => {
       expect(bgRect2?.getAttribute("fill")).toBe("#d95f02");
     });
 
-    it("3. uses neutral #f3f4f6 background for identity/reference line hover", () => {
+    it("4. uses neutral #f3f4f6 background for identity/reference line hover", () => {
       const element = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
       const refTarget = element.querySelector<SVGElement>(".rtichoke-hover-ref-target");
       expect(refTarget).not.toBeNull();
@@ -166,14 +192,14 @@ describe("Visual Convergence Requirements", () => {
       expect(textEl?.textContent).toContain("Reference: Identity");
     });
 
-    it("4. selects high-contrast text colors for dark and light model background fills", () => {
+    it("5. selects high-contrast text colors for dark and light model background fills", () => {
       expect(getContrastTextColor("#000000")).toBe("#ffffff");
       expect(getContrastTextColor("#ffffff")).toBe("#000000");
       expect(getContrastTextColor("#07004D")).toBe("#ffffff");
       expect(getContrastTextColor("#F4FFF0")).toBe("#000000");
     });
 
-    it("5. attached histogram panel is isolated from main plot D3 hover layer and preserves native rect tip", () => {
+    it("6. attached histogram panel is isolated from main plot D3 hover layer and preserves native rect tip", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
       expect(element.className).toBe("rtichoke-calibration");
 
@@ -195,10 +221,25 @@ describe("Visual Convergence Requirements", () => {
     });
   });
 
-  describe("Font Family Convergence", () => {
-    it("6. applies Arial, Helvetica, sans-serif across Report, Performance Table, Prediction Distribution, and Summary Metrics", () => {
-      const perfSpec = perfFixture as PerformanceTableSpec;
+  describe("Font Family Convergence & Stylesheet Contract", () => {
+    it("7. verifies stylesheet-level font-family rules converge on Arial, Helvetica, sans-serif across all browser component roots", () => {
+      const cssPath = resolve(__dirname, "../src/rtichoke-viz.css");
+      const cssText = readFileSync(cssPath, "utf-8");
 
+      expect(cssText).toContain(".rtichoke-report");
+      expect(cssText).toContain(".rtichoke-performance-table");
+      expect(cssText).toContain(".rtichoke-prediction-distribution");
+      expect(cssText).toContain(".rtichoke-summary-metrics");
+
+      // Verify no remaining system-ui font-family declarations exist in CSS
+      expect(cssText).not.toContain("system-ui");
+
+      // Verify Arial, Helvetica, sans-serif is used consistently
+      expect(cssText).toContain("font-family: Arial, Helvetica, sans-serif;");
+    });
+
+    it("8. applies Arial, Helvetica, sans-serif across rendered DOM roots", () => {
+      const perfSpec = perfFixture as PerformanceTableSpec;
       const pdSpec = pdFixture as PredictionDistributionSpec;
 
       const sumSpec: SummaryMetricsSpec = {
@@ -241,8 +282,8 @@ describe("Visual Convergence Requirements", () => {
     });
   });
 
-  describe("Summary Metrics Compact Presentation", () => {
-    it("7. renders Summary Metrics table structure and attributes without altering content or horizon filtering", () => {
+  describe("Summary Metrics Compact Presentation & Header Alignment", () => {
+    it("9. renders Summary Metrics table with right-aligned Estimate header, structure, and attributes without altering content or horizon filtering", () => {
       const multiHorizonSumSpec: SummaryMetricsSpec = {
         schemaVersion: "1.1",
         type: "summary_metrics",
@@ -267,6 +308,15 @@ describe("Visual Convergence Requirements", () => {
 
       const headers = Array.from(table!.querySelectorAll("th")).map((th) => th.textContent);
       expect(headers).toEqual(["Owner", "Metric", "Estimate"]);
+
+      // Estimate header is third header
+      const estimateHeader = table!.querySelectorAll("th")[2];
+      expect(estimateHeader.textContent).toBe("Estimate");
+
+      // Check CSS rule for right-aligned estimate header in stylesheet
+      const cssPath = resolve(__dirname, "../src/rtichoke-viz.css");
+      const cssText = readFileSync(cssPath, "utf-8");
+      expect(cssText).toContain(".rtichoke-summary-metrics__table th:last-child");
 
       const rows = Array.from(table!.querySelectorAll("tbody tr"));
       expect(rows.length).toBe(3);

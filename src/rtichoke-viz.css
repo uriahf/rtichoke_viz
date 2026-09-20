@@ -1009,6 +1009,10 @@
   white-space: nowrap;
 }
 
+.rtichoke-summary-metrics__table th:last-child {
+  text-align: right;
+}
+
 .rtichoke-summary-metrics__table td {
   padding: 0.4rem 0.65rem;
   border-bottom: 1px solid #f3f4f6;

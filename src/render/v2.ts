@@ -1400,8 +1400,8 @@ export function renderCalibrationV2(
       ["Series", datum.label],
       ["Predicted", formatNativeNumber(datum.predicted, theme.tip.digits)],
       ["Observed", formatNativeNumber(datum.observed, theme.tip.digits)],
-      ["Events", datum.events],
-      ["Total", datum.total],
+      ["Events", formatNativeNumber(datum.events, theme.tip.digits)],
+      ["Total", formatNativeNumber(datum.total, theme.tip.digits)],
     ];
     return {
       ...datum,
