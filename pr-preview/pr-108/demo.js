@@ -19591,16 +19591,6 @@ function axisOptions2(theme, label, domain) {
     tickFormat: theme.axis.numberFormat
   };
 }
-function buildReferenceTooltipMarkOptions(label) {
-  return {
-    channels: {
-      ch_0: { value: () => label, label: "Reference" }
-    },
-    tip: {
-      format: { x: false, y: false, z: false, stroke: false, fill: false }
-    }
-  };
-}
 function referenceMarks(spec, theme) {
   const style = {
     stroke: theme.reference.color,
@@ -19609,8 +19599,6 @@ function referenceMarks(spec, theme) {
   };
   const marks2 = [];
   for (const reference of spec.references ?? []) {
-    const label = reference.label ?? (reference.type === "identity" ? "Identity" : "Reference");
-    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.type === "identity") {
       marks2.push(
         line(
@@ -19618,20 +19606,19 @@ function referenceMarks(spec, theme) {
             { x: 0, y: 0 },
             { x: 1, y: 1 }
           ],
-          { x: "x", y: "y", ...style, ...refTipOpts }
+          { x: "x", y: "y", ...style }
         )
       );
     } else if (reference.type === "horizontal" && reference.value !== void 0) {
       marks2.push(
-        ruleY([reference.value], { ...style, ...refTipOpts })
+        ruleY([reference.value], { ...style })
       );
     } else if (reference.type === "path" && reference.points) {
       marks2.push(
         line(reference.points, {
           x: "x",
           y: "y",
-          ...style,
-          ...refTipOpts
+          ...style
         })
       );
     }
@@ -19670,58 +19657,12 @@ function thinOrdinaryPoints(data, getSeriesId, targetMax = 40) {
   }
   return result;
 }
-function buildStructuredTooltipMarkOptions(data, canonicalFieldOrder) {
-  const presentLabels = /* @__PURE__ */ new Set();
-  for (const d of data) {
-    if (d.tooltipFields) {
-      for (const [label] of d.tooltipFields) {
-        presentLabels.add(label);
-      }
-    }
-  }
-  const fieldLabels = [];
-  if (canonicalFieldOrder) {
-    for (const label of canonicalFieldOrder) {
-      if (presentLabels.has(label)) {
-        fieldLabels.push(label);
-        presentLabels.delete(label);
-      }
-    }
-  }
-  for (const label of presentLabels) {
-    fieldLabels.push(label);
-  }
-  const channels = {};
-  fieldLabels.forEach((label, idx) => {
-    channels[`ch_${idx}`] = {
-      value: (d) => {
-        if (!d.tooltipFields) return void 0;
-        const entry = d.tooltipFields.find(([l]) => l === label);
-        return entry ? entry[1] : void 0;
-      },
-      label
-    };
-  });
-  const format3 = {
-    x: false,
-    y: false,
-    z: false,
-    stroke: false,
-    fill: false,
-    r: false
-  };
-  return {
-    channels,
-    tip: { format: format3 }
-  };
-}
-function ordinaryPointDotMark(data, x2, y2, resolved, customTheme, canonicalFieldOrder) {
+function ordinaryPointDotMark(data, x2, y2, resolved, customTheme) {
   const thinned = thinOrdinaryPoints(data, (d) => d.seriesId, 40);
   const theme = resolved.theme;
   const r = customTheme?.marker?.radius ?? theme.marker.radius;
   const stroke = customTheme?.marker?.stroke ?? theme.marker.stroke;
   const strokeWidth = customTheme?.marker?.strokeWidth ?? theme.marker.strokeWidth;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(thinned, canonicalFieldOrder);
   return dot(thinned, {
     ariaLabel: "ordinary-point",
     x: x2,
@@ -19729,17 +19670,15 @@ function ordinaryPointDotMark(data, x2, y2, resolved, customTheme, canonicalFiel
     fill: "group",
     stroke,
     strokeWidth,
-    r,
-    ...tooltipOptions
+    r
   });
 }
-function operatingPointDotMark(data, x2, y2, resolved, customTheme, canonicalFieldOrder) {
+function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
   const isMultiSeries = resolved.groups.length > 1;
   const fill = customTheme?.marker?.fill ?? (isMultiSeries ? "group" : "#f6e3be");
   const stroke = customTheme?.marker?.stroke ?? "#1a1a1a";
   const strokeWidth = customTheme?.marker?.strokeWidth ?? 2.5;
   const r = customTheme?.marker?.radius ?? 6;
-  const tooltipOptions = buildStructuredTooltipMarkOptions(data, canonicalFieldOrder);
   return dot(data, {
     className: "rtichoke-selected-operating-point",
     x: x2,
@@ -19747,9 +19686,156 @@ function operatingPointDotMark(data, x2, y2, resolved, customTheme, canonicalFie
     fill,
     stroke,
     strokeWidth,
-    r,
-    ...tooltipOptions
+    r
   });
+}
+function getContrastTextColor(backgroundColor) {
+  let hex2 = backgroundColor.trim().toLowerCase();
+  if (hex2.startsWith("#")) {
+    if (hex2.length === 4) {
+      hex2 = `#${hex2[1]}${hex2[1]}${hex2[2]}${hex2[2]}${hex2[3]}${hex2[3]}`;
+    }
+    const r = parseInt(hex2.slice(1, 3), 16);
+    const g = parseInt(hex2.slice(3, 5), 16);
+    const b = parseInt(hex2.slice(5, 7), 16);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.6 ? "#1a1a1a" : "#ffffff";
+    }
+  }
+  return "#ffffff";
+}
+function installCurveHoverLayer(plotElement, options) {
+  const svgNode2 = plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg");
+  if (!svgNode2) return;
+  const svg = select_default2(svgNode2);
+  const xScale = plotElement.scale?.("x") ?? svgNode2.scale?.("x");
+  const yScale = plotElement.scale?.("y") ?? svgNode2.scale?.("y");
+  if (!xScale || !yScale) return;
+  const scaledItems = options.items.filter((item) => Number.isFinite(item.xValue) && Number.isFinite(item.yValue)).map((item) => ({
+    ...item,
+    px: xScale.apply(item.xValue),
+    py: yScale.apply(item.yValue)
+  }));
+  const scaledOpItems = (options.selectedOperatingPointItems ?? []).filter((item) => Number.isFinite(item.xValue) && Number.isFinite(item.yValue)).map((item) => ({
+    ...item,
+    px: xScale.apply(item.xValue),
+    py: yScale.apply(item.yValue)
+  }));
+  let tooltipGroup = svg.select("g.rtichoke-hover-tooltip");
+  if (tooltipGroup.empty()) {
+    tooltipGroup = svg.append("g").attr("class", "rtichoke-hover-tooltip").style("pointer-events", "none").style("display", "none");
+    tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
+    tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
+  }
+  const rect2 = tooltipGroup.select("rect.rtichoke-hover-tooltip-bg");
+  const text2 = tooltipGroup.select("text.rtichoke-hover-tooltip-text");
+  function showTooltip(event, fields, backgroundColor) {
+    const validFields = fields.filter(([, val]) => val !== void 0 && val !== null);
+    if (validFields.length === 0) return;
+    const isReference = fields.length === 1 && fields[0][0] === "Reference";
+    const bgFill = isReference ? "#f3f4f6" : backgroundColor;
+    const fgColor = isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
+    const strokeColor = isReference ? "#d1d5db" : "#374151";
+    text2.attr("fill", fgColor).attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px");
+    text2.selectAll("tspan").remove();
+    validFields.forEach(([label, val], idx) => {
+      const tspan = text2.append("tspan").attr("dy", idx === 0 ? "1em" : "1.2em");
+      tspan.append("tspan").attr("font-weight", "bold").text(`${label}: `);
+      tspan.append("tspan").attr("font-weight", "normal").text(String(val));
+    });
+    const textNode = text2.node();
+    if (!textNode) return;
+    const bbox = textNode.getBBox();
+    const paddingX = 8;
+    const paddingY = 6;
+    const boxW = Math.max(bbox.width + paddingX * 2, 60);
+    const boxH = bbox.height + paddingY * 2;
+    const [mx, my] = pointer_default(event, svgNode2);
+    const svgW = options.theme.width;
+    const svgH = options.theme.height;
+    const margins = options.theme.margins;
+    let posX = mx + 12;
+    if (posX + boxW > svgW - margins.right) {
+      posX = mx - 12 - boxW;
+    }
+    if (posX < margins.left) {
+      posX = margins.left;
+    }
+    let posY = my - boxH / 2;
+    if (posY < margins.top) {
+      posY = margins.top;
+    }
+    if (posY + boxH > svgH - margins.bottom) {
+      posY = svgH - margins.bottom - boxH;
+    }
+    text2.selectAll("tspan").each(function() {
+      if (this.parentNode === textNode) {
+        select_default2(this).attr("x", posX + paddingX);
+      }
+    });
+    rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1).attr("rx", 4).attr("ry", 4).style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+    text2.attr("x", posX + paddingX).attr("y", posY + paddingY);
+    const finalBBox = textNode.getBBox();
+    const finalBoxW = Math.max(finalBBox.width + paddingX * 2, 60);
+    const finalBoxH = finalBBox.height + paddingY * 2;
+    rect2.attr("x", posX).attr("y", posY).attr("width", finalBoxW).attr("height", finalBoxH);
+    tooltipGroup.style("display", null);
+  }
+  function hideTooltip() {
+    tooltipGroup.style("display", "none");
+  }
+  let targetsGroup = svg.select("g.rtichoke-hover-targets");
+  if (!targetsGroup.empty()) {
+    targetsGroup.remove();
+  }
+  targetsGroup = svg.insert("g", "g.rtichoke-hover-tooltip").attr("class", "rtichoke-hover-targets");
+  for (const ref of options.references ?? []) {
+    const refBg = ref.backgroundColor ?? "#f3f4f6";
+    const refFields = [["Reference", ref.label]];
+    if (ref.type === "horizontal" && ref.value !== void 0) {
+      const ry = yScale.apply(ref.value);
+      targetsGroup.append("line").attr("class", "rtichoke-hover-ref-target").attr("x1", options.theme.margins.left).attr("x2", options.theme.width - options.theme.margins.right).attr("y1", ry).attr("y2", ry).attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, refFields, refBg)).on("mouseleave pointerleave", hideTooltip);
+    } else if ((ref.type === "identity" || ref.type === "path") && ref.points && ref.points.length > 0) {
+      const pathD = ref.points.map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`).join(" ");
+      targetsGroup.append("path").attr("class", "rtichoke-hover-ref-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, refFields, refBg)).on("mouseleave pointerleave", hideTooltip);
+    }
+  }
+  const itemsBySeries = /* @__PURE__ */ new Map();
+  for (const item of scaledItems) {
+    let list = itemsBySeries.get(item.seriesId);
+    if (!list) {
+      list = [];
+      itemsBySeries.set(item.seriesId, list);
+    }
+    list.push(item);
+  }
+  for (const seriesItems of itemsBySeries.values()) {
+    if (seriesItems.length < 2) continue;
+    const pathD = seriesItems.map((item, idx) => `${idx === 0 ? "M" : "L"}${item.px},${item.py}`).join(" ");
+    targetsGroup.append("path").attr("class", "rtichoke-hover-line-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => {
+      const [mx, my] = pointer_default(e, svgNode2);
+      let minDist = Infinity;
+      let nearestItem = seriesItems[0];
+      for (const item of seriesItems) {
+        const dx = item.px - mx;
+        const dy = item.py - my;
+        const dist = dx * dx + dy * dy;
+        if (dist < minDist) {
+          minDist = dist;
+          nearestItem = item;
+        }
+      }
+      showTooltip(e, nearestItem.tooltipFields, nearestItem.backgroundColor);
+    }).on("mouseleave pointerleave", hideTooltip);
+  }
+  for (const item of scaledItems) {
+    targetsGroup.append("circle").attr("class", "rtichoke-hover-point-target").attr("cx", item.px).attr("cy", item.py).attr("r", 8).attr("fill", "transparent").style("pointer-events", "all").on("pointermove", (e) => showTooltip(e, item.tooltipFields, item.backgroundColor)).on("mouseleave pointerleave", hideTooltip);
+  }
+  for (const item of scaledOpItems) {
+    targetsGroup.append("circle").attr("class", "rtichoke-hover-op-target").attr("cx", item.px).attr("cy", item.py).attr("r", 10).attr("fill", "transparent").style("pointer-events", "all").on("pointermove", (e) => showTooltip(e, item.tooltipFields, item.backgroundColor)).on("mouseleave pointerleave", hideTooltip);
+  }
+  svg.on("mouseleave pointerleave", hideTooltip);
 }
 var DEFAULT_HISTOGRAM_HEIGHT = RTICHOKE_BROWSER_THEME.height - Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
 function equalScalePlotHeight(width, margins, xDomain = [0, 1], yDomain = [0, 1], marginBottom) {
@@ -19786,171 +19872,6 @@ function themedPlot(options, theme) {
   }
   return plot2;
 }
-var ROC_CANONICAL_ORDER_THRESHOLD = [
-  "Series",
-  "Cutoff",
-  "PPCR",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "False Positive Rate",
-  "PPV",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var ROC_CANONICAL_ORDER_PPCR = [
-  "Series",
-  "PPCR",
-  "Cutoff",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "False Positive Rate",
-  "PPV",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var PR_CANONICAL_ORDER_THRESHOLD = [
-  "Series",
-  "Cutoff",
-  "PPCR",
-  "Sensitivity",
-  "PPV",
-  "Specificity",
-  "FPR",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var PR_CANONICAL_ORDER_PPCR = [
-  "Series",
-  "PPCR",
-  "Cutoff",
-  "Sensitivity",
-  "PPV",
-  "Specificity",
-  "FPR",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var GAINS_CANONICAL_ORDER_THRESHOLD = [
-  "Series",
-  "Cutoff",
-  "PPCR",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "PPV",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var GAINS_CANONICAL_ORDER_PPCR = [
-  "Series",
-  "PPCR",
-  "Cutoff",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "PPV",
-  "NPV",
-  "Lift",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var LIFT_CANONICAL_ORDER_THRESHOLD = [
-  "Series",
-  "Cutoff",
-  "PPCR",
-  "Lift",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "PPV",
-  "NPV",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var LIFT_CANONICAL_ORDER_PPCR = [
-  "Series",
-  "PPCR",
-  "Cutoff",
-  "Lift",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "PPV",
-  "NPV",
-  "Net Benefit",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var DCA_CANONICAL_ORDER = [
-  "Series",
-  "Threshold",
-  "Net Benefit",
-  "PPCR",
-  "Sensitivity",
-  "Specificity",
-  "FPR",
-  "PPV",
-  "NPV",
-  "Lift",
-  "Predicted Positives",
-  "TP",
-  "TN",
-  "FP",
-  "FN"
-];
-var IA_CANONICAL_ORDER = [
-  "Series",
-  "Threshold",
-  "Interventions Avoided",
-  "Net Benefit",
-  "Predicted Positives",
-  "PPCR",
-  "TN",
-  "FN"
-];
 var ROC_CARRIED_ORDER = [
   "sensitivity",
   "specificity",
@@ -20010,7 +19931,7 @@ var LIFT_CARRIED_ORDER = [
 function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const opDim = spec.operatingPoint?.dimension;
   const data = seriesRenderData(spec, spec.data).map((datum2) => {
     const fpr = 1 - datum2.specificity;
@@ -20048,8 +19969,6 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
-  const canonicalOrder = opDim === "ppcr" ? ROC_CANONICAL_ORDER_PPCR : ROC_CANONICAL_ORDER_THRESHOLD;
-  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
   const marks2 = referenceMarks(spec, theme);
   marks2.push(
     line(data, {
@@ -20058,24 +19977,23 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0,
-      ...lineTooltipOpts
+      strokeDasharray: theme.line.dash ?? void 0
     }),
     ordinaryPointDotMark(
       data,
       "false_positive_rate",
       "sensitivity",
       resolved,
-      options.theme,
-      canonicalOrder
+      options.theme
     )
   );
+  let selectedPoints = [];
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
     const dimField = spec.operatingPoint.dimension === "probability_threshold" ? "cutoff" : "ppcr";
-    const selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme, canonicalOrder)
+        operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme)
       );
     }
   }
@@ -20087,7 +20005,7 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
     xDomain,
     yDomain
   );
-  return themedPlot(
+  const chart = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       height,
@@ -20097,6 +20015,52 @@ function renderRocChart(spec, options = {}, selectedOperatingPointValue) {
     },
     theme
   );
+  const hoverItems = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.false_positive_rate,
+    yValue: d.sensitivity,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const selectedOpHoverItems = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.false_positive_rate,
+    yValue: d.sensitivity,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const referenceHoverItems = [];
+  for (const ref of spec.references ?? []) {
+    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    if (ref.type === "identity") {
+      referenceHoverItems.push({
+        type: "identity",
+        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        label
+      });
+    } else if (ref.type === "horizontal" && ref.value !== void 0) {
+      referenceHoverItems.push({
+        type: "horizontal",
+        value: ref.value,
+        label
+      });
+    } else if (ref.type === "path" && ref.points) {
+      referenceHoverItems.push({
+        type: "path",
+        points: ref.points,
+        label
+      });
+    }
+  }
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme
+  });
+  return chart;
 }
 function renderRocV2(spec, options = {}) {
   return renderWithLegendFiltering(
@@ -20240,7 +20204,7 @@ function renderCalibrationV2(spec, options = {}) {
 function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const opDim = spec.operatingPoint?.dimension;
   const data = seriesRenderData(
     spec,
@@ -20315,15 +20279,6 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
-  let canonicalOrder;
-  if (spec.type === "precision_recall") {
-    canonicalOrder = opDim === "ppcr" ? PR_CANONICAL_ORDER_PPCR : PR_CANONICAL_ORDER_THRESHOLD;
-  } else if (spec.type === "gains") {
-    canonicalOrder = opDim === "probability_threshold" ? GAINS_CANONICAL_ORDER_THRESHOLD : GAINS_CANONICAL_ORDER_PPCR;
-  } else {
-    canonicalOrder = opDim === "probability_threshold" ? LIFT_CANONICAL_ORDER_THRESHOLD : LIFT_CANONICAL_ORDER_PPCR;
-  }
-  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, canonicalOrder);
   const marks2 = referenceMarks(spec, theme);
   marks2.push(
     line(data, {
@@ -20332,29 +20287,28 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
       z: "seriesId",
       stroke: "group",
       strokeWidth: theme.line.width,
-      strokeDasharray: theme.line.dash ?? void 0,
-      ...lineTooltipOpts
+      strokeDasharray: theme.line.dash ?? void 0
     }),
     ordinaryPointDotMark(
       data,
       x2,
       y2,
       resolved,
-      options.theme,
-      canonicalOrder
+      options.theme
     )
   );
+  let selectedPoints = [];
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
     const dim = spec.operatingPoint.dimension;
     const dimField = dim === "probability_threshold" ? "cutoff" : "ppcr";
-    const selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum2) => datum2[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, x2, y2, resolved, options.theme, canonicalOrder)
+        operatingPointDotMark(selectedPoints, x2, y2, resolved, options.theme)
       );
     }
   }
-  return themedPlot(
+  const chart = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       x: axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
@@ -20363,6 +20317,52 @@ function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
     },
     theme
   );
+  const hoverItems = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: Number(d[x2]),
+    yValue: Number(d[y2]),
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const selectedOpHoverItems = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: Number(d[x2]),
+    yValue: Number(d[y2]),
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const referenceHoverItems = [];
+  for (const ref of spec.references ?? []) {
+    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    if (ref.type === "identity") {
+      referenceHoverItems.push({
+        type: "identity",
+        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        label
+      });
+    } else if (ref.type === "horizontal" && ref.value !== void 0) {
+      referenceHoverItems.push({
+        type: "horizontal",
+        value: ref.value,
+        label
+      });
+    } else if (ref.type === "path" && ref.points) {
+      referenceHoverItems.push({
+        type: "path",
+        points: ref.points,
+        label
+      });
+    }
+  }
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme
+  });
+  return chart;
 }
 function horizons(spec) {
   return [
@@ -20488,7 +20488,7 @@ function renderDecisionCurveV2(spec, options = {}) {
 function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups2, { ...options, showLegend: false });
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const displayBySeries2 = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
   const data = spec.data.map((datum2) => {
@@ -20515,32 +20515,30 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
       title: tooltip(theme.tip.digits, fields)
     };
   });
-  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, DCA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks2 = [];
   for (const reference of spec.references) {
-    const label = reference.benchmark === "treat_none" ? reference.label ?? "Treat None" : reference.label ?? `Treat All \u2014 ${reference.population}`;
-    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_none") {
-      marks2.push(ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
+      marks2.push(ruleY([0], { ...defaultReferenceStyle }));
     } else {
-      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
+      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle }));
     }
   }
   marks2.push(
-    line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0, ...lineTooltipOpts }),
-    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER)
+    line(data, { x: "threshold", y: "netBenefit", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0 }),
+    ordinaryPointDotMark(data, "threshold", "netBenefit", resolved, options.theme)
   );
+  let selectedPoints = [];
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
-    const selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme, DCA_CANONICAL_ORDER)
+        operatingPointDotMark(selectedPoints, "threshold", "netBenefit", resolved, options.theme)
       );
     }
   }
   const axis2 = (label, domain) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });
-  return themedPlot({
+  const chart = themedPlot({
     width: theme.width,
     height: theme.height,
     marginTop: theme.margins.top,
@@ -20553,6 +20551,52 @@ function renderDecisionCurveChart(spec, options, selectedOperatingPointValue) {
     y: axis2(spec.yAxis.label, spec.yAxis.domain),
     marks: marks2
   }, theme);
+  const hoverItems = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.threshold,
+    yValue: d.netBenefit,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const selectedOpHoverItems = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.threshold,
+    yValue: d.netBenefit,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const referenceHoverItems = spec.references.map((ref) => {
+    if (ref.type === "horizontal") {
+      const label = ref.label ?? "Treat None";
+      return {
+        type: "horizontal",
+        value: ref.value,
+        label
+      };
+    } else if (ref.type === "path") {
+      const popLabel = ref.population ? `Treat All \u2014 ${ref.population}` : "Treat All";
+      const label = ref.label ?? popLabel;
+      return {
+        type: "path",
+        points: ref.points,
+        label
+      };
+    }
+    return {
+      type: "horizontal",
+      value: 0,
+      label: ref.label ?? "Reference"
+    };
+  });
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme
+  });
+  return chart;
 }
 
 // src/render/interventions-avoided.ts
@@ -20586,7 +20630,7 @@ function renderInterventionsAvoidedV2(spec, options = {}) {
 function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointValue) {
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups2, { ...options, showLegend: false });
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const displayBySeries2 = new Map(spec.series.map((series) => [series.id, series.display]));
   const labelByGroup = new Map(spec.series.map((series) => [series.display.group, series.display.label]));
   const data = spec.data.map((datum2) => {
@@ -20613,32 +20657,30 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
       title: tooltip(theme.tip.digits, fields)
     };
   });
-  const lineTooltipOpts = buildStructuredTooltipMarkOptions(data, IA_CANONICAL_ORDER);
   const defaultReferenceStyle = { stroke: theme.reference.color, strokeWidth: theme.reference.width, strokeDasharray: theme.reference.dash };
   const marks2 = [];
   for (const reference of spec.references) {
-    const label = reference.benchmark === "treat_all" ? reference.label ?? "Treat All" : reference.label ?? `Treat None \u2014 ${reference.population}`;
-    const refTipOpts = buildReferenceTooltipMarkOptions(label);
     if (reference.benchmark === "treat_all") {
-      marks2.push(ruleY([0], { ...defaultReferenceStyle, ...refTipOpts }));
+      marks2.push(ruleY([0], { ...defaultReferenceStyle }));
     } else {
-      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle, ...refTipOpts }));
+      marks2.push(line(reference.points, { x: "x", y: "y", ...defaultReferenceStyle }));
     }
   }
   marks2.push(
-    line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0, ...lineTooltipOpts }),
-    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER)
+    line(data, { x: "threshold", y: "interventionsAvoided", z: "seriesId", stroke: "group", strokeWidth: theme.line.width, strokeDasharray: theme.line.dash ?? void 0 }),
+    ordinaryPointDotMark(data, "threshold", "interventionsAvoided", resolved, options.theme)
   );
+  let selectedPoints = [];
   if (selectedOperatingPointValue !== void 0 && spec.operatingPoint) {
-    const selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum2) => datum2.threshold === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks2.push(
-        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme, IA_CANONICAL_ORDER)
+        operatingPointDotMark(selectedPoints, "threshold", "interventionsAvoided", resolved, options.theme)
       );
     }
   }
   const axis2 = (label, domain) => ({ label, domain, grid: false, line: true, ticks: theme.axis.ticks, tickSize: theme.axis.tickSize, tickPadding: theme.axis.tickPadding, tickFormat: theme.axis.numberFormat });
-  return themedPlot({
+  const chart = themedPlot({
     width: theme.width,
     height: theme.height,
     marginTop: theme.margins.top,
@@ -20651,6 +20693,52 @@ function renderInterventionsAvoidedChart(spec, options, selectedOperatingPointVa
     y: axis2(spec.yAxis.label, spec.yAxis.domain),
     marks: marks2
   }, theme);
+  const hoverItems = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.threshold,
+    yValue: d.interventionsAvoided,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const selectedOpHoverItems = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.threshold,
+    yValue: d.interventionsAvoided,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77"
+  }));
+  const referenceHoverItems = spec.references.map((ref) => {
+    if (ref.type === "horizontal") {
+      const label = ref.label ?? "Treat All";
+      return {
+        type: "horizontal",
+        value: ref.value,
+        label
+      };
+    } else if (ref.type === "path") {
+      const popLabel = ref.population ? `Treat None \u2014 ${ref.population}` : "Treat None";
+      const label = ref.label ?? popLabel;
+      return {
+        type: "path",
+        points: ref.points,
+        label
+      };
+    }
+    return {
+      type: "horizontal",
+      value: 0,
+      label: ref.label ?? "Reference"
+    };
+  });
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme
+  });
+  return chart;
 }
 
 // src/render/performance-table.ts
