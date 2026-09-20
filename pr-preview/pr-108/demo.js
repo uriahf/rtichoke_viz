@@ -19769,11 +19769,8 @@ function installCurveHoverLayer(plotElement, options) {
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
     }
-    text2.selectAll("tspan").each(function() {
-      if (this.parentNode === textNode) {
-        select_default2(this).attr("x", posX + paddingX);
-      }
-    });
+    text2.children;
+    select_default2(textNode).selectAll("text > tspan").attr("x", posX + paddingX);
     rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1).attr("rx", 4).attr("ry", 4).style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
     text2.attr("x", posX + paddingX).attr("y", posY + paddingY);
     const finalBBox = textNode.getBBox();
