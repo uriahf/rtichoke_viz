@@ -860,7 +860,7 @@ export function installCurveHoverLayer(
   options: InstallCurveHoverLayerOptions,
 ) {
   const svgNode =
-    plotElement instanceof SVGSVGElement
+    typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
       ? plotElement
       : plotElement.querySelector<SVGSVGElement>("svg");
   if (!svgNode) return;
@@ -917,12 +917,14 @@ export function installCurveHoverLayer(
     text
       .attr("fill", fgColor)
       .attr("font-family", options.theme.typography.fontFamily)
-      .attr("font-size", "11px");
+      .attr("font-size", "11px")
+      .attr("transform", null);
 
     text.selectAll("tspan").remove();
     validFields.forEach(([label, val], idx) => {
       const tspan = text
         .append("tspan")
+        .attr("x", "0")
         .attr("dy", idx === 0 ? "1em" : "1.2em");
 
       tspan
@@ -966,13 +968,6 @@ export function installCurveHoverLayer(
       posY = svgH - margins.bottom - boxH;
     }
 
-    select(textNode)
-      .selectAll<SVGTSpanElement, unknown>("tspan")
-      .filter(function () {
-        return this.parentNode === textNode;
-      })
-      .attr("x", posX + paddingX);
-
     rect
       .attr("x", posX)
       .attr("y", posY)
@@ -985,18 +980,7 @@ export function installCurveHoverLayer(
       .attr("ry", 4)
       .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
 
-    text.attr("x", posX + paddingX).attr("y", posY + paddingY);
-
-    // Re-measure after positioning tspans to ensure box encompasses positioned text
-    const finalBBox = textNode.getBBox();
-    const finalBoxW = Math.max(finalBBox.width + paddingX * 2, 60);
-    const finalBoxH = finalBBox.height + paddingY * 2;
-
-    rect
-      .attr("x", posX)
-      .attr("y", posY)
-      .attr("width", finalBoxW)
-      .attr("height", finalBoxH);
+    text.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
 
     tooltipGroup.style("display", null);
   }
@@ -1410,17 +1394,21 @@ export function renderCalibrationV2(
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
-  const { theme } = resolved;
-  const data = seriesRenderData(spec, spec.data).map((datum) => ({
-    ...datum,
-    title: tooltip(theme.tip.digits, [
+  const { theme, colorByGroup } = resolved;
+  const data = seriesRenderData(spec, spec.data).map((datum) => {
+    const fields: Array<[string, unknown]> = [
       ["Series", datum.label],
-      ["Predicted", datum.predicted],
-      ["Observed", datum.observed],
+      ["Predicted", formatNativeNumber(datum.predicted, theme.tip.digits)],
+      ["Observed", formatNativeNumber(datum.observed, theme.tip.digits)],
       ["Events", datum.events],
       ["Total", datum.total],
-    ]),
-  }));
+    ];
+    return {
+      ...datum,
+      tooltipFields: fields,
+      title: tooltip(theme.tip.digits, fields),
+    };
+  });
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -1430,8 +1418,6 @@ export function renderCalibrationV2(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: (d: any) => d.title,
-      tip: true,
     }),
   );
   const discrete = data.filter((datum) => datum.method === "discrete");
@@ -1444,8 +1430,6 @@ export function renderCalibrationV2(
         stroke: theme.marker.stroke,
         strokeWidth: theme.marker.strokeWidth,
         r: theme.marker.radius,
-        title: (d: any) => d.title,
-        tip: true,
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
@@ -1481,6 +1465,46 @@ export function renderCalibrationV2(
     },
     theme,
   );
+
+  const hoverItems: CurveHoverItem[] = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.predicted,
+    yValue: d.observed,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77",
+  }));
+
+  const referenceHoverItems: ReferenceHoverItem[] = [];
+  for (const ref of spec.references ?? []) {
+    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    if (ref.type === "identity") {
+      referenceHoverItems.push({
+        type: "identity",
+        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        label,
+      });
+    } else if (ref.type === "horizontal" && ref.value !== undefined) {
+      referenceHoverItems.push({
+        type: "horizontal",
+        value: ref.value,
+        label,
+      });
+    } else if (ref.type === "path" && ref.points) {
+      referenceHoverItems.push({
+        type: "path",
+        points: ref.points,
+        label,
+      });
+    }
+  }
+
+  installCurveHoverLayer(calibration, {
+    items: hoverItems,
+    references: referenceHoverItems,
+    theme,
+  });
+
   if (!hasDistribution || !spec.distribution) return calibration;
   const distribution = seriesRenderData(spec, spec.distribution).map(
     (datum) => ({
