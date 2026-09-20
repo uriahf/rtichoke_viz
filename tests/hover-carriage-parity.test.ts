@@ -26,46 +26,33 @@ if (typeof SVGElement !== "undefined") {
 }
 
 function getDomTipLines(element: HTMLElement | SVGSVGElement): string[] {
-  const circle = element.querySelector("circle");
-  if (circle) {
-    const cx = Number(circle.getAttribute("cx") ?? 100);
-    const cy = Number(circle.getAttribute("cy") ?? 100);
-    circle.dispatchEvent(
-      new (window as any).PointerEvent("pointermove", {
-        bubbles: true,
-        clientX: cx,
-        clientY: cy,
-      }),
-    );
-  } else {
-    element.dispatchEvent(
-      new (window as any).PointerEvent("pointermove", {
-        bubbles: true,
-        clientX: 100,
-        clientY: 100,
-      }),
-    );
-  }
+  const target =
+    element.querySelector<SVGElement>("circle.rtichoke-hover-point-target") ||
+    element.querySelector<SVGElement>("path.rtichoke-hover-line-target") ||
+    element.querySelector<SVGElement>("circle") ||
+    element;
 
-  const tipTextEls = Array.from(element.querySelectorAll('g[aria-label="tip"] text'));
-  for (const tipTextEl of tipTextEls) {
-    const topTspans = Array.from(tipTextEl.children).filter(
-      (el) => el.tagName.toLowerCase() === "tspan",
-    );
-    if (topTspans.length > 0) {
-      const boldEl = topTspans[0].querySelector('tspan[font-weight="bold"]');
-      const firstLabel = boldEl ? boldEl.textContent?.trim() ?? "" : "";
-      if (firstLabel === "Reference") continue;
-      return topTspans.map((ts) => {
-        const bold = ts.querySelector('tspan[font-weight="bold"]');
-        const label = bold ? bold.textContent?.trim() ?? "" : "";
-        const rawText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-        const val = rawText.slice(label.length).trim();
-        return `${label}: ${val}`;
-      });
-    }
-  }
-  return [];
+  target.dispatchEvent(
+    new (window as any).PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: 100,
+      clientY: 100,
+    }),
+  );
+
+  const textEl = element.querySelector<SVGTextElement>("g.rtichoke-hover-tooltip text");
+  if (!textEl) return [];
+
+  const tspans = Array.from(textEl.querySelectorAll("tspan"));
+  const lineTspans = tspans.filter((ts) => ts.getAttribute("x") === "0");
+
+  return lineTspans.map((ts) => {
+    const bold = ts.querySelector('tspan[font-weight="bold"]');
+    const label = bold ? bold.textContent?.replace(":", "").trim() ?? "" : "";
+    const fullText = (ts.textContent ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+    const val = fullText.slice((bold?.textContent ?? "").length).trim();
+    return `${label}: ${val}`;
+  });
 }
 
 const baseRocSpec: RocV2Spec = {
@@ -611,24 +598,130 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
   describe("Structured Tooltip DOM Hierarchy & Operating Point Ordering Tests", () => {
     it("proves native structured tip DOM structure exists with bold label tspans", () => {
       const element = renderRocV2(baseRocSpec) as HTMLElement;
-      const circle = element.querySelector("circle");
-      expect(circle).not.toBeNull();
-      const cx = Number(circle!.getAttribute("cx") ?? 100);
-      const cy = Number(circle!.getAttribute("cy") ?? 100);
-      circle!.dispatchEvent(
+      const target = element.querySelector<SVGElement>("circle.rtichoke-hover-point-target");
+      expect(target).not.toBeNull();
+      target!.dispatchEvent(
         new (window as any).PointerEvent("pointermove", {
           bubbles: true,
-          clientX: cx,
-          clientY: cy,
+          clientX: 100,
+          clientY: 100,
         }),
       );
 
-      const tipTextEl = element.querySelector('g[aria-label="tip"] text');
+      const tipTextEl = element.querySelector("g.rtichoke-hover-tooltip text");
       expect(tipTextEl).not.toBeNull();
       const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
-        (el) => el.textContent?.trim(),
+        (el) => el.textContent?.replace(":", "").trim(),
       );
       expect(boldLabels).toEqual(["Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "False Positive Rate"]);
+    });
+
+    it("ensures canonical field order is strictly deterministic when rows contain heterogeneous partial performance payloads", () => {
+      const spec: RocV2Spec = {
+        ...baseRocSpec,
+        data: [
+          {
+            seriesId: "ser-1",
+            cutoff: 0.8,
+            ppcr: 0.1,
+            sensitivity: 0.4,
+            specificity: 0.95,
+            performance: [{ metricId: "true_positives", estimate: 40 }],
+          },
+          {
+            seriesId: "ser-1",
+            cutoff: 0.5,
+            ppcr: 0.3,
+            sensitivity: 0.8,
+            specificity: 0.9,
+            performance: [
+              { metricId: "ppv", estimate: 0.444 },
+              { metricId: "true_positives", estimate: 80 },
+            ],
+          },
+        ],
+      };
+      const element = renderRocV2(spec) as HTMLElement;
+      const targets = Array.from(element.querySelectorAll<SVGElement>("circle.rtichoke-hover-point-target"));
+      expect(targets.length).toBeGreaterThan(1);
+
+      const targetCircle = targets[1];
+      targetCircle.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 100,
+          clientY: 100,
+        }),
+      );
+
+      const tipTextEl = element.querySelector("g.rtichoke-hover-tooltip text");
+      expect(tipTextEl).not.toBeNull();
+      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
+        (el) => el.textContent?.replace(":", "").trim(),
+      );
+      const ppvIdx = boldLabels.indexOf("PPV");
+      const tpIdx = boldLabels.indexOf("TP");
+      expect(ppvIdx).toBeGreaterThan(-1);
+      expect(tpIdx).toBeGreaterThan(-1);
+      expect(ppvIdx).toBeLessThan(tpIdx);
+    });
+
+    it("ensures curve line mark remains interactively hoverable with structured native tip", () => {
+      const multiPointRoc: RocV2Spec = {
+        ...baseRocSpec,
+        data: [
+          { seriesId: "ser-1", cutoff: 0.8, ppcr: 0.1, sensitivity: 0.4, specificity: 0.95 },
+          { seriesId: "ser-1", cutoff: 0.5, ppcr: 0.3, sensitivity: 0.8, specificity: 0.9 },
+        ],
+      };
+      const element = renderRocV2(multiPointRoc) as HTMLElement;
+      const lineTarget = element.querySelector("path.rtichoke-hover-line-target");
+      expect(lineTarget).not.toBeNull();
+
+      let tipTextEl = element.querySelector("g.rtichoke-hover-tooltip text");
+      const tooltipGroup = element.querySelector<SVGGElement>("g.rtichoke-hover-tooltip");
+      expect(tooltipGroup?.style.display).toBe("none");
+
+      lineTarget!.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 100,
+          clientY: 100,
+        }),
+      );
+
+      tipTextEl = element.querySelector("g.rtichoke-hover-tooltip text");
+      expect(tipTextEl).not.toBeNull();
+      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
+        (el) => el.textContent?.replace(":", "").trim(),
+      );
+      expect(boldLabels).toEqual(["Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "False Positive Rate"]);
+    });
+
+    it("ensures reference line tips are genuinely hover-driven rather than static annotations", () => {
+      const specWithRef: RocV2Spec = {
+        ...baseRocSpec,
+        references: [{ type: "identity", scope: "global", label: "Random Guess" }],
+      };
+      const element = renderRocV2(specWithRef) as HTMLElement;
+      const tooltipGroup = element.querySelector<SVGGElement>("g.rtichoke-hover-tooltip");
+      expect(tooltipGroup?.style.display).toBe("none");
+
+      const refTarget = element.querySelector(".rtichoke-hover-ref-target");
+      expect(refTarget).not.toBeNull();
+
+      refTarget!.dispatchEvent(
+        new (window as any).PointerEvent("pointermove", {
+          bubbles: true,
+          clientX: 100,
+          clientY: 100,
+        }),
+      );
+
+      const boldLabelEl = element.querySelector('g.rtichoke-hover-tooltip text tspan[font-weight="bold"]');
+      expect(boldLabelEl).not.toBeNull();
+      expect(boldLabelEl!.textContent?.replace(":", "").trim()).toBe("Reference");
+      expect(element.querySelector("g.rtichoke-hover-tooltip text")?.textContent).toContain("Random Guess");
     });
 
     it("renders Cutoff before PPCR when operatingPoint dimension is probability_threshold", () => {
@@ -659,106 +752,5 @@ describe("Canonical Hover Carriage & Parity Tests", () => {
       expect(ppcrIndex).toBeLessThan(cutoffIndex);
     });
 
-    it("ensures canonical field order is strictly deterministic when rows contain heterogeneous partial performance payloads", () => {
-      const spec: RocV2Spec = {
-        ...baseRocSpec,
-        data: [
-          {
-            seriesId: "ser-1",
-            cutoff: 0.8,
-            ppcr: 0.1,
-            sensitivity: 0.4,
-            specificity: 0.95,
-            performance: [{ metricId: "true_positives", estimate: 40 }],
-          },
-          {
-            seriesId: "ser-1",
-            cutoff: 0.5,
-            ppcr: 0.3,
-            sensitivity: 0.8,
-            specificity: 0.9,
-            performance: [
-              { metricId: "ppv", estimate: 0.444 },
-              { metricId: "true_positives", estimate: 80 },
-            ],
-          },
-        ],
-      };
-      const element = renderRocV2(spec) as HTMLElement;
-      const circles = Array.from(element.querySelectorAll("circle"));
-      expect(circles.length).toBeGreaterThan(1);
-
-      const targetCircle = circles[1];
-      const cx = Number(targetCircle.getAttribute("cx") ?? 100);
-      const cy = Number(targetCircle.getAttribute("cy") ?? 100);
-      targetCircle.dispatchEvent(
-        new (window as any).PointerEvent("pointermove", {
-          bubbles: true,
-          clientX: cx,
-          clientY: cy,
-        }),
-      );
-
-      const tipTextEl = element.querySelector('g[aria-label="tip"] text');
-      expect(tipTextEl).not.toBeNull();
-      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
-        (el) => el.textContent?.trim(),
-      );
-      const ppvIdx = boldLabels.indexOf("PPV");
-      const tpIdx = boldLabels.indexOf("TP");
-      expect(ppvIdx).toBeGreaterThan(-1);
-      expect(tpIdx).toBeGreaterThan(-1);
-      expect(ppvIdx).toBeLessThan(tpIdx);
-    });
-
-    it("ensures curve line mark remains interactively hoverable with structured native tip", () => {
-      const element = renderRocV2(baseRocSpec) as HTMLElement;
-      const linePath = element.querySelector('g[aria-label="line"] path');
-      expect(linePath).not.toBeNull();
-
-      let tipTextEl = element.querySelector('g[aria-label="tip"] text');
-      expect(tipTextEl).toBeNull();
-
-      linePath!.dispatchEvent(
-        new (window as any).PointerEvent("pointermove", {
-          bubbles: true,
-          clientX: 100,
-          clientY: 100,
-        }),
-      );
-
-      tipTextEl = element.querySelector('g[aria-label="tip"] text');
-      expect(tipTextEl).not.toBeNull();
-      const boldLabels = Array.from(tipTextEl!.querySelectorAll('tspan[font-weight="bold"]')).map(
-        (el) => el.textContent?.trim(),
-      );
-      expect(boldLabels).toEqual(["Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "False Positive Rate"]);
-    });
-
-    it("ensures reference line tips are genuinely hover-driven rather than static annotations", () => {
-      const specWithRef: RocV2Spec = {
-        ...baseRocSpec,
-        references: [{ type: "identity", scope: "global", label: "Random Guess" }],
-      };
-      const element = renderRocV2(specWithRef) as HTMLElement;
-      let boldLabelEl = element.querySelector('g[aria-label="tip"] text tspan[font-weight="bold"]');
-      expect(boldLabelEl).toBeNull();
-
-      const linePaths = Array.from(element.querySelectorAll('g[aria-label="line"] path'));
-      expect(linePaths.length).toBeGreaterThan(0);
-      const refLine = linePaths[0];
-      refLine.dispatchEvent(
-        new (window as any).PointerEvent("pointermove", {
-          bubbles: true,
-          clientX: 66,
-          clientY: 534,
-        }),
-      );
-
-      boldLabelEl = element.querySelector('g[aria-label="tip"] text tspan[font-weight="bold"]');
-      expect(boldLabelEl).not.toBeNull();
-      expect(boldLabelEl!.textContent?.trim()).toBe("Reference");
-      expect(element.querySelector('g[aria-label="tip"] text')?.textContent).toContain("Random Guess");
-    });
   });
 });
