@@ -13,6 +13,7 @@ import {
   renderPrecisionRecallV2,
   renderGainsV2,
   renderLiftV2,
+  getContrastTextColor,
 } from "../src/render/v2.js";
 import { renderDecisionCurveV2 } from "../src/render/decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "../src/render/interventions-avoided.js";

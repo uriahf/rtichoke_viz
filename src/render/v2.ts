@@ -1,5 +1,6 @@
 import * as Plot from "@observablehq/plot";
 import { select, pointer } from "d3-selection";
+import { color as parseColor } from "d3-color";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
 import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import type { GainsV2Spec } from "../spec/v2/gains.js";
@@ -677,16 +678,6 @@ function frameMark(theme: V2RendererTheme) {
   });
 }
 
-export function buildReferenceTooltipMarkOptions(label: string) {
-  return {
-    channels: {
-      ch_0: { value: () => label, label: "Reference" },
-    },
-    tip: {
-      format: { x: false, y: false, z: false, stroke: false, fill: false },
-    },
-  };
-}
 
 function referenceMarks(
   spec: SeriesChartSpec,
@@ -765,58 +756,6 @@ export function thinOrdinaryPoints<T>(
   return result;
 }
 
-export function buildStructuredTooltipMarkOptions(
-  data: Array<{ tooltipFields?: Array<[string, unknown]> }>,
-  canonicalFieldOrder?: string[],
-) {
-  const presentLabels = new Set<string>();
-  for (const d of data) {
-    if (d.tooltipFields) {
-      for (const [label] of d.tooltipFields) {
-        presentLabels.add(label);
-      }
-    }
-  }
-
-  const fieldLabels: string[] = [];
-  if (canonicalFieldOrder) {
-    for (const label of canonicalFieldOrder) {
-      if (presentLabels.has(label)) {
-        fieldLabels.push(label);
-        presentLabels.delete(label);
-      }
-    }
-  }
-  for (const label of presentLabels) {
-    fieldLabels.push(label);
-  }
-
-  const channels: Record<string, { value: (d: any) => any; label: string }> = {};
-  fieldLabels.forEach((label, idx) => {
-    channels[`ch_${idx}`] = {
-      value: (d: any) => {
-        if (!d.tooltipFields) return undefined;
-        const entry = d.tooltipFields.find(([l]: [string, unknown]) => l === label);
-        return entry ? entry[1] : undefined;
-      },
-      label,
-    };
-  });
-
-  const format: Record<string, boolean> = {
-    x: false,
-    y: false,
-    z: false,
-    stroke: false,
-    fill: false,
-    r: false,
-  };
-
-  return {
-    channels,
-    tip: { format },
-  };
-}
 
 export function ordinaryPointDotMark<T extends { seriesId: string }>(
   data: T[],
@@ -866,21 +805,30 @@ export function operatingPointDotMark(
   });
 }
 
+export function getRelativeLuminance(r: number, g: number, b: number): number {
+  const rsRGB = r / 255;
+  const gsRGB = g / 255;
+  const bsRGB = b / 255;
+
+  const R = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+  const G = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+  const B = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
 export function getContrastTextColor(backgroundColor: string): string {
-  let hex = backgroundColor.trim().toLowerCase();
-  if (hex.startsWith("#")) {
-    if (hex.length === 4) {
-      hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
-    }
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      return luminance > 0.6 ? "#1a1a1a" : "#ffffff";
-    }
-  }
-  return "#ffffff";
+  const parsed = parseColor(backgroundColor);
+  if (!parsed) return "#ffffff";
+
+  const rgb = parsed.rgb();
+  const bgLuminance = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
+
+  // Luminance of pure white is 1.0, luminance of pure black is 0.0
+  const contrastWithWhite = (1.0 + 0.05) / (bgLuminance + 0.05);
+  const contrastWithBlack = (bgLuminance + 0.05) / (0.0 + 0.05);
+
+  return contrastWithBlack >= contrastWithWhite ? "#000000" : "#ffffff";
 }
 
 export interface CurveHoverItem {
@@ -997,8 +945,9 @@ export function installCurveHoverLayer(
     const boxH = bbox.height + paddingY * 2;
 
     const [mx, my] = pointer(event, svgNode);
-    const svgW = options.theme.width;
-    const svgH = options.theme.height;
+    const viewBox = svgNode?.viewBox?.baseVal;
+    const svgW = viewBox && viewBox.width > 0 ? viewBox.width : (svgNode?.width?.baseVal?.value || options.theme.width);
+    const svgH = viewBox && viewBox.height > 0 ? viewBox.height : (svgNode?.height?.baseVal?.value || options.theme.height);
     const margins = options.theme.margins;
 
     let posX = mx + 12;
@@ -1220,41 +1169,6 @@ export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   return plot;
 }
 
-export const ROC_CANONICAL_ORDER_THRESHOLD = [
-  "Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "FPR", "False Positive Rate", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-export const ROC_CANONICAL_ORDER_PPCR = [
-  "Series", "PPCR", "Cutoff", "Sensitivity", "Specificity", "FPR", "False Positive Rate", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-
-export const PR_CANONICAL_ORDER_THRESHOLD = [
-  "Series", "Cutoff", "PPCR", "Sensitivity", "PPV", "Specificity", "FPR", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-export const PR_CANONICAL_ORDER_PPCR = [
-  "Series", "PPCR", "Cutoff", "Sensitivity", "PPV", "Specificity", "FPR", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-
-export const GAINS_CANONICAL_ORDER_THRESHOLD = [
-  "Series", "Cutoff", "PPCR", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-export const GAINS_CANONICAL_ORDER_PPCR = [
-  "Series", "PPCR", "Cutoff", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-
-export const LIFT_CANONICAL_ORDER_THRESHOLD = [
-  "Series", "Cutoff", "PPCR", "Lift", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-export const LIFT_CANONICAL_ORDER_PPCR = [
-  "Series", "PPCR", "Cutoff", "Lift", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Net Benefit", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-
-export const DCA_CANONICAL_ORDER = [
-  "Series", "Threshold", "Net Benefit", "PPCR", "Sensitivity", "Specificity", "FPR", "PPV", "NPV", "Lift", "Predicted Positives", "TP", "TN", "FP", "FN"
-];
-
-export const IA_CANONICAL_ORDER = [
-  "Series", "Threshold", "Interventions Avoided", "Net Benefit", "Predicted Positives", "PPCR", "TN", "FN"
-];
 
 const ROC_CARRIED_ORDER: PerformanceMetricId[] = [
   "sensitivity",

@@ -4,10 +4,7 @@ import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 import type { PerformanceMetricId } from "../spec/v2/performance-table.js";
 import {
   buildCarriedPerformanceTooltipFields,
-  buildReferenceTooltipMarkOptions,
-  buildStructuredTooltipMarkOptions,
   formatNativeNumber,
-  IA_CANONICAL_ORDER,
   installCurveHoverLayer,
   operatingPointDotMark,
   ordinaryPointDotMark,
