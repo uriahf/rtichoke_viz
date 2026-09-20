@@ -19689,21 +19689,23 @@ function operatingPointDotMark(data, x2, y2, resolved, customTheme) {
     r
   });
 }
+function getRelativeLuminance(r, g, b) {
+  const rsRGB = r / 255;
+  const gsRGB = g / 255;
+  const bsRGB = b / 255;
+  const R = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+  const G = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+  const B2 = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B2;
+}
 function getContrastTextColor(backgroundColor) {
-  let hex2 = backgroundColor.trim().toLowerCase();
-  if (hex2.startsWith("#")) {
-    if (hex2.length === 4) {
-      hex2 = `#${hex2[1]}${hex2[1]}${hex2[2]}${hex2[2]}${hex2[3]}${hex2[3]}`;
-    }
-    const r = parseInt(hex2.slice(1, 3), 16);
-    const g = parseInt(hex2.slice(3, 5), 16);
-    const b = parseInt(hex2.slice(5, 7), 16);
-    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      return luminance > 0.6 ? "#1a1a1a" : "#ffffff";
-    }
-  }
-  return "#ffffff";
+  const parsed = color(backgroundColor);
+  if (!parsed) return "#ffffff";
+  const rgb2 = parsed.rgb();
+  const bgLuminance = getRelativeLuminance(rgb2.r, rgb2.g, rgb2.b);
+  const contrastWithWhite = (1 + 0.05) / (bgLuminance + 0.05);
+  const contrastWithBlack = (bgLuminance + 0.05) / (0 + 0.05);
+  return contrastWithBlack >= contrastWithWhite ? "#000000" : "#ffffff";
 }
 function installCurveHoverLayer(plotElement, options) {
   const svgNode2 = plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg");
@@ -19752,8 +19754,9 @@ function installCurveHoverLayer(plotElement, options) {
     const boxW = Math.max(bbox.width + paddingX * 2, 60);
     const boxH = bbox.height + paddingY * 2;
     const [mx, my] = pointer_default(event, svgNode2);
-    const svgW = options.theme.width;
-    const svgH = options.theme.height;
+    const viewBox = svgNode2?.viewBox?.baseVal;
+    const svgW = viewBox && viewBox.width > 0 ? viewBox.width : svgNode2?.width?.baseVal?.value || options.theme.width;
+    const svgH = viewBox && viewBox.height > 0 ? viewBox.height : svgNode2?.height?.baseVal?.value || options.theme.height;
     const margins = options.theme.margins;
     let posX = mx + 12;
     if (posX + boxW > svgW - margins.right) {
