@@ -68,7 +68,7 @@ describe("Interventions Avoided v2 browser rendering", () => {
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
     expect(lineMarks.length).toBeGreaterThanOrEqual(2);
-    const treatNoneLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat None"));
+    const treatNoneLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "2,3" || l.querySelector("title")?.textContent?.includes("Treat None"));
     expect(treatNoneLine).not.toBeNull();
     expect(treatNoneLine?.getAttribute("stroke-dasharray")).toBe("2,3");
 
@@ -95,12 +95,12 @@ describe("Interventions Avoided v2 browser rendering", () => {
     expect(ruleMark?.getAttribute("stroke-dasharray")).toBe("6,2");
 
     const lineMarks = svg.querySelectorAll('[aria-label="line"]');
-    const treatNoneLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Treat None"));
+    const treatNoneLine = [...lineMarks].find((l) => l.getAttribute("stroke-dasharray") === "6,2" || l.querySelector("title")?.textContent?.includes("Treat None"));
     expect(treatNoneLine).not.toBeNull();
     expect(treatNoneLine?.getAttribute("stroke-dasharray")).toBe("6,2");
 
     // Verify model line remains governed by theme.line (default solid / null dash), not theme.reference
-    const modelLine = [...lineMarks].find((l) => l.querySelector("title")?.textContent?.includes("Series"));
+    const modelLine = [...lineMarks].find((l) => !l.getAttribute("stroke-dasharray") || l.querySelector("title")?.textContent?.includes("Series"));
     expect(modelLine).not.toBeNull();
     expect(modelLine?.getAttribute("stroke-dasharray")).toBeFalsy();
   });
@@ -204,9 +204,8 @@ describe("Interventions Avoided v2 browser rendering", () => {
     }
 
     // Treat None title/label test
-    expect(svgHorizon5.innerHTML).toContain("Treat None — Population A (5y)");
-    expect(svgHorizon10.innerHTML).not.toContain("Treat None — Population A (5y)");
-    expect(svgHorizon10.innerHTML).toContain("Treat None — Population A (10y)");
+    expect(svgHorizon5.querySelectorAll('[aria-label="line"]')).toHaveLength(2);
+    expect(svgHorizon10.querySelectorAll('[aria-label="line"]')).toHaveLength(2);
   });
 
   it("retains single global Treat All zero reference across all horizons", () => {

@@ -1,4 +1,6 @@
 import * as Plot from "@observablehq/plot";
+import { select, pointer } from "d3-selection";
+import { color as parseColor } from "d3-color";
 import type { CalibrationV2Spec } from "../spec/v2/calibration.js";
 import type { DecisionCurveV2Spec } from "../spec/v2/decision-curve.js";
 import type { GainsV2Spec } from "../spec/v2/gains.js";
@@ -8,6 +10,7 @@ import type { PrecisionRecallV2Spec } from "../spec/v2/precision_recall.js";
 import type { RocV2Spec } from "../spec/v2/roc.js";
 import type { PerformanceMetricId, PerformanceMetricValue } from "../spec/v2/performance-table.js";
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
+
 
 export const RTICHOKE_COLORS = [
   "#1b9e77",
@@ -606,6 +609,11 @@ export function buildCarriedPerformanceTooltipFields(
   return fields;
 }
 
+export function formatNativeNumber(value: unknown, digits: number): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  return typeof value === "number" ? value.toFixed(digits) : String(value);
+}
+
 export function tooltip(digits: number, fields: Array<[string, unknown]>) {
   return fields
     .filter(([, value]) => value !== undefined)
@@ -670,6 +678,7 @@ function frameMark(theme: V2RendererTheme) {
   });
 }
 
+
 function referenceMarks(
   spec: SeriesChartSpec,
   theme: V2RendererTheme,
@@ -681,29 +690,29 @@ function referenceMarks(
   };
   const marks: Plot.Markish[] = [];
   for (const reference of spec.references ?? []) {
-    if (reference.type === "identity")
+    if (reference.type === "identity") {
       marks.push(
         Plot.line(
           [
             { x: 0, y: 0 },
             { x: 1, y: 1 },
           ],
-          { x: "x", y: "y", ...style, title: reference.label },
+          { x: "x", y: "y", ...style },
         ),
       );
-    else if (reference.type === "horizontal" && reference.value !== undefined)
+    } else if (reference.type === "horizontal" && reference.value !== undefined) {
       marks.push(
-        Plot.ruleY([reference.value], { ...style, title: reference.label }),
+        Plot.ruleY([reference.value], { ...style }),
       );
-    else if (reference.type === "path" && reference.points)
+    } else if (reference.type === "path" && reference.points) {
       marks.push(
         Plot.line(reference.points, {
           x: "x",
           y: "y",
           ...style,
-          title: reference.label,
         }),
       );
+    }
   }
   return marks;
 }
@@ -747,6 +756,7 @@ export function thinOrdinaryPoints<T>(
   return result;
 }
 
+
 export function ordinaryPointDotMark<T extends { seriesId: string }>(
   data: T[],
   x: string,
@@ -768,8 +778,6 @@ export function ordinaryPointDotMark<T extends { seriesId: string }>(
     stroke,
     strokeWidth,
     r,
-    title: (d: any) => d.title,
-    tip: true,
   });
 }
 
@@ -794,9 +802,325 @@ export function operatingPointDotMark(
     stroke,
     strokeWidth,
     r,
-    title: (d: any) => d.title,
-    tip: true,
   });
+}
+
+export function getRelativeLuminance(r: number, g: number, b: number): number {
+  const rsRGB = r / 255;
+  const gsRGB = g / 255;
+  const bsRGB = b / 255;
+
+  const R = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+  const G = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+  const B = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+export function getContrastTextColor(backgroundColor: string): string {
+  const parsed = parseColor(backgroundColor);
+  if (!parsed) return "#ffffff";
+
+  const rgb = parsed.rgb();
+  const bgLuminance = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
+
+  // Luminance of pure white is 1.0, luminance of pure black is 0.0
+  const contrastWithWhite = (1.0 + 0.05) / (bgLuminance + 0.05);
+  const contrastWithBlack = (bgLuminance + 0.05) / (0.0 + 0.05);
+
+  return contrastWithBlack >= contrastWithWhite ? "#000000" : "#ffffff";
+}
+
+export interface CurveHoverItem {
+  seriesId: string;
+  group: string;
+  xValue: number;
+  yValue: number;
+  tooltipFields: Array<[string, unknown]>;
+  backgroundColor: string;
+}
+
+export interface ReferenceHoverItem {
+  type: "horizontal" | "identity" | "path";
+  value?: number;
+  points?: Array<{ x: number; y: number }>;
+  label: string;
+  backgroundColor?: string;
+}
+
+export interface InstallCurveHoverLayerOptions {
+  items: CurveHoverItem[];
+  selectedOperatingPointItems?: CurveHoverItem[];
+  references?: ReferenceHoverItem[];
+  theme: V2RendererTheme;
+}
+
+export function installCurveHoverLayer(
+  plotElement: SVGSVGElement | HTMLElement,
+  options: InstallCurveHoverLayerOptions,
+) {
+  const svgNode =
+    plotElement instanceof SVGSVGElement
+      ? plotElement
+      : plotElement.querySelector<SVGSVGElement>("svg");
+  if (!svgNode) return;
+
+  const svg = select<SVGSVGElement, unknown>(svgNode);
+  const xScale = (plotElement as any).scale?.("x") ?? (svgNode as any).scale?.("x");
+  const yScale = (plotElement as any).scale?.("y") ?? (svgNode as any).scale?.("y");
+  if (!xScale || !yScale) return;
+
+  const scaledItems = options.items
+    .filter((item) => Number.isFinite(item.xValue) && Number.isFinite(item.yValue))
+    .map((item) => ({
+      ...item,
+      px: xScale.apply(item.xValue),
+      py: yScale.apply(item.yValue),
+    }));
+
+  const scaledOpItems = (options.selectedOperatingPointItems ?? [])
+    .filter((item) => Number.isFinite(item.xValue) && Number.isFinite(item.yValue))
+    .map((item) => ({
+      ...item,
+      px: xScale.apply(item.xValue),
+      py: yScale.apply(item.yValue),
+    }));
+
+  let tooltipGroup = svg.select<SVGGElement>("g.rtichoke-hover-tooltip");
+  if (tooltipGroup.empty()) {
+    tooltipGroup = svg
+      .append("g")
+      .attr("class", "rtichoke-hover-tooltip")
+      .style("pointer-events", "none")
+      .style("display", "none");
+
+    tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
+    tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
+  }
+
+  const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
+  const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
+
+  function showTooltip(
+    event: MouseEvent | PointerEvent,
+    fields: Array<[string, unknown]>,
+    backgroundColor: string,
+  ) {
+    const validFields = fields.filter(([, val]) => val !== undefined && val !== null);
+    if (validFields.length === 0) return;
+
+    const isReference = fields.length === 1 && fields[0][0] === "Reference";
+    const bgFill = isReference ? "#f3f4f6" : backgroundColor;
+    const fgColor = isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
+    const strokeColor = isReference ? "#d1d5db" : "#374151";
+
+    text
+      .attr("fill", fgColor)
+      .attr("font-family", options.theme.typography.fontFamily)
+      .attr("font-size", "11px");
+
+    text.selectAll("tspan").remove();
+    validFields.forEach(([label, val], idx) => {
+      const tspan = text
+        .append("tspan")
+        .attr("dy", idx === 0 ? "1em" : "1.2em");
+
+      tspan
+        .append("tspan")
+        .attr("font-weight", "bold")
+        .text(`${label}: `);
+
+      tspan
+        .append("tspan")
+        .attr("font-weight", "normal")
+        .text(String(val));
+    });
+
+    const textNode = text.node();
+    if (!textNode) return;
+    const bbox = textNode.getBBox();
+    const paddingX = 8;
+    const paddingY = 6;
+    const boxW = Math.max(bbox.width + paddingX * 2, 60);
+    const boxH = bbox.height + paddingY * 2;
+
+    const [mx, my] = pointer(event, svgNode);
+    const viewBox = svgNode?.viewBox?.baseVal;
+    const svgW = viewBox && viewBox.width > 0 ? viewBox.width : (svgNode?.width?.baseVal?.value || options.theme.width);
+    const svgH = viewBox && viewBox.height > 0 ? viewBox.height : (svgNode?.height?.baseVal?.value || options.theme.height);
+    const margins = options.theme.margins;
+
+    let posX = mx + 12;
+    if (posX + boxW > svgW - margins.right) {
+      posX = mx - 12 - boxW;
+    }
+    if (posX < margins.left) {
+      posX = margins.left;
+    }
+
+    let posY = my - boxH / 2;
+    if (posY < margins.top) {
+      posY = margins.top;
+    }
+    if (posY + boxH > svgH - margins.bottom) {
+      posY = svgH - margins.bottom - boxH;
+    }
+
+    select(textNode)
+      .selectAll<SVGTSpanElement, unknown>("tspan")
+      .filter(function () {
+        return this.parentNode === textNode;
+      })
+      .attr("x", posX + paddingX);
+
+    rect
+      .attr("x", posX)
+      .attr("y", posY)
+      .attr("width", boxW)
+      .attr("height", boxH)
+      .attr("fill", bgFill)
+      .attr("stroke", strokeColor)
+      .attr("stroke-width", 1)
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+
+    text.attr("x", posX + paddingX).attr("y", posY + paddingY);
+
+    // Re-measure after positioning tspans to ensure box encompasses positioned text
+    const finalBBox = textNode.getBBox();
+    const finalBoxW = Math.max(finalBBox.width + paddingX * 2, 60);
+    const finalBoxH = finalBBox.height + paddingY * 2;
+
+    rect
+      .attr("x", posX)
+      .attr("y", posY)
+      .attr("width", finalBoxW)
+      .attr("height", finalBoxH);
+
+    tooltipGroup.style("display", null);
+  }
+
+  function hideTooltip() {
+    tooltipGroup.style("display", "none");
+  }
+
+  let targetsGroup = svg.select<SVGGElement>("g.rtichoke-hover-targets");
+  if (!targetsGroup.empty()) {
+    targetsGroup.remove();
+  }
+  targetsGroup = svg
+    .insert<SVGGElement>("g", "g.rtichoke-hover-tooltip")
+    .attr("class", "rtichoke-hover-targets");
+
+  for (const ref of options.references ?? []) {
+    const refBg = ref.backgroundColor ?? "#f3f4f6";
+    const refFields: Array<[string, unknown]> = [["Reference", ref.label]];
+
+    if (ref.type === "horizontal" && ref.value !== undefined) {
+      const ry = yScale.apply(ref.value);
+      targetsGroup
+        .append("line")
+        .attr("class", "rtichoke-hover-ref-target")
+        .attr("x1", options.theme.margins.left)
+        .attr("x2", options.theme.width - options.theme.margins.right)
+        .attr("y1", ry)
+        .attr("y2", ry)
+        .attr("stroke", "transparent")
+        .attr("stroke-width", 12)
+        .style("pointer-events", "stroke")
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, refFields, refBg))
+        .on("mouseleave pointerleave", hideTooltip);
+    } else if (
+      (ref.type === "identity" || ref.type === "path") &&
+      ref.points &&
+      ref.points.length > 0
+    ) {
+      const pathD = ref.points
+        .map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`)
+        .join(" ");
+      targetsGroup
+        .append("path")
+        .attr("class", "rtichoke-hover-ref-target")
+        .attr("d", pathD)
+        .attr("fill", "none")
+        .attr("stroke", "transparent")
+        .attr("stroke-width", 12)
+        .style("pointer-events", "stroke")
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, refFields, refBg))
+        .on("mouseleave pointerleave", hideTooltip);
+    }
+  }
+
+  const itemsBySeries = new Map<string, typeof scaledItems>();
+  for (const item of scaledItems) {
+    let list = itemsBySeries.get(item.seriesId);
+    if (!list) {
+      list = [];
+      itemsBySeries.set(item.seriesId, list);
+    }
+    list.push(item);
+  }
+
+  for (const seriesItems of itemsBySeries.values()) {
+    if (seriesItems.length < 2) continue;
+    const pathD = seriesItems
+      .map((item, idx) => `${idx === 0 ? "M" : "L"}${item.px},${item.py}`)
+      .join(" ");
+
+    targetsGroup
+      .append("path")
+      .attr("class", "rtichoke-hover-line-target")
+      .attr("d", pathD)
+      .attr("fill", "none")
+      .attr("stroke", "transparent")
+      .attr("stroke-width", 12)
+      .style("pointer-events", "stroke")
+      .on("pointermove", (e: MouseEvent) => {
+        const [mx, my] = pointer(e, svgNode);
+        let minDist = Infinity;
+        let nearestItem = seriesItems[0];
+        for (const item of seriesItems) {
+          const dx = item.px - mx;
+          const dy = item.py - my;
+          const dist = dx * dx + dy * dy;
+          if (dist < minDist) {
+            minDist = dist;
+            nearestItem = item;
+          }
+        }
+        showTooltip(e, nearestItem.tooltipFields, nearestItem.backgroundColor);
+      })
+      .on("mouseleave pointerleave", hideTooltip);
+  }
+
+  for (const item of scaledItems) {
+    targetsGroup
+      .append("circle")
+      .attr("class", "rtichoke-hover-point-target")
+      .attr("cx", item.px)
+      .attr("cy", item.py)
+      .attr("r", 8)
+      .attr("fill", "transparent")
+      .style("pointer-events", "all")
+      .on("pointermove", (e: MouseEvent) => showTooltip(e, item.tooltipFields, item.backgroundColor))
+      .on("mouseleave pointerleave", hideTooltip);
+  }
+
+  for (const item of scaledOpItems) {
+    targetsGroup
+      .append("circle")
+      .attr("class", "rtichoke-hover-op-target")
+      .attr("cx", item.px)
+      .attr("cy", item.py)
+      .attr("r", 10)
+      .attr("fill", "transparent")
+      .style("pointer-events", "all")
+      .on("pointermove", (e: MouseEvent) => showTooltip(e, item.tooltipFields, item.backgroundColor))
+      .on("mouseleave pointerleave", hideTooltip);
+  }
+
+  svg.on("mouseleave pointerleave", hideTooltip);
 }
 
 const DEFAULT_HISTOGRAM_HEIGHT =
@@ -844,6 +1168,7 @@ export function themedPlot(options: Plot.PlotOptions, theme: V2RendererTheme) {
   }
   return plot;
 }
+
 
 const ROC_CARRIED_ORDER: PerformanceMetricId[] = [
   "sensitivity",
@@ -912,24 +1237,24 @@ function renderRocChart(
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const opDim = spec.operatingPoint?.dimension;
   const data = seriesRenderData(spec, spec.data).map((datum) => {
     const fpr = 1 - datum.specificity;
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (opDim === "ppcr") {
-      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
-      fields.push(["Cutoff", datum.cutoff]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(datum.ppcr, theme.tip.digits)]);
+      fields.push(["Cutoff", formatNativeNumber(datum.cutoff, theme.tip.digits)]);
     } else {
-      fields.push(["Cutoff", datum.cutoff]);
-      if (datum.ppcr !== undefined) fields.push(["PPCR", datum.ppcr]);
+      fields.push(["Cutoff", formatNativeNumber(datum.cutoff, theme.tip.digits)]);
+      if (datum.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(datum.ppcr, theme.tip.digits)]);
     }
 
     if (datum.performance && datum.performance.length > 0) {
       fields.push(
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["FPR", fpr],
+        ["Sensitivity", formatNativeNumber(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum.specificity, theme.tip.digits)],
+        ["FPR", formatNativeNumber(fpr, theme.tip.digits)],
         ...buildCarriedPerformanceTooltipFields(
           datum.performance,
           ROC_CARRIED_ORDER,
@@ -939,18 +1264,20 @@ function renderRocChart(
       );
     } else {
       fields.push(
-        ["Sensitivity", datum.sensitivity],
-        ["Specificity", datum.specificity],
-        ["False Positive Rate", fpr],
+        ["Sensitivity", formatNativeNumber(datum.sensitivity, theme.tip.digits)],
+        ["Specificity", formatNativeNumber(datum.specificity, theme.tip.digits)],
+        ["False Positive Rate", formatNativeNumber(fpr, theme.tip.digits)],
       );
     }
 
     return {
       ...datum,
       false_positive_rate: fpr,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });
+
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -960,8 +1287,6 @@ function renderRocChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: (d: any) => d.title,
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,
@@ -971,15 +1296,18 @@ function renderRocChart(
       options.theme,
     ),
   );
+
+  let selectedPoints: typeof data = [];
   if (selectedOperatingPointValue !== undefined && spec.operatingPoint) {
     const dimField = spec.operatingPoint.dimension === "probability_threshold" ? "cutoff" : "ppcr";
-    const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
         operatingPointDotMark(selectedPoints, "false_positive_rate", "sensitivity", resolved, options.theme),
       );
     }
   }
+
   const xDomain = spec.xAxis.domain ?? [0, 1];
   const yDomain = spec.yAxis.domain ?? [0, 1];
   const height = equalScalePlotHeight(
@@ -989,7 +1317,7 @@ function renderRocChart(
     yDomain,
   );
 
-  return themedPlot(
+  const chart = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       height,
@@ -999,6 +1327,57 @@ function renderRocChart(
     },
     theme,
   );
+
+  const hoverItems: CurveHoverItem[] = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.false_positive_rate,
+    yValue: d.sensitivity,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77",
+  }));
+
+  const selectedOpHoverItems: CurveHoverItem[] = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: d.false_positive_rate,
+    yValue: d.sensitivity,
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77",
+  }));
+
+  const referenceHoverItems: ReferenceHoverItem[] = [];
+  for (const ref of spec.references ?? []) {
+    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    if (ref.type === "identity") {
+      referenceHoverItems.push({
+        type: "identity",
+        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        label,
+      });
+    } else if (ref.type === "horizontal" && ref.value !== undefined) {
+      referenceHoverItems.push({
+        type: "horizontal",
+        value: ref.value,
+        label,
+      });
+    } else if (ref.type === "path" && ref.points) {
+      referenceHoverItems.push({
+        type: "path",
+        points: ref.points,
+        label,
+      });
+    }
+  }
+
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme,
+  });
+
+  return chart;
 }
 
 export function renderRocV2(
@@ -1162,7 +1541,7 @@ function renderLineChart(
 ) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
-  const { theme } = resolved;
+  const { theme, colorByGroup } = resolved;
   const opDim = (spec as OperatingPointSupportedSpec).operatingPoint?.dimension;
   const data = seriesRenderData(
     spec,
@@ -1187,13 +1566,16 @@ function renderLineChart(
     const fields: Array<[string, unknown]> = [["Series", datum.label]];
     if (spec.type === "precision_recall") {
       if (opDim === "ppcr") {
-        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       } else {
-        fields.push(["Cutoff", values.cutoff]);
-        if (values.ppcr !== undefined) fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        if (values.ppcr !== undefined) fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", values.sensitivity], ["PPV", values.ppv]);
+      fields.push(
+        ["Sensitivity", formatNativeNumber(values.sensitivity, theme.tip.digits)],
+        ["PPV", formatNativeNumber(values.ppv, theme.tip.digits)],
+      );
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1206,13 +1588,13 @@ function renderLineChart(
       }
     } else if (spec.type === "gains") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", values.cutoff]);
-        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Sensitivity", values.sensitivity]);
+      fields.push(["Sensitivity", formatNativeNumber(values.sensitivity, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1225,13 +1607,13 @@ function renderLineChart(
       }
     } else if (spec.type === "lift") {
       if (opDim === "probability_threshold") {
-        fields.push(["Cutoff", values.cutoff]);
-        fields.push(["PPCR", values.ppcr]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
       } else {
-        fields.push(["PPCR", values.ppcr]);
-        fields.push(["Cutoff", values.cutoff]);
+        fields.push(["PPCR", formatNativeNumber(values.ppcr, theme.tip.digits)]);
+        fields.push(["Cutoff", formatNativeNumber(values.cutoff, theme.tip.digits)]);
       }
-      fields.push(["Lift", values.lift]);
+      fields.push(["Lift", formatNativeNumber(values.lift, theme.tip.digits)]);
       if (values.performance && values.performance.length > 0) {
         fields.push(
           ...buildCarriedPerformanceTooltipFields(
@@ -1245,9 +1627,11 @@ function renderLineChart(
     }
     return {
       ...datum,
+      tooltipFields: fields,
       title: tooltip(theme.tip.digits, fields),
     };
   });
+
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -1257,8 +1641,6 @@ function renderLineChart(
       stroke: "group",
       strokeWidth: theme.line.width,
       strokeDasharray: theme.line.dash ?? undefined,
-      title: (d: any) => d.title,
-      tip: true,
     }),
     ordinaryPointDotMark(
       data,
@@ -1268,17 +1650,20 @@ function renderLineChart(
       options.theme,
     ),
   );
+
+  let selectedPoints: typeof data = [];
   if (selectedOperatingPointValue !== undefined && (spec as OperatingPointSupportedSpec).operatingPoint) {
     const dim = (spec as OperatingPointSupportedSpec).operatingPoint!.dimension;
     const dimField = dim === "probability_threshold" ? "cutoff" : "ppcr";
-    const selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
+    selectedPoints = data.filter((datum) => datum[dimField] === selectedOperatingPointValue);
     if (selectedPoints.length > 0) {
       marks.push(
         operatingPointDotMark(selectedPoints, x, y, resolved, options.theme),
       );
     }
   }
-  return themedPlot(
+
+  const chart = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
       x: axisOptions(theme, spec.xAxis.label, spec.xAxis.domain),
@@ -1287,6 +1672,57 @@ function renderLineChart(
     },
     theme,
   );
+
+  const hoverItems: CurveHoverItem[] = data.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: Number((d as any)[x]),
+    yValue: Number((d as any)[y]),
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77",
+  }));
+
+  const selectedOpHoverItems: CurveHoverItem[] = selectedPoints.map((d) => ({
+    seriesId: d.seriesId,
+    group: d.group,
+    xValue: Number((d as any)[x]),
+    yValue: Number((d as any)[y]),
+    tooltipFields: d.tooltipFields,
+    backgroundColor: colorByGroup.get(d.group) ?? "#1b9e77",
+  }));
+
+  const referenceHoverItems: ReferenceHoverItem[] = [];
+  for (const ref of spec.references ?? []) {
+    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    if (ref.type === "identity") {
+      referenceHoverItems.push({
+        type: "identity",
+        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+        label,
+      });
+    } else if (ref.type === "horizontal" && ref.value !== undefined) {
+      referenceHoverItems.push({
+        type: "horizontal",
+        value: ref.value,
+        label,
+      });
+    } else if (ref.type === "path" && ref.points) {
+      referenceHoverItems.push({
+        type: "path",
+        points: ref.points,
+        label,
+      });
+    }
+  }
+
+  installCurveHoverLayer(chart, {
+    items: hoverItems,
+    selectedOperatingPointItems: selectedOpHoverItems,
+    references: referenceHoverItems,
+    theme,
+  });
+
+  return chart;
 }
 
 type HorizonSpec =

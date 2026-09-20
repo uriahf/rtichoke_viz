@@ -165,15 +165,12 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const el = renderRocV2(spec);
-      // Interactive tip mark container is rendered by Observable Plot when tip: true is enabled
-      const tipMark = el.querySelector('[aria-label="tip"]');
-      expect(tipMark).not.toBeNull();
+      const hoverTooltipGroup = el.querySelector("g.rtichoke-hover-tooltip");
+      expect(hoverTooltipGroup).not.toBeNull();
 
-      // Selected operating point dot mark group exists inside SVG
-      const selectedDot = el.querySelector('.rtichoke-selected-operating-point');
+      const selectedDot = el.querySelector(".rtichoke-selected-operating-point");
       expect(selectedDot).not.toBeNull();
 
-      // Dot marks exist inside SVG
       const dotMark = el.querySelector('[aria-label="dot"]');
       expect(dotMark).not.toBeNull();
     });
@@ -184,14 +181,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderRocV2(rocCutoff);
-      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elCutoff.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
 
       const rocPpcr: RocV2Spec = {
         ...baseRoc,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderRocV2(rocPpcr);
-      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elPpcr.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
     });
 
     it("Precision-Recall tooltip puts active dimension immediately below Series", () => {
@@ -200,14 +197,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderPrecisionRecallV2(prCutoff);
-      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elCutoff.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
 
       const prPpcr: PrecisionRecallV2Spec = {
         ...basePR,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderPrecisionRecallV2(prPpcr);
-      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elPpcr.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
     });
 
     it("Gains tooltip puts active dimension immediately below Series", () => {
@@ -216,14 +213,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderGainsV2(gainsCutoff);
-      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elCutoff.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
 
       const gainsPpcr: GainsV2Spec = {
         ...baseGains,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderGainsV2(gainsPpcr);
-      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elPpcr.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
     });
 
     it("Lift tooltip puts active dimension immediately below Series", () => {
@@ -232,14 +229,14 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const elCutoff = renderLiftV2(liftCutoff);
-      expect(elCutoff.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elCutoff.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
 
       const liftPpcr: LiftV2Spec = {
         ...baseLift,
         operatingPoint: { dimension: "ppcr" },
       };
       const elPpcr = renderLiftV2(liftPpcr);
-      expect(elPpcr.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(elPpcr.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
     });
 
     it("selected operating-point marker displays exact same tooltip as underlying curve point", () => {
@@ -248,9 +245,9 @@ describe("Operating Point Selection for Performance Curves", () => {
         operatingPoint: { dimension: "probability_threshold" },
       };
       const el = renderRocV2(spec);
-      expect(el.querySelector('.rtichoke-selected-operating-point')).not.toBeNull();
+      expect(el.querySelector(".rtichoke-selected-operating-point")).not.toBeNull();
       expect(el.querySelector('[aria-label="dot"]')).not.toBeNull();
-      expect(el.querySelector('[aria-label="tip"]')).not.toBeNull();
+      expect(el.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
     });
   });
 
