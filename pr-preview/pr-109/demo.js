@@ -20083,8 +20083,8 @@ function renderCalibrationV2(spec, options = {}) {
       ["Series", datum2.label],
       ["Predicted", formatNativeNumber(datum2.predicted, theme.tip.digits)],
       ["Observed", formatNativeNumber(datum2.observed, theme.tip.digits)],
-      ["Events", datum2.events],
-      ["Total", datum2.total]
+      ["Events", formatNativeNumber(datum2.events, theme.tip.digits)],
+      ["Total", formatNativeNumber(datum2.total, theme.tip.digits)]
     ];
     return {
       ...datum2,
