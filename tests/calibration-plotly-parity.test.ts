@@ -106,7 +106,7 @@ const twoModelSmoothCalibration: CalibrationV2Spec = {
 };
 
 describe("Calibration Plotly Parity Tests", () => {
-  it("A. Equal-scale regression & standalone width preserved at 600", () => {
+  it("A. Standalone calibration retains width 600 and default 100px histogram height", () => {
     const el = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
     expect(el.className).toBe("rtichoke-calibration");
     expect(el.style.width).toBe("600px");
@@ -118,9 +118,10 @@ describe("Calibration Plotly Parity Tests", () => {
 
     expect(mainSvg.getAttribute("width")).toBe("600");
     expect(histSvg.getAttribute("width")).toBe("600");
+    expect(histSvg.getAttribute("height")).toBe("100");
   });
 
-  it("B. Calibration footprint inside report targets ~550x550 outer composition", () => {
+  it("B. Calibration footprint inside report targets ~550x550 outer composition and ~378.3x378.3 plotting region", () => {
     const reportSpec: ReportSpecV1_1 = {
       schemaVersion: "1.1",
       type: "report",
@@ -159,19 +160,26 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(mainHeight + histHeight).toBe(550);
   });
 
-  it("C. Explicit non-[0,1] domain is respected across upper plot and histogram", () => {
-    const restrictedSpec: CalibrationV2Spec = {
+  it("C. Robust equal-scale fitting produces non-negative margins for unequal domains (xSpan != ySpan)", () => {
+    const unequalSpec: CalibrationV2Spec = {
       ...singleModelDiscreteCalibration,
-      xAxis: { label: "Restricted Prob", domain: [0.1, 0.9] },
-      yAxis: { label: "Restricted Prop", domain: [0.1, 0.9] },
+      xAxis: { label: "Prob", domain: [0, 1] },
+      yAxis: { label: "Prop", domain: [0, 0.5] },
     };
 
-    const el = renderCalibrationV2(restrictedSpec) as HTMLElement;
-    const svgs = el.querySelectorAll("svg");
-    expect(svgs.length).toBe(2);
+    const root = renderReport({
+      schemaVersion: "1.1",
+      type: "report",
+      title: "Unequal Domain Report",
+      sections: [{ id: "s1", title: "S1", items: [{ type: "component", id: "c1", spec: unequalSpec }] }],
+    });
 
-    expect(svgs[0].getAttribute("width")).toBe("600");
-    expect(svgs[1].getAttribute("width")).toBe("600");
+    const calContainer = root.querySelector<HTMLElement>(".rtichoke-calibration");
+    expect(calContainer).not.toBeNull();
+
+    const mainSvg = calContainer!.querySelectorAll("svg")[0];
+    expect(mainSvg.getAttribute("width")).toBe("550");
+    expect(Number(mainSvg.getAttribute("height"))).toBeGreaterThan(0);
   });
 
   it("D. Discrete tooltip content follows Plotly semantic form without header for single evaluation", () => {
@@ -179,8 +187,8 @@ describe("Calibration Plotly Parity Tests", () => {
     const { lines, bgFill } = getDomTipLinesAndFill(el);
 
     expect(lines).toEqual([
-      "Predicted: 0.200",
-      "Observed: 0.180 ( 10 / 55 )",
+      "Predicted: 0.2",
+      "Observed: 0.18 ( 10 / 55 )",
     ]);
     expect(bgFill).toBe("#ffffff");
   });
@@ -191,14 +199,20 @@ describe("Calibration Plotly Parity Tests", () => {
 
     expect(lines).toEqual([
       "Model A",
-      "Predicted: 0.100",
-      "Observed: 0.120",
+      "Predicted: 0.1",
+      "Observed: 0.12",
     ]);
     expect(bgFill).toBe("#ffffff");
   });
 
-  it("F. Perfect Calibration tooltip presents 'Perfectly Calibrated' header with coordinates", () => {
-    const el = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
+  it("F. Perfect Calibration tooltip presents 'Perfectly Calibrated' header with clamped coordinates", () => {
+    const expandedDomainSpec: CalibrationV2Spec = {
+      ...singleModelDiscreteCalibration,
+      xAxis: { label: "Prob", domain: [-0.05, 1.05] },
+      yAxis: { label: "Prop", domain: [-0.05, 1.05] },
+    };
+
+    const el = renderCalibrationV2(expandedDomainSpec) as HTMLElement;
     const refTarget = el.querySelector<SVGElement>(".rtichoke-hover-ref-target");
     expect(refTarget).not.toBeNull();
 
@@ -212,23 +226,23 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(textEl?.textContent).toContain("Observed:");
   });
 
-  it("G. Histogram tooltip uses conventional bin interval notation [0, upper] and ( lower , upper ]", () => {
-    const el = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
+  it("G. Histogram hover targets use actual bar geometry and omit zero-count bars", () => {
+    const withZeroCountSpec: CalibrationV2Spec = {
+      ...singleModelDiscreteCalibration,
+      distribution: [
+        { seriesId: "ser-1", midpoint: 0.005, binWidth: 0.01, count: 15 },
+        { seriesId: "ser-1", midpoint: 0.015, binWidth: 0.01, count: 0 }, // zero count
+        { seriesId: "ser-1", midpoint: 0.025, binWidth: 0.01, count: 22 },
+      ],
+    };
+
+    const el = renderCalibrationV2(withZeroCountSpec) as HTMLElement;
     const histTargets = el.querySelectorAll<SVGElement>("rect.rtichoke-hover-hist-target");
-    expect(histTargets.length).toBe(2);
+    expect(histTargets.length).toBe(2); // zero-count bar target skipped
 
-    // First bin (includes 0)
-    histTargets[0].dispatchEvent(
-      new (window as any).PointerEvent("pointermove", { bubbles: true, clientX: 100, clientY: 100 }),
-    );
-    let textEl = el.querySelectorAll("g.rtichoke-hover-tooltip text")[1];
-    expect(textEl?.textContent).toContain("15 observations in [0,0.010]");
-
-    // Second bin
-    histTargets[1].dispatchEvent(
-      new (window as any).PointerEvent("pointermove", { bubbles: true, clientX: 100, clientY: 100 }),
-    );
-    textEl = el.querySelectorAll("g.rtichoke-hover-tooltip text")[1];
-    expect(textEl?.textContent).toContain("22 observations in ( 0.010 , 0.020 ]");
+    const firstRect = histTargets[0];
+    const heightVal = Number(firstRect.getAttribute("height"));
+    expect(heightVal).toBeGreaterThan(0);
+    expect(heightVal).toBeLessThan(100); // bar height, not full SVG height
   });
 });

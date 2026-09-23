@@ -98,6 +98,7 @@ export interface V2RenderOptions {
   theme?: V2ThemeOptions;
   allGroups?: readonly string[];
   showLegend?: boolean;
+  layoutMode?: "standalone" | "report";
 }
 
 export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
@@ -1169,9 +1170,13 @@ export function installCurveHoverLayer(
   svg.on("mouseleave pointerleave", hideTooltip);
 }
 
-const DEFAULT_HISTOGRAM_HEIGHT =
-  RTICHOKE_BROWSER_THEME.height -
-  Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
+const DEFAULT_HISTOGRAM_HEIGHT = 100;
+
+function formatCalibrationNumber(val: number): string {
+  if (!Number.isFinite(val)) return String(val);
+  const rounded = Math.round(val * 1000) / 1000;
+  return String(rounded);
+}
 
 function equalScalePlotHeight(
   width: number,
@@ -1596,13 +1601,17 @@ export function installHistogramHoverLayer(
     .insert<SVGGElement>("g", "g.rtichoke-hover-tooltip")
     .attr("class", "rtichoke-hover-targets");
 
+  const yScale = (plotElement as any).scale?.("y") ?? (svgNode as any).scale?.("y");
+
   for (const item of distribution) {
+    if (item.count <= 0) continue; // Skip zero-count bars
+
     const lower = item.midpoint - item.binWidth / 2;
     const upper = item.midpoint + item.binWidth / 2;
     const lowerVal = Math.abs(lower) < 1e-9 ? 0 : lower;
     const upperVal = Math.abs(upper) < 1e-9 ? 0 : upper;
-    const lowerStr = formatNativeNumber(lowerVal, options.theme.tip.digits);
-    const upperStr = formatNativeNumber(upperVal, options.theme.tip.digits);
+    const lowerStr = formatCalibrationNumber(lowerVal);
+    const upperStr = formatCalibrationNumber(upperVal);
     const intervalStr = lowerVal <= 0 ? `[0,${upperStr}]` : `( ${lowerStr} , ${upperStr} ]`;
     const countText = `${item.count} observations in ${intervalStr}`;
 
@@ -1617,14 +1626,23 @@ export function installHistogramHoverLayer(
     const x = Math.min(px1, px2);
     const w = Math.max(Math.abs(px2 - px1), 2);
 
-    const targetHeight = options.height ?? options.theme.height;
+    let y = 0;
+    let h = options.height ?? options.theme.height;
+
+    if (yScale) {
+      const yBaseline = yScale.apply(0);
+      const yBarTop = yScale.apply(item.count);
+      y = Math.min(yBaseline, yBarTop);
+      h = Math.max(Math.abs(yBaseline - yBarTop), 4);
+    }
+
     targetsGroup
       .append("rect")
       .attr("class", "rtichoke-hover-hist-target")
       .attr("x", x)
       .attr("width", w)
-      .attr("y", 0)
-      .attr("height", targetHeight)
+      .attr("y", y)
+      .attr("height", h)
       .attr("fill", "transparent")
       .style("pointer-events", "all")
       .on("pointermove", (e: MouseEvent) => showTooltip(e, fields))
@@ -1646,11 +1664,11 @@ export function renderCalibrationV2(
     if (resolved.groups.length > 1) {
       fields.push([datum.label, ""]);
     }
-    const predStr = formatNativeNumber(datum.predicted, theme.tip.digits);
-    let obsStr = formatNativeNumber(datum.observed, theme.tip.digits);
+    const predStr = formatCalibrationNumber(datum.predicted);
+    let obsStr = formatCalibrationNumber(datum.observed);
     if (datum.method === "discrete" && datum.events !== undefined && datum.total !== undefined) {
-      const evStr = Number.isInteger(datum.events) ? String(datum.events) : formatNativeNumber(datum.events, theme.tip.digits);
-      const totStr = Number.isInteger(datum.total) ? String(datum.total) : formatNativeNumber(datum.total, theme.tip.digits);
+      const evStr = Number.isInteger(datum.events) ? String(datum.events) : formatCalibrationNumber(datum.events);
+      const totStr = Number.isInteger(datum.total) ? String(datum.total) : formatCalibrationNumber(datum.total);
       obsStr += ` ( ${evStr} / ${totStr} )`;
     }
     fields.push(["Predicted", predStr]);
@@ -1694,16 +1712,58 @@ export function renderCalibrationV2(
   const xDomain = spec.xAxis.domain ?? [0, 1];
 
   let mainHeight: number;
-  let histHeight = 87;
+  let histHeight = DEFAULT_HISTOGRAM_HEIGHT;
   let calibrationTheme = theme;
+  let mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
+  let histMarginBottom = theme.margins.bottom;
 
-  if (hasDistribution) {
+  if (options.layoutMode === "report") {
+    const targetWidth = 550;
+    const targetHeight = 550;
+
+    const marginTop = 25;
+    histMarginBottom = 40;
+    const gap = 19.4;
+    const targetHistPlotHeight = 87.3;
+
+    histHeight = Math.round(targetHistPlotHeight + histMarginBottom); // ~127px
+    const targetMainPlotHeight = 378.3;
+    mainMarginBottom = Math.round(gap); // ~19px gap
+
+    const availableW = targetWidth; // 550
+    const maxInnerW = Math.max(50, availableW - 40);
+    const maxInnerH = Math.max(50, targetMainPlotHeight);
+
+    const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
+    const ySpan = Math.abs(yDomain[1] - yDomain[0]) || 1;
+
+    // Scale fitting inside BOTH maxInnerW and maxInnerH
+    const scale = Math.min(maxInnerW / xSpan, maxInnerH / ySpan);
+    const innerW = xSpan * scale;
+    const innerH = ySpan * scale;
+
+    const marginLeft = Math.max(10, Math.round((availableW - innerW) / 2));
+    const marginRight = Math.max(10, availableW - innerW - marginLeft);
+
+    mainHeight = targetHeight - histHeight; // Exactly 550 - 127 = 423
+
+    calibrationTheme = {
+      ...theme,
+      width: availableW,
+      margins: {
+        top: marginTop,
+        left: marginLeft,
+        right: marginRight,
+        bottom: mainMarginBottom,
+      },
+    };
+  } else if (hasDistribution) {
     if (options.height !== undefined || options.width !== undefined) {
       const targetTotalHeight = options.height ?? theme.height;
       const targetWidth = options.width ?? theme.width;
-      histHeight = 87;
-      const mainMarginBottom = 16;
+      histHeight = DEFAULT_HISTOGRAM_HEIGHT;
       const mainMarginTop = theme.margins.top;
+      mainMarginBottom = 16;
       mainHeight = targetTotalHeight - histHeight;
       const innerHeight = Math.max(50, mainHeight - mainMarginTop - mainMarginBottom);
       const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
@@ -1711,8 +1771,8 @@ export function renderCalibrationV2(
       const innerWidth = innerHeight * (xSpan / ySpan);
       const totalMarginX = targetWidth - innerWidth;
       const origMarginSum = theme.margins.left + theme.margins.right;
-      const marginLeft = Math.round(totalMarginX * (theme.margins.left / (origMarginSum || 1)));
-      const marginRight = totalMarginX - marginLeft;
+      const marginLeft = Math.max(10, Math.round(totalMarginX * (theme.margins.left / (origMarginSum || 1))));
+      const marginRight = Math.max(10, totalMarginX - marginLeft);
 
       calibrationTheme = {
         ...theme,
@@ -1724,7 +1784,7 @@ export function renderCalibrationV2(
         },
       };
     } else {
-      const mainMarginBottom = 8;
+      mainMarginBottom = 8;
       mainHeight = equalScalePlotHeight(
         theme.width,
         theme.margins,
@@ -1743,7 +1803,6 @@ export function renderCalibrationV2(
     );
   }
 
-  const mainMarginBottom = hasDistribution ? 16 : calibrationTheme.margins.bottom;
   const calibrationResolved = {
     ...resolved,
     theme: calibrationTheme,
@@ -1817,7 +1876,7 @@ export function renderCalibrationV2(
       ...basePlotOptions(calibrationResolved, spec),
       height: histHeight,
       marginTop: 0,
-      marginBottom: calibrationTheme.margins.bottom,
+      marginBottom: histMarginBottom,
       x: axisOptions(calibrationTheme, spec.xAxis.label, xDomain),
       y: {
         label: null,

@@ -126,8 +126,8 @@ describe("Visual Convergence Requirements", () => {
       const { lines, bgFill } = getDomTipLinesAndFill(element);
 
       const expectedLines = [
-        "Predicted: 0.200",
-        "Observed: 0.180 ( 10 / 55 )",
+        "Predicted: 0.2",
+        "Observed: 0.18 ( 10 / 55 )",
       ];
       expect(lines).toEqual(expectedLines);
       expect(bgFill).toBe("#ffffff");
@@ -144,8 +144,8 @@ describe("Visual Convergence Requirements", () => {
 
       expect(lines).toEqual([
         "Model A: ",
-        "Predicted: 0.100",
-        "Observed: 0.120",
+        "Predicted: 0.1",
+        "Observed: 0.12",
       ]);
       expect(bgFill).toBe("#ffffff");
     });

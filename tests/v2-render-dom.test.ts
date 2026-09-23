@@ -283,7 +283,7 @@ describe("v2 browser theme DOM", () => {
       expect(innerWidth).toBe(506);
       expect(mainInnerHeight).toBe(506);
       expect(mainSvgHeight).toBe(542); // 28 + 506 + 8
-      expect(histSvgHeight).toBe(87); // auxiliary height
+      expect(histSvgHeight).toBe(100); // fixed auxiliary height
     });
 
     it("calculates inner height proportional to y/x domain span ratio for smooth calibration overshoot", () => {
@@ -407,7 +407,7 @@ describe("v2 browser theme DOM", () => {
       // Main calibration SVG should use resolved height (506 innerHeight + 28 + 8)
       expect(mainSvg.getAttribute("height")).toBe("542");
       // Histogram SVG height
-      expect(histSvg.getAttribute("height")).toBe("87");
+      expect(histSvg.getAttribute("height")).toBe("100");
 
       // Verify both panels render axes using the shared resolved xDomain [0, 1]
       expect(mainSvg.querySelector('[aria-label^="y-axis"]')).not.toBeNull();

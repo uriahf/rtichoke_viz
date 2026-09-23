@@ -38,7 +38,7 @@ function renderStandaloneComponentContent(
     case "roc":
       return renderRocV2(spec);
     case "calibration":
-      return renderCalibrationV2(spec, { width: 550, height: 550 });
+      return renderCalibrationV2(spec, { layoutMode: "report" });
     case "precision_recall":
       return renderPrecisionRecallV2(spec);
     case "gains":
