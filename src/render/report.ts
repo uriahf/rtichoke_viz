@@ -18,7 +18,7 @@ import { renderPerformanceTable } from "./performance-table.js";
 import { renderPredictionDistribution } from "./prediction-distribution.js";
 import { renderSummaryMetrics } from "./summary-metrics.js";
 import {
-  renderCalibrationForReport,
+  renderCalibrationV2,
   renderGainsV2,
   renderLiftV2,
   renderPrecisionRecallV2,
@@ -38,7 +38,7 @@ function renderStandaloneComponentContent(
     case "roc":
       return renderRocV2(spec);
     case "calibration":
-      return renderCalibrationForReport(spec);
+      return renderCalibrationV2(spec, { layoutMode: "report" });
     case "precision_recall":
       return renderPrecisionRecallV2(spec);
     case "gains":

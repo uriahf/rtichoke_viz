@@ -98,6 +98,8 @@ export interface V2RenderOptions {
   theme?: V2ThemeOptions;
   allGroups?: readonly string[];
   showLegend?: boolean;
+  /** @internal */
+  layoutMode?: "standalone" | "report";
 }
 
 export const RTICHOKE_BROWSER_THEME: V2RendererTheme = {
@@ -1601,7 +1603,11 @@ export function installHistogramHoverLayer(
 
   const yScale = (plotElement as any).scale?.("y") ?? (svgNode as any).scale?.("y");
 
-  for (const item of distribution) {
+  // Sort distribution by count descending so taller bars are rendered first
+  // and shorter bars sit on top in DOM order, keeping both hoverable.
+  const sortedDistribution = [...distribution].sort((a, b) => b.count - a.count);
+
+  for (const item of sortedDistribution) {
     if (item.count <= 0) continue; // Skip zero-count bars
 
     const lower = item.midpoint - item.binWidth / 2;
@@ -1650,10 +1656,9 @@ export function installHistogramHoverLayer(
   svg.on("mouseleave pointerleave", hideTooltip);
 }
 
-function renderCalibration(
+export function renderCalibrationV2(
   spec: CalibrationV2Spec,
-  options: V2RenderOptions,
-  reportLayout: boolean,
+  options: V2RenderOptions = {},
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -1716,11 +1721,11 @@ function renderCalibration(
   let mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
   let histMarginBottom = theme.margins.bottom;
 
-  if (reportLayout) {
+  if (options.layoutMode === "report") {
     const targetWidth = 550;
     const targetHeight = 550;
 
-    const baseMarginTop = 25;
+    const marginTop = 25;
     histMarginBottom = 40;
     const gap = 19.4;
     const targetHistPlotHeight = 87.3;
@@ -1741,15 +1746,8 @@ function renderCalibration(
     const innerW = xSpan * scale;
     const innerH = ySpan * scale;
 
-    const marginLeft = Math.max(10, (availableW - innerW) / 2);
+    const marginLeft = Math.max(10, Math.round((availableW - innerW) / 2));
     const marginRight = Math.max(10, availableW - innerW - marginLeft);
-
-    // Keep the report composition at 550px while applying the fitted inner
-    // height to Observable Plot's actual y range. The unused vertical space is
-    // split around the plot, preserving the established top/gap proportions.
-    const unusedInnerHeight = Math.max(0, targetMainPlotHeight - innerH);
-    const marginTop = baseMarginTop + unusedInnerHeight / 2;
-    mainMarginBottom = Math.round(gap) + unusedInnerHeight / 2;
 
     mainHeight = targetHeight - histHeight; // Exactly 550 - 127 = 423
 
@@ -1764,14 +1762,41 @@ function renderCalibration(
       },
     };
   } else if (hasDistribution) {
-    mainMarginBottom = 8;
-    mainHeight = equalScalePlotHeight(
-      theme.width,
-      theme.margins,
-      xDomain,
-      yDomain,
-      mainMarginBottom,
-    );
+    if (options.height !== undefined || options.width !== undefined) {
+      const targetTotalHeight = options.height ?? theme.height;
+      const targetWidth = options.width ?? theme.width;
+      histHeight = DEFAULT_HISTOGRAM_HEIGHT;
+      const mainMarginTop = theme.margins.top;
+      mainMarginBottom = 16;
+      mainHeight = targetTotalHeight - histHeight;
+      const innerHeight = Math.max(50, mainHeight - mainMarginTop - mainMarginBottom);
+      const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
+      const ySpan = Math.abs(yDomain[1] - yDomain[0]) || 1;
+      const innerWidth = innerHeight * (xSpan / ySpan);
+      const totalMarginX = targetWidth - innerWidth;
+      const origMarginSum = theme.margins.left + theme.margins.right;
+      const marginLeft = Math.max(10, Math.round(totalMarginX * (theme.margins.left / (origMarginSum || 1))));
+      const marginRight = Math.max(10, totalMarginX - marginLeft);
+
+      calibrationTheme = {
+        ...theme,
+        width: targetWidth,
+        margins: {
+          ...theme.margins,
+          left: marginLeft,
+          right: marginRight,
+        },
+      };
+    } else {
+      mainMarginBottom = 8;
+      mainHeight = equalScalePlotHeight(
+        theme.width,
+        theme.margins,
+        xDomain,
+        yDomain,
+        mainMarginBottom,
+      );
+    }
   } else {
     mainHeight = equalScalePlotHeight(
       theme.width,
@@ -1898,20 +1923,6 @@ function renderCalibration(
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
-}
-
-export function renderCalibrationV2(
-  spec: CalibrationV2Spec,
-  options: V2RenderOptions = {},
-): SVGSVGElement | HTMLElement {
-  return renderCalibration(spec, options, false);
-}
-
-/** Report-only dispatch hook; intentionally absent from the package exports. */
-export function renderCalibrationForReport(
-  spec: CalibrationV2Spec,
-): SVGSVGElement | HTMLElement {
-  return renderCalibration(spec, {}, true);
 }
 
 function renderLineChart(
