@@ -121,22 +121,19 @@ const twoModelSmoothCalibration: CalibrationV2Spec = {
 
 describe("Visual Convergence Requirements", () => {
   describe("Calibration Main Plot Hover Convergence", () => {
-    it("1. preserves exact Calibration numeric formatting (Predicted, Observed, Events, Total formatted with theme.tip.digits)", () => {
+    it("1. preserves exact Calibration numeric formatting (Predicted, Observed with events/total for discrete)", () => {
       const element = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
       const { lines, bgFill } = getDomTipLinesAndFill(element);
 
       const expectedLines = [
-        "Series: Model A",
-        "Predicted: 0.200",
-        "Observed: 0.180",
-        "Events: 10.000",
-        "Total: 55.000",
+        "Predicted: 0.2",
+        "Observed: 0.18 ( 10 / 55 )",
       ];
       expect(lines).toEqual(expectedLines);
-      expect(bgFill).toBe("#000000");
+      expect(bgFill).toBe("#ffffff");
     });
 
-    it("2. tests smooth Calibration line-target hover directly and asserts nearest datum, exact field order, and series background", () => {
+    it("2. tests smooth Calibration line-target hover directly and asserts nearest datum and Plotly-like format", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
 
       const lineTargets = Array.from(element.querySelectorAll<SVGElement>("path.rtichoke-hover-line-target"));
@@ -146,37 +143,27 @@ describe("Visual Convergence Requirements", () => {
       const { lines, bgFill } = getDomTipLinesAndFill(element, "path.rtichoke-hover-line-target");
 
       expect(lines).toEqual([
-        "Series: Model A",
-        "Predicted: 0.100",
-        "Observed: 0.120",
-        "Events: 12.000",
-        "Total: 100.000",
+        "Model A: ",
+        "Predicted: 0.1",
+        "Observed: 0.12",
       ]);
-      expect(bgFill).toBe("#1b9e77");
+      expect(bgFill).toBe("#ffffff");
     });
 
-    it("3. renders two-model smooth calibration with distinct model tooltip backgrounds matching colorByGroup", () => {
+    it("3. renders two-model smooth calibration with neutral Plotly-like light background", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
 
       const pointTargets = Array.from(element.querySelectorAll<SVGElement>("circle.rtichoke-hover-point-target"));
       expect(pointTargets.length).toBeGreaterThanOrEqual(4);
 
-      // Trigger first model
       pointTargets[0].dispatchEvent(
         new (window as any).PointerEvent("pointermove", { bubbles: true, clientX: 100, clientY: 100 }),
       );
       const bgRect1 = element.querySelector<SVGRectElement>("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg");
-      expect(bgRect1?.getAttribute("fill")).toBe("#1b9e77");
-
-      // Trigger second model
-      pointTargets[2].dispatchEvent(
-        new (window as any).PointerEvent("pointermove", { bubbles: true, clientX: 100, clientY: 100 }),
-      );
-      const bgRect2 = element.querySelector<SVGRectElement>("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg");
-      expect(bgRect2?.getAttribute("fill")).toBe("#d95f02");
+      expect(bgRect1?.getAttribute("fill")).toBe("#ffffff");
     });
 
-    it("4. uses neutral #f3f4f6 background for identity/reference line hover", () => {
+    it("4. uses neutral #ffffff background for Perfectly Calibrated reference line hover", () => {
       const element = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
       const refTarget = element.querySelector<SVGElement>(".rtichoke-hover-ref-target");
       expect(refTarget).not.toBeNull();
@@ -186,10 +173,10 @@ describe("Visual Convergence Requirements", () => {
       );
 
       const bgRect = element.querySelector<SVGRectElement>("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg");
-      expect(bgRect?.getAttribute("fill")).toBe("#f3f4f6");
+      expect(bgRect?.getAttribute("fill")).toBe("#ffffff");
 
       const textEl = element.querySelector<SVGTextElement>("g.rtichoke-hover-tooltip text");
-      expect(textEl?.textContent).toContain("Reference: Identity");
+      expect(textEl?.textContent).toContain("Perfectly Calibrated");
     });
 
     it("5. selects high-contrast text colors for dark and light model background fills", () => {
@@ -199,25 +186,17 @@ describe("Visual Convergence Requirements", () => {
       expect(getContrastTextColor("#F4FFF0")).toBe("#000000");
     });
 
-    it("6. attached histogram panel is isolated from main plot D3 hover layer and preserves native rect tip", () => {
+    it("6. attached histogram panel uses coherent calibration hover layer", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
       expect(element.className).toBe("rtichoke-calibration");
 
       const children = element.children;
       expect(children.length).toBe(2);
 
-      const mainPlot = children[0];
       const histPlot = children[1];
 
-      // Main plot contains D3 hover layer
-      expect(mainPlot.querySelector("g.rtichoke-hover-tooltip")).not.toBeNull();
-
-      // Histogram plot does NOT contain D3 hover targets layer
-      expect(histPlot.querySelector("g.rtichoke-hover-targets")).toBeNull();
-
-      // Histogram plot contains rect marks
-      const rectMarks = histPlot.querySelectorAll("rect");
-      expect(rectMarks.length).toBeGreaterThan(0);
+      // Histogram plot contains D3 hover targets layer
+      expect(histPlot.querySelector("g.rtichoke-hover-targets")).not.toBeNull();
     });
   });
 

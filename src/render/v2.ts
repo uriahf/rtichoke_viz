@@ -853,6 +853,9 @@ export interface InstallCurveHoverLayerOptions {
   selectedOperatingPointItems?: CurveHoverItem[];
   references?: ReferenceHoverItem[];
   theme: V2RendererTheme;
+  tooltipStyle?: "default" | "light";
+  xDomain?: [number, number];
+  yDomain?: [number, number];
 }
 
 export function installCurveHoverLayer(
@@ -910,9 +913,11 @@ export function installCurveHoverLayer(
     if (validFields.length === 0) return;
 
     const isReference = fields.length === 1 && fields[0][0] === "Reference";
-    const bgFill = isReference ? "#f3f4f6" : backgroundColor;
-    const fgColor = isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
-    const strokeColor = isReference ? "#d1d5db" : "#374151";
+    const isLight = options.tooltipStyle === "light";
+
+    const bgFill = isLight ? "#ffffff" : isReference ? "#f3f4f6" : backgroundColor;
+    const fgColor = isLight ? "#1f2937" : isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
+    const strokeColor = isLight ? "#d1d5db" : isReference ? "#d1d5db" : "#374151";
 
     text
       .attr("fill", fgColor)
@@ -927,15 +932,29 @@ export function installCurveHoverLayer(
         .attr("x", "0")
         .attr("dy", idx === 0 ? "1em" : "1.2em");
 
-      tspan
-        .append("tspan")
-        .attr("font-weight", "bold")
-        .text(`${label}: `);
+      const hasLabel = label !== "" && label !== null && label !== undefined;
+      const hasVal = val !== "" && val !== null && val !== undefined;
 
-      tspan
-        .append("tspan")
-        .attr("font-weight", "normal")
-        .text(String(val));
+      if (hasLabel && hasVal) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "bold")
+          .text(`${label}: `);
+        tspan
+          .append("tspan")
+          .attr("font-weight", "normal")
+          .text(String(val));
+      } else if (hasLabel) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "bold")
+          .text(String(label));
+      } else if (hasVal) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "normal")
+          .text(String(val));
+      }
     });
 
     const textNode = text.node();
@@ -999,9 +1018,55 @@ export function installCurveHoverLayer(
 
   for (const ref of options.references ?? []) {
     const refBg = ref.backgroundColor ?? "#f3f4f6";
-    const refFields: Array<[string, unknown]> = [["Reference", ref.label]];
+    const defaultRefFields: Array<[string, unknown]> = [["Reference", ref.label]];
 
-    if (ref.type === "horizontal" && ref.value !== undefined) {
+    if (ref.type === "identity") {
+      const pts = ref.points && ref.points.length >= 2 ? ref.points : [{ x: 0, y: 0 }, { x: 1, y: 1 }];
+      const minX = pts[0].x;
+      const maxX = pts[pts.length - 1].x;
+
+      const pathD = pts
+        .map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`)
+        .join(" ");
+
+      targetsGroup
+        .append("path")
+        .attr("class", "rtichoke-hover-ref-target")
+        .attr("d", pathD)
+        .attr("fill", "none")
+        .attr("stroke", "transparent")
+        .attr("stroke-width", 12)
+        .style("pointer-events", "stroke")
+        .on("pointermove", (e: MouseEvent) => {
+          if (options.tooltipStyle === "light") {
+            const [mx] = pointer(e, svgNode);
+            const r0 = Array.isArray(xScale.range) ? xScale.range[0] : typeof xScale.range === "function" ? xScale.range()[0] : options.theme.margins.left;
+            const r1 = Array.isArray(xScale.range) ? xScale.range[xScale.range.length - 1] : typeof xScale.range === "function" ? xScale.range()[xScale.range().length - 1] : options.theme.width - options.theme.margins.right;
+            const domain0 = options.xDomain ? options.xDomain[0] : 0;
+            const domain1 = options.xDomain ? options.xDomain[1] : 1;
+
+            let dataX: number;
+            if (typeof xScale.invert === "function") {
+              dataX = xScale.invert(mx);
+            } else {
+              const frac = r1 !== r0 ? (mx - r0) / (r1 - r0) : 0;
+              dataX = domain0 + frac * (domain1 - domain0);
+            }
+            const clampedX = Math.max(minX, Math.min(maxX, dataX));
+
+            const predStr = formatCalibrationNumber(clampedX);
+            const refFields: Array<[string, unknown]> = [
+              [ref.label, ""],
+              ["Predicted", predStr],
+              ["Observed", predStr],
+            ];
+            showTooltip(e, refFields, refBg);
+          } else {
+            showTooltip(e, defaultRefFields, refBg);
+          }
+        })
+        .on("mouseleave pointerleave", hideTooltip);
+    } else if (ref.type === "horizontal" && ref.value !== undefined) {
       const ry = yScale.apply(ref.value);
       targetsGroup
         .append("line")
@@ -1013,13 +1078,9 @@ export function installCurveHoverLayer(
         .attr("stroke", "transparent")
         .attr("stroke-width", 12)
         .style("pointer-events", "stroke")
-        .on("pointermove", (e: MouseEvent) => showTooltip(e, refFields, refBg))
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg))
         .on("mouseleave pointerleave", hideTooltip);
-    } else if (
-      (ref.type === "identity" || ref.type === "path") &&
-      ref.points &&
-      ref.points.length > 0
-    ) {
+    } else if (ref.type === "path" && ref.points && ref.points.length > 0) {
       const pathD = ref.points
         .map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`)
         .join(" ");
@@ -1031,7 +1092,7 @@ export function installCurveHoverLayer(
         .attr("stroke", "transparent")
         .attr("stroke-width", 12)
         .style("pointer-events", "stroke")
-        .on("pointermove", (e: MouseEvent) => showTooltip(e, refFields, refBg))
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg))
         .on("mouseleave pointerleave", hideTooltip);
     }
   }
@@ -1107,9 +1168,13 @@ export function installCurveHoverLayer(
   svg.on("mouseleave pointerleave", hideTooltip);
 }
 
-const DEFAULT_HISTOGRAM_HEIGHT =
-  RTICHOKE_BROWSER_THEME.height -
-  Math.round(RTICHOKE_BROWSER_THEME.height * 0.8);
+const DEFAULT_HISTOGRAM_HEIGHT = 100;
+
+function formatCalibrationNumber(val: number): string {
+  if (!Number.isFinite(val)) return String(val);
+  const rounded = Math.round(val * 1000) / 1000;
+  return String(rounded);
+}
 
 function equalScalePlotHeight(
   width: number,
@@ -1388,27 +1453,236 @@ export function renderRocV2(
   );
 }
 
-export function renderCalibrationV2(
+export function installHistogramHoverLayer(
+  plotElement: SVGSVGElement | HTMLElement,
+  distribution: Array<{
+    seriesId: string;
+    group: string;
+    label: string;
+    midpoint: number;
+    binWidth: number;
+    count: number;
+  }>,
+  options: {
+    theme: V2RendererTheme;
+    xDomain: [number, number];
+    groupCount: number;
+    height?: number;
+  },
+) {
+  const svgNode =
+    typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
+      ? plotElement
+      : plotElement.querySelector<SVGSVGElement>("svg");
+  if (!svgNode) return;
+
+  const svg = select<SVGSVGElement, unknown>(svgNode);
+  const xScale = (plotElement as any).scale?.("x") ?? (svgNode as any).scale?.("x");
+  if (!xScale) return;
+
+  let tooltipGroup = svg.select<SVGGElement>("g.rtichoke-hover-tooltip");
+  if (tooltipGroup.empty()) {
+    tooltipGroup = svg
+      .append("g")
+      .attr("class", "rtichoke-hover-tooltip")
+      .style("pointer-events", "none")
+      .style("display", "none");
+
+    tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
+    tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
+  }
+
+  const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
+  const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
+
+  function showTooltip(
+    event: MouseEvent | PointerEvent,
+    fields: Array<[string, unknown]>,
+  ) {
+    const validFields = fields.filter(([, val]) => val !== undefined && val !== null);
+    if (validFields.length === 0) return;
+
+    text
+      .attr("fill", "#1f2937")
+      .attr("font-family", options.theme.typography.fontFamily)
+      .attr("font-size", "11px")
+      .attr("transform", null);
+
+    text.selectAll("tspan").remove();
+    validFields.forEach(([label, val], idx) => {
+      const tspan = text
+        .append("tspan")
+        .attr("x", "0")
+        .attr("dy", idx === 0 ? "1em" : "1.2em");
+
+      const hasLabel = label !== "" && label !== null && label !== undefined;
+      const hasVal = val !== "" && val !== null && val !== undefined;
+
+      if (hasLabel && hasVal) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "bold")
+          .text(`${label}: `);
+        tspan
+          .append("tspan")
+          .attr("font-weight", "normal")
+          .text(String(val));
+      } else if (hasLabel) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "bold")
+          .text(String(label));
+      } else if (hasVal) {
+        tspan
+          .append("tspan")
+          .attr("font-weight", "normal")
+          .text(String(val));
+      }
+    });
+
+    const textNode = text.node();
+    if (!textNode) return;
+    const bbox = textNode.getBBox();
+    const paddingX = 8;
+    const paddingY = 6;
+    const boxW = Math.max(bbox.width + paddingX * 2, 60);
+    const boxH = bbox.height + paddingY * 2;
+
+    const [mx, my] = pointer(event, svgNode);
+    const viewBox = svgNode?.viewBox?.baseVal;
+    const svgW = viewBox && viewBox.width > 0 ? viewBox.width : (svgNode?.width?.baseVal?.value || options.theme.width);
+    const svgH = viewBox && viewBox.height > 0 ? viewBox.height : (svgNode?.height?.baseVal?.value || options.theme.height);
+    const margins = options.theme.margins;
+
+    let posX = mx + 12;
+    if (posX + boxW > svgW - margins.right) {
+      posX = mx - 12 - boxW;
+    }
+    if (posX < margins.left) {
+      posX = margins.left;
+    }
+
+    let posY = my - boxH / 2;
+    if (posY < margins.top) {
+      posY = margins.top;
+    }
+    if (posY + boxH > svgH - margins.bottom) {
+      posY = svgH - margins.bottom - boxH;
+    }
+
+    rect
+      .attr("x", posX)
+      .attr("y", posY)
+      .attr("width", boxW)
+      .attr("height", boxH)
+      .attr("fill", "#ffffff")
+      .attr("stroke", "#d1d5db")
+      .attr("stroke-width", 1)
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+
+    text.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
+
+    tooltipGroup.style("display", null);
+  }
+
+  function hideTooltip() {
+    tooltipGroup.style("display", "none");
+  }
+
+  let targetsGroup = svg.select<SVGGElement>("g.rtichoke-hover-targets");
+  if (!targetsGroup.empty()) {
+    targetsGroup.remove();
+  }
+  targetsGroup = svg
+    .insert<SVGGElement>("g", "g.rtichoke-hover-tooltip")
+    .attr("class", "rtichoke-hover-targets");
+
+  const yScale = (plotElement as any).scale?.("y") ?? (svgNode as any).scale?.("y");
+
+  // Sort distribution by count descending so taller bars are rendered first
+  // and shorter bars sit on top in DOM order, keeping both hoverable.
+  const sortedDistribution = [...distribution].sort((a, b) => b.count - a.count);
+
+  for (const item of sortedDistribution) {
+    if (item.count <= 0) continue; // Skip zero-count bars
+
+    const lower = item.midpoint - item.binWidth / 2;
+    const upper = item.midpoint + item.binWidth / 2;
+    const lowerVal = Math.abs(lower) < 1e-9 ? 0 : lower;
+    const upperVal = Math.abs(upper) < 1e-9 ? 0 : upper;
+    const lowerStr = formatCalibrationNumber(lowerVal);
+    const upperStr = formatCalibrationNumber(upperVal);
+    const intervalStr = lowerVal <= 0 ? `[0,${upperStr}]` : `( ${lowerStr} , ${upperStr} ]`;
+    const countText = `${item.count} observations in ${intervalStr}`;
+
+    const fields: Array<[string, unknown]> = [];
+    if (options.groupCount > 1) {
+      fields.push([item.label, ""]);
+    }
+    fields.push(["", countText]);
+
+    const px1 = xScale.apply(lower);
+    const px2 = xScale.apply(upper);
+    const x = Math.min(px1, px2);
+    const w = Math.max(Math.abs(px2 - px1), 2);
+
+    let y = 0;
+    let h = options.height ?? options.theme.height;
+
+    if (yScale) {
+      const yBaseline = yScale.apply(0);
+      const yBarTop = yScale.apply(item.count);
+      y = Math.min(yBaseline, yBarTop);
+      h = Math.max(Math.abs(yBaseline - yBarTop), 4);
+    }
+
+    targetsGroup
+      .append("rect")
+      .attr("class", "rtichoke-hover-hist-target")
+      .attr("x", x)
+      .attr("width", w)
+      .attr("y", y)
+      .attr("height", h)
+      .attr("fill", "transparent")
+      .style("pointer-events", "all")
+      .on("pointermove", (e: MouseEvent) => showTooltip(e, fields))
+      .on("mouseleave pointerleave", hideTooltip);
+  }
+
+  svg.on("mouseleave pointerleave", hideTooltip);
+}
+
+function renderCalibration(
   spec: CalibrationV2Spec,
-  options: V2RenderOptions = {},
+  options: V2RenderOptions,
+  reportLayout: boolean,
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme, colorByGroup } = resolved;
   const data = seriesRenderData(spec, spec.data).map((datum) => {
-    const fields: Array<[string, unknown]> = [
-      ["Series", datum.label],
-      ["Predicted", formatNativeNumber(datum.predicted, theme.tip.digits)],
-      ["Observed", formatNativeNumber(datum.observed, theme.tip.digits)],
-      ["Events", formatNativeNumber(datum.events, theme.tip.digits)],
-      ["Total", formatNativeNumber(datum.total, theme.tip.digits)],
-    ];
+    const fields: Array<[string, unknown]> = [];
+    if (resolved.groups.length > 1) {
+      fields.push([datum.label, ""]);
+    }
+    const predStr = formatCalibrationNumber(datum.predicted);
+    let obsStr = formatCalibrationNumber(datum.observed);
+    if (datum.method === "discrete" && datum.events !== undefined && datum.total !== undefined) {
+      const evStr = Number.isInteger(datum.events) ? String(datum.events) : formatCalibrationNumber(datum.events);
+      const totStr = Number.isInteger(datum.total) ? String(datum.total) : formatCalibrationNumber(datum.total);
+      obsStr += ` ( ${evStr} / ${totStr} )`;
+    }
+    fields.push(["Predicted", predStr]);
+    fields.push(["Observed", obsStr]);
+
     return {
       ...datum,
       tooltipFields: fields,
-      title: tooltip(theme.tip.digits, fields),
     };
   });
+
   const marks = referenceMarks(spec, theme);
   marks.push(
     Plot.line(data, {
@@ -1439,31 +1713,100 @@ export function renderCalibrationV2(
     Math.max(1, ...observedValues),
   ];
   const xDomain = spec.xAxis.domain ?? [0, 1];
-  const mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
-  const mainHeight = equalScalePlotHeight(
-    theme.width,
-    theme.margins,
-    xDomain,
-    yDomain,
-    mainMarginBottom,
-  );
+
+  let mainHeight: number;
+  let histHeight = DEFAULT_HISTOGRAM_HEIGHT;
+  let calibrationTheme = theme;
+  let mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
+  let histMarginBottom = theme.margins.bottom;
+
+  if (reportLayout) {
+    const targetWidth = 550;
+    const targetHeight = 550;
+
+    const baseMarginTop = 25;
+    histMarginBottom = 40;
+    const gap = 19.4;
+    const targetHistPlotHeight = 87.3;
+
+    histHeight = Math.round(targetHistPlotHeight + histMarginBottom); // ~127px
+    const targetMainPlotHeight = 378.3;
+    mainMarginBottom = Math.round(gap); // ~19px gap
+
+    const availableW = targetWidth; // 550
+    const maxInnerW = Math.max(50, availableW - 40);
+    const maxInnerH = Math.max(50, targetMainPlotHeight);
+
+    const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
+    const ySpan = Math.abs(yDomain[1] - yDomain[0]) || 1;
+
+    // Scale fitting inside BOTH maxInnerW and maxInnerH
+    const scale = Math.min(maxInnerW / xSpan, maxInnerH / ySpan);
+    const innerW = xSpan * scale;
+    const innerH = ySpan * scale;
+
+    const marginLeft = Math.max(10, (availableW - innerW) / 2);
+    const marginRight = Math.max(10, availableW - innerW - marginLeft);
+
+    // Keep the report composition at 550px while applying the fitted inner
+    // height to Observable Plot's actual y range. The unused vertical space is
+    // split around the plot, preserving the established top/gap proportions.
+    const unusedInnerHeight = Math.max(0, targetMainPlotHeight - innerH);
+    const marginTop = baseMarginTop + unusedInnerHeight / 2;
+    mainMarginBottom = Math.round(gap) + unusedInnerHeight / 2;
+
+    mainHeight = targetHeight - histHeight; // Exactly 550 - 127 = 423
+
+    calibrationTheme = {
+      ...theme,
+      width: availableW,
+      margins: {
+        top: marginTop,
+        left: marginLeft,
+        right: marginRight,
+        bottom: mainMarginBottom,
+      },
+    };
+  } else if (hasDistribution) {
+    mainMarginBottom = 8;
+    mainHeight = equalScalePlotHeight(
+      theme.width,
+      theme.margins,
+      xDomain,
+      yDomain,
+      mainMarginBottom,
+    );
+  } else {
+    mainHeight = equalScalePlotHeight(
+      theme.width,
+      theme.margins,
+      xDomain,
+      yDomain,
+      theme.margins.bottom,
+    );
+  }
+
+  const calibrationResolved = {
+    ...resolved,
+    theme: calibrationTheme,
+  };
 
   const calibration = themedPlot(
     {
-      ...basePlotOptions(resolved, spec),
+      ...basePlotOptions(calibrationResolved, spec),
       height: mainHeight,
       marginBottom: mainMarginBottom,
       x: hasDistribution
         ? {
-            ...axisOptions(theme, spec.xAxis.label, xDomain),
+            ...axisOptions(calibrationTheme, spec.xAxis.label, xDomain),
             axis: null,
             label: null,
           }
-        : axisOptions(theme, spec.xAxis.label, xDomain),
-      y: axisOptions(theme, spec.yAxis.label, yDomain),
-      marks: finishMarks(marks, theme),
+        : axisOptions(calibrationTheme, spec.xAxis.label, xDomain),
+      y: axisOptions(calibrationTheme, spec.yAxis.label, yDomain),
+      marks: finishMarks(marks, calibrationTheme),
     },
-    theme,
+    calibrationTheme,
   );
 
   const hoverItems: CurveHoverItem[] = data.map((d) => ({
@@ -1477,13 +1820,17 @@ export function renderCalibrationV2(
 
   const referenceHoverItems: ReferenceHoverItem[] = [];
   for (const ref of spec.references ?? []) {
-    const label = ref.label ?? (ref.type === "identity" ? "Identity" : "Reference");
+    const label = ref.label && ref.label !== "Identity" ? ref.label : ref.type === "identity" ? "Perfectly Calibrated" : "Reference";
     if (ref.type === "identity") {
-      referenceHoverItems.push({
-        type: "identity",
-        points: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
-        label,
-      });
+      const minX = Math.max(0, Math.min(xDomain[0], xDomain[1]), Math.min(yDomain[0], yDomain[1]));
+      const maxX = Math.min(1, Math.max(xDomain[0], xDomain[1]), Math.max(yDomain[0], yDomain[1]));
+      if (minX <= maxX) {
+        referenceHoverItems.push({
+          type: "identity",
+          points: [{ x: minX, y: minX }, { x: maxX, y: maxX }],
+          label,
+        });
+      }
     } else if (ref.type === "horizontal" && ref.value !== undefined) {
       referenceHoverItems.push({
         type: "horizontal",
@@ -1502,33 +1849,28 @@ export function renderCalibrationV2(
   installCurveHoverLayer(calibration, {
     items: hoverItems,
     references: referenceHoverItems,
-    theme,
+    theme: calibrationTheme,
+    tooltipStyle: "light",
+    xDomain,
+    yDomain,
   });
 
   if (!hasDistribution || !spec.distribution) return calibration;
-  const distribution = seriesRenderData(spec, spec.distribution).map(
-    (datum) => ({
-      ...datum,
-      title: tooltip(theme.tip.digits, [
-        ["Series", datum.label],
-        ["Midpoint", datum.midpoint],
-        ["Count", datum.count],
-      ]),
-    }),
-  );
+
+  const distribution = seriesRenderData(spec, spec.distribution);
   const histogram = themedPlot(
     {
-      ...basePlotOptions(resolved, spec),
-      height: DEFAULT_HISTOGRAM_HEIGHT,
+      ...basePlotOptions(calibrationResolved, spec),
+      height: histHeight,
       marginTop: 0,
-      marginBottom: theme.margins.bottom,
-      x: axisOptions(theme, spec.xAxis.label, xDomain),
+      marginBottom: histMarginBottom,
+      x: axisOptions(calibrationTheme, spec.xAxis.label, xDomain),
       y: {
         label: null,
         grid: false,
         ticks: 3,
-        tickSize: theme.axis.tickSize,
-        tickPadding: theme.axis.tickPadding,
+        tickSize: calibrationTheme.axis.tickSize,
+        tickPadding: calibrationTheme.axis.tickPadding,
       },
       color: { legend: false, domain: resolved.groups, range: resolved.colors },
       marks: finishMarks(
@@ -1539,21 +1881,41 @@ export function renderCalibrationV2(
             y: "count",
             fill: "group",
             fillOpacity: 1 / Math.max(resolved.groups.length, 1),
-            title: (d: any) => d.title,
-            tip: true,
           }),
         ],
-        theme,
+        calibrationTheme,
       ),
     },
-    theme,
+    calibrationTheme,
   );
+
+  installHistogramHoverLayer(histogram, distribution, {
+    theme: calibrationTheme,
+    xDomain,
+    groupCount: resolved.groups.length,
+    height: histHeight,
+  });
+
   const container = document.createElement("div");
   container.className = "rtichoke-calibration";
-  container.style.width = `${theme.width}px`;
+  container.style.width = `${calibrationTheme.width}px`;
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+
+export function renderCalibrationV2(
+  spec: CalibrationV2Spec,
+  options: V2RenderOptions = {},
+): SVGSVGElement | HTMLElement {
+  return renderCalibration(spec, options, false);
+}
+
+/** Report-only dispatch hook; intentionally absent from the package exports. */
+export function renderCalibrationForReport(
+  spec: CalibrationV2Spec,
+): SVGSVGElement | HTMLElement {
+  return renderCalibration(spec, {}, true);
 }
 
 function renderLineChart(

@@ -406,7 +406,7 @@ describe("v2 browser theme DOM", () => {
 
       // Main calibration SVG should use resolved height (506 innerHeight + 28 + 8)
       expect(mainSvg.getAttribute("height")).toBe("542");
-      // Histogram SVG should use fixed 100px height
+      // Histogram SVG height
       expect(histSvg.getAttribute("height")).toBe("100");
 
       // Verify both panels render axes using the shared resolved xDomain [0, 1]
