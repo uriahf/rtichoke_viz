@@ -238,6 +238,7 @@ describe("Calibration Plotly Parity Tests", () => {
       "Observed: 0.12",
     ]);
     expect(bgFill).toBe("#1b9e77");
+    expect(el.querySelector("g.rtichoke-hover-tooltip")?.closest("svg")?.getAttribute("class")).toMatch(/^plot-/);
   });
 
   it("F. Perfect Calibration tooltip presents 'Perfectly Calibrated' header with clamped coordinates", () => {

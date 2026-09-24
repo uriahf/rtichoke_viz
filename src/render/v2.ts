@@ -865,7 +865,8 @@ export function installCurveHoverLayer(
   const svgNode =
     typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
       ? plotElement
-      : plotElement.querySelector<SVGSVGElement>("svg");
+      : plotElement.querySelector<SVGSVGElement>("svg[class^='plot-']")
+        ?? plotElement.querySelector<SVGSVGElement>("svg");
   if (!svgNode) return;
 
   const svg = select<SVGSVGElement, unknown>(svgNode);
@@ -1561,7 +1562,8 @@ export function installHistogramHoverLayer(
   const svgNode =
     typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
       ? plotElement
-      : plotElement.querySelector<SVGSVGElement>("svg");
+      : plotElement.querySelector<SVGSVGElement>("svg[class^='plot-']")
+        ?? plotElement.querySelector<SVGSVGElement>("svg");
   if (!svgNode) return;
 
   const svg = select<SVGSVGElement, unknown>(svgNode);
