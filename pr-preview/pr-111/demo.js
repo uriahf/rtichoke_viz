@@ -19727,9 +19727,11 @@ function installCurveHoverLayer(plotElement, options) {
   let tooltipGroup = svg.select("g.rtichoke-hover-tooltip");
   if (tooltipGroup.empty()) {
     tooltipGroup = svg.append("g").attr("class", "rtichoke-hover-tooltip").style("pointer-events", "none").style("display", "none");
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
+  const arrow = tooltipGroup.select("path.rtichoke-hover-tooltip-arrow");
   const rect2 = tooltipGroup.select("rect.rtichoke-hover-tooltip-bg");
   const text2 = tooltipGroup.select("text.rtichoke-hover-tooltip-text");
   function showTooltip(event, fields, backgroundColor, reference = false) {
@@ -19741,10 +19743,10 @@ function installCurveHoverLayer(plotElement, options) {
     const bgFill = isLight ? "#ffffff" : isReference && !isPlotly ? "#f3f4f6" : backgroundColor;
     const fgColor = isLight ? "#1f2937" : isPlotly ? isReference ? options.theme.frame.color : "#ffffff" : isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
     const strokeColor = isLight ? "#d1d5db" : isPlotly ? isReference ? options.theme.frame.color : "#ffffff" : isReference ? "#d1d5db" : "#374151";
-    text2.attr("fill", fgColor).attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px").attr("transform", null);
+    text2.attr("fill", fgColor).attr("font-family", options.theme.typography.fontFamily).attr("font-size", isPlotly ? "13px" : "11px").attr("transform", null);
     text2.selectAll("tspan").remove();
     validFields.forEach(([label, val], idx) => {
-      const tspan = text2.append("tspan").attr("x", "0").attr("dy", idx === 0 ? "1em" : "1.2em");
+      const tspan = text2.append("tspan").attr("x", "0").attr("dy", idx === 0 ? "1em" : isPlotly ? "1.3em" : "1.2em");
       const hasLabel = label !== "" && label !== null && label !== void 0;
       const hasVal = val !== "" && val !== null && val !== void 0;
       if (hasLabel && hasVal) {
@@ -19781,6 +19783,12 @@ function installCurveHoverLayer(plotElement, options) {
     }
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
+    }
+    if (isPlotly) {
+      const boxEdgeX = posX > mx ? posX : posX + boxW;
+      arrow.attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1);
+    } else {
+      arrow.attr("d", null);
     }
     rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1).attr("rx", isPlotly ? 0 : 4).attr("ry", isPlotly ? 0 : 4).style("filter", isPlotly ? "none" : "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
     text2.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
@@ -20164,15 +20172,17 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
   let tooltipGroup = svg.select("g.rtichoke-hover-tooltip");
   if (tooltipGroup.empty()) {
     tooltipGroup = svg.append("g").attr("class", "rtichoke-hover-tooltip").style("pointer-events", "none").style("display", "none");
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
+  const arrow = tooltipGroup.select("path.rtichoke-hover-tooltip-arrow");
   const rect2 = tooltipGroup.select("rect.rtichoke-hover-tooltip-bg");
   const text2 = tooltipGroup.select("text.rtichoke-hover-tooltip-text");
   function showTooltip(event, fields, backgroundColor) {
     const validFields = fields.filter(([, val]) => val !== void 0 && val !== null);
     if (validFields.length === 0) return;
-    text2.attr("fill", "#ffffff").attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px").attr("transform", null);
+    text2.attr("fill", "#ffffff").attr("font-family", options.theme.typography.fontFamily).attr("font-size", "13px").attr("transform", null);
     text2.selectAll("tspan").remove();
     validFields.forEach(([label, val], idx) => {
       const tspan = text2.append("tspan").attr("x", "0").attr("dy", idx === 0 ? "1em" : "1.2em");
@@ -20213,6 +20223,8 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
     }
+    const boxEdgeX = posX > mx ? posX : posX + boxW;
+    arrow.attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`).attr("fill", backgroundColor).attr("stroke", "#ffffff").attr("stroke-width", 1);
     rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", backgroundColor).attr("stroke", "#ffffff").attr("stroke-width", 1).attr("rx", 0).attr("ry", 0).style("filter", null);
     text2.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
     tooltipGroup.style("display", null);
