@@ -20222,7 +20222,7 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
   }
   svg.on("mouseleave pointerleave", hideTooltip);
 }
-function renderCalibrationV2(spec, options = {}) {
+function renderCalibration(spec, options, reportLayout) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme, colorByGroup } = resolved;
@@ -20280,10 +20280,10 @@ function renderCalibrationV2(spec, options = {}) {
   let calibrationTheme = theme;
   let mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
   let histMarginBottom = theme.margins.bottom;
-  if (options.layoutMode === "report") {
+  if (reportLayout) {
     const targetWidth = 550;
     const targetHeight = 550;
-    const marginTop = 25;
+    const baseMarginTop = 25;
     histMarginBottom = 40;
     const gap = 19.4;
     const targetHistPlotHeight = 87.3;
@@ -20298,8 +20298,11 @@ function renderCalibrationV2(spec, options = {}) {
     const scale = Math.min(maxInnerW / xSpan, maxInnerH / ySpan);
     const innerW = xSpan * scale;
     const innerH = ySpan * scale;
-    const marginLeft = Math.max(10, Math.round((availableW - innerW) / 2));
+    const marginLeft = Math.max(10, (availableW - innerW) / 2);
     const marginRight = Math.max(10, availableW - innerW - marginLeft);
+    const unusedInnerHeight = Math.max(0, targetMainPlotHeight - innerH);
+    const marginTop = baseMarginTop + unusedInnerHeight / 2;
+    mainMarginBottom = Math.round(gap) + unusedInnerHeight / 2;
     mainHeight = targetHeight - histHeight;
     calibrationTheme = {
       ...theme,
@@ -20312,40 +20315,14 @@ function renderCalibrationV2(spec, options = {}) {
       }
     };
   } else if (hasDistribution) {
-    if (options.height !== void 0 || options.width !== void 0) {
-      const targetTotalHeight = options.height ?? theme.height;
-      const targetWidth = options.width ?? theme.width;
-      histHeight = DEFAULT_HISTOGRAM_HEIGHT;
-      const mainMarginTop = theme.margins.top;
-      mainMarginBottom = 16;
-      mainHeight = targetTotalHeight - histHeight;
-      const innerHeight = Math.max(50, mainHeight - mainMarginTop - mainMarginBottom);
-      const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
-      const ySpan = Math.abs(yDomain[1] - yDomain[0]) || 1;
-      const innerWidth = innerHeight * (xSpan / ySpan);
-      const totalMarginX = targetWidth - innerWidth;
-      const origMarginSum = theme.margins.left + theme.margins.right;
-      const marginLeft = Math.max(10, Math.round(totalMarginX * (theme.margins.left / (origMarginSum || 1))));
-      const marginRight = Math.max(10, totalMarginX - marginLeft);
-      calibrationTheme = {
-        ...theme,
-        width: targetWidth,
-        margins: {
-          ...theme.margins,
-          left: marginLeft,
-          right: marginRight
-        }
-      };
-    } else {
-      mainMarginBottom = 8;
-      mainHeight = equalScalePlotHeight(
-        theme.width,
-        theme.margins,
-        xDomain,
-        yDomain,
-        mainMarginBottom
-      );
-    }
+    mainMarginBottom = 8;
+    mainHeight = equalScalePlotHeight(
+      theme.width,
+      theme.margins,
+      xDomain,
+      yDomain,
+      mainMarginBottom
+    );
   } else {
     mainHeight = equalScalePlotHeight(
       theme.width,
@@ -20461,6 +20438,12 @@ function renderCalibrationV2(spec, options = {}) {
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+function renderCalibrationV2(spec, options = {}) {
+  return renderCalibration(spec, options, false);
+}
+function renderCalibrationForReport(spec) {
+  return renderCalibration(spec, {}, true);
 }
 function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
   assertV2ReferentialIntegrity(spec);
@@ -26160,7 +26143,7 @@ function renderStandaloneComponentContent(spec) {
     case "roc":
       return renderRocV2(spec);
     case "calibration":
-      return renderCalibrationV2(spec, { layoutMode: "report" });
+      return renderCalibrationForReport(spec);
     case "precision_recall":
       return renderPrecisionRecallV2(spec);
     case "gains":
@@ -26979,6 +26962,41 @@ var structuredReportFixture = {
       ]
     }
   ]
+};
+
+// fixtures/v2/calibration-populations.json
+var calibration_populations_default = {
+  schemaVersion: "2.0",
+  type: "calibration",
+  evaluations: [
+    { id: "eval-pop-a", population: "Population A", label: "Population A" },
+    { id: "eval-pop-b", population: "Population B", label: "Population B" }
+  ],
+  series: [
+    { id: "series-pop-a", evaluationId: "eval-pop-a", display: { label: "Population A", group: "Population A", role: "population" } },
+    { id: "series-pop-b", evaluationId: "eval-pop-b", display: { label: "Population B", group: "Population B", role: "population" } }
+  ],
+  data: [
+    { seriesId: "series-pop-a", predicted: 0.1, observed: 0.08, method: "discrete", events: 8, total: 100 },
+    { seriesId: "series-pop-a", predicted: 0.4, observed: 0.36, method: "discrete", events: 36, total: 100 },
+    { seriesId: "series-pop-a", predicted: 0.8, observed: 0.76, method: "discrete", events: 76, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.1, observed: 0.12, method: "discrete", events: 12, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.4, observed: 0.43, method: "discrete", events: 43, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.8, observed: 0.84, method: "discrete", events: 84, total: 100 }
+  ],
+  distribution: [
+    { seriesId: "series-pop-a", midpoint: 0.1, count: 20, binWidth: 0.1 },
+    { seriesId: "series-pop-a", midpoint: 0.4, count: 45, binWidth: 0.1 },
+    { seriesId: "series-pop-a", midpoint: 0.8, count: 35, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.1, count: 30, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.4, count: 35, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.8, count: 35, binWidth: 0.1 }
+  ],
+  x: "predicted",
+  y: "observed",
+  xAxis: { label: "Predicted probability", domain: [0, 1] },
+  yAxis: { label: "Observed probability", domain: [0, 1] },
+  references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }]
 };
 
 // fixtures/v2/decision-curve-single.json
@@ -59485,6 +59503,7 @@ var rocHost = document.querySelector("#roc-chart");
 var rocOpHost = document.querySelector("#roc-op-chart");
 var rocPpcrHost = document.querySelector("#roc-ppcr-chart");
 var calibrationHost = document.querySelector("#calibration-chart");
+var calibrationPopulationsHost = document.querySelector("#calibration-populations-chart");
 var gainsHost = document.querySelector("#gains-chart");
 var gainsTimeHost = document.querySelector("#gains-time-chart");
 var liftHost = document.querySelector("#lift-chart");
@@ -59496,7 +59515,7 @@ var iaOpHost = document.querySelector("#ia-op-chart");
 var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
 var predDistHost = document.querySelector("#pred-dist-chart");
 var predDistPpcrHost = document.querySelector("#pred-dist-ppcr-chart");
-if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !predDistHost || !predDistPpcrHost) {
+if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !predDistHost || !predDistPpcrHost) {
   throw new Error("Demo chart containers are missing");
 }
 var singleRocOpSpec = {
@@ -59601,6 +59620,7 @@ rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibration_default));
+calibrationPopulationsHost.append(renderCalibrationV2(calibration_populations_default));
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(
