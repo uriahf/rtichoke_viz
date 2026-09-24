@@ -19708,7 +19708,7 @@ function getContrastTextColor(backgroundColor) {
   return contrastWithBlack >= contrastWithWhite ? "#000000" : "#ffffff";
 }
 function installCurveHoverLayer(plotElement, options) {
-  const svgNode2 = typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg");
+  const svgNode2 = typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg[class^='plot-']") ?? plotElement.querySelector("svg");
   if (!svgNode2) return;
   const svg = select_default2(svgNode2);
   const xScale = plotElement.scale?.("x") ?? svgNode2.scale?.("x");
@@ -20164,7 +20164,7 @@ function renderRocV2(spec, options = {}) {
   );
 }
 function installHistogramHoverLayer(plotElement, distribution, options) {
-  const svgNode2 = typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg");
+  const svgNode2 = typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement ? plotElement : plotElement.querySelector("svg[class^='plot-']") ?? plotElement.querySelector("svg");
   if (!svgNode2) return;
   const svg = select_default2(svgNode2);
   const xScale = plotElement.scale?.("x") ?? svgNode2.scale?.("x");
