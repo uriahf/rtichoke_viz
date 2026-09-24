@@ -19797,7 +19797,10 @@ function installCurveHoverLayer(plotElement, options) {
     const refBg = ref.backgroundColor ?? "#f3f4f6";
     const defaultRefFields = [["Reference", ref.label]];
     if (ref.type === "identity") {
-      const pathD = (ref.points && ref.points.length > 0 ? ref.points : [{ x: 0, y: 0 }, { x: 1, y: 1 }]).map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`).join(" ");
+      const pts = ref.points && ref.points.length >= 2 ? ref.points : [{ x: 0, y: 0 }, { x: 1, y: 1 }];
+      const minX = pts[0].x;
+      const maxX = pts[pts.length - 1].x;
+      const pathD = pts.map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`).join(" ");
       targetsGroup.append("path").attr("class", "rtichoke-hover-ref-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => {
         if (options.tooltipStyle === "light") {
           const [mx] = pointer_default(e, svgNode2);
@@ -19812,10 +19815,8 @@ function installCurveHoverLayer(plotElement, options) {
             const frac = r1 !== r0 ? (mx - r0) / (r1 - r0) : 0;
             dataX = domain0 + frac * (domain1 - domain0);
           }
-          const minD = Math.min(domain0, domain1);
-          const maxD = Math.max(domain0, domain1);
-          const clampedX = Math.max(minD, Math.min(maxD, dataX));
-          const predStr = formatNativeNumber(clampedX, options.theme.tip.digits);
+          const clampedX = Math.max(minX, Math.min(maxX, dataX));
+          const predStr = formatCalibrationNumber(clampedX);
           const refFields = [
             [ref.label, ""],
             ["Predicted", predStr],
@@ -20384,11 +20385,15 @@ function renderCalibrationV2(spec, options = {}) {
   for (const ref of spec.references ?? []) {
     const label = ref.label && ref.label !== "Identity" ? ref.label : ref.type === "identity" ? "Perfectly Calibrated" : "Reference";
     if (ref.type === "identity") {
-      referenceHoverItems.push({
-        type: "identity",
-        points: [{ x: xDomain[0], y: xDomain[0] }, { x: xDomain[1], y: xDomain[1] }],
-        label
-      });
+      const minX = Math.max(0, Math.min(xDomain[0], xDomain[1]), Math.min(yDomain[0], yDomain[1]));
+      const maxX = Math.min(1, Math.max(xDomain[0], xDomain[1]), Math.max(yDomain[0], yDomain[1]));
+      if (minX <= maxX) {
+        referenceHoverItems.push({
+          type: "identity",
+          points: [{ x: minX, y: minX }, { x: maxX, y: maxX }],
+          label
+        });
+      }
     } else if (ref.type === "horizontal" && ref.value !== void 0) {
       referenceHoverItems.push({
         type: "horizontal",
