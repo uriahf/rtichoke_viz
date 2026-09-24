@@ -22,6 +22,7 @@ import type {
 } from "./index.js";
 import { structuredReportFixture } from "../fixtures/v2/structured-report-v1_1.js";
 import calibrationFixture from "../fixtures/v2/calibration.json" with { type: "json" };
+import calibrationPopulationsFixture from "../fixtures/v2/calibration-populations.json" with { type: "json" };
 import decisionCurveFixture from "../fixtures/v2/decision-curve-single.json" with { type: "json" };
 import gainsFixture from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
 import gainsTimeFixture from "../fixtures/v2/gains-time.json" with { type: "json" };
@@ -39,6 +40,7 @@ const rocHost = document.querySelector<HTMLElement>("#roc-chart");
 const rocOpHost = document.querySelector<HTMLElement>("#roc-op-chart");
 const rocPpcrHost = document.querySelector<HTMLElement>("#roc-ppcr-chart");
 const calibrationHost = document.querySelector<HTMLElement>("#calibration-chart");
+const calibrationPopulationsHost = document.querySelector<HTMLElement>("#calibration-populations-chart");
 const gainsHost = document.querySelector<HTMLElement>("#gains-chart");
 const gainsTimeHost = document.querySelector<HTMLElement>("#gains-time-chart");
 const liftHost = document.querySelector<HTMLElement>("#lift-chart");
@@ -57,6 +59,7 @@ if (
   !rocOpHost ||
   !rocPpcrHost ||
   !calibrationHost ||
+  !calibrationPopulationsHost ||
   !precisionRecallHost ||
   !prPpcrHost ||
   !gainsHost ||
@@ -182,6 +185,7 @@ rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibrationFixture as CalibrationV2Spec));
+calibrationPopulationsHost.append(renderCalibrationV2(calibrationPopulationsFixture as CalibrationV2Spec));
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(
