@@ -19732,14 +19732,15 @@ function installCurveHoverLayer(plotElement, options) {
   }
   const rect2 = tooltipGroup.select("rect.rtichoke-hover-tooltip-bg");
   const text2 = tooltipGroup.select("text.rtichoke-hover-tooltip-text");
-  function showTooltip(event, fields, backgroundColor) {
+  function showTooltip(event, fields, backgroundColor, reference = false) {
     const validFields = fields.filter(([, val]) => val !== void 0 && val !== null);
     if (validFields.length === 0) return;
-    const isReference = fields.length === 1 && fields[0][0] === "Reference";
+    const isReference = reference || fields.length === 1 && fields[0][0] === "Reference";
     const isLight = options.tooltipStyle === "light";
-    const bgFill = isLight ? "#ffffff" : isReference ? "#f3f4f6" : backgroundColor;
-    const fgColor = isLight ? "#1f2937" : isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
-    const strokeColor = isLight ? "#d1d5db" : isReference ? "#d1d5db" : "#374151";
+    const isPlotly = options.tooltipStyle === "plotly";
+    const bgFill = isLight ? "#ffffff" : isReference && !isPlotly ? "#f3f4f6" : backgroundColor;
+    const fgColor = isLight ? "#1f2937" : isPlotly ? isReference ? options.theme.frame.color : "#ffffff" : isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
+    const strokeColor = isLight ? "#d1d5db" : isPlotly ? isReference ? options.theme.frame.color : "#ffffff" : isReference ? "#d1d5db" : "#374151";
     text2.attr("fill", fgColor).attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px").attr("transform", null);
     text2.selectAll("tspan").remove();
     validFields.forEach(([label, val], idx) => {
@@ -19781,7 +19782,7 @@ function installCurveHoverLayer(plotElement, options) {
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
     }
-    rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1).attr("rx", 4).attr("ry", 4).style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+    rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", bgFill).attr("stroke", strokeColor).attr("stroke-width", 1).attr("rx", isPlotly ? 0 : 4).attr("ry", isPlotly ? 0 : 4).style("filter", isPlotly ? "none" : "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
     text2.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
     tooltipGroup.style("display", null);
   }
@@ -19802,7 +19803,7 @@ function installCurveHoverLayer(plotElement, options) {
       const maxX = pts[pts.length - 1].x;
       const pathD = pts.map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`).join(" ");
       targetsGroup.append("path").attr("class", "rtichoke-hover-ref-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => {
-        if (options.tooltipStyle === "light") {
+        if (options.tooltipStyle === "light" || options.tooltipStyle === "plotly") {
           const [mx] = pointer_default(e, svgNode2);
           const r0 = Array.isArray(xScale.range) ? xScale.range[0] : typeof xScale.range === "function" ? xScale.range()[0] : options.theme.margins.left;
           const r1 = Array.isArray(xScale.range) ? xScale.range[xScale.range.length - 1] : typeof xScale.range === "function" ? xScale.range()[xScale.range().length - 1] : options.theme.width - options.theme.margins.right;
@@ -19822,17 +19823,17 @@ function installCurveHoverLayer(plotElement, options) {
             ["Predicted", predStr],
             ["Observed", predStr]
           ];
-          showTooltip(e, refFields, refBg);
+          showTooltip(e, refFields, refBg, true);
         } else {
-          showTooltip(e, defaultRefFields, refBg);
+          showTooltip(e, defaultRefFields, refBg, true);
         }
       }).on("mouseleave pointerleave", hideTooltip);
     } else if (ref.type === "horizontal" && ref.value !== void 0) {
       const ry = yScale.apply(ref.value);
-      targetsGroup.append("line").attr("class", "rtichoke-hover-ref-target").attr("x1", options.theme.margins.left).attr("x2", options.theme.width - options.theme.margins.right).attr("y1", ry).attr("y2", ry).attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, defaultRefFields, refBg)).on("mouseleave pointerleave", hideTooltip);
+      targetsGroup.append("line").attr("class", "rtichoke-hover-ref-target").attr("x1", options.theme.margins.left).attr("x2", options.theme.width - options.theme.margins.right).attr("y1", ry).attr("y2", ry).attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, defaultRefFields, refBg, true)).on("mouseleave pointerleave", hideTooltip);
     } else if (ref.type === "path" && ref.points && ref.points.length > 0) {
       const pathD = ref.points.map((p, idx) => `${idx === 0 ? "M" : "L"}${xScale.apply(p.x)},${yScale.apply(p.y)}`).join(" ");
-      targetsGroup.append("path").attr("class", "rtichoke-hover-ref-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, defaultRefFields, refBg)).on("mouseleave pointerleave", hideTooltip);
+      targetsGroup.append("path").attr("class", "rtichoke-hover-ref-target").attr("d", pathD).attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 12).style("pointer-events", "stroke").on("pointermove", (e) => showTooltip(e, defaultRefFields, refBg, true)).on("mouseleave pointerleave", hideTooltip);
     }
   }
   const itemsBySeries = /* @__PURE__ */ new Map();
@@ -20168,10 +20169,10 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
   }
   const rect2 = tooltipGroup.select("rect.rtichoke-hover-tooltip-bg");
   const text2 = tooltipGroup.select("text.rtichoke-hover-tooltip-text");
-  function showTooltip(event, fields) {
+  function showTooltip(event, fields, backgroundColor) {
     const validFields = fields.filter(([, val]) => val !== void 0 && val !== null);
     if (validFields.length === 0) return;
-    text2.attr("fill", "#1f2937").attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px").attr("transform", null);
+    text2.attr("fill", "#ffffff").attr("font-family", options.theme.typography.fontFamily).attr("font-size", "11px").attr("transform", null);
     text2.selectAll("tspan").remove();
     validFields.forEach(([label, val], idx) => {
       const tspan = text2.append("tspan").attr("x", "0").attr("dy", idx === 0 ? "1em" : "1.2em");
@@ -20212,7 +20213,7 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
     }
-    rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", "#ffffff").attr("stroke", "#d1d5db").attr("stroke-width", 1).attr("rx", 4).attr("ry", 4).style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+    rect2.attr("x", posX).attr("y", posY).attr("width", boxW).attr("height", boxH).attr("fill", backgroundColor).attr("stroke", "#ffffff").attr("stroke-width", 1).attr("rx", 0).attr("ry", 0).style("filter", null);
     text2.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
     tooltipGroup.style("display", null);
   }
@@ -20253,7 +20254,10 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
       y2 = Math.min(yBaseline, yBarTop);
       h = Math.max(Math.abs(yBaseline - yBarTop), 4);
     }
-    targetsGroup.append("rect").attr("class", "rtichoke-hover-hist-target").attr("x", x2).attr("width", w).attr("y", y2).attr("height", h).attr("fill", "transparent").style("pointer-events", "all").on("pointermove", (e) => showTooltip(e, fields)).on("mouseleave pointerleave", hideTooltip);
+    targetsGroup.append("rect").attr("class", "rtichoke-hover-hist-target").attr("x", x2).attr("width", w).attr("y", y2).attr("height", h).attr("fill", "transparent").style("pointer-events", "all").on(
+      "pointermove",
+      (e) => showTooltip(e, fields, options.colorByGroup.get(item.group) ?? "#1b9e77")
+    ).on("mouseleave pointerleave", hideTooltip);
   }
   svg.on("mouseleave pointerleave", hideTooltip);
 }
@@ -20382,6 +20386,7 @@ function renderCalibrationOnce(spec, options, reportLayout, domains) {
     },
     calibrationTheme
   );
+  calibration.style.cursor = "crosshair";
   const hoverItems = data.map((d) => ({
     seriesId: d.seriesId,
     group: d.group,
@@ -20400,20 +20405,23 @@ function renderCalibrationOnce(spec, options, reportLayout, domains) {
         referenceHoverItems.push({
           type: "identity",
           points: [{ x: minX, y: minX }, { x: maxX, y: maxX }],
-          label
+          label,
+          backgroundColor: calibrationTheme.reference.color
         });
       }
     } else if (ref.type === "horizontal" && ref.value !== void 0) {
       referenceHoverItems.push({
         type: "horizontal",
         value: ref.value,
-        label
+        label,
+        backgroundColor: calibrationTheme.reference.color
       });
     } else if (ref.type === "path" && ref.points) {
       referenceHoverItems.push({
         type: "path",
         points: ref.points,
-        label
+        label,
+        backgroundColor: calibrationTheme.reference.color
       });
     }
   }
@@ -20421,7 +20429,7 @@ function renderCalibrationOnce(spec, options, reportLayout, domains) {
     items: hoverItems,
     references: referenceHoverItems,
     theme: calibrationTheme,
-    tooltipStyle: "light",
+    tooltipStyle: "plotly",
     xDomain,
     yDomain
   });
@@ -20457,10 +20465,12 @@ function renderCalibrationOnce(spec, options, reportLayout, domains) {
     },
     calibrationTheme
   );
+  histogram.style.cursor = "crosshair";
   installHistogramHoverLayer(histogram, distribution, {
     theme: calibrationTheme,
     xDomain,
     groupCount: resolved.groups.length,
+    colorByGroup,
     height: histHeight
   });
   const container = document.createElement("div");
