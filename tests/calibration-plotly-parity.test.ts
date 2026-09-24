@@ -128,6 +128,8 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(mainSvg.getAttribute("width")).toBe("600");
     expect(histSvg.getAttribute("width")).toBe("600");
     expect(histSvg.getAttribute("height")).toBe("100");
+    expect(mainSvg.style.cursor).toBe("crosshair");
+    expect(histSvg.style.cursor).toBe("crosshair");
   });
 
   it("A2. Standalone custom sizing retains the pre-PR sizing contract", () => {
@@ -221,7 +223,7 @@ describe("Calibration Plotly Parity Tests", () => {
       "Predicted: 0.2",
       "Observed: 0.18 ( 10 / 55 )",
     ]);
-    expect(bgFill).toBe("#ffffff");
+    expect(bgFill).toBe("#000000");
   });
 
   it("E. Smooth tooltip content follows Plotly semantic form without Events/Total", () => {
@@ -233,7 +235,7 @@ describe("Calibration Plotly Parity Tests", () => {
       "Predicted: 0.1",
       "Observed: 0.12",
     ]);
-    expect(bgFill).toBe("#ffffff");
+    expect(bgFill).toBe("#1b9e77");
   });
 
   it("F. Perfect Calibration tooltip presents 'Perfectly Calibrated' header with clamped coordinates", () => {
@@ -275,6 +277,21 @@ describe("Calibration Plotly Parity Tests", () => {
     const heightVal = Number(firstRect.getAttribute("height"));
     expect(heightVal).toBeGreaterThan(0);
     expect(heightVal).toBeLessThan(100); // bar height, not full SVG height
+
+    firstRect.dispatchEvent(
+      new (window as any).PointerEvent("pointermove", {
+        bubbles: true,
+        clientX: 100,
+        clientY: 100,
+      }),
+    );
+    const histogramSvg = el.querySelectorAll("svg")[1];
+    expect(
+      histogramSvg.querySelector("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg")?.getAttribute("fill"),
+    ).toBe("#000000");
+    expect(
+      histogramSvg.querySelector("g.rtichoke-hover-tooltip text.rtichoke-hover-tooltip-text")?.getAttribute("fill"),
+    ).toBe("#ffffff");
   });
 
   it("H. Double-click alternates configured and Plotly-like autorange domains while keeping histogram x aligned", () => {
