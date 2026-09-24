@@ -1176,6 +1176,58 @@ function formatCalibrationNumber(val: number): string {
   return String(rounded);
 }
 
+type CalibrationDomains = {
+  x: [number, number];
+  y: [number, number];
+};
+
+function paddedCalibrationDomain(
+  values: number[],
+  fallback: [number, number],
+): [number, number] {
+  const finite = values.filter(Number.isFinite);
+  if (finite.length === 0) return [...fallback];
+
+  const min = Math.min(...finite);
+  const max = Math.max(...finite);
+  const fallbackSpan = Math.abs(fallback[1] - fallback[0]);
+  const span = max - min || fallbackSpan || 1;
+  const padding = span * 0.05;
+  return [min - padding, max + padding];
+}
+
+function calibrationAutorangeDomains(
+  spec: CalibrationV2Spec,
+  configured: CalibrationDomains,
+): CalibrationDomains {
+  const xValues = spec.data.map((datum) => datum.predicted);
+  const yValues = spec.data.map((datum) => datum.observed);
+
+  for (const datum of spec.distribution ?? []) {
+    xValues.push(datum.midpoint - datum.binWidth / 2);
+    xValues.push(datum.midpoint + datum.binWidth / 2);
+  }
+
+  for (const reference of spec.references ?? []) {
+    if (reference.type === "identity") {
+      xValues.push(0, 1);
+      yValues.push(0, 1);
+    } else if (reference.type === "horizontal" && reference.value !== undefined) {
+      yValues.push(reference.value);
+    } else if (reference.type === "path") {
+      for (const point of reference.points ?? []) {
+        xValues.push(point.x);
+        yValues.push(point.y);
+      }
+    }
+  }
+
+  return {
+    x: paddedCalibrationDomain(xValues, configured.x),
+    y: paddedCalibrationDomain(yValues, configured.y),
+  };
+}
+
 function equalScalePlotHeight(
   width: number,
   margins: { top: number; right: number; bottom: number; left: number },
@@ -1654,10 +1706,11 @@ export function installHistogramHoverLayer(
   svg.on("mouseleave pointerleave", hideTooltip);
 }
 
-function renderCalibration(
+function renderCalibrationOnce(
   spec: CalibrationV2Spec,
   options: V2RenderOptions,
   reportLayout: boolean,
+  domains: CalibrationDomains,
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -1707,12 +1760,8 @@ function renderCalibration(
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
-  const observedValues = data.map((datum) => datum.observed).filter(Number.isFinite);
-  const yDomain = spec.yAxis.domain ?? [
-    Math.min(0, ...observedValues),
-    Math.max(1, ...observedValues),
-  ];
-  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const yDomain = domains.y;
+  const xDomain = domains.x;
 
   let mainHeight: number;
   let histHeight = DEFAULT_HISTOGRAM_HEIGHT;
@@ -1902,6 +1951,40 @@ function renderCalibration(
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+
+function renderCalibration(
+  spec: CalibrationV2Spec,
+  options: V2RenderOptions,
+  reportLayout: boolean,
+): SVGSVGElement | HTMLElement {
+  const observedValues = spec.data.map((datum) => datum.observed).filter(Number.isFinite);
+  const configured: CalibrationDomains = {
+    x: spec.xAxis.domain ?? [0, 1],
+    y: spec.yAxis.domain ?? [
+      Math.min(0, ...observedValues),
+      Math.max(1, ...observedValues),
+    ],
+  };
+  const autoranged = calibrationAutorangeDomains(spec, configured);
+
+  const renderState = (isAutoranged: boolean): SVGSVGElement | HTMLElement => {
+    const root = renderCalibrationOnce(
+      spec,
+      options,
+      reportLayout,
+      isAutoranged ? autoranged : configured,
+    );
+    root.dataset.calibrationZoom = isAutoranged ? "autorange" : "configured";
+    root.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      const replacement = renderState(!isAutoranged);
+      root.replaceWith(replacement);
+    });
+    return root;
+  };
+
+  return renderState(false);
 }
 
 export function renderCalibrationV2(

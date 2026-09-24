@@ -276,4 +276,65 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(heightVal).toBeGreaterThan(0);
     expect(heightVal).toBeLessThan(100); // bar height, not full SVG height
   });
+
+  it("H. Double-click alternates configured and Plotly-like autorange domains while keeping histogram x aligned", () => {
+    const host = document.createElement("div");
+    host.append(renderCalibrationV2(singleModelDiscreteCalibration));
+
+    let calibration = host.firstElementChild as HTMLElement;
+    expect(calibration.dataset.calibrationZoom).toBe("configured");
+    let [mainSvg, histSvg] = Array.from(calibration.querySelectorAll<SVGSVGElement>("svg"));
+    expect(scaleGeometry(mainSvg, "x")).toMatchObject({ domainStart: 0, domainEnd: 1 });
+    expect(scaleGeometry(mainSvg, "y")).toMatchObject({ domainStart: 0, domainEnd: 1 });
+
+    mainSvg.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+
+    calibration = host.firstElementChild as HTMLElement;
+    expect(calibration.dataset.calibrationZoom).toBe("autorange");
+    [mainSvg, histSvg] = Array.from(calibration.querySelectorAll<SVGSVGElement>("svg"));
+    const autoX = scaleGeometry(mainSvg, "x");
+    const autoY = scaleGeometry(mainSvg, "y");
+    const autoHistX = scaleGeometry(histSvg, "x");
+    expect([autoX.domainStart, autoX.domainEnd]).toEqual([-0.05, 1.05]);
+    expect([autoY.domainStart, autoY.domainEnd]).toEqual([-0.05, 1.05]);
+    expect(autoX.pixelsPerUnit / autoY.pixelsPerUnit).toBeCloseTo(1, 2);
+    expect([autoHistX.domainStart, autoHistX.domainEnd]).toEqual([-0.05, 1.05]);
+    expect(autoHistX.rangeStart).toBeCloseTo(autoX.rangeStart, 10);
+    expect(autoHistX.rangeEnd).toBeCloseTo(autoX.rangeEnd, 10);
+    expect(calibration.querySelectorAll(".rtichoke-hover-point-target").length).toBe(2);
+    expect(calibration.querySelectorAll(".rtichoke-hover-hist-target").length).toBe(2);
+
+    mainSvg.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+
+    calibration = host.firstElementChild as HTMLElement;
+    expect(calibration.dataset.calibrationZoom).toBe("configured");
+    [mainSvg, histSvg] = Array.from(calibration.querySelectorAll<SVGSVGElement>("svg"));
+    expect(scaleGeometry(mainSvg, "x")).toMatchObject({ domainStart: 0, domainEnd: 1 });
+    expect(scaleGeometry(mainSvg, "y")).toMatchObject({ domainStart: 0, domainEnd: 1 });
+    expect(scaleGeometry(histSvg, "x")).toMatchObject({ domainStart: 0, domainEnd: 1 });
+  });
+
+  it("I. Double-click keeps multi-series hover targets when Calibration has no histogram", () => {
+    const host = document.createElement("div");
+    host.append(renderCalibrationV2(twoModelSmoothCalibration));
+
+    let calibration = host.firstElementChild as SVGSVGElement;
+    expect(calibration.dataset.calibrationZoom).toBe("configured");
+    calibration.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+
+    calibration = host.firstElementChild as SVGSVGElement;
+    expect(calibration.dataset.calibrationZoom).toBe("autorange");
+    expect(calibration.querySelectorAll(".rtichoke-hover-point-target").length).toBe(2);
+    expect(calibration.querySelectorAll(".rtichoke-hover-line-target").length).toBe(0);
+
+    const target = calibration.querySelector<SVGElement>(".rtichoke-hover-point-target");
+    target!.dispatchEvent(
+      new (window as any).PointerEvent("pointermove", {
+        bubbles: true,
+        clientX: 100,
+        clientY: 100,
+      }),
+    );
+    expect(calibration.querySelector(".rtichoke-hover-tooltip")?.textContent).toContain("Model A");
+  });
 });
