@@ -224,6 +224,8 @@ describe("Calibration Plotly Parity Tests", () => {
       "Observed: 0.18 ( 10 / 55 )",
     ]);
     expect(bgFill).toBe("#000000");
+    expect(el.querySelector("g.rtichoke-hover-tooltip text")?.getAttribute("font-size")).toBe("13px");
+    expect(el.querySelector("g.rtichoke-hover-tooltip path.rtichoke-hover-tooltip-arrow")?.getAttribute("d")).toMatch(/^M/);
   });
 
   it("E. Smooth tooltip content follows Plotly semantic form without Events/Total", () => {
@@ -257,6 +259,7 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(textEl?.textContent).toContain("Perfectly Calibrated");
     expect(textEl?.textContent).toContain("Predicted:");
     expect(textEl?.textContent).toContain("Observed:");
+    expect(el.querySelector("g.rtichoke-hover-tooltip path.rtichoke-hover-tooltip-arrow")?.getAttribute("fill")).toBe("#BEBEBE");
   });
 
   it("G. Histogram hover targets use actual bar geometry and omit zero-count bars", () => {
@@ -292,6 +295,12 @@ describe("Calibration Plotly Parity Tests", () => {
     expect(
       histogramSvg.querySelector("g.rtichoke-hover-tooltip text.rtichoke-hover-tooltip-text")?.getAttribute("fill"),
     ).toBe("#ffffff");
+    expect(
+      histogramSvg.querySelector("g.rtichoke-hover-tooltip text.rtichoke-hover-tooltip-text")?.getAttribute("font-size"),
+    ).toBe("13px");
+    expect(
+      histogramSvg.querySelector("g.rtichoke-hover-tooltip path.rtichoke-hover-tooltip-arrow")?.getAttribute("d"),
+    ).toMatch(/^M/);
   });
 
   it("H. Double-click alternates configured and Plotly-like autorange domains while keeping histogram x aligned", () => {

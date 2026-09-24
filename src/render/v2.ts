@@ -897,10 +897,12 @@ export function installCurveHoverLayer(
       .style("pointer-events", "none")
       .style("display", "none");
 
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
 
+  const arrow = tooltipGroup.select<SVGPathElement>("path.rtichoke-hover-tooltip-arrow");
   const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
   const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
 
@@ -944,7 +946,7 @@ export function installCurveHoverLayer(
     text
       .attr("fill", fgColor)
       .attr("font-family", options.theme.typography.fontFamily)
-      .attr("font-size", "11px")
+      .attr("font-size", isPlotly ? "13px" : "11px")
       .attr("transform", null);
 
     text.selectAll("tspan").remove();
@@ -952,7 +954,7 @@ export function installCurveHoverLayer(
       const tspan = text
         .append("tspan")
         .attr("x", "0")
-        .attr("dy", idx === 0 ? "1em" : "1.2em");
+        .attr("dy", idx === 0 ? "1em" : isPlotly ? "1.3em" : "1.2em");
 
       const hasLabel = label !== "" && label !== null && label !== undefined;
       const hasVal = val !== "" && val !== null && val !== undefined;
@@ -1007,6 +1009,17 @@ export function installCurveHoverLayer(
     }
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
+    }
+
+    if (isPlotly) {
+      const boxEdgeX = posX > mx ? posX : posX + boxW;
+      arrow
+        .attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`)
+        .attr("fill", bgFill)
+        .attr("stroke", strokeColor)
+        .attr("stroke-width", 1);
+    } else {
+      arrow.attr("d", null);
     }
 
     rect
@@ -1563,10 +1576,12 @@ export function installHistogramHoverLayer(
       .style("pointer-events", "none")
       .style("display", "none");
 
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
 
+  const arrow = tooltipGroup.select<SVGPathElement>("path.rtichoke-hover-tooltip-arrow");
   const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
   const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
 
@@ -1581,7 +1596,7 @@ export function installHistogramHoverLayer(
     text
       .attr("fill", "#ffffff")
       .attr("font-family", options.theme.typography.fontFamily)
-      .attr("font-size", "11px")
+      .attr("font-size", "13px")
       .attr("transform", null);
 
     text.selectAll("tspan").remove();
@@ -1645,6 +1660,13 @@ export function installHistogramHoverLayer(
     if (posY + boxH > svgH - margins.bottom) {
       posY = svgH - margins.bottom - boxH;
     }
+
+    const boxEdgeX = posX > mx ? posX : posX + boxW;
+    arrow
+      .attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`)
+      .attr("fill", backgroundColor)
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 1);
 
     rect
       .attr("x", posX)
