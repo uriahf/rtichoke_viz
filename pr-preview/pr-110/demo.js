@@ -26963,6 +26963,41 @@ var structuredReportFixture = {
   ]
 };
 
+// fixtures/v2/calibration-populations.json
+var calibration_populations_default = {
+  schemaVersion: "2.0",
+  type: "calibration",
+  evaluations: [
+    { id: "eval-pop-a", population: "Population A", label: "Population A" },
+    { id: "eval-pop-b", population: "Population B", label: "Population B" }
+  ],
+  series: [
+    { id: "series-pop-a", evaluationId: "eval-pop-a", display: { label: "Population A", group: "Population A", role: "population" } },
+    { id: "series-pop-b", evaluationId: "eval-pop-b", display: { label: "Population B", group: "Population B", role: "population" } }
+  ],
+  data: [
+    { seriesId: "series-pop-a", predicted: 0.1, observed: 0.08, method: "discrete", events: 8, total: 100 },
+    { seriesId: "series-pop-a", predicted: 0.4, observed: 0.36, method: "discrete", events: 36, total: 100 },
+    { seriesId: "series-pop-a", predicted: 0.8, observed: 0.76, method: "discrete", events: 76, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.1, observed: 0.12, method: "discrete", events: 12, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.4, observed: 0.43, method: "discrete", events: 43, total: 100 },
+    { seriesId: "series-pop-b", predicted: 0.8, observed: 0.84, method: "discrete", events: 84, total: 100 }
+  ],
+  distribution: [
+    { seriesId: "series-pop-a", midpoint: 0.1, count: 20, binWidth: 0.1 },
+    { seriesId: "series-pop-a", midpoint: 0.4, count: 45, binWidth: 0.1 },
+    { seriesId: "series-pop-a", midpoint: 0.8, count: 35, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.1, count: 30, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.4, count: 35, binWidth: 0.1 },
+    { seriesId: "series-pop-b", midpoint: 0.8, count: 35, binWidth: 0.1 }
+  ],
+  x: "predicted",
+  y: "observed",
+  xAxis: { label: "Predicted probability", domain: [0, 1] },
+  yAxis: { label: "Observed probability", domain: [0, 1] },
+  references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }]
+};
+
 // fixtures/v2/decision-curve-single.json
 var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, netBenefit: 0.22 }, { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.15, netBenefit: 0.15 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.25, netBenefit: 0.09 }, { seriesId: "series-1", threshold: 0.3, netBenefit: 0.06 }, { seriesId: "series-1", threshold: 0.35, netBenefit: 0.02 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }, { seriesId: "series-1", threshold: 0.45, netBenefit: -0.06 }, { seriesId: "series-1", threshold: 0.5, netBenefit: -0.1 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.05, y: 0.236842 }, { x: 0.1, y: 0.222222 }, { x: 0.15, y: 0.205882 }, { x: 0.2, y: 0.125 }, { x: 0.25, y: 0.066667 }, { x: 0.3, y: 0 }, { x: 0.35, y: -0.076923 }, { x: 0.4, y: -0.166667 }, { x: 0.45, y: -0.272727 }, { x: 0.5, y: -0.4 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
 
@@ -59467,6 +59502,7 @@ var rocHost = document.querySelector("#roc-chart");
 var rocOpHost = document.querySelector("#roc-op-chart");
 var rocPpcrHost = document.querySelector("#roc-ppcr-chart");
 var calibrationHost = document.querySelector("#calibration-chart");
+var calibrationPopulationsHost = document.querySelector("#calibration-populations-chart");
 var gainsHost = document.querySelector("#gains-chart");
 var gainsTimeHost = document.querySelector("#gains-time-chart");
 var liftHost = document.querySelector("#lift-chart");
@@ -59478,7 +59514,7 @@ var iaOpHost = document.querySelector("#ia-op-chart");
 var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
 var predDistHost = document.querySelector("#pred-dist-chart");
 var predDistPpcrHost = document.querySelector("#pred-dist-ppcr-chart");
-if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !predDistHost || !predDistPpcrHost) {
+if (!reportHost || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !predDistHost || !predDistPpcrHost) {
   throw new Error("Demo chart containers are missing");
 }
 var singleRocOpSpec = {
@@ -59583,6 +59619,7 @@ rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
 calibrationHost.append(renderCalibrationV2(calibration_default));
+calibrationPopulationsHost.append(renderCalibrationV2(calibration_populations_default));
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(
