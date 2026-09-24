@@ -20221,7 +20221,7 @@ function installHistogramHoverLayer(plotElement, distribution, options) {
   }
   svg.on("mouseleave pointerleave", hideTooltip);
 }
-function renderCalibrationV2(spec, options = {}) {
+function renderCalibration(spec, options, reportLayout) {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
   const { theme, colorByGroup } = resolved;
@@ -20279,10 +20279,10 @@ function renderCalibrationV2(spec, options = {}) {
   let calibrationTheme = theme;
   let mainMarginBottom = hasDistribution ? 8 : theme.margins.bottom;
   let histMarginBottom = theme.margins.bottom;
-  if (options.layoutMode === "report") {
+  if (reportLayout) {
     const targetWidth = 550;
     const targetHeight = 550;
-    const marginTop = 25;
+    const baseMarginTop = 25;
     histMarginBottom = 40;
     const gap = 19.4;
     const targetHistPlotHeight = 87.3;
@@ -20297,8 +20297,11 @@ function renderCalibrationV2(spec, options = {}) {
     const scale = Math.min(maxInnerW / xSpan, maxInnerH / ySpan);
     const innerW = xSpan * scale;
     const innerH = ySpan * scale;
-    const marginLeft = Math.max(10, Math.round((availableW - innerW) / 2));
+    const marginLeft = Math.max(10, (availableW - innerW) / 2);
     const marginRight = Math.max(10, availableW - innerW - marginLeft);
+    const unusedInnerHeight = Math.max(0, targetMainPlotHeight - innerH);
+    const marginTop = baseMarginTop + unusedInnerHeight / 2;
+    mainMarginBottom = Math.round(gap) + unusedInnerHeight / 2;
     mainHeight = targetHeight - histHeight;
     calibrationTheme = {
       ...theme,
@@ -20311,40 +20314,14 @@ function renderCalibrationV2(spec, options = {}) {
       }
     };
   } else if (hasDistribution) {
-    if (options.height !== void 0 || options.width !== void 0) {
-      const targetTotalHeight = options.height ?? theme.height;
-      const targetWidth = options.width ?? theme.width;
-      histHeight = DEFAULT_HISTOGRAM_HEIGHT;
-      const mainMarginTop = theme.margins.top;
-      mainMarginBottom = 16;
-      mainHeight = targetTotalHeight - histHeight;
-      const innerHeight = Math.max(50, mainHeight - mainMarginTop - mainMarginBottom);
-      const xSpan = Math.abs(xDomain[1] - xDomain[0]) || 1;
-      const ySpan = Math.abs(yDomain[1] - yDomain[0]) || 1;
-      const innerWidth = innerHeight * (xSpan / ySpan);
-      const totalMarginX = targetWidth - innerWidth;
-      const origMarginSum = theme.margins.left + theme.margins.right;
-      const marginLeft = Math.max(10, Math.round(totalMarginX * (theme.margins.left / (origMarginSum || 1))));
-      const marginRight = Math.max(10, totalMarginX - marginLeft);
-      calibrationTheme = {
-        ...theme,
-        width: targetWidth,
-        margins: {
-          ...theme.margins,
-          left: marginLeft,
-          right: marginRight
-        }
-      };
-    } else {
-      mainMarginBottom = 8;
-      mainHeight = equalScalePlotHeight(
-        theme.width,
-        theme.margins,
-        xDomain,
-        yDomain,
-        mainMarginBottom
-      );
-    }
+    mainMarginBottom = 8;
+    mainHeight = equalScalePlotHeight(
+      theme.width,
+      theme.margins,
+      xDomain,
+      yDomain,
+      mainMarginBottom
+    );
   } else {
     mainHeight = equalScalePlotHeight(
       theme.width,
@@ -20460,6 +20437,12 @@ function renderCalibrationV2(spec, options = {}) {
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+function renderCalibrationV2(spec, options = {}) {
+  return renderCalibration(spec, options, false);
+}
+function renderCalibrationForReport(spec) {
+  return renderCalibration(spec, {}, true);
 }
 function renderLineChart(spec, options, x2, y2, selectedOperatingPointValue) {
   assertV2ReferentialIntegrity(spec);
@@ -26159,7 +26142,7 @@ function renderStandaloneComponentContent(spec) {
     case "roc":
       return renderRocV2(spec);
     case "calibration":
-      return renderCalibrationV2(spec, { layoutMode: "report" });
+      return renderCalibrationForReport(spec);
     case "precision_recall":
       return renderPrecisionRecallV2(spec);
     case "gains":
