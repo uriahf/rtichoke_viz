@@ -103,9 +103,15 @@
 
 .rtichoke-operating-point-slider {
   width: 100%;
+  min-height: 24px;
   margin: 0;
   box-sizing: border-box;
   cursor: pointer;
+}
+
+.rtichoke-operating-point-slider:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .rtichoke-horizon-chart {

@@ -15,6 +15,8 @@ import {
 
 export type PredictionDistributionDisplayMode = "stacked" | "mirrored";
 
+let pdSliderIdCounter = 0;
+
 export type PredictionDistributionColorMode =
   | "confusion_matrix_cell"
   | "observed_outcome";
@@ -816,8 +818,11 @@ export function renderPredictionDistribution(
   sliderControl.style.marginLeft = `${theme.margins.left}px`;
   sliderControl.style.marginRight = `${theme.margins.right}px`;
 
+  const pdSliderId = `rtichoke-pd-slider-${++pdSliderIdCounter}`;
+
   const sliderLabel = document.createElement("label");
   sliderLabel.className = "rtichoke-operating-point-label";
+  sliderLabel.htmlFor = pdSliderId;
 
   const sliderLabelText = document.createElement("span");
   const sliderValueText = document.createElement("span");
@@ -827,6 +832,7 @@ export function renderPredictionDistribution(
 
   const slider = document.createElement("input");
   slider.type = "range";
+  slider.id = pdSliderId;
   slider.className = "rtichoke-operating-point-slider";
 
   sliderControl.append(sliderLabel, slider);
