@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("Slider Accessibility & Multi-Population Calibration Preview", () => {
-  it("CSS contains min-height 24px and focus-visible outline for .rtichoke-operating-point-slider", () => {
+  it("CSS contains Plotly-aligned track, thumb, min-height 24px, and focus-visible rules for .rtichoke-operating-point-slider", () => {
     const cssPath = path.resolve(__dirname, "../src/rtichoke-viz.css");
     const cssContent = fs.readFileSync(cssPath, "utf8");
 
@@ -22,6 +22,14 @@ describe("Slider Accessibility & Multi-Population Calibration Preview", () => {
     expect(cssContent).toContain(".rtichoke-operating-point-slider:focus-visible {");
     expect(cssContent).toContain("outline: 2px solid #2563eb;");
     expect(cssContent).toContain("outline-offset: 2px;");
+
+    // WebKit track and thumb
+    expect(cssContent).toContain("::-webkit-slider-runnable-track");
+    expect(cssContent).toContain("::-webkit-slider-thumb");
+
+    // Firefox track and thumb
+    expect(cssContent).toContain("::-moz-range-track");
+    expect(cssContent).toContain("::-moz-range-thumb");
   });
 
   it("shared-v2 operating-point slider has unique ID and associated label.htmlFor", () => {
