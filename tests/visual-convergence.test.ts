@@ -130,7 +130,7 @@ describe("Visual Convergence Requirements", () => {
         "Observed: 0.18 ( 10 / 55 )",
       ];
       expect(lines).toEqual(expectedLines);
-      expect(bgFill).toBe("#ffffff");
+      expect(bgFill).toBe("#000000");
     });
 
     it("2. tests smooth Calibration line-target hover directly and asserts nearest datum and Plotly-like format", () => {
@@ -147,10 +147,10 @@ describe("Visual Convergence Requirements", () => {
         "Predicted: 0.1",
         "Observed: 0.12",
       ]);
-      expect(bgFill).toBe("#ffffff");
+      expect(bgFill).toBe("#1b9e77");
     });
 
-    it("3. renders two-model smooth calibration with neutral Plotly-like light background", () => {
+    it("3. renders two-model smooth calibration with its Plotly trace-color background", () => {
       const element = renderCalibrationV2(twoModelSmoothCalibration) as HTMLElement;
 
       const pointTargets = Array.from(element.querySelectorAll<SVGElement>("circle.rtichoke-hover-point-target"));
@@ -160,10 +160,10 @@ describe("Visual Convergence Requirements", () => {
         new (window as any).PointerEvent("pointermove", { bubbles: true, clientX: 100, clientY: 100 }),
       );
       const bgRect1 = element.querySelector<SVGRectElement>("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg");
-      expect(bgRect1?.getAttribute("fill")).toBe("#ffffff");
+      expect(bgRect1?.getAttribute("fill")).toBe("#1b9e77");
     });
 
-    it("4. uses neutral #ffffff background for Perfectly Calibrated reference line hover", () => {
+    it("4. uses the rendered reference color for Perfectly Calibrated hover", () => {
       const element = renderCalibrationV2(singleModelDiscreteCalibration) as HTMLElement;
       const refTarget = element.querySelector<SVGElement>(".rtichoke-hover-ref-target");
       expect(refTarget).not.toBeNull();
@@ -173,7 +173,7 @@ describe("Visual Convergence Requirements", () => {
       );
 
       const bgRect = element.querySelector<SVGRectElement>("g.rtichoke-hover-tooltip rect.rtichoke-hover-tooltip-bg");
-      expect(bgRect?.getAttribute("fill")).toBe("#ffffff");
+      expect(bgRect?.getAttribute("fill")).toBe("#BEBEBE");
 
       const textEl = element.querySelector<SVGTextElement>("g.rtichoke-hover-tooltip text");
       expect(textEl?.textContent).toContain("Perfectly Calibrated");

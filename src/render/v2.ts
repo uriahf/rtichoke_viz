@@ -853,7 +853,7 @@ export interface InstallCurveHoverLayerOptions {
   selectedOperatingPointItems?: CurveHoverItem[];
   references?: ReferenceHoverItem[];
   theme: V2RendererTheme;
-  tooltipStyle?: "default" | "light";
+  tooltipStyle?: "default" | "light" | "plotly";
   xDomain?: [number, number];
   yDomain?: [number, number];
 }
@@ -865,7 +865,8 @@ export function installCurveHoverLayer(
   const svgNode =
     typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
       ? plotElement
-      : plotElement.querySelector<SVGSVGElement>("svg");
+      : plotElement.querySelector<SVGSVGElement>("svg[class^='plot-']")
+        ?? plotElement.querySelector<SVGSVGElement>("svg");
   if (!svgNode) return;
 
   const svg = select<SVGSVGElement, unknown>(svgNode);
@@ -897,10 +898,12 @@ export function installCurveHoverLayer(
       .style("pointer-events", "none")
       .style("display", "none");
 
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
 
+  const arrow = tooltipGroup.select<SVGPathElement>("path.rtichoke-hover-tooltip-arrow");
   const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
   const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
 
@@ -908,21 +911,43 @@ export function installCurveHoverLayer(
     event: MouseEvent | PointerEvent,
     fields: Array<[string, unknown]>,
     backgroundColor: string,
+    reference = false,
   ) {
     const validFields = fields.filter(([, val]) => val !== undefined && val !== null);
     if (validFields.length === 0) return;
 
-    const isReference = fields.length === 1 && fields[0][0] === "Reference";
+    const isReference = reference || (fields.length === 1 && fields[0][0] === "Reference");
     const isLight = options.tooltipStyle === "light";
+    const isPlotly = options.tooltipStyle === "plotly";
 
-    const bgFill = isLight ? "#ffffff" : isReference ? "#f3f4f6" : backgroundColor;
-    const fgColor = isLight ? "#1f2937" : isReference ? "#1f2937" : getContrastTextColor(backgroundColor);
-    const strokeColor = isLight ? "#d1d5db" : isReference ? "#d1d5db" : "#374151";
+    const bgFill = isLight
+      ? "#ffffff"
+      : isReference && !isPlotly
+        ? "#f3f4f6"
+        : backgroundColor;
+    const fgColor = isLight
+      ? "#1f2937"
+      : isPlotly
+        ? isReference
+          ? options.theme.frame.color
+          : "#ffffff"
+        : isReference
+          ? "#1f2937"
+          : getContrastTextColor(backgroundColor);
+    const strokeColor = isLight
+      ? "#d1d5db"
+      : isPlotly
+        ? isReference
+          ? options.theme.frame.color
+          : "#ffffff"
+        : isReference
+          ? "#d1d5db"
+          : "#374151";
 
     text
       .attr("fill", fgColor)
       .attr("font-family", options.theme.typography.fontFamily)
-      .attr("font-size", "11px")
+      .attr("font-size", isPlotly ? "13px" : "11px")
       .attr("transform", null);
 
     text.selectAll("tspan").remove();
@@ -930,7 +955,7 @@ export function installCurveHoverLayer(
       const tspan = text
         .append("tspan")
         .attr("x", "0")
-        .attr("dy", idx === 0 ? "1em" : "1.2em");
+        .attr("dy", idx === 0 ? "1em" : isPlotly ? "1.3em" : "1.2em");
 
       const hasLabel = label !== "" && label !== null && label !== undefined;
       const hasVal = val !== "" && val !== null && val !== undefined;
@@ -987,6 +1012,17 @@ export function installCurveHoverLayer(
       posY = svgH - margins.bottom - boxH;
     }
 
+    if (isPlotly) {
+      const boxEdgeX = posX > mx ? posX : posX + boxW;
+      arrow
+        .attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`)
+        .attr("fill", bgFill)
+        .attr("stroke", strokeColor)
+        .attr("stroke-width", 1);
+    } else {
+      arrow.attr("d", null);
+    }
+
     rect
       .attr("x", posX)
       .attr("y", posY)
@@ -995,9 +1031,9 @@ export function installCurveHoverLayer(
       .attr("fill", bgFill)
       .attr("stroke", strokeColor)
       .attr("stroke-width", 1)
-      .attr("rx", 4)
-      .attr("ry", 4)
-      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+      .attr("rx", isPlotly ? 0 : 4)
+      .attr("ry", isPlotly ? 0 : 4)
+      .style("filter", isPlotly ? "none" : "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
 
     text.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
 
@@ -1038,7 +1074,7 @@ export function installCurveHoverLayer(
         .attr("stroke-width", 12)
         .style("pointer-events", "stroke")
         .on("pointermove", (e: MouseEvent) => {
-          if (options.tooltipStyle === "light") {
+          if (options.tooltipStyle === "light" || options.tooltipStyle === "plotly") {
             const [mx] = pointer(e, svgNode);
             const r0 = Array.isArray(xScale.range) ? xScale.range[0] : typeof xScale.range === "function" ? xScale.range()[0] : options.theme.margins.left;
             const r1 = Array.isArray(xScale.range) ? xScale.range[xScale.range.length - 1] : typeof xScale.range === "function" ? xScale.range()[xScale.range().length - 1] : options.theme.width - options.theme.margins.right;
@@ -1060,9 +1096,9 @@ export function installCurveHoverLayer(
               ["Predicted", predStr],
               ["Observed", predStr],
             ];
-            showTooltip(e, refFields, refBg);
+            showTooltip(e, refFields, refBg, true);
           } else {
-            showTooltip(e, defaultRefFields, refBg);
+            showTooltip(e, defaultRefFields, refBg, true);
           }
         })
         .on("mouseleave pointerleave", hideTooltip);
@@ -1078,7 +1114,7 @@ export function installCurveHoverLayer(
         .attr("stroke", "transparent")
         .attr("stroke-width", 12)
         .style("pointer-events", "stroke")
-        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg))
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg, true))
         .on("mouseleave pointerleave", hideTooltip);
     } else if (ref.type === "path" && ref.points && ref.points.length > 0) {
       const pathD = ref.points
@@ -1092,7 +1128,7 @@ export function installCurveHoverLayer(
         .attr("stroke", "transparent")
         .attr("stroke-width", 12)
         .style("pointer-events", "stroke")
-        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg))
+        .on("pointermove", (e: MouseEvent) => showTooltip(e, defaultRefFields, refBg, true))
         .on("mouseleave pointerleave", hideTooltip);
     }
   }
@@ -1174,6 +1210,58 @@ function formatCalibrationNumber(val: number): string {
   if (!Number.isFinite(val)) return String(val);
   const rounded = Math.round(val * 1000) / 1000;
   return String(rounded);
+}
+
+type CalibrationDomains = {
+  x: [number, number];
+  y: [number, number];
+};
+
+function paddedCalibrationDomain(
+  values: number[],
+  fallback: [number, number],
+): [number, number] {
+  const finite = values.filter(Number.isFinite);
+  if (finite.length === 0) return [...fallback];
+
+  const min = Math.min(...finite);
+  const max = Math.max(...finite);
+  const fallbackSpan = Math.abs(fallback[1] - fallback[0]);
+  const span = max - min || fallbackSpan || 1;
+  const padding = span * 0.05;
+  return [min - padding, max + padding];
+}
+
+function calibrationAutorangeDomains(
+  spec: CalibrationV2Spec,
+  configured: CalibrationDomains,
+): CalibrationDomains {
+  const xValues = spec.data.map((datum) => datum.predicted);
+  const yValues = spec.data.map((datum) => datum.observed);
+
+  for (const datum of spec.distribution ?? []) {
+    xValues.push(datum.midpoint - datum.binWidth / 2);
+    xValues.push(datum.midpoint + datum.binWidth / 2);
+  }
+
+  for (const reference of spec.references ?? []) {
+    if (reference.type === "identity") {
+      xValues.push(0, 1);
+      yValues.push(0, 1);
+    } else if (reference.type === "horizontal" && reference.value !== undefined) {
+      yValues.push(reference.value);
+    } else if (reference.type === "path") {
+      for (const point of reference.points ?? []) {
+        xValues.push(point.x);
+        yValues.push(point.y);
+      }
+    }
+  }
+
+  return {
+    x: paddedCalibrationDomain(xValues, configured.x),
+    y: paddedCalibrationDomain(yValues, configured.y),
+  };
 }
 
 function equalScalePlotHeight(
@@ -1467,13 +1555,15 @@ export function installHistogramHoverLayer(
     theme: V2RendererTheme;
     xDomain: [number, number];
     groupCount: number;
+    colorByGroup: ReadonlyMap<string, string>;
     height?: number;
   },
 ) {
   const svgNode =
     typeof SVGSVGElement !== "undefined" && plotElement instanceof SVGSVGElement
       ? plotElement
-      : plotElement.querySelector<SVGSVGElement>("svg");
+      : plotElement.querySelector<SVGSVGElement>("svg[class^='plot-']")
+        ?? plotElement.querySelector<SVGSVGElement>("svg");
   if (!svgNode) return;
 
   const svg = select<SVGSVGElement, unknown>(svgNode);
@@ -1488,24 +1578,27 @@ export function installHistogramHoverLayer(
       .style("pointer-events", "none")
       .style("display", "none");
 
+    tooltipGroup.append("path").attr("class", "rtichoke-hover-tooltip-arrow");
     tooltipGroup.append("rect").attr("class", "rtichoke-hover-tooltip-bg");
     tooltipGroup.append("text").attr("class", "rtichoke-hover-tooltip-text");
   }
 
+  const arrow = tooltipGroup.select<SVGPathElement>("path.rtichoke-hover-tooltip-arrow");
   const rect = tooltipGroup.select<SVGRectElement>("rect.rtichoke-hover-tooltip-bg");
   const text = tooltipGroup.select<SVGTextElement>("text.rtichoke-hover-tooltip-text");
 
   function showTooltip(
     event: MouseEvent | PointerEvent,
     fields: Array<[string, unknown]>,
+    backgroundColor: string,
   ) {
     const validFields = fields.filter(([, val]) => val !== undefined && val !== null);
     if (validFields.length === 0) return;
 
     text
-      .attr("fill", "#1f2937")
+      .attr("fill", "#ffffff")
       .attr("font-family", options.theme.typography.fontFamily)
-      .attr("font-size", "11px")
+      .attr("font-size", "13px")
       .attr("transform", null);
 
     text.selectAll("tspan").remove();
@@ -1570,17 +1663,24 @@ export function installHistogramHoverLayer(
       posY = svgH - margins.bottom - boxH;
     }
 
+    const boxEdgeX = posX > mx ? posX : posX + boxW;
+    arrow
+      .attr("d", `M${mx},${my} L${boxEdgeX},${my - 6} L${boxEdgeX},${my + 6} Z`)
+      .attr("fill", backgroundColor)
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 1);
+
     rect
       .attr("x", posX)
       .attr("y", posY)
       .attr("width", boxW)
       .attr("height", boxH)
-      .attr("fill", "#ffffff")
-      .attr("stroke", "#d1d5db")
+      .attr("fill", backgroundColor)
+      .attr("stroke", "#ffffff")
       .attr("stroke-width", 1)
-      .attr("rx", 4)
-      .attr("ry", 4)
-      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.15))");
+      .attr("rx", 0)
+      .attr("ry", 0)
+      .style("filter", null);
 
     text.attr("transform", `translate(${posX + paddingX - bbox.x}, ${posY + paddingY - bbox.y})`);
 
@@ -1647,17 +1747,20 @@ export function installHistogramHoverLayer(
       .attr("height", h)
       .attr("fill", "transparent")
       .style("pointer-events", "all")
-      .on("pointermove", (e: MouseEvent) => showTooltip(e, fields))
+      .on("pointermove", (e: MouseEvent) =>
+        showTooltip(e, fields, options.colorByGroup.get(item.group) ?? "#1b9e77"),
+      )
       .on("mouseleave pointerleave", hideTooltip);
   }
 
   svg.on("mouseleave pointerleave", hideTooltip);
 }
 
-function renderCalibration(
+function renderCalibrationOnce(
   spec: CalibrationV2Spec,
   options: V2RenderOptions,
   reportLayout: boolean,
+  domains: CalibrationDomains,
 ): SVGSVGElement | HTMLElement {
   assertV2ReferentialIntegrity(spec);
   const resolved = resolveV2RenderOptions(displayGroups(spec), options);
@@ -1707,12 +1810,8 @@ function renderCalibration(
       }),
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
-  const observedValues = data.map((datum) => datum.observed).filter(Number.isFinite);
-  const yDomain = spec.yAxis.domain ?? [
-    Math.min(0, ...observedValues),
-    Math.max(1, ...observedValues),
-  ];
-  const xDomain = spec.xAxis.domain ?? [0, 1];
+  const yDomain = domains.y;
+  const xDomain = domains.x;
 
   let mainHeight: number;
   let histHeight = DEFAULT_HISTOGRAM_HEIGHT;
@@ -1808,6 +1907,7 @@ function renderCalibration(
     },
     calibrationTheme,
   );
+  calibration.style.cursor = "crosshair";
 
   const hoverItems: CurveHoverItem[] = data.map((d) => ({
     seriesId: d.seriesId,
@@ -1829,6 +1929,7 @@ function renderCalibration(
           type: "identity",
           points: [{ x: minX, y: minX }, { x: maxX, y: maxX }],
           label,
+          backgroundColor: calibrationTheme.reference.color,
         });
       }
     } else if (ref.type === "horizontal" && ref.value !== undefined) {
@@ -1836,12 +1937,14 @@ function renderCalibration(
         type: "horizontal",
         value: ref.value,
         label,
+        backgroundColor: calibrationTheme.reference.color,
       });
     } else if (ref.type === "path" && ref.points) {
       referenceHoverItems.push({
         type: "path",
         points: ref.points,
         label,
+        backgroundColor: calibrationTheme.reference.color,
       });
     }
   }
@@ -1850,7 +1953,7 @@ function renderCalibration(
     items: hoverItems,
     references: referenceHoverItems,
     theme: calibrationTheme,
-    tooltipStyle: "light",
+    tooltipStyle: "plotly",
     xDomain,
     yDomain,
   });
@@ -1888,11 +1991,13 @@ function renderCalibration(
     },
     calibrationTheme,
   );
+  histogram.style.cursor = "crosshair";
 
   installHistogramHoverLayer(histogram, distribution, {
     theme: calibrationTheme,
     xDomain,
     groupCount: resolved.groups.length,
+    colorByGroup,
     height: histHeight,
   });
 
@@ -1902,6 +2007,40 @@ function renderCalibration(
   container.style.maxWidth = "100%";
   container.append(calibration, histogram);
   return container;
+}
+
+function renderCalibration(
+  spec: CalibrationV2Spec,
+  options: V2RenderOptions,
+  reportLayout: boolean,
+): SVGSVGElement | HTMLElement {
+  const observedValues = spec.data.map((datum) => datum.observed).filter(Number.isFinite);
+  const configured: CalibrationDomains = {
+    x: spec.xAxis.domain ?? [0, 1],
+    y: spec.yAxis.domain ?? [
+      Math.min(0, ...observedValues),
+      Math.max(1, ...observedValues),
+    ],
+  };
+  const autoranged = calibrationAutorangeDomains(spec, configured);
+
+  const renderState = (isAutoranged: boolean): SVGSVGElement | HTMLElement => {
+    const root = renderCalibrationOnce(
+      spec,
+      options,
+      reportLayout,
+      isAutoranged ? autoranged : configured,
+    );
+    root.dataset.calibrationZoom = isAutoranged ? "autorange" : "configured";
+    root.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      const replacement = renderState(!isAutoranged);
+      root.replaceWith(replacement);
+    });
+    return root;
+  };
+
+  return renderState(false);
 }
 
 export function renderCalibrationV2(
