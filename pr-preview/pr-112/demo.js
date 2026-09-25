@@ -19196,6 +19196,7 @@ Mark.prototype.plot = function({ marks: marks2 = [], ...options } = {}) {
 };
 
 // src/render/v2.ts
+var sliderIdCounter = 0;
 var RTICHOKE_COLORS = [
   "#1b9e77",
   "#d95f02",
@@ -19428,14 +19429,17 @@ function renderWithOperatingPointSelection(spec, options, render, preferredValue
   control.style.marginRight = `${theme.margins.right}px`;
   const ariaLabelText = spec.operatingPoint.dimension === "probability_threshold" ? "Probability threshold" : "Predicted positives condition rate (PPCR)";
   const visibleLabelText = spec.operatingPoint.dimension === "probability_threshold" ? "Probability threshold" : "PPCR";
+  const sliderId = `rtichoke-v2-slider-${++sliderIdCounter}`;
   const label = document.createElement("label");
   label.className = "rtichoke-operating-point-label";
+  label.htmlFor = sliderId;
   const labelSpan = document.createElement("span");
   labelSpan.textContent = `${visibleLabelText}: `;
   const valueSpan = document.createElement("span");
   valueSpan.className = "rtichoke-operating-point-value";
   const slider = document.createElement("input");
   slider.type = "range";
+  slider.id = sliderId;
   slider.className = "rtichoke-operating-point-slider";
   slider.min = "0";
   slider.max = String(values2.length - 1);
@@ -21559,6 +21563,7 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
 }
 
 // src/render/prediction-distribution.ts
+var pdSliderIdCounter = 0;
 var pdInstanceCounter = 0;
 function resolveConfusionCellColors(theme, conditioning) {
   const {
@@ -22149,14 +22154,17 @@ function renderPredictionDistribution(spec, options = {}) {
   sliderControl.className = "rtichoke-operating-point-control";
   sliderControl.style.marginLeft = `${theme.margins.left}px`;
   sliderControl.style.marginRight = `${theme.margins.right}px`;
+  const pdSliderId = `rtichoke-pd-slider-${++pdSliderIdCounter}`;
   const sliderLabel = document.createElement("label");
   sliderLabel.className = "rtichoke-operating-point-label";
+  sliderLabel.htmlFor = pdSliderId;
   const sliderLabelText = document.createElement("span");
   const sliderValueText = document.createElement("span");
   sliderValueText.className = "rtichoke-operating-point-value";
   sliderLabel.append(sliderLabelText, sliderValueText);
   const slider = document.createElement("input");
   slider.type = "range";
+  slider.id = pdSliderId;
   slider.className = "rtichoke-operating-point-slider";
   sliderControl.append(sliderLabel, slider);
   const legendDiv = document.createElement("div");
