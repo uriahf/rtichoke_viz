@@ -13,23 +13,38 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("Slider Accessibility & Multi-Population Calibration Preview", () => {
-  it("CSS contains Plotly-aligned track, thumb, min-height 24px, and focus-visible rules for .rtichoke-operating-point-slider", () => {
+  it("CSS contains Plotly-aligned track, thumb, typography, cursor, min-height 24px, and focus-visible rules for .rtichoke-operating-point-slider", () => {
     const cssPath = path.resolve(__dirname, "../src/rtichoke-viz.css");
     const cssContent = fs.readFileSync(cssPath, "utf8");
 
     expect(cssContent).toContain(".rtichoke-operating-point-slider {");
     expect(cssContent).toContain("min-height: 24px;");
+    expect(cssContent).toContain("cursor: ew-resize;");
     expect(cssContent).toContain(".rtichoke-operating-point-slider:focus-visible {");
     expect(cssContent).toContain("outline: 2px solid #2563eb;");
     expect(cssContent).toContain("outline-offset: 2px;");
 
+    // Label typography
+    expect(cssContent).toContain(".rtichoke-operating-point-label {");
+    expect(cssContent).toContain("font-size: 16px;");
+    expect(cssContent).toContain("color: #000000;");
+
     // WebKit track and thumb
     expect(cssContent).toContain("::-webkit-slider-runnable-track");
+    expect(cssContent).toContain("height: 5px;");
+    expect(cssContent).toContain("background-color: #f8fafc;");
+    expect(cssContent).toContain("border: 1px solid #bec8d9;");
     expect(cssContent).toContain("::-webkit-slider-thumb");
+    expect(cssContent).toContain("width: 20px;");
+    expect(cssContent).toContain("height: 20px;");
+    expect(cssContent).toContain("background-color: #f6f8fa;");
+    expect(cssContent).toContain(":active::-webkit-slider-thumb");
+    expect(cssContent).toContain("background-color: #dbdde0;");
 
     // Firefox track and thumb
     expect(cssContent).toContain("::-moz-range-track");
     expect(cssContent).toContain("::-moz-range-thumb");
+    expect(cssContent).toContain(":active::-moz-range-thumb");
   });
 
   it("shared-v2 operating-point slider has unique ID and associated label.htmlFor", () => {
