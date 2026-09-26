@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -199,7 +200,7 @@ def scale_calibration_for_demo(
                 )
                 if matching_bin:
                     row["total"] = matching_bin["count"]
-                    row["events"] = round(row["observed"] * row["total"])
+                    row["events"] = math.floor(row["observed"] * row["total"] + 0.5)
 
     return spec
 
