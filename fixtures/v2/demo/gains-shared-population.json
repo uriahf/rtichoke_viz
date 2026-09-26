@@ -1,0 +1,694 @@
+{
+  "schemaVersion": "2.0",
+  "type": "gains",
+  "evaluations": [
+    {
+      "id": "eval-a",
+      "model": "Model A",
+      "population": "Pop 1",
+      "label": "Model A"
+    },
+    {
+      "id": "eval-b",
+      "model": "Model B",
+      "population": "Pop 1",
+      "label": "Model B"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-a",
+      "evaluationId": "eval-a",
+      "display": {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model"
+      }
+    },
+    {
+      "id": "series-b",
+      "evaluationId": "eval-b",
+      "display": {
+        "label": "Model B",
+        "group": "Model B",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-a",
+      "ppcr": 1.0,
+      "sensitivity": 1.0,
+      "cutoff": 0.0
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.9672,
+      "sensitivity": 0.9991,
+      "cutoff": 0.02
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.9348,
+      "sensitivity": 0.997,
+      "cutoff": 0.04
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.903,
+      "sensitivity": 0.9937,
+      "cutoff": 0.06
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.8717,
+      "sensitivity": 0.9894,
+      "cutoff": 0.08
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.8409,
+      "sensitivity": 0.9842,
+      "cutoff": 0.1
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.8106,
+      "sensitivity": 0.978,
+      "cutoff": 0.12
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.781,
+      "sensitivity": 0.971,
+      "cutoff": 0.14
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.7518,
+      "sensitivity": 0.9631,
+      "cutoff": 0.16
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.7233,
+      "sensitivity": 0.9543,
+      "cutoff": 0.18
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.6953,
+      "sensitivity": 0.9448,
+      "cutoff": 0.2
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.6678,
+      "sensitivity": 0.9345,
+      "cutoff": 0.22
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.6409,
+      "sensitivity": 0.9234,
+      "cutoff": 0.24
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.6146,
+      "sensitivity": 0.9115,
+      "cutoff": 0.26
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.5888,
+      "sensitivity": 0.8989,
+      "cutoff": 0.28
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.5636,
+      "sensitivity": 0.8855,
+      "cutoff": 0.3
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.5389,
+      "sensitivity": 0.8714,
+      "cutoff": 0.32
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.5148,
+      "sensitivity": 0.8566,
+      "cutoff": 0.34
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.4912,
+      "sensitivity": 0.841,
+      "cutoff": 0.36
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.4682,
+      "sensitivity": 0.8248,
+      "cutoff": 0.38
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.4457,
+      "sensitivity": 0.8078,
+      "cutoff": 0.4
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.4238,
+      "sensitivity": 0.7902,
+      "cutoff": 0.42
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.4024,
+      "sensitivity": 0.7719,
+      "cutoff": 0.44
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.3816,
+      "sensitivity": 0.7528,
+      "cutoff": 0.46
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.3612,
+      "sensitivity": 0.7332,
+      "cutoff": 0.48
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.3414,
+      "sensitivity": 0.7128,
+      "cutoff": 0.5
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.3222,
+      "sensitivity": 0.6918,
+      "cutoff": 0.52
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.3034,
+      "sensitivity": 0.6702,
+      "cutoff": 0.54
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2852,
+      "sensitivity": 0.6478,
+      "cutoff": 0.56
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2674,
+      "sensitivity": 0.6249,
+      "cutoff": 0.58
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2502,
+      "sensitivity": 0.6013,
+      "cutoff": 0.6
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2335,
+      "sensitivity": 0.577,
+      "cutoff": 0.62
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2173,
+      "sensitivity": 0.5522,
+      "cutoff": 0.64
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.2015,
+      "sensitivity": 0.5267,
+      "cutoff": 0.66
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1863,
+      "sensitivity": 0.5005,
+      "cutoff": 0.68
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1715,
+      "sensitivity": 0.4738,
+      "cutoff": 0.7
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1572,
+      "sensitivity": 0.4464,
+      "cutoff": 0.72
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1433,
+      "sensitivity": 0.4184,
+      "cutoff": 0.74
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1299,
+      "sensitivity": 0.3898,
+      "cutoff": 0.76
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.117,
+      "sensitivity": 0.3606,
+      "cutoff": 0.78
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.1044,
+      "sensitivity": 0.3308,
+      "cutoff": 0.8
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0923,
+      "sensitivity": 0.3004,
+      "cutoff": 0.82
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0806,
+      "sensitivity": 0.2694,
+      "cutoff": 0.84
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0694,
+      "sensitivity": 0.2378,
+      "cutoff": 0.86
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0585,
+      "sensitivity": 0.2055,
+      "cutoff": 0.88
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0479,
+      "sensitivity": 0.1728,
+      "cutoff": 0.9
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0377,
+      "sensitivity": 0.1394,
+      "cutoff": 0.92
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0279,
+      "sensitivity": 0.1054,
+      "cutoff": 0.94
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0183,
+      "sensitivity": 0.0708,
+      "cutoff": 0.96
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0091,
+      "sensitivity": 0.0357,
+      "cutoff": 0.98
+    },
+    {
+      "seriesId": "series-a",
+      "ppcr": 0.0,
+      "sensitivity": 0.0,
+      "cutoff": 1.0
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 1.0,
+      "sensitivity": 1.0,
+      "cutoff": 0.0
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.9761,
+      "sensitivity": 0.9938,
+      "cutoff": 0.02
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.9516,
+      "sensitivity": 0.9848,
+      "cutoff": 0.04
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.9271,
+      "sensitivity": 0.9742,
+      "cutoff": 0.06
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.9025,
+      "sensitivity": 0.9625,
+      "cutoff": 0.08
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.8778,
+      "sensitivity": 0.9499,
+      "cutoff": 0.1
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.8533,
+      "sensitivity": 0.9365,
+      "cutoff": 0.12
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.8287,
+      "sensitivity": 0.9224,
+      "cutoff": 0.14
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.8043,
+      "sensitivity": 0.9077,
+      "cutoff": 0.16
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.78,
+      "sensitivity": 0.8924,
+      "cutoff": 0.18
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.7558,
+      "sensitivity": 0.8766,
+      "cutoff": 0.2
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.7317,
+      "sensitivity": 0.8603,
+      "cutoff": 0.22
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.7078,
+      "sensitivity": 0.8436,
+      "cutoff": 0.24
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.684,
+      "sensitivity": 0.8264,
+      "cutoff": 0.26
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.6604,
+      "sensitivity": 0.8089,
+      "cutoff": 0.28
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.637,
+      "sensitivity": 0.7909,
+      "cutoff": 0.3
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.6137,
+      "sensitivity": 0.7726,
+      "cutoff": 0.32
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.5906,
+      "sensitivity": 0.754,
+      "cutoff": 0.34
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.5678,
+      "sensitivity": 0.735,
+      "cutoff": 0.36
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.5451,
+      "sensitivity": 0.7157,
+      "cutoff": 0.38
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.5226,
+      "sensitivity": 0.6961,
+      "cutoff": 0.4
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.5003,
+      "sensitivity": 0.6762,
+      "cutoff": 0.42
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.4783,
+      "sensitivity": 0.6561,
+      "cutoff": 0.44
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.4565,
+      "sensitivity": 0.6356,
+      "cutoff": 0.46
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.4349,
+      "sensitivity": 0.6149,
+      "cutoff": 0.48
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.4136,
+      "sensitivity": 0.5939,
+      "cutoff": 0.5
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.3926,
+      "sensitivity": 0.5726,
+      "cutoff": 0.52
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.3718,
+      "sensitivity": 0.5511,
+      "cutoff": 0.54
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.3512,
+      "sensitivity": 0.5294,
+      "cutoff": 0.56
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.331,
+      "sensitivity": 0.5074,
+      "cutoff": 0.58
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.311,
+      "sensitivity": 0.4852,
+      "cutoff": 0.6
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.2914,
+      "sensitivity": 0.4628,
+      "cutoff": 0.62
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.272,
+      "sensitivity": 0.4402,
+      "cutoff": 0.64
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.253,
+      "sensitivity": 0.4174,
+      "cutoff": 0.66
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.2343,
+      "sensitivity": 0.3943,
+      "cutoff": 0.68
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.216,
+      "sensitivity": 0.371,
+      "cutoff": 0.7
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.198,
+      "sensitivity": 0.3476,
+      "cutoff": 0.72
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.1804,
+      "sensitivity": 0.3239,
+      "cutoff": 0.74
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.1632,
+      "sensitivity": 0.3001,
+      "cutoff": 0.76
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.1464,
+      "sensitivity": 0.276,
+      "cutoff": 0.78
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.13,
+      "sensitivity": 0.2518,
+      "cutoff": 0.8
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.1141,
+      "sensitivity": 0.2274,
+      "cutoff": 0.82
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0987,
+      "sensitivity": 0.2028,
+      "cutoff": 0.84
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0838,
+      "sensitivity": 0.178,
+      "cutoff": 0.86
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0695,
+      "sensitivity": 0.1531,
+      "cutoff": 0.88
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0557,
+      "sensitivity": 0.128,
+      "cutoff": 0.9
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0427,
+      "sensitivity": 0.1027,
+      "cutoff": 0.92
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0303,
+      "sensitivity": 0.0773,
+      "cutoff": 0.94
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0189,
+      "sensitivity": 0.0517,
+      "cutoff": 0.96
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0086,
+      "sensitivity": 0.0259,
+      "cutoff": 0.98
+    },
+    {
+      "seriesId": "series-b",
+      "ppcr": 0.0,
+      "sensitivity": 0.0,
+      "cutoff": 1.0
+    }
+  ],
+  "x": "ppcr",
+  "y": "sensitivity",
+  "xAxis": {
+    "label": "PPCR (Percent Positive)",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Cumulative Sensitivity",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "references": [
+    {
+      "type": "identity",
+      "scope": "global",
+      "label": "Random"
+    },
+    {
+      "type": "path",
+      "scope": "global",
+      "label": "Perfect Model",
+      "points": [
+        {
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "x": 0.25,
+          "y": 1.0
+        },
+        {
+          "x": 1.0,
+          "y": 1.0
+        }
+      ]
+    }
+  ]
+}

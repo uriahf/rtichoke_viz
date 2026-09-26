@@ -1,0 +1,343 @@
+{
+  "schemaVersion": "2.0",
+  "type": "calibration",
+  "evaluations": [
+    {
+      "id": "eval-pop-a",
+      "population": "Population A",
+      "label": "Population A"
+    },
+    {
+      "id": "eval-pop-b",
+      "population": "Population B",
+      "label": "Population B"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-pop-a",
+      "evaluationId": "eval-pop-a",
+      "display": {
+        "label": "Population A",
+        "group": "Population A",
+        "role": "population"
+      }
+    },
+    {
+      "id": "series-pop-b",
+      "evaluationId": "eval-pop-b",
+      "display": {
+        "label": "Population B",
+        "group": "Population B",
+        "role": "population"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.05,
+      "observed": 0.056,
+      "method": "discrete",
+      "events": 2,
+      "total": 40
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.15,
+      "observed": 0.148,
+      "method": "discrete",
+      "events": 12,
+      "total": 80
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.25,
+      "observed": 0.24,
+      "method": "discrete",
+      "events": 36,
+      "total": 150
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.35,
+      "observed": 0.332,
+      "method": "discrete",
+      "events": 66,
+      "total": 200
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.45,
+      "observed": 0.424,
+      "method": "discrete",
+      "events": 89,
+      "total": 210
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.55,
+      "observed": 0.516,
+      "method": "discrete",
+      "events": 77,
+      "total": 150
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.65,
+      "observed": 0.608,
+      "method": "discrete",
+      "events": 55,
+      "total": 90
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.75,
+      "observed": 0.7,
+      "method": "discrete",
+      "events": 35,
+      "total": 50
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.85,
+      "observed": 0.792,
+      "method": "discrete",
+      "events": 16,
+      "total": 20
+    },
+    {
+      "seriesId": "series-pop-a",
+      "predicted": 0.95,
+      "observed": 0.884,
+      "method": "discrete",
+      "events": 9,
+      "total": 10
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.05,
+      "observed": 0.0325,
+      "method": "discrete",
+      "events": 1,
+      "total": 20
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.15,
+      "observed": 0.1375,
+      "method": "discrete",
+      "events": 7,
+      "total": 50
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.25,
+      "observed": 0.2425,
+      "method": "discrete",
+      "events": 24,
+      "total": 100
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.35,
+      "observed": 0.3475,
+      "method": "discrete",
+      "events": 56,
+      "total": 160
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.45,
+      "observed": 0.4525,
+      "method": "discrete",
+      "events": 100,
+      "total": 220
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.55,
+      "observed": 0.5575,
+      "method": "discrete",
+      "events": 112,
+      "total": 200
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.65,
+      "observed": 0.6625,
+      "method": "discrete",
+      "events": 86,
+      "total": 130
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.75,
+      "observed": 0.7675,
+      "method": "discrete",
+      "events": 61,
+      "total": 80
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.85,
+      "observed": 0.8725,
+      "method": "discrete",
+      "events": 26,
+      "total": 30
+    },
+    {
+      "seriesId": "series-pop-b",
+      "predicted": 0.95,
+      "observed": 0.9775,
+      "method": "discrete",
+      "events": 10,
+      "total": 10
+    }
+  ],
+  "distribution": [
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.05,
+      "count": 40,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.15,
+      "count": 80,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.25,
+      "count": 150,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.35,
+      "count": 200,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.45,
+      "count": 210,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.55,
+      "count": 150,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.65,
+      "count": 90,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.75,
+      "count": 50,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.85,
+      "count": 20,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-a",
+      "midpoint": 0.95,
+      "count": 10,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.05,
+      "count": 20,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.15,
+      "count": 50,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.25,
+      "count": 100,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.35,
+      "count": 160,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.45,
+      "count": 220,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.55,
+      "count": 200,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.65,
+      "count": 130,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.75,
+      "count": 80,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.85,
+      "count": 30,
+      "binWidth": 0.1
+    },
+    {
+      "seriesId": "series-pop-b",
+      "midpoint": 0.95,
+      "count": 10,
+      "binWidth": 0.1
+    }
+  ],
+  "x": "predicted",
+  "y": "observed",
+  "xAxis": {
+    "label": "Predicted probability",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Observed probability",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "references": [
+    {
+      "type": "identity",
+      "scope": "global",
+      "label": "Perfectly Calibrated"
+    }
+  ]
+}

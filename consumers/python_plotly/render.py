@@ -222,6 +222,7 @@ def main() -> None:
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     assert_shared_display_group_series_identity(args.fixtures)
+    demo_fixtures_dir = args.fixtures / "demo" if (args.fixtures / "demo").exists() else args.fixtures
     fixtures = {
         "roc": "roc.json",
         "calibration": "calibration.json",
@@ -229,9 +230,7 @@ def main() -> None:
         "gains": "gains-shared-population.json",
     }
     for chart, filename in fixtures.items():
-        spec = load_spec(args.fixtures / filename)
-        if chart == "calibration":
-            spec = scale_calibration_for_demo(spec)
+        spec = load_spec(demo_fixtures_dir / filename)
         render(spec).write_html(args.output / f"{chart}.html", include_plotlyjs=True, full_html=True,
                                 config={"displayModeBar": False})
 

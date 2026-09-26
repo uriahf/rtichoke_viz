@@ -1,0 +1,497 @@
+{
+  "schemaVersion": "2.0",
+  "type": "interventions_avoided",
+  "evaluations": [
+    {
+      "id": "eval-1",
+      "model": "Model A",
+      "population": "Population A",
+      "label": "Model A"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-1",
+      "evaluationId": "eval-1",
+      "display": {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.01,
+      "net_interventions_avoided": 1.0184
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.03,
+      "net_interventions_avoided": 3.3942
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.05,
+      "net_interventions_avoided": 5.8414
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.07,
+      "net_interventions_avoided": 8.2971
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.09,
+      "net_interventions_avoided": 10.7388
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.11,
+      "net_interventions_avoided": 13.1553
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.13,
+      "net_interventions_avoided": 15.5396
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.15,
+      "net_interventions_avoided": 17.8871
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.17,
+      "net_interventions_avoided": 20.1947
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.19,
+      "net_interventions_avoided": 22.46
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.21,
+      "net_interventions_avoided": 24.6811
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.23,
+      "net_interventions_avoided": 26.8569
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.25,
+      "net_interventions_avoided": 28.9861
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.27,
+      "net_interventions_avoided": 31.068
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.29,
+      "net_interventions_avoided": 33.102
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.31,
+      "net_interventions_avoided": 35.0876
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.33,
+      "net_interventions_avoided": 37.0243
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.35,
+      "net_interventions_avoided": 38.912
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.37,
+      "net_interventions_avoided": 40.7504
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.39,
+      "net_interventions_avoided": 42.5395
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.41,
+      "net_interventions_avoided": 44.2791
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.43,
+      "net_interventions_avoided": 45.9694
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.45,
+      "net_interventions_avoided": 47.6104
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.47,
+      "net_interventions_avoided": 49.2021
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.49,
+      "net_interventions_avoided": 50.7448
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.51,
+      "net_interventions_avoided": 52.2386
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.53,
+      "net_interventions_avoided": 53.6839
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.55,
+      "net_interventions_avoided": 55.0808
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.57,
+      "net_interventions_avoided": 56.4298
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.59,
+      "net_interventions_avoided": 57.7311
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.61,
+      "net_interventions_avoided": 58.9851
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.63,
+      "net_interventions_avoided": 60.1923
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.65,
+      "net_interventions_avoided": 61.3532
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.67,
+      "net_interventions_avoided": 62.4683
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.69,
+      "net_interventions_avoided": 63.5382
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.71,
+      "net_interventions_avoided": 64.5633
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.73,
+      "net_interventions_avoided": 65.5445
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.75,
+      "net_interventions_avoided": 66.4824
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.77,
+      "net_interventions_avoided": 67.3778
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.79,
+      "net_interventions_avoided": 68.2316
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.81,
+      "net_interventions_avoided": 69.0446
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.83,
+      "net_interventions_avoided": 69.8178
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.85,
+      "net_interventions_avoided": 70.5525
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.87,
+      "net_interventions_avoided": 71.2498
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.89,
+      "net_interventions_avoided": 71.9112
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.91,
+      "net_interventions_avoided": 72.5382
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.93,
+      "net_interventions_avoided": 73.1328
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.95,
+      "net_interventions_avoided": 73.6973
+    },
+    {
+      "seriesId": "series-1",
+      "cutoff": 0.97,
+      "net_interventions_avoided": 74.2346
+    }
+  ],
+  "x": "probability_threshold",
+  "y": "net_interventions_avoided",
+  "xAxis": {
+    "label": "Threshold Probability",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Net Interventions Avoided per 100",
+    "domain": [
+      -10,
+      100
+    ]
+  },
+  "references": [
+    {
+      "type": "horizontal",
+      "scope": "global",
+      "label": "Treat All",
+      "value": 0.0
+    },
+    {
+      "type": "path",
+      "scope": "global",
+      "label": "Treat None \u2014 Population A",
+      "points": [
+        {
+          "x": 0.01,
+          "y": -10.0
+        },
+        {
+          "x": 0.03,
+          "y": -10.0
+        },
+        {
+          "x": 0.05,
+          "y": -10.0
+        },
+        {
+          "x": 0.07,
+          "y": -10.0
+        },
+        {
+          "x": 0.09,
+          "y": -10.0
+        },
+        {
+          "x": 0.11,
+          "y": -10.0
+        },
+        {
+          "x": 0.13,
+          "y": -10.0
+        },
+        {
+          "x": 0.15,
+          "y": -10.0
+        },
+        {
+          "x": 0.17,
+          "y": -10.0
+        },
+        {
+          "x": 0.19,
+          "y": -10.0
+        },
+        {
+          "x": 0.21,
+          "y": -10.0
+        },
+        {
+          "x": 0.23,
+          "y": -8.6957
+        },
+        {
+          "x": 0.25,
+          "y": 0.0
+        },
+        {
+          "x": 0.27,
+          "y": 7.4074
+        },
+        {
+          "x": 0.29,
+          "y": 13.7931
+        },
+        {
+          "x": 0.31,
+          "y": 19.3548
+        },
+        {
+          "x": 0.33,
+          "y": 24.2424
+        },
+        {
+          "x": 0.35,
+          "y": 28.5714
+        },
+        {
+          "x": 0.37,
+          "y": 32.4324
+        },
+        {
+          "x": 0.39,
+          "y": 35.8974
+        },
+        {
+          "x": 0.41,
+          "y": 39.0244
+        },
+        {
+          "x": 0.43,
+          "y": 41.8605
+        },
+        {
+          "x": 0.45,
+          "y": 44.4444
+        },
+        {
+          "x": 0.47,
+          "y": 46.8085
+        },
+        {
+          "x": 0.49,
+          "y": 48.9796
+        },
+        {
+          "x": 0.51,
+          "y": 50.9804
+        },
+        {
+          "x": 0.53,
+          "y": 52.8302
+        },
+        {
+          "x": 0.55,
+          "y": 54.5455
+        },
+        {
+          "x": 0.57,
+          "y": 56.1404
+        },
+        {
+          "x": 0.59,
+          "y": 57.6271
+        },
+        {
+          "x": 0.61,
+          "y": 59.0164
+        },
+        {
+          "x": 0.63,
+          "y": 60.3175
+        },
+        {
+          "x": 0.65,
+          "y": 61.5385
+        },
+        {
+          "x": 0.67,
+          "y": 62.6866
+        },
+        {
+          "x": 0.69,
+          "y": 63.7681
+        },
+        {
+          "x": 0.71,
+          "y": 64.7887
+        },
+        {
+          "x": 0.73,
+          "y": 65.7534
+        },
+        {
+          "x": 0.75,
+          "y": 66.6667
+        },
+        {
+          "x": 0.77,
+          "y": 67.5325
+        },
+        {
+          "x": 0.79,
+          "y": 68.3544
+        },
+        {
+          "x": 0.81,
+          "y": 69.1358
+        },
+        {
+          "x": 0.83,
+          "y": 69.8795
+        },
+        {
+          "x": 0.85,
+          "y": 70.5882
+        },
+        {
+          "x": 0.87,
+          "y": 71.2644
+        },
+        {
+          "x": 0.89,
+          "y": 71.9101
+        },
+        {
+          "x": 0.91,
+          "y": 72.5275
+        },
+        {
+          "x": 0.93,
+          "y": 73.1183
+        },
+        {
+          "x": 0.95,
+          "y": 73.6842
+        },
+        {
+          "x": 0.97,
+          "y": 74.2268
+        }
+      ]
+    }
+  ]
+}

@@ -3,3 +3,7 @@ dist/
 site/
 .tmp/
 coverage/
+__pycache__/
+*.pyc
+uv.lock
+.venv/
