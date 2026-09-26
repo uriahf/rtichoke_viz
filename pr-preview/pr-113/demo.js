@@ -26663,133 +26663,2561 @@ function renderReport(spec, options) {
   throw new Error("Invalid ReportSpec");
 }
 
-// fixtures/v2/calibration.json
+// fixtures/v2/demo/calibration.json
 var calibration_default = {
   schemaVersion: "2.0",
   type: "calibration",
   evaluations: [
     {
-      id: "eval-pop-a",
-      population: "Population A",
-      label: "Population A"
+      id: "eval-model-a",
+      model: "Model A",
+      population: "Overall Population",
+      label: "Model A"
     }
   ],
   series: [
     {
-      id: "series-pop-a",
-      evaluationId: "eval-pop-a",
+      id: "series-model-a",
+      evaluationId: "eval-model-a",
       display: {
-        label: "Population A",
-        group: "Population A",
-        role: "population"
+        label: "Model A",
+        group: "Model A",
+        role: "model"
       }
     }
   ],
   data: [
-    { seriesId: "series-pop-a", predicted: 0.1, observed: 0.08, method: "discrete", events: 8, total: 100 },
-    { seriesId: "series-pop-a", predicted: 0.4, observed: 0.36, method: "discrete", events: 36, total: 100 },
-    { seriesId: "series-pop-a", predicted: 0.8, observed: 0.76, method: "discrete", events: 76, total: 100 }
+    {
+      seriesId: "series-model-a",
+      predicted: 0.05,
+      observed: 0.056,
+      method: "discrete",
+      events: 2,
+      total: 40
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.15,
+      observed: 0.148,
+      method: "discrete",
+      events: 12,
+      total: 80
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.25,
+      observed: 0.24,
+      method: "discrete",
+      events: 36,
+      total: 150
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.35,
+      observed: 0.332,
+      method: "discrete",
+      events: 66,
+      total: 200
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.45,
+      observed: 0.424,
+      method: "discrete",
+      events: 89,
+      total: 210
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.55,
+      observed: 0.516,
+      method: "discrete",
+      events: 77,
+      total: 150
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.65,
+      observed: 0.608,
+      method: "discrete",
+      events: 55,
+      total: 90
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.75,
+      observed: 0.7,
+      method: "discrete",
+      events: 35,
+      total: 50
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.85,
+      observed: 0.792,
+      method: "discrete",
+      events: 16,
+      total: 20
+    },
+    {
+      seriesId: "series-model-a",
+      predicted: 0.95,
+      observed: 0.884,
+      method: "discrete",
+      events: 9,
+      total: 10
+    }
   ],
   distribution: [
-    { seriesId: "series-pop-a", midpoint: 0.1, count: 20, binWidth: 0.1 },
-    { seriesId: "series-pop-a", midpoint: 0.4, count: 45, binWidth: 0.1 },
-    { seriesId: "series-pop-a", midpoint: 0.8, count: 35, binWidth: 0.1 }
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.05,
+      count: 40,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.15,
+      count: 80,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.25,
+      count: 150,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.35,
+      count: 200,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.45,
+      count: 210,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.55,
+      count: 150,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.65,
+      count: 90,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.75,
+      count: 50,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.85,
+      count: 20,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-model-a",
+      midpoint: 0.95,
+      count: 10,
+      binWidth: 0.1
+    }
   ],
   x: "predicted",
   y: "observed",
-  xAxis: { label: "Predicted probability", domain: [0, 1] },
-  yAxis: { label: "Observed probability", domain: [0, 1] },
+  xAxis: {
+    label: "Predicted probability",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Observed probability",
+    domain: [
+      0,
+      1
+    ]
+  },
   references: [
-    { type: "identity", scope: "global", label: "Perfectly Calibrated" }
+    {
+      type: "identity",
+      scope: "global",
+      label: "Perfectly Calibrated"
+    }
   ]
 };
 
-// fixtures/v2/decision-curve-time-multi.json
-var decision_curve_time_multi_default = {
+// fixtures/v2/demo/decision-curve-single.json
+var decision_curve_single_default = {
   schemaVersion: "2.0",
   type: "decision_curve",
   evaluations: [
-    { id: "evaluation-1", population: "Population A", model: "Model A" },
-    { id: "evaluation-2", population: "Population A", model: "Model B" }
+    {
+      id: "eval-1",
+      model: "Model A",
+      population: "Population A",
+      label: "Model A"
+    }
   ],
   series: [
-    { id: "series-1", evaluationId: "evaluation-1", horizon: 5, display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-2", evaluationId: "evaluation-2", horizon: 5, display: { label: "Model B", group: "Model B", role: "model" } },
-    { id: "series-3", evaluationId: "evaluation-1", horizon: 10, display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-4", evaluationId: "evaluation-2", horizon: 10, display: { label: "Model B", group: "Model B", role: "model" } }
+    {
+      id: "series-1",
+      evaluationId: "eval-1",
+      display: {
+        label: "Model A",
+        group: "Model A",
+        role: "model"
+      }
+    }
   ],
   data: [
-    { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 },
-    { seriesId: "series-1", threshold: 0.2, netBenefit: 0.1 },
-    { seriesId: "series-2", threshold: 0.1, netBenefit: 0.16 },
-    { seriesId: "series-2", threshold: 0.2, netBenefit: 0.08 },
-    { seriesId: "series-3", threshold: 0.1, netBenefit: 0.22 },
-    { seriesId: "series-3", threshold: 0.2, netBenefit: 0.14 },
-    { seriesId: "series-4", threshold: 0.1, netBenefit: 0.2 },
-    { seriesId: "series-4", threshold: 0.2, netBenefit: 0.12 }
+    {
+      seriesId: "series-1",
+      cutoff: 0.01,
+      net_benefit: 0.2425
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.03,
+      net_benefit: 0.2279
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.05,
+      net_benefit: 0.2136
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.07,
+      net_benefit: 0.1998
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.09,
+      net_benefit: 0.1864
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.11,
+      net_benefit: 0.1736
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.13,
+      net_benefit: 0.1612
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.15,
+      net_benefit: 0.1492
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.17,
+      net_benefit: 0.1377
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.19,
+      net_benefit: 0.1268
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.21,
+      net_benefit: 0.1162
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.23,
+      net_benefit: 0.1062
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.25,
+      net_benefit: 0.0966
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.27,
+      net_benefit: 0.0875
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.29,
+      net_benefit: 0.0789
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.31,
+      net_benefit: 0.0707
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.33,
+      net_benefit: 0.063
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.35,
+      net_benefit: 0.0557
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.37,
+      net_benefit: 0.0489
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.39,
+      net_benefit: 0.0425
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.41,
+      net_benefit: 0.0365
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.43,
+      net_benefit: 0.031
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.45,
+      net_benefit: 0.0259
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.47,
+      net_benefit: 0.0212
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.49,
+      net_benefit: 0.017
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.51,
+      net_benefit: 0.0131
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.53,
+      net_benefit: 96e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.55,
+      net_benefit: 65e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.57,
+      net_benefit: 38e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.59,
+      net_benefit: 15e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.61,
+      net_benefit: -5e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.63,
+      net_benefit: -21e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.65,
+      net_benefit: -34e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.67,
+      net_benefit: -44e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.69,
+      net_benefit: -51e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.71,
+      net_benefit: -55e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.73,
+      net_benefit: -56e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.75,
+      net_benefit: -55e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.77,
+      net_benefit: -52e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.79,
+      net_benefit: -46e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.81,
+      net_benefit: -39e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.83,
+      net_benefit: -3e-3
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.85,
+      net_benefit: -2e-3
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.87,
+      net_benefit: -1e-3
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.89,
+      net_benefit: 1e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.91,
+      net_benefit: 11e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.93,
+      net_benefit: 19e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.95,
+      net_benefit: 25e-4
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.97,
+      net_benefit: 25e-4
+    }
   ],
-  x: "threshold",
-  y: "netBenefit",
-  xAxis: { label: "Probability threshold", domain: [0, 0.5] },
-  yAxis: { label: "Net benefit" },
+  x: "probability_threshold",
+  y: "net_benefit",
+  xAxis: {
+    label: "Threshold Probability",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Net Benefit",
+    domain: [
+      -0.05,
+      0.3
+    ]
+  },
   references: [
-    { type: "horizontal", value: 0, scope: "global", benchmark: "treat_none", label: "Treat None" },
-    { type: "path", points: [{ x: 0.1, y: 0.22 }, { x: 0.2, y: 0.12 }], scope: "population_horizon", population: "Population A", horizon: 5, benchmark: "treat_all" },
-    { type: "path", points: [{ x: 0.1, y: 0.3 }, { x: 0.2, y: 0.21 }], scope: "population_horizon", population: "Population A", horizon: 10, benchmark: "treat_all" }
+    {
+      type: "horizontal",
+      scope: "global",
+      label: "Treat None",
+      value: 0
+    },
+    {
+      type: "path",
+      scope: "global",
+      label: "Treat All \u2014 Population A",
+      points: [
+        {
+          x: 0.01,
+          y: 0.2424
+        },
+        {
+          x: 0.03,
+          y: 0.2268
+        },
+        {
+          x: 0.05,
+          y: 0.2105
+        },
+        {
+          x: 0.07,
+          y: 0.1935
+        },
+        {
+          x: 0.09,
+          y: 0.1758
+        },
+        {
+          x: 0.11,
+          y: 0.1573
+        },
+        {
+          x: 0.13,
+          y: 0.1379
+        },
+        {
+          x: 0.15,
+          y: 0.1176
+        },
+        {
+          x: 0.17,
+          y: 0.0964
+        },
+        {
+          x: 0.19,
+          y: 0.0741
+        },
+        {
+          x: 0.21,
+          y: 0.0506
+        },
+        {
+          x: 0.23,
+          y: 0.026
+        },
+        {
+          x: 0.25,
+          y: 0
+        },
+        {
+          x: 0.27,
+          y: -0.0274
+        },
+        {
+          x: 0.29,
+          y: -0.05
+        },
+        {
+          x: 0.31,
+          y: -0.05
+        },
+        {
+          x: 0.33,
+          y: -0.05
+        },
+        {
+          x: 0.35,
+          y: -0.05
+        },
+        {
+          x: 0.37,
+          y: -0.05
+        },
+        {
+          x: 0.39,
+          y: -0.05
+        },
+        {
+          x: 0.41,
+          y: -0.05
+        },
+        {
+          x: 0.43,
+          y: -0.05
+        },
+        {
+          x: 0.45,
+          y: -0.05
+        },
+        {
+          x: 0.47,
+          y: -0.05
+        },
+        {
+          x: 0.49,
+          y: -0.05
+        },
+        {
+          x: 0.51,
+          y: -0.05
+        },
+        {
+          x: 0.53,
+          y: -0.05
+        },
+        {
+          x: 0.55,
+          y: -0.05
+        },
+        {
+          x: 0.57,
+          y: -0.05
+        },
+        {
+          x: 0.59,
+          y: -0.05
+        },
+        {
+          x: 0.61,
+          y: -0.05
+        },
+        {
+          x: 0.63,
+          y: -0.05
+        },
+        {
+          x: 0.65,
+          y: -0.05
+        },
+        {
+          x: 0.67,
+          y: -0.05
+        },
+        {
+          x: 0.69,
+          y: -0.05
+        },
+        {
+          x: 0.71,
+          y: -0.05
+        },
+        {
+          x: 0.73,
+          y: -0.05
+        },
+        {
+          x: 0.75,
+          y: -0.05
+        },
+        {
+          x: 0.77,
+          y: -0.05
+        },
+        {
+          x: 0.79,
+          y: -0.05
+        },
+        {
+          x: 0.81,
+          y: -0.05
+        },
+        {
+          x: 0.83,
+          y: -0.05
+        },
+        {
+          x: 0.85,
+          y: -0.05
+        },
+        {
+          x: 0.87,
+          y: -0.05
+        },
+        {
+          x: 0.89,
+          y: -0.05
+        },
+        {
+          x: 0.91,
+          y: -0.05
+        },
+        {
+          x: 0.93,
+          y: -0.05
+        },
+        {
+          x: 0.95,
+          y: -0.05
+        },
+        {
+          x: 0.97,
+          y: -0.05
+        }
+      ]
+    }
   ]
 };
 
-// fixtures/v2/gains-single.json
-var gains_single_default = {
+// fixtures/v2/demo/gains-shared-population.json
+var gains_shared_population_default = {
   schemaVersion: "2.0",
   type: "gains",
-  evaluations: [{ id: "eval-a", model: "Model A", population: "Population A", label: "Model A" }],
-  series: [{ id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } }],
-  data: [{ seriesId: "series-a", cutoff: 1, ppcr: 0, sensitivity: 0 }, { seriesId: "series-a", cutoff: 0.5, ppcr: 0.4, sensitivity: 0.8 }, { seriesId: "series-a", cutoff: 0, ppcr: 1, sensitivity: 1 }],
+  evaluations: [
+    {
+      id: "eval-a",
+      model: "Model A",
+      population: "Pop 1",
+      label: "Model A"
+    },
+    {
+      id: "eval-b",
+      model: "Model B",
+      population: "Pop 1",
+      label: "Model B"
+    }
+  ],
+  series: [
+    {
+      id: "series-a",
+      evaluationId: "eval-a",
+      display: {
+        label: "Model A",
+        group: "Model A",
+        role: "model"
+      }
+    },
+    {
+      id: "series-b",
+      evaluationId: "eval-b",
+      display: {
+        label: "Model B",
+        group: "Model B",
+        role: "model"
+      }
+    }
+  ],
+  data: [
+    {
+      seriesId: "series-a",
+      ppcr: 1,
+      sensitivity: 1,
+      cutoff: 0
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.9672,
+      sensitivity: 0.9991,
+      cutoff: 0.02
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.9348,
+      sensitivity: 0.997,
+      cutoff: 0.04
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.903,
+      sensitivity: 0.9937,
+      cutoff: 0.06
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8717,
+      sensitivity: 0.9894,
+      cutoff: 0.08
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8409,
+      sensitivity: 0.9842,
+      cutoff: 0.1
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8106,
+      sensitivity: 0.978,
+      cutoff: 0.12
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.781,
+      sensitivity: 0.971,
+      cutoff: 0.14
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.7518,
+      sensitivity: 0.9631,
+      cutoff: 0.16
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.7233,
+      sensitivity: 0.9543,
+      cutoff: 0.18
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6953,
+      sensitivity: 0.9448,
+      cutoff: 0.2
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6678,
+      sensitivity: 0.9345,
+      cutoff: 0.22
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6409,
+      sensitivity: 0.9234,
+      cutoff: 0.24
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6146,
+      sensitivity: 0.9115,
+      cutoff: 0.26
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5888,
+      sensitivity: 0.8989,
+      cutoff: 0.28
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5636,
+      sensitivity: 0.8855,
+      cutoff: 0.3
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5389,
+      sensitivity: 0.8714,
+      cutoff: 0.32
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5148,
+      sensitivity: 0.8566,
+      cutoff: 0.34
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4912,
+      sensitivity: 0.841,
+      cutoff: 0.36
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4682,
+      sensitivity: 0.8248,
+      cutoff: 0.38
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4457,
+      sensitivity: 0.8078,
+      cutoff: 0.4
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4238,
+      sensitivity: 0.7902,
+      cutoff: 0.42
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4024,
+      sensitivity: 0.7719,
+      cutoff: 0.44
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3816,
+      sensitivity: 0.7528,
+      cutoff: 0.46
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3612,
+      sensitivity: 0.7332,
+      cutoff: 0.48
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3414,
+      sensitivity: 0.7128,
+      cutoff: 0.5
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3222,
+      sensitivity: 0.6918,
+      cutoff: 0.52
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3034,
+      sensitivity: 0.6702,
+      cutoff: 0.54
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2852,
+      sensitivity: 0.6478,
+      cutoff: 0.56
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2674,
+      sensitivity: 0.6249,
+      cutoff: 0.58
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2502,
+      sensitivity: 0.6013,
+      cutoff: 0.6
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2335,
+      sensitivity: 0.577,
+      cutoff: 0.62
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2173,
+      sensitivity: 0.5522,
+      cutoff: 0.64
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2015,
+      sensitivity: 0.5267,
+      cutoff: 0.66
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1863,
+      sensitivity: 0.5005,
+      cutoff: 0.68
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1715,
+      sensitivity: 0.4738,
+      cutoff: 0.7
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1572,
+      sensitivity: 0.4464,
+      cutoff: 0.72
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1433,
+      sensitivity: 0.4184,
+      cutoff: 0.74
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1299,
+      sensitivity: 0.3898,
+      cutoff: 0.76
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.117,
+      sensitivity: 0.3606,
+      cutoff: 0.78
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1044,
+      sensitivity: 0.3308,
+      cutoff: 0.8
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0923,
+      sensitivity: 0.3004,
+      cutoff: 0.82
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0806,
+      sensitivity: 0.2694,
+      cutoff: 0.84
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0694,
+      sensitivity: 0.2378,
+      cutoff: 0.86
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0585,
+      sensitivity: 0.2055,
+      cutoff: 0.88
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0479,
+      sensitivity: 0.1728,
+      cutoff: 0.9
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0377,
+      sensitivity: 0.1394,
+      cutoff: 0.92
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0279,
+      sensitivity: 0.1054,
+      cutoff: 0.94
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0183,
+      sensitivity: 0.0708,
+      cutoff: 0.96
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 91e-4,
+      sensitivity: 0.0357,
+      cutoff: 0.98
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0,
+      sensitivity: 0,
+      cutoff: 1
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 1,
+      sensitivity: 1,
+      cutoff: 0
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9761,
+      sensitivity: 0.9938,
+      cutoff: 0.02
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9516,
+      sensitivity: 0.9848,
+      cutoff: 0.04
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9271,
+      sensitivity: 0.9742,
+      cutoff: 0.06
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9025,
+      sensitivity: 0.9625,
+      cutoff: 0.08
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8778,
+      sensitivity: 0.9499,
+      cutoff: 0.1
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8533,
+      sensitivity: 0.9365,
+      cutoff: 0.12
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8287,
+      sensitivity: 0.9224,
+      cutoff: 0.14
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8043,
+      sensitivity: 0.9077,
+      cutoff: 0.16
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.78,
+      sensitivity: 0.8924,
+      cutoff: 0.18
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7558,
+      sensitivity: 0.8766,
+      cutoff: 0.2
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7317,
+      sensitivity: 0.8603,
+      cutoff: 0.22
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7078,
+      sensitivity: 0.8436,
+      cutoff: 0.24
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.684,
+      sensitivity: 0.8264,
+      cutoff: 0.26
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.6604,
+      sensitivity: 0.8089,
+      cutoff: 0.28
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.637,
+      sensitivity: 0.7909,
+      cutoff: 0.3
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.6137,
+      sensitivity: 0.7726,
+      cutoff: 0.32
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5906,
+      sensitivity: 0.754,
+      cutoff: 0.34
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5678,
+      sensitivity: 0.735,
+      cutoff: 0.36
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5451,
+      sensitivity: 0.7157,
+      cutoff: 0.38
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5226,
+      sensitivity: 0.6961,
+      cutoff: 0.4
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5003,
+      sensitivity: 0.6762,
+      cutoff: 0.42
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4783,
+      sensitivity: 0.6561,
+      cutoff: 0.44
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4565,
+      sensitivity: 0.6356,
+      cutoff: 0.46
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4349,
+      sensitivity: 0.6149,
+      cutoff: 0.48
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4136,
+      sensitivity: 0.5939,
+      cutoff: 0.5
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3926,
+      sensitivity: 0.5726,
+      cutoff: 0.52
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3718,
+      sensitivity: 0.5511,
+      cutoff: 0.54
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3512,
+      sensitivity: 0.5294,
+      cutoff: 0.56
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.331,
+      sensitivity: 0.5074,
+      cutoff: 0.58
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.311,
+      sensitivity: 0.4852,
+      cutoff: 0.6
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.2914,
+      sensitivity: 0.4628,
+      cutoff: 0.62
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.272,
+      sensitivity: 0.4402,
+      cutoff: 0.64
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.253,
+      sensitivity: 0.4174,
+      cutoff: 0.66
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.2343,
+      sensitivity: 0.3943,
+      cutoff: 0.68
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.216,
+      sensitivity: 0.371,
+      cutoff: 0.7
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.198,
+      sensitivity: 0.3476,
+      cutoff: 0.72
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1804,
+      sensitivity: 0.3239,
+      cutoff: 0.74
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1632,
+      sensitivity: 0.3001,
+      cutoff: 0.76
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1464,
+      sensitivity: 0.276,
+      cutoff: 0.78
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.13,
+      sensitivity: 0.2518,
+      cutoff: 0.8
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1141,
+      sensitivity: 0.2274,
+      cutoff: 0.82
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0987,
+      sensitivity: 0.2028,
+      cutoff: 0.84
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0838,
+      sensitivity: 0.178,
+      cutoff: 0.86
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0695,
+      sensitivity: 0.1531,
+      cutoff: 0.88
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0557,
+      sensitivity: 0.128,
+      cutoff: 0.9
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0427,
+      sensitivity: 0.1027,
+      cutoff: 0.92
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0303,
+      sensitivity: 0.0773,
+      cutoff: 0.94
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0189,
+      sensitivity: 0.0517,
+      cutoff: 0.96
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 86e-4,
+      sensitivity: 0.0259,
+      cutoff: 0.98
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0,
+      sensitivity: 0,
+      cutoff: 1
+    }
+  ],
   x: "ppcr",
   y: "sensitivity",
-  xAxis: { label: "Predicted Positives (Rate)", domain: [0, 1] },
-  yAxis: { label: "Sensitivity", domain: [0, 1] },
+  xAxis: {
+    label: "PPCR (Percent Positive)",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Cumulative Sensitivity",
+    domain: [
+      0,
+      1
+    ]
+  },
   references: [
-    { type: "identity", scope: "global", label: "Random" },
-    { type: "path", points: [{ x: 0, y: 0 }, { x: 0.3, y: 1 }, { x: 1, y: 1 }], scope: "population", population: "Population A", label: "Perfect Model" }
+    {
+      type: "identity",
+      scope: "global",
+      label: "Random"
+    },
+    {
+      type: "path",
+      scope: "global",
+      label: "Perfect Model",
+      points: [
+        {
+          x: 0,
+          y: 0
+        },
+        {
+          x: 0.25,
+          y: 1
+        },
+        {
+          x: 1,
+          y: 1
+        }
+      ]
+    }
   ]
 };
 
-// fixtures/v2/interventions-avoided-single.json
-var interventions_avoided_single_default = { schemaVersion: "2.0", type: "interventions_avoided", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, interventionsAvoided: 8 }, { seriesId: "series-1", threshold: 0.1, interventionsAvoided: 14 }, { seriesId: "series-1", threshold: 0.15, interventionsAvoided: 18 }, { seriesId: "series-1", threshold: 0.2, interventionsAvoided: 22 }, { seriesId: "series-1", threshold: 0.25, interventionsAvoided: 25 }, { seriesId: "series-1", threshold: 0.3, interventionsAvoided: 28 }, { seriesId: "series-1", threshold: 0.35, interventionsAvoided: 30 }, { seriesId: "series-1", threshold: 0.4, interventionsAvoided: 31 }, { seriesId: "series-1", threshold: 0.45, interventionsAvoided: 32 }, { seriesId: "series-1", threshold: 0.5, interventionsAvoided: 32 }], x: "threshold", y: "interventionsAvoided", xAxis: { label: "Probability Threshold", domain: [0, 0.5] }, yAxis: { label: "Interventions Avoided (per 100)" }, references: [{ type: "horizontal", value: 0, label: "Treat All", scope: "global", benchmark: "treat_all" }, { type: "path", points: [{ x: 0.05, y: -150 }, { x: 0.1, y: -100 }, { x: 0.15, y: -50 }, { x: 0.2, y: 0 }, { x: 0.25, y: 25 }, { x: 0.3, y: 40 }, { x: 0.35, y: 48 }, { x: 0.4, y: 50 }, { x: 0.45, y: 51 }, { x: 0.5, y: 52 }], label: "Treat None \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_none" }] };
+// fixtures/v2/demo/interventions-avoided-single.json
+var interventions_avoided_single_default = {
+  schemaVersion: "2.0",
+  type: "interventions_avoided",
+  evaluations: [
+    {
+      id: "eval-1",
+      model: "Model A",
+      population: "Population A",
+      label: "Model A"
+    }
+  ],
+  series: [
+    {
+      id: "series-1",
+      evaluationId: "eval-1",
+      display: {
+        label: "Model A",
+        group: "Model A",
+        role: "model"
+      }
+    }
+  ],
+  data: [
+    {
+      seriesId: "series-1",
+      cutoff: 0.01,
+      net_interventions_avoided: 1.0184
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.03,
+      net_interventions_avoided: 3.3942
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.05,
+      net_interventions_avoided: 5.8414
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.07,
+      net_interventions_avoided: 8.2971
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.09,
+      net_interventions_avoided: 10.7388
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.11,
+      net_interventions_avoided: 13.1553
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.13,
+      net_interventions_avoided: 15.5396
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.15,
+      net_interventions_avoided: 17.8871
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.17,
+      net_interventions_avoided: 20.1947
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.19,
+      net_interventions_avoided: 22.46
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.21,
+      net_interventions_avoided: 24.6811
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.23,
+      net_interventions_avoided: 26.8569
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.25,
+      net_interventions_avoided: 28.9861
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.27,
+      net_interventions_avoided: 31.068
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.29,
+      net_interventions_avoided: 33.102
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.31,
+      net_interventions_avoided: 35.0876
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.33,
+      net_interventions_avoided: 37.0243
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.35,
+      net_interventions_avoided: 38.912
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.37,
+      net_interventions_avoided: 40.7504
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.39,
+      net_interventions_avoided: 42.5395
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.41,
+      net_interventions_avoided: 44.2791
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.43,
+      net_interventions_avoided: 45.9694
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.45,
+      net_interventions_avoided: 47.6104
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.47,
+      net_interventions_avoided: 49.2021
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.49,
+      net_interventions_avoided: 50.7448
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.51,
+      net_interventions_avoided: 52.2386
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.53,
+      net_interventions_avoided: 53.6839
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.55,
+      net_interventions_avoided: 55.0808
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.57,
+      net_interventions_avoided: 56.4298
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.59,
+      net_interventions_avoided: 57.7311
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.61,
+      net_interventions_avoided: 58.9851
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.63,
+      net_interventions_avoided: 60.1923
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.65,
+      net_interventions_avoided: 61.3532
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.67,
+      net_interventions_avoided: 62.4683
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.69,
+      net_interventions_avoided: 63.5382
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.71,
+      net_interventions_avoided: 64.5633
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.73,
+      net_interventions_avoided: 65.5445
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.75,
+      net_interventions_avoided: 66.4824
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.77,
+      net_interventions_avoided: 67.3778
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.79,
+      net_interventions_avoided: 68.2316
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.81,
+      net_interventions_avoided: 69.0446
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.83,
+      net_interventions_avoided: 69.8178
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.85,
+      net_interventions_avoided: 70.5525
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.87,
+      net_interventions_avoided: 71.2498
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.89,
+      net_interventions_avoided: 71.9112
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.91,
+      net_interventions_avoided: 72.5382
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.93,
+      net_interventions_avoided: 73.1328
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.95,
+      net_interventions_avoided: 73.6973
+    },
+    {
+      seriesId: "series-1",
+      cutoff: 0.97,
+      net_interventions_avoided: 74.2346
+    }
+  ],
+  x: "probability_threshold",
+  y: "net_interventions_avoided",
+  xAxis: {
+    label: "Threshold Probability",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Net Interventions Avoided per 100",
+    domain: [
+      -10,
+      100
+    ]
+  },
+  references: [
+    {
+      type: "horizontal",
+      scope: "global",
+      label: "Treat All",
+      value: 0
+    },
+    {
+      type: "path",
+      scope: "global",
+      label: "Treat None \u2014 Population A",
+      points: [
+        {
+          x: 0.01,
+          y: -10
+        },
+        {
+          x: 0.03,
+          y: -10
+        },
+        {
+          x: 0.05,
+          y: -10
+        },
+        {
+          x: 0.07,
+          y: -10
+        },
+        {
+          x: 0.09,
+          y: -10
+        },
+        {
+          x: 0.11,
+          y: -10
+        },
+        {
+          x: 0.13,
+          y: -10
+        },
+        {
+          x: 0.15,
+          y: -10
+        },
+        {
+          x: 0.17,
+          y: -10
+        },
+        {
+          x: 0.19,
+          y: -10
+        },
+        {
+          x: 0.21,
+          y: -10
+        },
+        {
+          x: 0.23,
+          y: -8.6957
+        },
+        {
+          x: 0.25,
+          y: 0
+        },
+        {
+          x: 0.27,
+          y: 7.4074
+        },
+        {
+          x: 0.29,
+          y: 13.7931
+        },
+        {
+          x: 0.31,
+          y: 19.3548
+        },
+        {
+          x: 0.33,
+          y: 24.2424
+        },
+        {
+          x: 0.35,
+          y: 28.5714
+        },
+        {
+          x: 0.37,
+          y: 32.4324
+        },
+        {
+          x: 0.39,
+          y: 35.8974
+        },
+        {
+          x: 0.41,
+          y: 39.0244
+        },
+        {
+          x: 0.43,
+          y: 41.8605
+        },
+        {
+          x: 0.45,
+          y: 44.4444
+        },
+        {
+          x: 0.47,
+          y: 46.8085
+        },
+        {
+          x: 0.49,
+          y: 48.9796
+        },
+        {
+          x: 0.51,
+          y: 50.9804
+        },
+        {
+          x: 0.53,
+          y: 52.8302
+        },
+        {
+          x: 0.55,
+          y: 54.5455
+        },
+        {
+          x: 0.57,
+          y: 56.1404
+        },
+        {
+          x: 0.59,
+          y: 57.6271
+        },
+        {
+          x: 0.61,
+          y: 59.0164
+        },
+        {
+          x: 0.63,
+          y: 60.3175
+        },
+        {
+          x: 0.65,
+          y: 61.5385
+        },
+        {
+          x: 0.67,
+          y: 62.6866
+        },
+        {
+          x: 0.69,
+          y: 63.7681
+        },
+        {
+          x: 0.71,
+          y: 64.7887
+        },
+        {
+          x: 0.73,
+          y: 65.7534
+        },
+        {
+          x: 0.75,
+          y: 66.6667
+        },
+        {
+          x: 0.77,
+          y: 67.5325
+        },
+        {
+          x: 0.79,
+          y: 68.3544
+        },
+        {
+          x: 0.81,
+          y: 69.1358
+        },
+        {
+          x: 0.83,
+          y: 69.8795
+        },
+        {
+          x: 0.85,
+          y: 70.5882
+        },
+        {
+          x: 0.87,
+          y: 71.2644
+        },
+        {
+          x: 0.89,
+          y: 71.9101
+        },
+        {
+          x: 0.91,
+          y: 72.5275
+        },
+        {
+          x: 0.93,
+          y: 73.1183
+        },
+        {
+          x: 0.95,
+          y: 73.6842
+        },
+        {
+          x: 0.97,
+          y: 74.2268
+        }
+      ]
+    }
+  ]
+};
 
-// fixtures/v2/lift-single.json
-var lift_single_default = {
+// fixtures/v2/demo/lift-shared-population.json
+var lift_shared_population_default = {
   schemaVersion: "2.0",
   type: "lift",
   evaluations: [
-    { id: "eval-a", model: "Model A", population: "Population A", label: "Model A" }
+    {
+      id: "eval-a",
+      model: "Model A",
+      population: "Pop 1",
+      label: "Model A"
+    },
+    {
+      id: "eval-b",
+      model: "Model B",
+      population: "Pop 1",
+      label: "Model B"
+    }
   ],
   series: [
-    { id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } }
+    {
+      id: "series-a",
+      evaluationId: "eval-a",
+      display: {
+        label: "Model A",
+        group: "Model A",
+        role: "model"
+      }
+    },
+    {
+      id: "series-b",
+      evaluationId: "eval-b",
+      display: {
+        label: "Model B",
+        group: "Model B",
+        role: "model"
+      }
+    }
   ],
   data: [
-    { seriesId: "series-a", cutoff: 0.8, ppcr: 0.1, lift: 3 },
-    { seriesId: "series-a", cutoff: 0.5, ppcr: 0.4, lift: 2 },
-    { seriesId: "series-a", cutoff: 0, ppcr: 1, lift: 1 }
+    {
+      seriesId: "series-a",
+      ppcr: 0.0183,
+      lift: 3.8625,
+      cutoff: 0.96
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0279,
+      lift: 3.7794,
+      cutoff: 0.94
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0377,
+      lift: 3.693,
+      cutoff: 0.92
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0479,
+      lift: 3.605,
+      cutoff: 0.9
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0585,
+      lift: 3.5164,
+      cutoff: 0.88
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0694,
+      lift: 3.4279,
+      cutoff: 0.86
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0806,
+      lift: 3.3399,
+      cutoff: 0.84
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.0923,
+      lift: 3.253,
+      cutoff: 0.82
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1044,
+      lift: 3.1672,
+      cutoff: 0.8
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.117,
+      lift: 3.083,
+      cutoff: 0.78
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1299,
+      lift: 3.0003,
+      cutoff: 0.76
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1433,
+      lift: 2.9192,
+      cutoff: 0.74
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1572,
+      lift: 2.84,
+      cutoff: 0.72
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1715,
+      lift: 2.7625,
+      cutoff: 0.7
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.1863,
+      lift: 2.6869,
+      cutoff: 0.68
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2015,
+      lift: 2.6132,
+      cutoff: 0.66
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2173,
+      lift: 2.5413,
+      cutoff: 0.64
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2335,
+      lift: 2.4712,
+      cutoff: 0.62
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2502,
+      lift: 2.4029,
+      cutoff: 0.6
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2674,
+      lift: 2.3365,
+      cutoff: 0.58
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.2852,
+      lift: 2.2717,
+      cutoff: 0.56
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3034,
+      lift: 2.2087,
+      cutoff: 0.54
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3222,
+      lift: 2.1474,
+      cutoff: 0.52
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3414,
+      lift: 2.0877,
+      cutoff: 0.5
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3612,
+      lift: 2.0296,
+      cutoff: 0.48
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.3816,
+      lift: 1.9731,
+      cutoff: 0.46
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4024,
+      lift: 1.9181,
+      cutoff: 0.44
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4238,
+      lift: 1.8645,
+      cutoff: 0.42
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4457,
+      lift: 1.8123,
+      cutoff: 0.4
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4682,
+      lift: 1.7616,
+      cutoff: 0.38
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.4912,
+      lift: 1.7121,
+      cutoff: 0.36
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5148,
+      lift: 1.6639,
+      cutoff: 0.34
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5389,
+      lift: 1.617,
+      cutoff: 0.32
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5636,
+      lift: 1.5712,
+      cutoff: 0.3
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.5888,
+      lift: 1.5266,
+      cutoff: 0.28
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6146,
+      lift: 1.4831,
+      cutoff: 0.26
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6409,
+      lift: 1.4407,
+      cutoff: 0.24
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6678,
+      lift: 1.3993,
+      cutoff: 0.22
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.6953,
+      lift: 1.3589,
+      cutoff: 0.2
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.7233,
+      lift: 1.3195,
+      cutoff: 0.18
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.7518,
+      lift: 1.281,
+      cutoff: 0.16
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.781,
+      lift: 1.2433,
+      cutoff: 0.14
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8106,
+      lift: 1.2065,
+      cutoff: 0.12
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8409,
+      lift: 1.1704,
+      cutoff: 0.1
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.8717,
+      lift: 1.1351,
+      cutoff: 0.08
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.903,
+      lift: 1.1005,
+      cutoff: 0.06
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.9348,
+      lift: 1.0665,
+      cutoff: 0.04
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 0.9672,
+      lift: 1.033,
+      cutoff: 0.02
+    },
+    {
+      seriesId: "series-a",
+      ppcr: 1,
+      lift: 1,
+      cutoff: 0
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0189,
+      lift: 2.7316,
+      cutoff: 0.96
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0303,
+      lift: 2.547,
+      cutoff: 0.94
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0427,
+      lift: 2.4085,
+      cutoff: 0.92
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0557,
+      lift: 2.2973,
+      cutoff: 0.9
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0695,
+      lift: 2.2045,
+      cutoff: 0.88
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0838,
+      lift: 2.1247,
+      cutoff: 0.86
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.0987,
+      lift: 2.0547,
+      cutoff: 0.84
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1141,
+      lift: 1.9925,
+      cutoff: 0.82
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.13,
+      lift: 1.9365,
+      cutoff: 0.8
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1464,
+      lift: 1.8854,
+      cutoff: 0.78
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1632,
+      lift: 1.8387,
+      cutoff: 0.76
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.1804,
+      lift: 1.7954,
+      cutoff: 0.74
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.198,
+      lift: 1.7553,
+      cutoff: 0.72
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.216,
+      lift: 1.7178,
+      cutoff: 0.7
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.2343,
+      lift: 1.6826,
+      cutoff: 0.68
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.253,
+      lift: 1.6494,
+      cutoff: 0.66
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.272,
+      lift: 1.6181,
+      cutoff: 0.64
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.2914,
+      lift: 1.5883,
+      cutoff: 0.62
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.311,
+      lift: 1.56,
+      cutoff: 0.6
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.331,
+      lift: 1.533,
+      cutoff: 0.58
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3512,
+      lift: 1.5072,
+      cutoff: 0.56
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3718,
+      lift: 1.4825,
+      cutoff: 0.54
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.3926,
+      lift: 1.4587,
+      cutoff: 0.52
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4136,
+      lift: 1.4357,
+      cutoff: 0.5
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4349,
+      lift: 1.4136,
+      cutoff: 0.48
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4565,
+      lift: 1.3923,
+      cutoff: 0.46
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.4783,
+      lift: 1.3716,
+      cutoff: 0.44
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5003,
+      lift: 1.3515,
+      cutoff: 0.42
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5226,
+      lift: 1.3321,
+      cutoff: 0.4
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5451,
+      lift: 1.3131,
+      cutoff: 0.38
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5678,
+      lift: 1.2946,
+      cutoff: 0.36
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.5906,
+      lift: 1.2766,
+      cutoff: 0.34
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.6137,
+      lift: 1.259,
+      cutoff: 0.32
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.637,
+      lift: 1.2417,
+      cutoff: 0.3
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.6604,
+      lift: 1.2248,
+      cutoff: 0.28
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.684,
+      lift: 1.2082,
+      cutoff: 0.26
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7078,
+      lift: 1.1918,
+      cutoff: 0.24
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7317,
+      lift: 1.1757,
+      cutoff: 0.22
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.7558,
+      lift: 1.1598,
+      cutoff: 0.2
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.78,
+      lift: 1.1441,
+      cutoff: 0.18
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8043,
+      lift: 1.1285,
+      cutoff: 0.16
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8287,
+      lift: 1.113,
+      cutoff: 0.14
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8533,
+      lift: 1.0975,
+      cutoff: 0.12
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.8778,
+      lift: 1.0821,
+      cutoff: 0.1
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9025,
+      lift: 1.0665,
+      cutoff: 0.08
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9271,
+      lift: 1.0508,
+      cutoff: 0.06
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9516,
+      lift: 1.0348,
+      cutoff: 0.04
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 0.9761,
+      lift: 1.0182,
+      cutoff: 0.02
+    },
+    {
+      seriesId: "series-b",
+      ppcr: 1,
+      lift: 1,
+      cutoff: 0
+    }
   ],
   x: "ppcr",
   y: "lift",
-  xAxis: { label: "Predicted Positives (Rate)", domain: [0, 1] },
-  yAxis: { label: "Lift", domain: [0, 3.333] },
+  xAxis: {
+    label: "PPCR (Percent Positive)",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Lift",
+    domain: [
+      0,
+      4
+    ]
+  },
   references: [
-    { type: "horizontal", value: 1, scope: "global", label: "Random" },
+    {
+      type: "horizontal",
+      scope: "global",
+      label: "Random",
+      value: 1
+    },
     {
       type: "path",
+      scope: "global",
+      label: "Perfect Model",
       points: [
-        { x: 0, y: 3.333 },
-        { x: 0.3, y: 3.333 },
-        { x: 1, y: 1 }
-      ],
-      scope: "population",
-      population: "Population A",
-      label: "Perfect Model"
+        {
+          x: 0,
+          y: 4
+        },
+        {
+          x: 0.25,
+          y: 4
+        },
+        {
+          x: 1,
+          y: 1
+        }
+      ]
     }
   ]
 };
@@ -26862,59 +29290,1465 @@ var performance_table_default = {
   ]
 };
 
-// fixtures/v2/precision-recall-single.json
-var precision_recall_single_default = {
+// fixtures/v2/demo/precision-recall-shared-population.json
+var precision_recall_shared_population_default = {
   schemaVersion: "2.0",
   type: "precision_recall",
-  evaluations: [{ id: "eval-a", model: "Model A", population: "Population A", label: "Model A" }],
-  series: [{ id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } }],
-  data: [{ seriesId: "series-a", cutoff: 0.5, sensitivity: 0.8, ppv: 0.6 }],
-  x: "sensitivity",
-  y: "ppv",
-  xAxis: { label: "Sensitivity", domain: [0, 1] },
-  yAxis: { label: "PPV", domain: [0, 1] },
-  references: [{ type: "horizontal", value: 0.3, scope: "population", population: "Population A", label: "Random Guess" }]
-};
-
-// fixtures/v2/roc.json
-var roc_default = {
-  schemaVersion: "2.0",
-  type: "roc",
   evaluations: [
     {
-      id: "eval-model-a",
+      id: "eval-a",
       model: "Model A",
-      population: "population-shared",
+      population: "Pop 1",
       label: "Model A"
+    },
+    {
+      id: "eval-b",
+      model: "Model B",
+      population: "Pop 1",
+      label: "Model B"
     }
   ],
   series: [
     {
-      id: "series-model-a",
-      evaluationId: "eval-model-a",
+      id: "series-a",
+      evaluationId: "eval-a",
       display: {
         label: "Model A",
         group: "Model A",
         role: "model"
       }
+    },
+    {
+      id: "series-b",
+      evaluationId: "eval-b",
+      display: {
+        label: "Model B",
+        group: "Model B",
+        role: "model"
+      }
     }
   ],
   data: [
-    { seriesId: "series-model-a", cutoff: 0.8, sensitivity: 0.45, specificity: 0.92, ppcr: 0.15 },
-    { seriesId: "series-model-a", cutoff: 0.5, sensitivity: 0.78, specificity: 0.74, ppcr: 0.45 },
-    { seriesId: "series-model-a", cutoff: 0.2, sensitivity: 0.95, specificity: 0.31, ppcr: 0.82 }
+    {
+      seriesId: "series-a",
+      cutoff: 0,
+      sensitivity: 1,
+      ppv: 0.25
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.02,
+      sensitivity: 0.9991,
+      ppv: 0.2583
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.04,
+      sensitivity: 0.997,
+      ppv: 0.2666
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.06,
+      sensitivity: 0.9937,
+      ppv: 0.2751
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.08,
+      sensitivity: 0.9894,
+      ppv: 0.2838
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.1,
+      sensitivity: 0.9842,
+      ppv: 0.2926
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.12,
+      sensitivity: 0.978,
+      ppv: 0.3016
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.14,
+      sensitivity: 0.971,
+      ppv: 0.3108
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.16,
+      sensitivity: 0.9631,
+      ppv: 0.3202
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.18,
+      sensitivity: 0.9543,
+      ppv: 0.3299
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.2,
+      sensitivity: 0.9448,
+      ppv: 0.3397
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.22,
+      sensitivity: 0.9345,
+      ppv: 0.3498
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.24,
+      sensitivity: 0.9234,
+      ppv: 0.3602
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.26,
+      sensitivity: 0.9115,
+      ppv: 0.3708
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.28,
+      sensitivity: 0.8989,
+      ppv: 0.3817
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.3,
+      sensitivity: 0.8855,
+      ppv: 0.3928
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.32,
+      sensitivity: 0.8714,
+      ppv: 0.4042
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.34,
+      sensitivity: 0.8566,
+      ppv: 0.416
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.36,
+      sensitivity: 0.841,
+      ppv: 0.428
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.38,
+      sensitivity: 0.8248,
+      ppv: 0.4404
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.4,
+      sensitivity: 0.8078,
+      ppv: 0.4531
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.42,
+      sensitivity: 0.7902,
+      ppv: 0.4661
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.44,
+      sensitivity: 0.7719,
+      ppv: 0.4795
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.46,
+      sensitivity: 0.7528,
+      ppv: 0.4933
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.48,
+      sensitivity: 0.7332,
+      ppv: 0.5074
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.5,
+      sensitivity: 0.7128,
+      ppv: 0.5219
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.52,
+      sensitivity: 0.6918,
+      ppv: 0.5369
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.54,
+      sensitivity: 0.6702,
+      ppv: 0.5522
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.56,
+      sensitivity: 0.6478,
+      ppv: 0.5679
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.58,
+      sensitivity: 0.6249,
+      ppv: 0.5841
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.6,
+      sensitivity: 0.6013,
+      ppv: 0.6007
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.62,
+      sensitivity: 0.577,
+      ppv: 0.6178
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.64,
+      sensitivity: 0.5522,
+      ppv: 0.6353
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.66,
+      sensitivity: 0.5267,
+      ppv: 0.6533
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.68,
+      sensitivity: 0.5005,
+      ppv: 0.6717
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.7,
+      sensitivity: 0.4738,
+      ppv: 0.6906
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.72,
+      sensitivity: 0.4464,
+      ppv: 0.71
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.74,
+      sensitivity: 0.4184,
+      ppv: 0.7298
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.76,
+      sensitivity: 0.3898,
+      ppv: 0.7501
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.78,
+      sensitivity: 0.3606,
+      ppv: 0.7707
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.8,
+      sensitivity: 0.3308,
+      ppv: 0.7918
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.82,
+      sensitivity: 0.3004,
+      ppv: 0.8132
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.84,
+      sensitivity: 0.2694,
+      ppv: 0.835
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.86,
+      sensitivity: 0.2378,
+      ppv: 0.857
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.88,
+      sensitivity: 0.2055,
+      ppv: 0.8791
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.9,
+      sensitivity: 0.1728,
+      ppv: 0.9012
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.92,
+      sensitivity: 0.1394,
+      ppv: 0.9232
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.94,
+      sensitivity: 0.1054,
+      ppv: 0.9448
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.96,
+      sensitivity: 0.0708,
+      ppv: 0.9656
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.98,
+      sensitivity: 0.0357,
+      ppv: 0.9849
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 1,
+      sensitivity: 0,
+      ppv: 1
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0,
+      sensitivity: 1,
+      ppv: 0.25
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.02,
+      sensitivity: 0.9938,
+      ppv: 0.2545
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.04,
+      sensitivity: 0.9848,
+      ppv: 0.2587
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.06,
+      sensitivity: 0.9742,
+      ppv: 0.2627
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.08,
+      sensitivity: 0.9625,
+      ppv: 0.2666
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.1,
+      sensitivity: 0.9499,
+      ppv: 0.2705
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.12,
+      sensitivity: 0.9365,
+      ppv: 0.2744
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.14,
+      sensitivity: 0.9224,
+      ppv: 0.2782
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.16,
+      sensitivity: 0.9077,
+      ppv: 0.2821
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.18,
+      sensitivity: 0.8924,
+      ppv: 0.286
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.2,
+      sensitivity: 0.8766,
+      ppv: 0.29
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.22,
+      sensitivity: 0.8603,
+      ppv: 0.2939
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.24,
+      sensitivity: 0.8436,
+      ppv: 0.298
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.26,
+      sensitivity: 0.8264,
+      ppv: 0.302
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.28,
+      sensitivity: 0.8089,
+      ppv: 0.3062
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.3,
+      sensitivity: 0.7909,
+      ppv: 0.3104
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.32,
+      sensitivity: 0.7726,
+      ppv: 0.3147
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.34,
+      sensitivity: 0.754,
+      ppv: 0.3191
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.36,
+      sensitivity: 0.735,
+      ppv: 0.3237
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.38,
+      sensitivity: 0.7157,
+      ppv: 0.3283
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.4,
+      sensitivity: 0.6961,
+      ppv: 0.333
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.42,
+      sensitivity: 0.6762,
+      ppv: 0.3379
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.44,
+      sensitivity: 0.6561,
+      ppv: 0.3429
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.46,
+      sensitivity: 0.6356,
+      ppv: 0.3481
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.48,
+      sensitivity: 0.6149,
+      ppv: 0.3534
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.5,
+      sensitivity: 0.5939,
+      ppv: 0.3589
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.52,
+      sensitivity: 0.5726,
+      ppv: 0.3647
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.54,
+      sensitivity: 0.5511,
+      ppv: 0.3706
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.56,
+      sensitivity: 0.5294,
+      ppv: 0.3768
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.58,
+      sensitivity: 0.5074,
+      ppv: 0.3833
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.6,
+      sensitivity: 0.4852,
+      ppv: 0.39
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.62,
+      sensitivity: 0.4628,
+      ppv: 0.3971
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.64,
+      sensitivity: 0.4402,
+      ppv: 0.4045
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.66,
+      sensitivity: 0.4174,
+      ppv: 0.4124
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.68,
+      sensitivity: 0.3943,
+      ppv: 0.4206
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.7,
+      sensitivity: 0.371,
+      ppv: 0.4294
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.72,
+      sensitivity: 0.3476,
+      ppv: 0.4388
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.74,
+      sensitivity: 0.3239,
+      ppv: 0.4489
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.76,
+      sensitivity: 0.3001,
+      ppv: 0.4597
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.78,
+      sensitivity: 0.276,
+      ppv: 0.4714
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.8,
+      sensitivity: 0.2518,
+      ppv: 0.4841
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.82,
+      sensitivity: 0.2274,
+      ppv: 0.4981
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.84,
+      sensitivity: 0.2028,
+      ppv: 0.5137
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.86,
+      sensitivity: 0.178,
+      ppv: 0.5312
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.88,
+      sensitivity: 0.1531,
+      ppv: 0.5511
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.9,
+      sensitivity: 0.128,
+      ppv: 0.5743
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.92,
+      sensitivity: 0.1027,
+      ppv: 0.6021
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.94,
+      sensitivity: 0.0773,
+      ppv: 0.6368
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.96,
+      sensitivity: 0.0517,
+      ppv: 0.6829
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.98,
+      sensitivity: 0.0259,
+      ppv: 0.7534
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 1,
+      sensitivity: 0,
+      ppv: 1
+    }
   ],
-  x: "false_positive_rate",
-  y: "sensitivity",
-  xAxis: { label: "1 - Specificity", domain: [0, 1] },
-  yAxis: { label: "Sensitivity", domain: [0, 1] },
+  x: "sensitivity",
+  y: "ppv",
+  xAxis: {
+    label: "Sensitivity (Recall)",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Positive Predictive Value (Precision)",
+    domain: [
+      0,
+      1
+    ]
+  },
   references: [
-    { type: "identity", scope: "global", label: "Random Guess" }
+    {
+      type: "horizontal",
+      scope: "global",
+      label: "Random Guess",
+      value: 0.25
+    }
   ]
 };
 
-// fixtures/v2/structured-report-v1_1.ts
-var structuredReportFixture = {
+// fixtures/v2/demo/roc.json
+var roc_default = {
+  schemaVersion: "2.0",
+  type: "roc",
+  evaluations: [
+    {
+      id: "eval-a",
+      model: "Model A",
+      population: "Pop 1",
+      label: "Model A"
+    },
+    {
+      id: "eval-b",
+      model: "Model B",
+      population: "Pop 1",
+      label: "Model B"
+    }
+  ],
+  series: [
+    {
+      id: "series-a",
+      evaluationId: "eval-a",
+      display: {
+        label: "Model A",
+        group: "Model A",
+        role: "model"
+      }
+    },
+    {
+      id: "series-b",
+      evaluationId: "eval-b",
+      display: {
+        label: "Model B",
+        group: "Model B",
+        role: "model"
+      }
+    }
+  ],
+  data: [
+    {
+      seriesId: "series-a",
+      cutoff: 0,
+      sensitivity: 1,
+      specificity: 0,
+      ppcr: 1
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.02,
+      sensitivity: 0.9991,
+      specificity: 0.0435,
+      ppcr: 0.9672
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.04,
+      sensitivity: 0.997,
+      specificity: 0.0859,
+      ppcr: 0.9348
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.06,
+      sensitivity: 0.9937,
+      specificity: 0.1273,
+      ppcr: 0.903
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.08,
+      sensitivity: 0.9894,
+      specificity: 0.1676,
+      ppcr: 0.8717
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.1,
+      sensitivity: 0.9842,
+      specificity: 0.2069,
+      ppcr: 0.8409
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.12,
+      sensitivity: 0.978,
+      specificity: 0.2451,
+      ppcr: 0.8106
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.14,
+      sensitivity: 0.971,
+      specificity: 0.2824,
+      ppcr: 0.781
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.16,
+      sensitivity: 0.9631,
+      specificity: 0.3186,
+      ppcr: 0.7518
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.18,
+      sensitivity: 0.9543,
+      specificity: 0.3538,
+      ppcr: 0.7233
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.2,
+      sensitivity: 0.9448,
+      specificity: 0.3879,
+      ppcr: 0.6953
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.22,
+      sensitivity: 0.9345,
+      specificity: 0.4211,
+      ppcr: 0.6678
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.24,
+      sensitivity: 0.9234,
+      specificity: 0.4532,
+      ppcr: 0.6409
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.26,
+      sensitivity: 0.9115,
+      specificity: 0.4844,
+      ppcr: 0.6146
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.28,
+      sensitivity: 0.8989,
+      specificity: 0.5146,
+      ppcr: 0.5888
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.3,
+      sensitivity: 0.8855,
+      specificity: 0.5437,
+      ppcr: 0.5636
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.32,
+      sensitivity: 0.8714,
+      specificity: 0.5719,
+      ppcr: 0.5389
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.34,
+      sensitivity: 0.8566,
+      specificity: 0.5991,
+      ppcr: 0.5148
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.36,
+      sensitivity: 0.841,
+      specificity: 0.6254,
+      ppcr: 0.4912
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.38,
+      sensitivity: 0.8248,
+      specificity: 0.6506,
+      ppcr: 0.4682
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.4,
+      sensitivity: 0.8078,
+      specificity: 0.675,
+      ppcr: 0.4457
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.42,
+      sensitivity: 0.7902,
+      specificity: 0.6983,
+      ppcr: 0.4238
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.44,
+      sensitivity: 0.7719,
+      specificity: 0.7207,
+      ppcr: 0.4024
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.46,
+      sensitivity: 0.7528,
+      specificity: 0.7422,
+      ppcr: 0.3816
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.48,
+      sensitivity: 0.7332,
+      specificity: 0.7627,
+      ppcr: 0.3612
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.5,
+      sensitivity: 0.7128,
+      specificity: 0.7824,
+      ppcr: 0.3414
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.52,
+      sensitivity: 0.6918,
+      specificity: 0.8011,
+      ppcr: 0.3222
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.54,
+      sensitivity: 0.6702,
+      specificity: 0.8188,
+      ppcr: 0.3034
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.56,
+      sensitivity: 0.6478,
+      specificity: 0.8357,
+      ppcr: 0.2852
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.58,
+      sensitivity: 0.6249,
+      specificity: 0.8517,
+      ppcr: 0.2674
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.6,
+      sensitivity: 0.6013,
+      specificity: 0.8668,
+      ppcr: 0.2502
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.62,
+      sensitivity: 0.577,
+      specificity: 0.881,
+      ppcr: 0.2335
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.64,
+      sensitivity: 0.5522,
+      specificity: 0.8944,
+      ppcr: 0.2173
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.66,
+      sensitivity: 0.5267,
+      specificity: 0.9068,
+      ppcr: 0.2015
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.68,
+      sensitivity: 0.5005,
+      specificity: 0.9185,
+      ppcr: 0.1863
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.7,
+      sensitivity: 0.4738,
+      specificity: 0.9293,
+      ppcr: 0.1715
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.72,
+      sensitivity: 0.4464,
+      specificity: 0.9392,
+      ppcr: 0.1572
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.74,
+      sensitivity: 0.4184,
+      specificity: 0.9484,
+      ppcr: 0.1433
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.76,
+      sensitivity: 0.3898,
+      specificity: 0.9567,
+      ppcr: 0.1299
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.78,
+      sensitivity: 0.3606,
+      specificity: 0.9642,
+      ppcr: 0.117
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.8,
+      sensitivity: 0.3308,
+      specificity: 0.971,
+      ppcr: 0.1044
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.82,
+      sensitivity: 0.3004,
+      specificity: 0.977,
+      ppcr: 0.0923
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.84,
+      sensitivity: 0.2694,
+      specificity: 0.9823,
+      ppcr: 0.0806
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.86,
+      sensitivity: 0.2378,
+      specificity: 0.9868,
+      ppcr: 0.0694
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.88,
+      sensitivity: 0.2055,
+      specificity: 0.9906,
+      ppcr: 0.0585
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.9,
+      sensitivity: 0.1728,
+      specificity: 0.9937,
+      ppcr: 0.0479
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.92,
+      sensitivity: 0.1394,
+      specificity: 0.9961,
+      ppcr: 0.0377
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.94,
+      sensitivity: 0.1054,
+      specificity: 0.9979,
+      ppcr: 0.0279
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.96,
+      sensitivity: 0.0708,
+      specificity: 0.9992,
+      ppcr: 0.0183
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 0.98,
+      sensitivity: 0.0357,
+      specificity: 0.9998,
+      ppcr: 91e-4
+    },
+    {
+      seriesId: "series-a",
+      cutoff: 1,
+      sensitivity: 0,
+      specificity: 1,
+      ppcr: 0
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0,
+      sensitivity: 1,
+      specificity: 0,
+      ppcr: 1
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.02,
+      sensitivity: 0.9938,
+      specificity: 0.0298,
+      ppcr: 0.9761
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.04,
+      sensitivity: 0.9848,
+      specificity: 0.0594,
+      ppcr: 0.9516
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.06,
+      sensitivity: 0.9742,
+      specificity: 0.0886,
+      ppcr: 0.9271
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.08,
+      sensitivity: 0.9625,
+      specificity: 0.1176,
+      ppcr: 0.9025
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.1,
+      sensitivity: 0.9499,
+      specificity: 0.1462,
+      ppcr: 0.8778
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.12,
+      sensitivity: 0.9365,
+      specificity: 0.1745,
+      ppcr: 0.8533
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.14,
+      sensitivity: 0.9224,
+      specificity: 0.2025,
+      ppcr: 0.8287
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.16,
+      sensitivity: 0.9077,
+      specificity: 0.2301,
+      ppcr: 0.8043
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.18,
+      sensitivity: 0.8924,
+      specificity: 0.2575,
+      ppcr: 0.78
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.2,
+      sensitivity: 0.8766,
+      specificity: 0.2845,
+      ppcr: 0.7558
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.22,
+      sensitivity: 0.8603,
+      specificity: 0.3111,
+      ppcr: 0.7317
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.24,
+      sensitivity: 0.8436,
+      specificity: 0.3374,
+      ppcr: 0.7078
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.26,
+      sensitivity: 0.8264,
+      specificity: 0.3634,
+      ppcr: 0.684
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.28,
+      sensitivity: 0.8089,
+      specificity: 0.3891,
+      ppcr: 0.6604
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.3,
+      sensitivity: 0.7909,
+      specificity: 0.4143,
+      ppcr: 0.637
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.32,
+      sensitivity: 0.7726,
+      specificity: 0.4393,
+      ppcr: 0.6137
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.34,
+      sensitivity: 0.754,
+      specificity: 0.4638,
+      ppcr: 0.5906
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.36,
+      sensitivity: 0.735,
+      specificity: 0.488,
+      ppcr: 0.5678
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.38,
+      sensitivity: 0.7157,
+      specificity: 0.5118,
+      ppcr: 0.5451
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.4,
+      sensitivity: 0.6961,
+      specificity: 0.5352,
+      ppcr: 0.5226
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.42,
+      sensitivity: 0.6762,
+      specificity: 0.5583,
+      ppcr: 0.5003
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.44,
+      sensitivity: 0.6561,
+      specificity: 0.5809,
+      ppcr: 0.4783
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.46,
+      sensitivity: 0.6356,
+      specificity: 0.6032,
+      ppcr: 0.4565
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.48,
+      sensitivity: 0.6149,
+      specificity: 0.625,
+      ppcr: 0.4349
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.5,
+      sensitivity: 0.5939,
+      specificity: 0.6464,
+      ppcr: 0.4136
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.52,
+      sensitivity: 0.5726,
+      specificity: 0.6674,
+      ppcr: 0.3926
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.54,
+      sensitivity: 0.5511,
+      specificity: 0.688,
+      ppcr: 0.3718
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.56,
+      sensitivity: 0.5294,
+      specificity: 0.7081,
+      ppcr: 0.3512
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.58,
+      sensitivity: 0.5074,
+      specificity: 0.7278,
+      ppcr: 0.331
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.6,
+      sensitivity: 0.4852,
+      specificity: 0.747,
+      ppcr: 0.311
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.62,
+      sensitivity: 0.4628,
+      specificity: 0.7658,
+      ppcr: 0.2914
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.64,
+      sensitivity: 0.4402,
+      specificity: 0.784,
+      ppcr: 0.272
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.66,
+      sensitivity: 0.4174,
+      specificity: 0.8017,
+      ppcr: 0.253
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.68,
+      sensitivity: 0.3943,
+      specificity: 0.819,
+      ppcr: 0.2343
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.7,
+      sensitivity: 0.371,
+      specificity: 0.8357,
+      ppcr: 0.216
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.72,
+      sensitivity: 0.3476,
+      specificity: 0.8518,
+      ppcr: 0.198
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.74,
+      sensitivity: 0.3239,
+      specificity: 0.8674,
+      ppcr: 0.1804
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.76,
+      sensitivity: 0.3001,
+      specificity: 0.8824,
+      ppcr: 0.1632
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.78,
+      sensitivity: 0.276,
+      specificity: 0.8968,
+      ppcr: 0.1464
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.8,
+      sensitivity: 0.2518,
+      specificity: 0.9106,
+      ppcr: 0.13
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.82,
+      sensitivity: 0.2274,
+      specificity: 0.9236,
+      ppcr: 0.1141
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.84,
+      sensitivity: 0.2028,
+      specificity: 0.936,
+      ppcr: 0.0987
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.86,
+      sensitivity: 0.178,
+      specificity: 0.9476,
+      ppcr: 0.0838
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.88,
+      sensitivity: 0.1531,
+      specificity: 0.9584,
+      ppcr: 0.0695
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.9,
+      sensitivity: 0.128,
+      specificity: 0.9684,
+      ppcr: 0.0557
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.92,
+      sensitivity: 0.1027,
+      specificity: 0.9774,
+      ppcr: 0.0427
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.94,
+      sensitivity: 0.0773,
+      specificity: 0.9853,
+      ppcr: 0.0303
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.96,
+      sensitivity: 0.0517,
+      specificity: 0.992,
+      ppcr: 0.0189
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 0.98,
+      sensitivity: 0.0259,
+      specificity: 0.9972,
+      ppcr: 86e-4
+    },
+    {
+      seriesId: "series-b",
+      cutoff: 1,
+      sensitivity: 0,
+      specificity: 1,
+      ppcr: 0
+    }
+  ],
+  x: "false_positive_rate",
+  y: "sensitivity",
+  xAxis: {
+    label: "1 - Specificity",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Sensitivity",
+    domain: [
+      0,
+      1
+    ]
+  },
+  references: [
+    {
+      type: "identity",
+      scope: "global",
+      label: "Random Guess"
+    }
+  ]
+};
+
+// fixtures/v2/demo/structured-report.ts
+var demoStructuredReportFixture = {
   schemaVersion: "1.1",
   type: "report",
   title: "Comprehensive Model Performance Summary Report",
@@ -26950,19 +30784,19 @@ var structuredReportFixture = {
               type: "component",
               id: "pr-threshold",
               title: "Precision-Recall Curve",
-              spec: precision_recall_single_default
+              spec: precision_recall_shared_population_default
             },
             {
               type: "component",
               id: "gains-threshold",
               title: "Cumulative Gains Chart",
-              spec: gains_single_default
+              spec: gains_shared_population_default
             },
             {
               type: "component",
               id: "lift-threshold",
               title: "Lift Chart",
-              spec: lift_single_default
+              spec: lift_shared_population_default
             }
           ]
         },
@@ -26981,19 +30815,19 @@ var structuredReportFixture = {
               type: "component",
               id: "pr-ppcr",
               title: "Precision-Recall Curve (by PPCR)",
-              spec: precision_recall_single_default
+              spec: precision_recall_shared_population_default
             },
             {
               type: "component",
               id: "gains-ppcr",
               title: "Cumulative Gains Chart (by PPCR)",
-              spec: gains_single_default
+              spec: gains_shared_population_default
             },
             {
               type: "component",
               id: "lift-ppcr",
               title: "Lift Chart (by PPCR)",
-              spec: lift_single_default
+              spec: lift_shared_population_default
             }
           ]
         }
@@ -27005,9 +30839,9 @@ var structuredReportFixture = {
       items: [
         {
           type: "component",
-          id: "decision-curve-time",
-          title: "Time-Dependent Decision Curve Analysis",
-          spec: decision_curve_time_multi_default
+          id: "decision-curve",
+          title: "Decision Curve Analysis",
+          spec: decision_curve_single_default
         },
         {
           type: "component",
@@ -27052,71 +30886,348 @@ var structuredReportFixture = {
   ]
 };
 
-// fixtures/v2/calibration-populations.json
+// fixtures/v2/demo/calibration-populations.json
 var calibration_populations_default = {
   schemaVersion: "2.0",
   type: "calibration",
   evaluations: [
-    { id: "eval-pop-a", population: "Population A", label: "Population A" },
-    { id: "eval-pop-b", population: "Population B", label: "Population B" }
+    {
+      id: "eval-pop-a",
+      population: "Population A",
+      label: "Population A"
+    },
+    {
+      id: "eval-pop-b",
+      population: "Population B",
+      label: "Population B"
+    }
   ],
   series: [
-    { id: "series-pop-a", evaluationId: "eval-pop-a", display: { label: "Population A", group: "Population A", role: "population" } },
-    { id: "series-pop-b", evaluationId: "eval-pop-b", display: { label: "Population B", group: "Population B", role: "population" } }
+    {
+      id: "series-pop-a",
+      evaluationId: "eval-pop-a",
+      display: {
+        label: "Population A",
+        group: "Population A",
+        role: "population"
+      }
+    },
+    {
+      id: "series-pop-b",
+      evaluationId: "eval-pop-b",
+      display: {
+        label: "Population B",
+        group: "Population B",
+        role: "population"
+      }
+    }
   ],
   data: [
-    { seriesId: "series-pop-a", predicted: 0.1, observed: 0.08, method: "discrete", events: 8, total: 100 },
-    { seriesId: "series-pop-a", predicted: 0.4, observed: 0.36, method: "discrete", events: 36, total: 100 },
-    { seriesId: "series-pop-a", predicted: 0.8, observed: 0.76, method: "discrete", events: 76, total: 100 },
-    { seriesId: "series-pop-b", predicted: 0.1, observed: 0.12, method: "discrete", events: 12, total: 100 },
-    { seriesId: "series-pop-b", predicted: 0.4, observed: 0.43, method: "discrete", events: 43, total: 100 },
-    { seriesId: "series-pop-b", predicted: 0.8, observed: 0.84, method: "discrete", events: 84, total: 100 }
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.05,
+      observed: 0.056,
+      method: "discrete",
+      events: 2,
+      total: 40
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.15,
+      observed: 0.148,
+      method: "discrete",
+      events: 12,
+      total: 80
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.25,
+      observed: 0.24,
+      method: "discrete",
+      events: 36,
+      total: 150
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.35,
+      observed: 0.332,
+      method: "discrete",
+      events: 66,
+      total: 200
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.45,
+      observed: 0.424,
+      method: "discrete",
+      events: 89,
+      total: 210
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.55,
+      observed: 0.516,
+      method: "discrete",
+      events: 77,
+      total: 150
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.65,
+      observed: 0.608,
+      method: "discrete",
+      events: 55,
+      total: 90
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.75,
+      observed: 0.7,
+      method: "discrete",
+      events: 35,
+      total: 50
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.85,
+      observed: 0.792,
+      method: "discrete",
+      events: 16,
+      total: 20
+    },
+    {
+      seriesId: "series-pop-a",
+      predicted: 0.95,
+      observed: 0.884,
+      method: "discrete",
+      events: 9,
+      total: 10
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.05,
+      observed: 0.0325,
+      method: "discrete",
+      events: 1,
+      total: 20
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.15,
+      observed: 0.1375,
+      method: "discrete",
+      events: 7,
+      total: 50
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.25,
+      observed: 0.2425,
+      method: "discrete",
+      events: 24,
+      total: 100
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.35,
+      observed: 0.3475,
+      method: "discrete",
+      events: 56,
+      total: 160
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.45,
+      observed: 0.4525,
+      method: "discrete",
+      events: 100,
+      total: 220
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.55,
+      observed: 0.5575,
+      method: "discrete",
+      events: 112,
+      total: 200
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.65,
+      observed: 0.6625,
+      method: "discrete",
+      events: 86,
+      total: 130
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.75,
+      observed: 0.7675,
+      method: "discrete",
+      events: 61,
+      total: 80
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.85,
+      observed: 0.8725,
+      method: "discrete",
+      events: 26,
+      total: 30
+    },
+    {
+      seriesId: "series-pop-b",
+      predicted: 0.95,
+      observed: 0.9775,
+      method: "discrete",
+      events: 10,
+      total: 10
+    }
   ],
   distribution: [
-    { seriesId: "series-pop-a", midpoint: 0.1, count: 20, binWidth: 0.1 },
-    { seriesId: "series-pop-a", midpoint: 0.4, count: 45, binWidth: 0.1 },
-    { seriesId: "series-pop-a", midpoint: 0.8, count: 35, binWidth: 0.1 },
-    { seriesId: "series-pop-b", midpoint: 0.1, count: 30, binWidth: 0.1 },
-    { seriesId: "series-pop-b", midpoint: 0.4, count: 35, binWidth: 0.1 },
-    { seriesId: "series-pop-b", midpoint: 0.8, count: 35, binWidth: 0.1 }
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.05,
+      count: 40,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.15,
+      count: 80,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.25,
+      count: 150,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.35,
+      count: 200,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.45,
+      count: 210,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.55,
+      count: 150,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.65,
+      count: 90,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.75,
+      count: 50,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.85,
+      count: 20,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-a",
+      midpoint: 0.95,
+      count: 10,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.05,
+      count: 20,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.15,
+      count: 50,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.25,
+      count: 100,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.35,
+      count: 160,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.45,
+      count: 220,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.55,
+      count: 200,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.65,
+      count: 130,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.75,
+      count: 80,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.85,
+      count: 30,
+      binWidth: 0.1
+    },
+    {
+      seriesId: "series-pop-b",
+      midpoint: 0.95,
+      count: 10,
+      binWidth: 0.1
+    }
   ],
   x: "predicted",
   y: "observed",
-  xAxis: { label: "Predicted probability", domain: [0, 1] },
-  yAxis: { label: "Observed probability", domain: [0, 1] },
-  references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }]
-};
-
-// fixtures/v2/decision-curve-single.json
-var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, netBenefit: 0.22 }, { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.15, netBenefit: 0.15 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.25, netBenefit: 0.09 }, { seriesId: "series-1", threshold: 0.3, netBenefit: 0.06 }, { seriesId: "series-1", threshold: 0.35, netBenefit: 0.02 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }, { seriesId: "series-1", threshold: 0.45, netBenefit: -0.06 }, { seriesId: "series-1", threshold: 0.5, netBenefit: -0.1 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.05, y: 0.236842 }, { x: 0.1, y: 0.222222 }, { x: 0.15, y: 0.205882 }, { x: 0.2, y: 0.125 }, { x: 0.25, y: 0.066667 }, { x: 0.3, y: 0 }, { x: 0.35, y: -0.076923 }, { x: 0.4, y: -0.166667 }, { x: 0.45, y: -0.272727 }, { x: 0.5, y: -0.4 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
-
-// fixtures/v2/gains-shared-population.json
-var gains_shared_population_default = {
-  schemaVersion: "2.0",
-  type: "gains",
-  evaluations: [
-    { id: "eval-a", model: "Model A", population: "Population X", label: "Model A" },
-    { id: "eval-b", model: "Model B", population: "Population X", label: "Model B" }
-  ],
-  series: [
-    { id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
-  ],
-  data: [
-    { seriesId: "series-a", cutoff: 1, ppcr: 0, sensitivity: 0 },
-    { seriesId: "series-a", cutoff: 0.5, ppcr: 0.4, sensitivity: 0.8 },
-    { seriesId: "series-a", cutoff: 0, ppcr: 1, sensitivity: 1 },
-    { seriesId: "series-b", cutoff: 1, ppcr: 0, sensitivity: 0 },
-    { seriesId: "series-b", cutoff: 0.5, ppcr: 0.5, sensitivity: 0.7 },
-    { seriesId: "series-b", cutoff: 0, ppcr: 1, sensitivity: 1 }
-  ],
-  x: "ppcr",
-  y: "sensitivity",
-  xAxis: { label: "Predicted Positives (Rate)", domain: [0, 1] },
-  yAxis: { label: "Sensitivity", domain: [0, 1] },
+  xAxis: {
+    label: "Predicted probability",
+    domain: [
+      0,
+      1
+    ]
+  },
+  yAxis: {
+    label: "Observed probability",
+    domain: [
+      0,
+      1
+    ]
+  },
   references: [
-    { type: "identity", scope: "global", label: "Random" },
-    { type: "path", points: [{ x: 0, y: 0 }, { x: 0.25, y: 1 }, { x: 1, y: 1 }], scope: "population", population: "Population X", label: "Perfect Model" }
+    {
+      type: "identity",
+      scope: "global",
+      label: "Perfectly Calibrated"
+    }
   ]
 };
 
@@ -27141,46 +31252,6 @@ var gains_time_default = {
     { type: "identity", scope: "global", label: "Random" },
     { type: "path", points: [{ x: 0, y: 0 }, { x: 0.2, y: 1 }, { x: 1, y: 1 }], scope: "population_horizon", population: "Population A", horizon: 5, label: "Perfect Model" },
     { type: "path", points: [{ x: 0, y: 0 }, { x: 0.4, y: 1 }, { x: 1, y: 1 }], scope: "population_horizon", population: "Population A", horizon: 10, label: "Perfect Model" }
-  ]
-};
-
-// fixtures/v2/lift-shared-population.json
-var lift_shared_population_default = {
-  schemaVersion: "2.0",
-  type: "lift",
-  evaluations: [
-    { id: "eval-a", model: "Model A", population: "Population X", label: "Model A" },
-    { id: "eval-b", model: "Model B", population: "Population X", label: "Model B" }
-  ],
-  series: [
-    { id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
-  ],
-  data: [
-    { seriesId: "series-a", cutoff: 0.8, ppcr: 0.1, lift: 3.2 },
-    { seriesId: "series-a", cutoff: 0.5, ppcr: 0.4, lift: 2 },
-    { seriesId: "series-a", cutoff: 0, ppcr: 1, lift: 1 },
-    { seriesId: "series-b", cutoff: 0.8, ppcr: 0.1, lift: 2.5 },
-    { seriesId: "series-b", cutoff: 0.5, ppcr: 0.5, lift: 1.4 },
-    { seriesId: "series-b", cutoff: 0, ppcr: 1, lift: 1 }
-  ],
-  x: "ppcr",
-  y: "lift",
-  xAxis: { label: "Predicted Positives (Rate)", domain: [0, 1] },
-  yAxis: { label: "Lift", domain: [0, 4] },
-  references: [
-    { type: "horizontal", value: 1, scope: "global", label: "Random" },
-    {
-      type: "path",
-      points: [
-        { x: 0, y: 4 },
-        { x: 0.25, y: 4 },
-        { x: 1, y: 1 }
-      ],
-      scope: "population",
-      population: "Population X",
-      label: "Perfect Model"
-    }
   ]
 };
 
@@ -27241,35 +31312,6 @@ var lift_time_default = {
       horizon: 10,
       label: "Perfect Model (t=10)"
     }
-  ]
-};
-
-// fixtures/v2/precision-recall-shared-population.json
-var precision_recall_shared_population_default = {
-  schemaVersion: "2.0",
-  type: "precision_recall",
-  evaluations: [
-    { id: "eval-a", model: "Model A", population: "Population X", label: "Model A" },
-    { id: "eval-b", model: "Model B", population: "Population X", label: "Model B" }
-  ],
-  series: [
-    { id: "series-a", evaluationId: "eval-a", display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-b", evaluationId: "eval-b", display: { label: "Model B", group: "Model B", role: "model" } }
-  ],
-  data: [
-    { seriesId: "series-a", cutoff: 0.9, sensitivity: 0.2, ppv: 0.9, ppcr: 0.1 },
-    { seriesId: "series-a", cutoff: 0.5, sensitivity: 0.8, ppv: 0.6, ppcr: 0.5 },
-    { seriesId: "series-a", cutoff: 0.1, sensitivity: 1, ppv: 0.3, ppcr: 0.9 },
-    { seriesId: "series-b", cutoff: 0.9, sensitivity: 0.15, ppv: 0.82, ppcr: 0.1 },
-    { seriesId: "series-b", cutoff: 0.5, sensitivity: 0.75, ppv: 0.58, ppcr: 0.5 },
-    { seriesId: "series-b", cutoff: 0.1, sensitivity: 1, ppv: 0.3, ppcr: 0.9 }
-  ],
-  x: "sensitivity",
-  y: "ppv",
-  xAxis: { label: "Sensitivity", domain: [0, 1] },
-  yAxis: { label: "PPV", domain: [0, 1] },
-  references: [
-    { type: "horizontal", value: 0.3, scope: "population", population: "Population X", label: "Random Guess" }
   ]
 };
 
@@ -59406,37 +63448,6 @@ var prediction_distribution_visual_default = {
   ]
 };
 
-// src/demo-data.ts
-function scaleCalibrationForDemo(spec, factor = 10) {
-  const scaledDistribution = spec.distribution ? spec.distribution.map((bin) => ({
-    ...bin,
-    count: bin.count * factor
-  })) : void 0;
-  const scaledData = spec.data.map((datum2) => {
-    if (datum2.method !== "discrete" || !scaledDistribution) {
-      return { ...datum2 };
-    }
-    const matchingBin = scaledDistribution.find(
-      (bin) => bin.seriesId === datum2.seriesId && bin.midpoint === datum2.predicted
-    );
-    if (!matchingBin) {
-      return { ...datum2 };
-    }
-    const total = matchingBin.count;
-    const events = Math.round(datum2.observed * total);
-    return {
-      ...datum2,
-      total,
-      events
-    };
-  });
-  return {
-    ...spec,
-    data: scaledData,
-    ...scaledDistribution ? { distribution: scaledDistribution } : {}
-  };
-}
-
 // src/demo.ts
 var reportHost = document.querySelector("#report-demo");
 var rocHost = document.querySelector("#roc-chart");
@@ -59466,33 +63477,11 @@ var singleRocOpSpec = {
   operatingPoint: { dimension: "probability_threshold" }
 };
 var multiRocOpSpec = {
-  schemaVersion: "2.0",
-  type: "roc",
-  evaluations: [
-    { id: "eval-1", model: "Model A", population: "Pop 1", label: "Model A" },
-    { id: "eval-2", model: "Model B", population: "Pop 1", label: "Model B" }
-  ],
-  series: [
-    { id: "series-1", evaluationId: "eval-1", display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-2", evaluationId: "eval-2", display: { label: "Model B", group: "Model B", role: "model" } }
-  ],
-  data: [
-    { seriesId: "series-1", cutoff: 0.2, sensitivity: 0.9, specificity: 0.35, ppcr: 0.8 },
-    { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.75, specificity: 0.7, ppcr: 0.5 },
-    { seriesId: "series-1", cutoff: 0.8, sensitivity: 0.4, specificity: 0.9, ppcr: 0.2 },
-    { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.8, specificity: 0.45, ppcr: 0.75 },
-    { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.6, specificity: 0.8, ppcr: 0.45 },
-    { seriesId: "series-2", cutoff: 0.8, sensitivity: 0.3, specificity: 0.92, ppcr: 0.15 }
-  ],
-  x: "false_positive_rate",
-  y: "sensitivity",
-  xAxis: { label: "1 - Specificity", domain: [0, 1] },
-  yAxis: { label: "Sensitivity", domain: [0, 1] },
-  references: [{ type: "identity", scope: "global", label: "Random Guess" }],
+  ...roc_default,
   operatingPoint: { dimension: "probability_threshold" }
 };
 var rocPpcrOpSpec = {
-  ...multiRocOpSpec,
+  ...roc_default,
   operatingPoint: { dimension: "ppcr" }
 };
 var prThreshOpSpec = {
@@ -59512,15 +63501,9 @@ var iaOpSpec = {
   operatingPoint: { dimension: "probability_threshold" }
 };
 var reportWithOp = {
-  ...structuredReportFixture,
-  sections: structuredReportFixture.sections.map((section) => {
+  ...demoStructuredReportFixture,
+  sections: demoStructuredReportFixture.sections.map((section) => {
     const updatedItems = section.items.map((item) => {
-      if (item.type === "component" && item.spec.type === "calibration") {
-        return {
-          ...item,
-          spec: scaleCalibrationForDemo(item.spec)
-        };
-      }
       if (item.type !== "group" || section.id !== "discrimination") return item;
       if (item.id === "probability-threshold") {
         return {
@@ -59563,11 +63546,9 @@ reportHost.append(
 rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
-calibrationHost.append(
-  renderCalibrationV2(scaleCalibrationForDemo(calibration_default))
-);
+calibrationHost.append(renderCalibrationV2(calibration_default));
 calibrationPopulationsHost.append(
-  renderCalibrationV2(scaleCalibrationForDemo(calibration_populations_default))
+  renderCalibrationV2(calibration_populations_default)
 );
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
