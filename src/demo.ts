@@ -20,21 +20,43 @@ import type {
   PredictionDistributionSpec,
   RocV2Spec,
 } from "./index.js";
-import { structuredReportFixture } from "../fixtures/v2/structured-report-v1_1.js";
-import calibrationFixture from "../fixtures/v2/calibration.json" with { type: "json" };
-import calibrationPopulationsFixture from "../fixtures/v2/calibration-populations.json" with { type: "json" };
-import decisionCurveFixture from "../fixtures/v2/decision-curve-single.json" with { type: "json" };
-import gainsFixture from "../fixtures/v2/gains-shared-population.json" with { type: "json" };
-import gainsTimeFixture from "../fixtures/v2/gains-time.json" with { type: "json" };
-import interventionsAvoidedFixture from "../fixtures/v2/interventions-avoided-single.json" with { type: "json" };
-import liftFixture from "../fixtures/v2/lift-shared-population.json" with { type: "json" };
-import liftTimeFixture from "../fixtures/v2/lift-time.json" with { type: "json" };
-import precisionRecallFixture from "../fixtures/v2/precision-recall-shared-population.json" with { type: "json" };
-import rocFixture from "../fixtures/v2/roc.json" with { type: "json" };
-import predDistVisualFixture from "../fixtures/v2/prediction-distribution-visual.json" with { type: "json" };
-import { scaleCalibrationForDemo } from "./demo-data.js";
 
-const reportHost = document.querySelector<HTMLElement>("#report-demo");
+import { demoReport1, demoReport2, demoReport3 } from "./demo-reports.js";
+
+// Standalone realistic demo specs
+import rocModelATestData from "../fixtures/v2/demo/model-a-test-roc.json" with { type: "json" };
+import rocModelsABTestData from "../fixtures/v2/demo/models-a-b-test-roc.json" with { type: "json" };
+import calibModelATestData from "../fixtures/v2/demo/model-a-test-calibration.json" with { type: "json" };
+import calibMultiPopData from "../fixtures/v2/demo/model-a-train-test-val-calibration.json" with { type: "json" };
+import prModelsABTestData from "../fixtures/v2/demo/models-a-b-test-precision-recall.json" with { type: "json" };
+import gainsModelsABTestData from "../fixtures/v2/demo/models-a-b-test-gains.json" with { type: "json" };
+import liftModelsABTestData from "../fixtures/v2/demo/models-a-b-test-lift.json" with { type: "json" };
+import predDistVisualData from "../fixtures/v2/prediction-distribution-visual.json" with { type: "json" };
+
+// Standalone proofs for contract tests
+import decisionCurveData from "../fixtures/v2/decision-curve-single.json" with { type: "json" };
+import interventionsAvoidedData from "../fixtures/v2/interventions-avoided-single.json" with { type: "json" };
+import gainsTimeData from "../fixtures/v2/gains-time.json" with { type: "json" };
+import liftTimeData from "../fixtures/v2/lift-time.json" with { type: "json" };
+
+const rocModelATest = rocModelATestData as RocV2Spec;
+const rocModelsABTest = rocModelsABTestData as RocV2Spec;
+const calibModelATest = calibModelATestData as CalibrationV2Spec;
+const calibMultiPop = calibMultiPopData as CalibrationV2Spec;
+const prModelsABTest = prModelsABTestData as PrecisionRecallV2Spec;
+const gainsModelsABTest = gainsModelsABTestData as GainsV2Spec;
+const liftModelsABTest = liftModelsABTestData as LiftV2Spec;
+const predDistVisualFixture = predDistVisualData as PredictionDistributionSpec;
+
+const decisionCurveFixture = decisionCurveData as DecisionCurveV2Spec;
+const interventionsAvoidedFixture = interventionsAvoidedData as InterventionsAvoidedV2Spec;
+const gainsTimeFixture = gainsTimeData as GainsV2Spec;
+const liftTimeFixture = liftTimeData as LiftV2Spec;
+
+const reportHost1 = document.querySelector<HTMLElement>("#report-demo-1");
+const reportHost2 = document.querySelector<HTMLElement>("#report-demo-2");
+const reportHost3 = document.querySelector<HTMLElement>("#report-demo-3");
+
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
 const rocOpHost = document.querySelector<HTMLElement>("#roc-op-chart");
 const rocPpcrHost = document.querySelector<HTMLElement>("#roc-ppcr-chart");
@@ -51,7 +73,9 @@ const iaOpHost = document.querySelector<HTMLElement>("#ia-op-chart");
 const predDistVisualHost = document.querySelector<HTMLElement>("#pred-dist-visual-chart");
 
 if (
-  !reportHost ||
+  !reportHost1 ||
+  !reportHost2 ||
+  !reportHost3 ||
   !rocHost ||
   !rocOpHost ||
   !rocPpcrHost ||
@@ -70,149 +94,147 @@ if (
   throw new Error("Demo chart containers are missing");
 }
 
-const singleRocOpSpec: RocV2Spec = {
-  ...(rocFixture as RocV2Spec),
-  evaluations: [(rocFixture as RocV2Spec).evaluations[0]],
-  series: [(rocFixture as RocV2Spec).series[0]],
-  data: (rocFixture as RocV2Spec).data.filter(
-    (datum) => datum.seriesId === (rocFixture as RocV2Spec).series[0].id,
-  ),
-  operatingPoint: { dimension: "probability_threshold" },
-};
-
-const multiRocOpSpec: RocV2Spec = {
-  schemaVersion: "2.0",
-  type: "roc",
-  evaluations: [
-    { id: "eval-1", model: "Model A", population: "Pop 1", label: "Model A" },
-    { id: "eval-2", model: "Model B", population: "Pop 1", label: "Model B" },
-  ],
-  series: [
-    { id: "series-1", evaluationId: "eval-1", display: { label: "Model A", group: "Model A", role: "model" } },
-    { id: "series-2", evaluationId: "eval-2", display: { label: "Model B", group: "Model B", role: "model" } },
-  ],
-  data: [
-    { seriesId: "series-1", cutoff: 0.2, sensitivity: 0.9, specificity: 0.35, ppcr: 0.8 },
-    { seriesId: "series-1", cutoff: 0.5, sensitivity: 0.75, specificity: 0.7, ppcr: 0.5 },
-    { seriesId: "series-1", cutoff: 0.8, sensitivity: 0.4, specificity: 0.9, ppcr: 0.2 },
-    { seriesId: "series-2", cutoff: 0.2, sensitivity: 0.8, specificity: 0.45, ppcr: 0.75 },
-    { seriesId: "series-2", cutoff: 0.5, sensitivity: 0.6, specificity: 0.8, ppcr: 0.45 },
-    { seriesId: "series-2", cutoff: 0.8, sensitivity: 0.3, specificity: 0.92, ppcr: 0.15 },
-  ],
-  x: "false_positive_rate",
-  y: "sensitivity",
-  xAxis: { label: "1 - Specificity", domain: [0, 1] },
-  yAxis: { label: "Sensitivity", domain: [0, 1] },
-  references: [{ type: "identity", scope: "global", label: "Random Guess" }],
-  operatingPoint: { dimension: "probability_threshold" },
-};
-
-const rocPpcrOpSpec: RocV2Spec = {
-  ...multiRocOpSpec,
-  operatingPoint: { dimension: "ppcr" },
-};
-
-const prThreshOpSpec: PrecisionRecallV2Spec = {
-  ...(precisionRecallFixture as PrecisionRecallV2Spec),
-  operatingPoint: { dimension: "probability_threshold" },
-};
-
-const prPpcrOpSpec: PrecisionRecallV2Spec = {
-  ...(precisionRecallFixture as PrecisionRecallV2Spec),
-  operatingPoint: { dimension: "ppcr" },
-};
-
-const dcOpSpec: DecisionCurveV2Spec = {
-  ...(decisionCurveFixture as DecisionCurveV2Spec),
-  operatingPoint: { dimension: "probability_threshold" },
-};
-
-const iaOpSpec: InterventionsAvoidedV2Spec = {
-  ...(interventionsAvoidedFixture as InterventionsAvoidedV2Spec),
-  operatingPoint: { dimension: "probability_threshold" },
-};
-
-const reportWithOp = {
-  ...structuredReportFixture,
-  sections: structuredReportFixture.sections.map((section) => {
-    const updatedItems = section.items.map((item) => {
-      if (item.type === "component" && item.spec.type === "calibration") {
-        return {
-          ...item,
-          spec: scaleCalibrationForDemo(item.spec as CalibrationV2Spec),
-        };
-      }
-      if (item.type !== "group" || section.id !== "discrimination") return item;
-      if (item.id === "probability-threshold") {
-        return {
-          ...item,
-          components: item.components.map((comp) => ({
-            ...comp,
-            spec: {
-              ...comp.spec,
-              operatingPoint: { dimension: "probability_threshold" as const },
-            },
-          })),
-        };
-      }
-      if (item.id === "ppcr") {
-        return {
-          ...item,
-          components: item.components.map((comp) => ({
-            ...comp,
-            spec: {
-              ...comp.spec,
-              operatingPoint: { dimension: "ppcr" as const },
-            },
-          })),
-        };
-      }
-      return item;
-    });
-
-    return {
-      ...section,
-      items: updatedItems,
-    };
-  }),
-};
-
-reportHost.append(
-  renderReport(reportWithOp as typeof structuredReportFixture, {
+// 1. Render the three distinct Summary Reports
+reportHost1.append(
+  renderReport(demoReport1, {
     sectionGroupPresentation: "tabs",
     groupPresentation: "tabs",
   }),
 );
+
+reportHost2.append(
+  renderReport(demoReport2, {
+    sectionGroupPresentation: "tabs",
+    groupPresentation: "tabs",
+  }),
+);
+
+reportHost3.append(
+  renderReport(demoReport3, {
+    sectionGroupPresentation: "tabs",
+    groupPresentation: "tabs",
+  }),
+);
+
+// Tab switching logic for demo page
+export const setupDemoTabs = () => {
+  const tabs = [
+    { btnId: "#tab-btn-report-1", wrapperId: "#report-demo-1-wrapper" },
+    { btnId: "#tab-btn-report-2", wrapperId: "#report-demo-2-wrapper" },
+    { btnId: "#tab-btn-report-3", wrapperId: "#report-demo-3-wrapper" },
+  ];
+
+  const buttons = tabs.map((t) => document.querySelector<HTMLButtonElement>(t.btnId));
+
+  const selectTab = (index: number) => {
+    tabs.forEach((t, i) => {
+      const b = buttons[i];
+      const w = document.querySelector<HTMLElement>(t.wrapperId);
+      if (!b || !w) return;
+
+      const isActive = i === index;
+      b.classList.toggle("active", isActive);
+      b.setAttribute("aria-selected", isActive ? "true" : "false");
+      b.setAttribute("tabindex", isActive ? "0" : "-1");
+
+      if (isActive) {
+        w.removeAttribute("hidden");
+        b.focus();
+      } else {
+        w.setAttribute("hidden", "");
+      }
+    });
+  };
+
+  buttons.forEach((btn, index) => {
+    if (!btn) return;
+
+    btn.addEventListener("click", () => selectTab(index));
+
+    btn.addEventListener("keydown", (e: KeyboardEvent) => {
+      let targetIndex: number | null = null;
+      if (e.key === "ArrowRight") {
+        targetIndex = (index + 1) % buttons.length;
+      } else if (e.key === "ArrowLeft") {
+        targetIndex = (index - 1 + buttons.length) % buttons.length;
+      } else if (e.key === "Home") {
+        targetIndex = 0;
+      } else if (e.key === "End") {
+        targetIndex = buttons.length - 1;
+      }
+
+      if (targetIndex !== null) {
+        e.preventDefault();
+        selectTab(targetIndex);
+      }
+    });
+  });
+};
+
+setupDemoTabs();
+
+// 2. Render standalone comparison charts using realistic demo specifications
+const singleRocOpSpec: RocV2Spec = {
+  ...rocModelATest,
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
+const multiRocOpSpec: RocV2Spec = {
+  ...rocModelsABTest,
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
+const rocPpcrOpSpec: RocV2Spec = {
+  ...rocModelsABTest,
+  operatingPoint: { dimension: "ppcr" },
+};
+
+const prThreshOpSpec: PrecisionRecallV2Spec = {
+  ...prModelsABTest,
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
+const prPpcrOpSpec: PrecisionRecallV2Spec = {
+  ...prModelsABTest,
+  operatingPoint: { dimension: "ppcr" },
+};
+
+const dcOpSpec: DecisionCurveV2Spec = {
+  ...decisionCurveFixture,
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
+const iaOpSpec: InterventionsAvoidedV2Spec = {
+  ...interventionsAvoidedFixture,
+  operatingPoint: { dimension: "probability_threshold" },
+};
+
 rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
-calibrationHost.append(
-  renderCalibrationV2(scaleCalibrationForDemo(calibrationFixture as CalibrationV2Spec)),
-);
-calibrationPopulationsHost.append(
-  renderCalibrationV2(scaleCalibrationForDemo(calibrationPopulationsFixture as CalibrationV2Spec)),
-);
+calibrationHost.append(renderCalibrationV2(calibModelATest));
+calibrationPopulationsHost.append(renderCalibrationV2(calibMultiPop));
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(
   renderGainsV2({
-    ...(gainsFixture as GainsV2Spec),
+    ...gainsModelsABTest,
     operatingPoint: { dimension: "ppcr" },
   }),
 );
 gainsTimeHost.append(
   renderGainsV2({
-    ...(gainsTimeFixture as GainsV2Spec),
+    ...gainsTimeFixture,
     operatingPoint: { dimension: "probability_threshold" },
   }),
 );
 liftHost.append(
   renderLiftV2({
-    ...(liftFixture as LiftV2Spec),
+    ...liftModelsABTest,
     operatingPoint: { dimension: "ppcr" },
   }),
 );
-liftTimeHost.append(renderLiftV2(liftTimeFixture as LiftV2Spec));
+liftTimeHost.append(renderLiftV2(liftTimeFixture));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
-predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture as PredictionDistributionSpec));
+predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture));

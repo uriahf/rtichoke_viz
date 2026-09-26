@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "type": "summary_metrics",
+  "title": "Model Performance & Prevalence Summary",
+  "populations": [
+    {
+      "id": "pop-test",
+      "label": "Test"
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test"
+    }
+  ],
+  "metrics": [
+    {
+      "metric": "auroc",
+      "owner": {
+        "type": "evaluation",
+        "evaluationId": "Model A - Test"
+      },
+      "estimate": 0.7798
+    },
+    {
+      "metric": "prevalence",
+      "owner": {
+        "type": "population",
+        "populationId": "pop-test"
+      },
+      "estimate": 0.419
+    }
+  ]
+}
