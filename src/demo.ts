@@ -31,9 +31,8 @@ import liftFixture from "../fixtures/v2/lift-shared-population.json" with { type
 import liftTimeFixture from "../fixtures/v2/lift-time.json" with { type: "json" };
 import precisionRecallFixture from "../fixtures/v2/precision-recall-shared-population.json" with { type: "json" };
 import rocFixture from "../fixtures/v2/roc.json" with { type: "json" };
-import predDistThresholdFixture from "../fixtures/v2/prediction-distribution-threshold.json" with { type: "json" };
-import predDistPpcrFixture from "../fixtures/v2/prediction-distribution-ppcr-tie.json" with { type: "json" };
 import predDistVisualFixture from "../fixtures/v2/prediction-distribution-visual.json" with { type: "json" };
+import { scaleCalibrationForDemo } from "./demo-data.js";
 
 const reportHost = document.querySelector<HTMLElement>("#report-demo");
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
@@ -50,8 +49,6 @@ const prPpcrHost = document.querySelector<HTMLElement>("#pr-ppcr-chart");
 const dcOpHost = document.querySelector<HTMLElement>("#dc-op-chart");
 const iaOpHost = document.querySelector<HTMLElement>("#ia-op-chart");
 const predDistVisualHost = document.querySelector<HTMLElement>("#pred-dist-visual-chart");
-const predDistHost = document.querySelector<HTMLElement>("#pred-dist-chart");
-const predDistPpcrHost = document.querySelector<HTMLElement>("#pred-dist-ppcr-chart");
 
 if (
   !reportHost ||
@@ -68,9 +65,7 @@ if (
   !liftTimeHost ||
   !dcOpHost ||
   !iaOpHost ||
-  !predDistVisualHost ||
-  !predDistHost ||
-  !predDistPpcrHost
+  !predDistVisualHost
 ) {
   throw new Error("Demo chart containers are missing");
 }
@@ -140,37 +135,44 @@ const iaOpSpec: InterventionsAvoidedV2Spec = {
 const reportWithOp = {
   ...structuredReportFixture,
   sections: structuredReportFixture.sections.map((section) => {
-    if (section.id !== "discrimination") return section;
+    const updatedItems = section.items.map((item) => {
+      if (item.type === "component" && item.spec.type === "calibration") {
+        return {
+          ...item,
+          spec: scaleCalibrationForDemo(item.spec as CalibrationV2Spec),
+        };
+      }
+      if (item.type !== "group" || section.id !== "discrimination") return item;
+      if (item.id === "probability-threshold") {
+        return {
+          ...item,
+          components: item.components.map((comp) => ({
+            ...comp,
+            spec: {
+              ...comp.spec,
+              operatingPoint: { dimension: "probability_threshold" as const },
+            },
+          })),
+        };
+      }
+      if (item.id === "ppcr") {
+        return {
+          ...item,
+          components: item.components.map((comp) => ({
+            ...comp,
+            spec: {
+              ...comp.spec,
+              operatingPoint: { dimension: "ppcr" as const },
+            },
+          })),
+        };
+      }
+      return item;
+    });
+
     return {
       ...section,
-      items: section.items.map((item) => {
-        if (item.type !== "group") return item;
-        if (item.id === "probability-threshold") {
-          return {
-            ...item,
-            components: item.components.map((comp) => ({
-              ...comp,
-              spec: {
-                ...comp.spec,
-                operatingPoint: { dimension: "probability_threshold" as const },
-              },
-            })),
-          };
-        }
-        if (item.id === "ppcr") {
-          return {
-            ...item,
-            components: item.components.map((comp) => ({
-              ...comp,
-              spec: {
-                ...comp.spec,
-                operatingPoint: { dimension: "ppcr" as const },
-              },
-            })),
-          };
-        }
-        return item;
-      }),
+      items: updatedItems,
     };
   }),
 };
@@ -184,8 +186,12 @@ reportHost.append(
 rocHost.append(renderRocV2(singleRocOpSpec));
 rocOpHost.append(renderRocV2(multiRocOpSpec));
 rocPpcrHost.append(renderRocV2(rocPpcrOpSpec));
-calibrationHost.append(renderCalibrationV2(calibrationFixture as CalibrationV2Spec));
-calibrationPopulationsHost.append(renderCalibrationV2(calibrationPopulationsFixture as CalibrationV2Spec));
+calibrationHost.append(
+  renderCalibrationV2(scaleCalibrationForDemo(calibrationFixture as CalibrationV2Spec)),
+);
+calibrationPopulationsHost.append(
+  renderCalibrationV2(scaleCalibrationForDemo(calibrationPopulationsFixture as CalibrationV2Spec)),
+);
 precisionRecallHost.append(renderPrecisionRecallV2(prThreshOpSpec));
 prPpcrHost.append(renderPrecisionRecallV2(prPpcrOpSpec));
 gainsHost.append(
@@ -210,5 +216,3 @@ liftTimeHost.append(renderLiftV2(liftTimeFixture as LiftV2Spec));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
 predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture as PredictionDistributionSpec));
-predDistHost.append(renderPredictionDistribution(predDistThresholdFixture as PredictionDistributionSpec));
-predDistPpcrHost.append(renderPredictionDistribution(predDistPpcrFixture as PredictionDistributionSpec));

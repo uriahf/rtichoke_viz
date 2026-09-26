@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 from typing import Any
@@ -173,6 +174,36 @@ def render(spec: dict[str, Any]) -> go.Figure:
     return render_gains(spec)
 
 
+def scale_calibration_for_demo(
+    spec: dict[str, Any],
+    factor: int = 10,
+) -> dict[str, Any]:
+    spec = copy.deepcopy(spec)
+    distribution = spec.get("distribution")
+    if distribution:
+        for bin_item in distribution:
+            if "count" in bin_item:
+                bin_item["count"] = bin_item["count"] * factor
+
+    if "data" in spec and distribution:
+        for row in spec["data"]:
+            if row.get("method") == "discrete":
+                matching_bin = next(
+                    (
+                        bin_item
+                        for bin_item in distribution
+                        if bin_item.get("seriesId") == row.get("seriesId")
+                        and bin_item.get("midpoint") == row.get("predicted")
+                    ),
+                    None,
+                )
+                if matching_bin:
+                    row["total"] = matching_bin["count"]
+                    row["events"] = round(row["observed"] * row["total"])
+
+    return spec
+
+
 def assert_shared_display_group_series_identity(fixtures: Path) -> None:
     spec = load_spec(fixtures / "precision-recall-shared-display-group.json")
     fig = render_precision_recall(spec)
@@ -198,6 +229,8 @@ def main() -> None:
     }
     for chart, filename in fixtures.items():
         spec = load_spec(args.fixtures / filename)
+        if chart == "calibration":
+            spec = scale_calibration_for_demo(spec)
         render(spec).write_html(args.output / f"{chart}.html", include_plotlyjs=True, full_html=True,
                                 config={"displayModeBar": False})
 

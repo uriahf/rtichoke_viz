@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from gains import render_gains
-from render import render_calibration
+from render import render_calibration, scale_calibration_for_demo
 
 
 class CalibrationRendererTest(unittest.TestCase):
@@ -30,6 +30,21 @@ class CalibrationRendererTest(unittest.TestCase):
         self.assertEqual(list(bars[0].x), [0.1, 0.4, 0.8])
         self.assertEqual(list(bars[0].y), [20, 45, 35])
         self.assertEqual(list(bars[0].width), [0.1, 0.1, 0.1])
+
+    def test_scale_calibration_for_demo(self) -> None:
+        spec = json.loads(Path("fixtures/v2/calibration.json").read_text())
+        scaled = scale_calibration_for_demo(spec)
+        total_distribution_count = sum(bin_item["count"] for bin_item in scaled["distribution"])
+        self.assertEqual(total_distribution_count, 1000)
+
+        for row in scaled["data"]:
+            if row.get("method") == "discrete":
+                matching_bin = next(
+                    bin_item for bin_item in scaled["distribution"]
+                    if bin_item["seriesId"] == row["seriesId"] and bin_item["midpoint"] == row["predicted"]
+                )
+                self.assertEqual(row["total"], matching_bin["count"])
+                self.assertEqual(row["events"], round(row["observed"] * row["total"]))
 
 
 class GainsRendererTest(unittest.TestCase):
