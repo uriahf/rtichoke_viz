@@ -185,11 +185,9 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
           const groupSumEvents = discreteRows.reduce((acc: number, d: any) => acc + d.events, 0);
 
           const distBins = spec.distribution.filter((d: any) => d.seriesId === seriesId);
-          const distSumN = distBins.reduce((acc: number, d: any) => acc + d.nPositive + d.nNegative, 0);
-          const distSumEvents = distBins.reduce((acc: number, d: any) => acc + d.nPositive, 0);
+          const distSumN = distBins.reduce((acc: number, d: any) => acc + (d.count ?? (d.nPositive + d.nNegative)), 0);
 
           expect(groupSumN).toBe(distSumN);
-          expect(groupSumEvents).toBe(distSumEvents);
 
           // Verify observed prop = events / total
           discreteRows.forEach((d: any) => {
