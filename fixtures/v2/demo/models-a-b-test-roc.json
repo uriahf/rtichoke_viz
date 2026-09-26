@@ -1,0 +1,1480 @@
+{
+  "schemaVersion": "2.0",
+  "type": "roc",
+  "evaluations": [
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test",
+      "label": "Model A \u2014 Test"
+    },
+    {
+      "id": "Model B - Test",
+      "model": "Model B",
+      "population": "Test",
+      "label": "Model B \u2014 Test"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-Model A - Test",
+      "evaluationId": "Model A - Test",
+      "display": {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model"
+      }
+    },
+    {
+      "id": "series-Model B - Test",
+      "evaluationId": "Model B - Test",
+      "display": {
+        "label": "Model B",
+        "group": "Model B",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.0,
+      "sensitivity": 1.0,
+      "specificity": 0.0,
+      "ppcr": 1.0
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.01,
+      "sensitivity": 0.9976,
+      "specificity": 0.0075,
+      "ppcr": 0.9947
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.02,
+      "sensitivity": 0.9976,
+      "specificity": 0.0086,
+      "ppcr": 0.994
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.03,
+      "sensitivity": 0.9976,
+      "specificity": 0.012,
+      "ppcr": 0.992
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.04,
+      "sensitivity": 0.9968,
+      "specificity": 0.0143,
+      "ppcr": 0.9903
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.05,
+      "sensitivity": 0.996,
+      "specificity": 0.0195,
+      "ppcr": 0.987
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.06,
+      "sensitivity": 0.996,
+      "specificity": 0.0264,
+      "ppcr": 0.983
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.07,
+      "sensitivity": 0.996,
+      "specificity": 0.0356,
+      "ppcr": 0.9777
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.08,
+      "sensitivity": 0.996,
+      "specificity": 0.0465,
+      "ppcr": 0.9713
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.09,
+      "sensitivity": 0.996,
+      "specificity": 0.0516,
+      "ppcr": 0.9683
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.1,
+      "sensitivity": 0.9952,
+      "specificity": 0.0585,
+      "ppcr": 0.964
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.11,
+      "sensitivity": 0.9952,
+      "specificity": 0.0683,
+      "ppcr": 0.9583
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.12,
+      "sensitivity": 0.9952,
+      "specificity": 0.0775,
+      "ppcr": 0.953
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.13,
+      "sensitivity": 0.9952,
+      "specificity": 0.0878,
+      "ppcr": 0.947
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.14,
+      "sensitivity": 0.9944,
+      "specificity": 0.105,
+      "ppcr": 0.9367
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.15,
+      "sensitivity": 0.992,
+      "specificity": 0.1222,
+      "ppcr": 0.9257
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.16,
+      "sensitivity": 0.9905,
+      "specificity": 0.1377,
+      "ppcr": 0.916
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.17,
+      "sensitivity": 0.9817,
+      "specificity": 0.1492,
+      "ppcr": 0.9057
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.18,
+      "sensitivity": 0.9785,
+      "specificity": 0.1635,
+      "ppcr": 0.896
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.19,
+      "sensitivity": 0.9745,
+      "specificity": 0.1761,
+      "ppcr": 0.887
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.2,
+      "sensitivity": 0.973,
+      "specificity": 0.1928,
+      "ppcr": 0.8767
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.21,
+      "sensitivity": 0.9706,
+      "specificity": 0.2077,
+      "ppcr": 0.867
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.22,
+      "sensitivity": 0.961,
+      "specificity": 0.2266,
+      "ppcr": 0.852
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.23,
+      "sensitivity": 0.9578,
+      "specificity": 0.2456,
+      "ppcr": 0.8397
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.24,
+      "sensitivity": 0.9515,
+      "specificity": 0.2656,
+      "ppcr": 0.8253
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.25,
+      "sensitivity": 0.9491,
+      "specificity": 0.2788,
+      "ppcr": 0.8167
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.26,
+      "sensitivity": 0.9443,
+      "specificity": 0.2903,
+      "ppcr": 0.808
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.27,
+      "sensitivity": 0.9403,
+      "specificity": 0.3173,
+      "ppcr": 0.7907
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.28,
+      "sensitivity": 0.9348,
+      "specificity": 0.3339,
+      "ppcr": 0.7787
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.29,
+      "sensitivity": 0.9308,
+      "specificity": 0.3517,
+      "ppcr": 0.7667
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.3,
+      "sensitivity": 0.926,
+      "specificity": 0.3695,
+      "ppcr": 0.7543
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.31,
+      "sensitivity": 0.922,
+      "specificity": 0.3873,
+      "ppcr": 0.7423
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.32,
+      "sensitivity": 0.9149,
+      "specificity": 0.4033,
+      "ppcr": 0.73
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.33,
+      "sensitivity": 0.9093,
+      "specificity": 0.4217,
+      "ppcr": 0.717
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.34,
+      "sensitivity": 0.9061,
+      "specificity": 0.4383,
+      "ppcr": 0.706
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.35,
+      "sensitivity": 0.8982,
+      "specificity": 0.4573,
+      "ppcr": 0.6917
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.36,
+      "sensitivity": 0.887,
+      "specificity": 0.475,
+      "ppcr": 0.6767
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.37,
+      "sensitivity": 0.8815,
+      "specificity": 0.4923,
+      "ppcr": 0.6643
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.38,
+      "sensitivity": 0.8703,
+      "specificity": 0.5077,
+      "ppcr": 0.6507
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.39,
+      "sensitivity": 0.8624,
+      "specificity": 0.5221,
+      "ppcr": 0.639
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.4,
+      "sensitivity": 0.8528,
+      "specificity": 0.5393,
+      "ppcr": 0.625
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.41,
+      "sensitivity": 0.8369,
+      "specificity": 0.5571,
+      "ppcr": 0.608
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.42,
+      "sensitivity": 0.8274,
+      "specificity": 0.5726,
+      "ppcr": 0.595
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.43,
+      "sensitivity": 0.8123,
+      "specificity": 0.5915,
+      "ppcr": 0.5777
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.44,
+      "sensitivity": 0.8027,
+      "specificity": 0.6087,
+      "ppcr": 0.5637
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.45,
+      "sensitivity": 0.79,
+      "specificity": 0.6231,
+      "ppcr": 0.55
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.46,
+      "sensitivity": 0.7749,
+      "specificity": 0.6397,
+      "ppcr": 0.534
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.47,
+      "sensitivity": 0.7597,
+      "specificity": 0.6512,
+      "ppcr": 0.521
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.48,
+      "sensitivity": 0.7414,
+      "specificity": 0.6649,
+      "ppcr": 0.5053
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.49,
+      "sensitivity": 0.7343,
+      "specificity": 0.6776,
+      "ppcr": 0.495
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.5,
+      "sensitivity": 0.7176,
+      "specificity": 0.6913,
+      "ppcr": 0.48
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.51,
+      "sensitivity": 0.7033,
+      "specificity": 0.7131,
+      "ppcr": 0.4613
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.52,
+      "sensitivity": 0.6913,
+      "specificity": 0.7258,
+      "ppcr": 0.449
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.53,
+      "sensitivity": 0.6762,
+      "specificity": 0.7401,
+      "ppcr": 0.4343
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.54,
+      "sensitivity": 0.6659,
+      "specificity": 0.7527,
+      "ppcr": 0.4227
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.55,
+      "sensitivity": 0.6539,
+      "specificity": 0.759,
+      "ppcr": 0.414
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.56,
+      "sensitivity": 0.6388,
+      "specificity": 0.7659,
+      "ppcr": 0.4037
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.57,
+      "sensitivity": 0.6229,
+      "specificity": 0.7745,
+      "ppcr": 0.392
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.58,
+      "sensitivity": 0.6102,
+      "specificity": 0.7854,
+      "ppcr": 0.3803
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.59,
+      "sensitivity": 0.5951,
+      "specificity": 0.7963,
+      "ppcr": 0.3677
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.6,
+      "sensitivity": 0.5792,
+      "specificity": 0.8072,
+      "ppcr": 0.3547
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.61,
+      "sensitivity": 0.5648,
+      "specificity": 0.8176,
+      "ppcr": 0.3427
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.62,
+      "sensitivity": 0.5489,
+      "specificity": 0.829,
+      "ppcr": 0.3293
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.63,
+      "sensitivity": 0.5362,
+      "specificity": 0.8411,
+      "ppcr": 0.317
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.64,
+      "sensitivity": 0.5203,
+      "specificity": 0.8508,
+      "ppcr": 0.3047
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.65,
+      "sensitivity": 0.5004,
+      "specificity": 0.86,
+      "ppcr": 0.291
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.66,
+      "sensitivity": 0.4853,
+      "specificity": 0.8646,
+      "ppcr": 0.282
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.67,
+      "sensitivity": 0.4733,
+      "specificity": 0.8715,
+      "ppcr": 0.273
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.68,
+      "sensitivity": 0.4543,
+      "specificity": 0.8761,
+      "ppcr": 0.2623
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.69,
+      "sensitivity": 0.4399,
+      "specificity": 0.8841,
+      "ppcr": 0.2517
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.7,
+      "sensitivity": 0.4256,
+      "specificity": 0.8921,
+      "ppcr": 0.241
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.71,
+      "sensitivity": 0.4105,
+      "specificity": 0.8979,
+      "ppcr": 0.2313
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.72,
+      "sensitivity": 0.3874,
+      "specificity": 0.9065,
+      "ppcr": 0.2167
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.73,
+      "sensitivity": 0.3691,
+      "specificity": 0.9174,
+      "ppcr": 0.2027
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.74,
+      "sensitivity": 0.354,
+      "specificity": 0.9231,
+      "ppcr": 0.193
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.75,
+      "sensitivity": 0.3349,
+      "specificity": 0.9306,
+      "ppcr": 0.1807
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.76,
+      "sensitivity": 0.3198,
+      "specificity": 0.9363,
+      "ppcr": 0.171
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.77,
+      "sensitivity": 0.3007,
+      "specificity": 0.9409,
+      "ppcr": 0.1603
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.78,
+      "sensitivity": 0.2832,
+      "specificity": 0.9472,
+      "ppcr": 0.1493
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.79,
+      "sensitivity": 0.2625,
+      "specificity": 0.9547,
+      "ppcr": 0.1363
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.8,
+      "sensitivity": 0.2411,
+      "specificity": 0.9633,
+      "ppcr": 0.1223
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.81,
+      "sensitivity": 0.2188,
+      "specificity": 0.9702,
+      "ppcr": 0.109
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.82,
+      "sensitivity": 0.1957,
+      "specificity": 0.973,
+      "ppcr": 0.0977
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.83,
+      "sensitivity": 0.1774,
+      "specificity": 0.9771,
+      "ppcr": 0.0877
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.84,
+      "sensitivity": 0.1607,
+      "specificity": 0.9811,
+      "ppcr": 0.0783
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.85,
+      "sensitivity": 0.1329,
+      "specificity": 0.9839,
+      "ppcr": 0.065
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.86,
+      "sensitivity": 0.1146,
+      "specificity": 0.9862,
+      "ppcr": 0.056
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.87,
+      "sensitivity": 0.1018,
+      "specificity": 0.988,
+      "ppcr": 0.0497
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.88,
+      "sensitivity": 0.0867,
+      "specificity": 0.9902,
+      "ppcr": 0.042
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.89,
+      "sensitivity": 0.0772,
+      "specificity": 0.9914,
+      "ppcr": 0.0373
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.9,
+      "sensitivity": 0.07,
+      "specificity": 0.9931,
+      "ppcr": 0.0333
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.91,
+      "sensitivity": 0.0581,
+      "specificity": 0.9954,
+      "ppcr": 0.027
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.92,
+      "sensitivity": 0.0493,
+      "specificity": 0.9966,
+      "ppcr": 0.0227
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.93,
+      "sensitivity": 0.0374,
+      "specificity": 0.9966,
+      "ppcr": 0.0177
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.94,
+      "sensitivity": 0.0278,
+      "specificity": 0.9989,
+      "ppcr": 0.0123
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.95,
+      "sensitivity": 0.0159,
+      "specificity": 0.9994,
+      "ppcr": 0.007
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.96,
+      "sensitivity": 0.0088,
+      "specificity": 0.9994,
+      "ppcr": 0.004
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.97,
+      "sensitivity": 0.0032,
+      "specificity": 1.0,
+      "ppcr": 0.0013
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.98,
+      "sensitivity": 0.0008,
+      "specificity": 1.0,
+      "ppcr": 0.0003
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.99,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "ppcr": 0.0
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 1.0,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "ppcr": 0.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.0,
+      "sensitivity": 1.0,
+      "specificity": 0.0,
+      "ppcr": 1.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.01,
+      "sensitivity": 0.9976,
+      "specificity": 0.0069,
+      "ppcr": 0.995
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.02,
+      "sensitivity": 0.9976,
+      "specificity": 0.008,
+      "ppcr": 0.9943
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.03,
+      "sensitivity": 0.9976,
+      "specificity": 0.0103,
+      "ppcr": 0.993
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.04,
+      "sensitivity": 0.9976,
+      "specificity": 0.0178,
+      "ppcr": 0.9887
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.05,
+      "sensitivity": 0.996,
+      "specificity": 0.0224,
+      "ppcr": 0.9853
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.06,
+      "sensitivity": 0.996,
+      "specificity": 0.031,
+      "ppcr": 0.9803
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.07,
+      "sensitivity": 0.9952,
+      "specificity": 0.0396,
+      "ppcr": 0.975
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.08,
+      "sensitivity": 0.9944,
+      "specificity": 0.0482,
+      "ppcr": 0.9697
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.09,
+      "sensitivity": 0.9912,
+      "specificity": 0.0574,
+      "ppcr": 0.963
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.1,
+      "sensitivity": 0.9889,
+      "specificity": 0.0654,
+      "ppcr": 0.9573
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.11,
+      "sensitivity": 0.9865,
+      "specificity": 0.0803,
+      "ppcr": 0.9477
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.12,
+      "sensitivity": 0.9825,
+      "specificity": 0.0935,
+      "ppcr": 0.9383
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.13,
+      "sensitivity": 0.9809,
+      "specificity": 0.1073,
+      "ppcr": 0.9297
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.14,
+      "sensitivity": 0.9753,
+      "specificity": 0.1228,
+      "ppcr": 0.9183
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.15,
+      "sensitivity": 0.9737,
+      "specificity": 0.1394,
+      "ppcr": 0.908
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.16,
+      "sensitivity": 0.9706,
+      "specificity": 0.1549,
+      "ppcr": 0.8977
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.17,
+      "sensitivity": 0.969,
+      "specificity": 0.1773,
+      "ppcr": 0.884
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.18,
+      "sensitivity": 0.9642,
+      "specificity": 0.1922,
+      "ppcr": 0.8733
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.19,
+      "sensitivity": 0.9562,
+      "specificity": 0.2037,
+      "ppcr": 0.8633
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.2,
+      "sensitivity": 0.9507,
+      "specificity": 0.2186,
+      "ppcr": 0.8523
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.21,
+      "sensitivity": 0.9443,
+      "specificity": 0.2283,
+      "ppcr": 0.844
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.22,
+      "sensitivity": 0.9411,
+      "specificity": 0.2438,
+      "ppcr": 0.8337
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.23,
+      "sensitivity": 0.9387,
+      "specificity": 0.2587,
+      "ppcr": 0.824
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.24,
+      "sensitivity": 0.9308,
+      "specificity": 0.276,
+      "ppcr": 0.8107
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.25,
+      "sensitivity": 0.9196,
+      "specificity": 0.2937,
+      "ppcr": 0.7957
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.26,
+      "sensitivity": 0.9109,
+      "specificity": 0.311,
+      "ppcr": 0.782
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.27,
+      "sensitivity": 0.9045,
+      "specificity": 0.3247,
+      "ppcr": 0.7713
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.28,
+      "sensitivity": 0.8926,
+      "specificity": 0.3425,
+      "ppcr": 0.756
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.29,
+      "sensitivity": 0.8815,
+      "specificity": 0.3574,
+      "ppcr": 0.7427
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.3,
+      "sensitivity": 0.8783,
+      "specificity": 0.3718,
+      "ppcr": 0.733
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.31,
+      "sensitivity": 0.8679,
+      "specificity": 0.389,
+      "ppcr": 0.7187
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.32,
+      "sensitivity": 0.8592,
+      "specificity": 0.4028,
+      "ppcr": 0.707
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.33,
+      "sensitivity": 0.8528,
+      "specificity": 0.4171,
+      "ppcr": 0.696
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.34,
+      "sensitivity": 0.8433,
+      "specificity": 0.428,
+      "ppcr": 0.6857
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.35,
+      "sensitivity": 0.829,
+      "specificity": 0.4423,
+      "ppcr": 0.6713
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.36,
+      "sensitivity": 0.817,
+      "specificity": 0.4647,
+      "ppcr": 0.6533
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.37,
+      "sensitivity": 0.8107,
+      "specificity": 0.4836,
+      "ppcr": 0.6397
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.38,
+      "sensitivity": 0.8043,
+      "specificity": 0.4991,
+      "ppcr": 0.628
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.39,
+      "sensitivity": 0.7971,
+      "specificity": 0.5169,
+      "ppcr": 0.6147
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.4,
+      "sensitivity": 0.7844,
+      "specificity": 0.5336,
+      "ppcr": 0.5997
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.41,
+      "sensitivity": 0.778,
+      "specificity": 0.5491,
+      "ppcr": 0.588
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.42,
+      "sensitivity": 0.7717,
+      "specificity": 0.5674,
+      "ppcr": 0.5747
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.43,
+      "sensitivity": 0.7597,
+      "specificity": 0.5818,
+      "ppcr": 0.5613
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.44,
+      "sensitivity": 0.7518,
+      "specificity": 0.5995,
+      "ppcr": 0.5477
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.45,
+      "sensitivity": 0.7367,
+      "specificity": 0.6139,
+      "ppcr": 0.533
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.46,
+      "sensitivity": 0.7263,
+      "specificity": 0.6282,
+      "ppcr": 0.5203
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.47,
+      "sensitivity": 0.7128,
+      "specificity": 0.6368,
+      "ppcr": 0.5097
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.48,
+      "sensitivity": 0.6953,
+      "specificity": 0.6506,
+      "ppcr": 0.4943
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.49,
+      "sensitivity": 0.6842,
+      "specificity": 0.6604,
+      "ppcr": 0.484
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.5,
+      "sensitivity": 0.6698,
+      "specificity": 0.6747,
+      "ppcr": 0.4697
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.51,
+      "sensitivity": 0.6603,
+      "specificity": 0.6902,
+      "ppcr": 0.4567
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.52,
+      "sensitivity": 0.6436,
+      "specificity": 0.7045,
+      "ppcr": 0.4413
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.53,
+      "sensitivity": 0.6317,
+      "specificity": 0.7189,
+      "ppcr": 0.428
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.54,
+      "sensitivity": 0.6197,
+      "specificity": 0.7292,
+      "ppcr": 0.417
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.55,
+      "sensitivity": 0.6014,
+      "specificity": 0.7413,
+      "ppcr": 0.4023
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.56,
+      "sensitivity": 0.5887,
+      "specificity": 0.7516,
+      "ppcr": 0.391
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.57,
+      "sensitivity": 0.564,
+      "specificity": 0.7625,
+      "ppcr": 0.3743
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.58,
+      "sensitivity": 0.5521,
+      "specificity": 0.774,
+      "ppcr": 0.3627
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.59,
+      "sensitivity": 0.5386,
+      "specificity": 0.786,
+      "ppcr": 0.35
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.6,
+      "sensitivity": 0.529,
+      "specificity": 0.794,
+      "ppcr": 0.3413
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.61,
+      "sensitivity": 0.5115,
+      "specificity": 0.8049,
+      "ppcr": 0.3277
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.62,
+      "sensitivity": 0.4901,
+      "specificity": 0.8153,
+      "ppcr": 0.3127
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.63,
+      "sensitivity": 0.4749,
+      "specificity": 0.8244,
+      "ppcr": 0.301
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.64,
+      "sensitivity": 0.4535,
+      "specificity": 0.8308,
+      "ppcr": 0.2883
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.65,
+      "sensitivity": 0.4407,
+      "specificity": 0.8422,
+      "ppcr": 0.2763
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.66,
+      "sensitivity": 0.4312,
+      "specificity": 0.852,
+      "ppcr": 0.2667
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.67,
+      "sensitivity": 0.42,
+      "specificity": 0.8606,
+      "ppcr": 0.257
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.68,
+      "sensitivity": 0.4049,
+      "specificity": 0.8663,
+      "ppcr": 0.2473
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.69,
+      "sensitivity": 0.3835,
+      "specificity": 0.8749,
+      "ppcr": 0.2333
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.7,
+      "sensitivity": 0.3707,
+      "specificity": 0.8853,
+      "ppcr": 0.222
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.71,
+      "sensitivity": 0.3532,
+      "specificity": 0.8893,
+      "ppcr": 0.2123
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.72,
+      "sensitivity": 0.3357,
+      "specificity": 0.8979,
+      "ppcr": 0.2
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.73,
+      "sensitivity": 0.3206,
+      "specificity": 0.9048,
+      "ppcr": 0.1897
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.74,
+      "sensitivity": 0.3047,
+      "specificity": 0.9128,
+      "ppcr": 0.1783
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.75,
+      "sensitivity": 0.2928,
+      "specificity": 0.9203,
+      "ppcr": 0.169
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.76,
+      "sensitivity": 0.28,
+      "specificity": 0.9225,
+      "ppcr": 0.1623
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.77,
+      "sensitivity": 0.2609,
+      "specificity": 0.9283,
+      "ppcr": 0.151
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.78,
+      "sensitivity": 0.245,
+      "specificity": 0.9369,
+      "ppcr": 0.1393
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.79,
+      "sensitivity": 0.2291,
+      "specificity": 0.9403,
+      "ppcr": 0.1307
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.8,
+      "sensitivity": 0.2108,
+      "specificity": 0.9472,
+      "ppcr": 0.119
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.81,
+      "sensitivity": 0.1949,
+      "specificity": 0.9524,
+      "ppcr": 0.1093
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.82,
+      "sensitivity": 0.1814,
+      "specificity": 0.9587,
+      "ppcr": 0.1
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.83,
+      "sensitivity": 0.1702,
+      "specificity": 0.9639,
+      "ppcr": 0.0923
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.84,
+      "sensitivity": 0.1504,
+      "specificity": 0.9696,
+      "ppcr": 0.0807
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.85,
+      "sensitivity": 0.1344,
+      "specificity": 0.9742,
+      "ppcr": 0.0713
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.86,
+      "sensitivity": 0.1201,
+      "specificity": 0.9799,
+      "ppcr": 0.062
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.87,
+      "sensitivity": 0.1034,
+      "specificity": 0.9822,
+      "ppcr": 0.0537
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.88,
+      "sensitivity": 0.0859,
+      "specificity": 0.9862,
+      "ppcr": 0.044
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.89,
+      "sensitivity": 0.078,
+      "specificity": 0.9897,
+      "ppcr": 0.0387
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.9,
+      "sensitivity": 0.0628,
+      "specificity": 0.9908,
+      "ppcr": 0.0317
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.91,
+      "sensitivity": 0.0469,
+      "specificity": 0.992,
+      "ppcr": 0.0243
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.92,
+      "sensitivity": 0.0358,
+      "specificity": 0.9943,
+      "ppcr": 0.0183
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.93,
+      "sensitivity": 0.0231,
+      "specificity": 0.9966,
+      "ppcr": 0.0117
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.94,
+      "sensitivity": 0.0143,
+      "specificity": 0.9977,
+      "ppcr": 0.0073
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.95,
+      "sensitivity": 0.0103,
+      "specificity": 0.9989,
+      "ppcr": 0.005
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.96,
+      "sensitivity": 0.0072,
+      "specificity": 1.0,
+      "ppcr": 0.003
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.97,
+      "sensitivity": 0.0024,
+      "specificity": 1.0,
+      "ppcr": 0.001
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.98,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "ppcr": 0.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.99,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "ppcr": 0.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 1.0,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "ppcr": 0.0
+    }
+  ],
+  "x": "false_positive_rate",
+  "y": "sensitivity",
+  "xAxis": {
+    "label": "1 - Specificity",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Sensitivity",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "references": [
+    {
+      "type": "identity",
+      "scope": "global",
+      "label": "Random Guess"
+    }
+  ],
+  "operatingPoint": {
+    "dimension": "probability_threshold"
+  }
+}

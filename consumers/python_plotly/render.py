@@ -120,16 +120,27 @@ def render_calibration(spec: dict[str, Any]) -> go.Figure:
             if not rows:
                 continue
             display = item["display"]
+            counts = [row.get("count", row.get("nPositive", 0) + row.get("nNegative", 0)) for row in rows]
+            midpoints = [
+                row.get("midpoint", (row["binLower"] + row["binUpper"]) / 2.0)
+                if "binLower" in row else row.get("midpoint", 0.5)
+                for row in rows
+            ]
+            bin_widths = [
+                row.get("binWidth", row["binUpper"] - row["binLower"])
+                if "binLower" in row else row.get("binWidth", 0.01)
+                for row in rows
+            ]
             fig.add_trace(go.Bar(
-                x=[row["midpoint"] for row in rows], y=[row["count"] for row in rows],
-                width=[row["binWidth"] for row in rows], marker={"color": colors[display["group"]]},
+                x=midpoints, y=counts,
+                width=bin_widths, marker={"color": colors[display["group"]]},
                 opacity=1 / max(len(groups), 1), name=display["label"], legendgroup=display["group"],
                 showlegend=False,
             ), row=2, col=1)
     fig.update_layout(width=600, height=600, barmode="overlay", plot_bgcolor="white", paper_bgcolor="white")
-    fig.update_xaxes(range=spec["xAxis"]["domain"], showgrid=False)
-    fig.update_yaxes(title=spec["yAxis"]["label"], range=spec["yAxis"]["domain"], showgrid=False, row=1, col=1)
-    fig.update_xaxes(title=spec["xAxis"]["label"], row=2 if has_distribution else 1, col=1)
+    fig.update_xaxes(range=spec["xAxis"]["domain"] if "xAxis" in spec else [0, 1], showgrid=False)
+    fig.update_yaxes(title=spec["yAxis"]["label"] if "yAxis" in spec else "Observed", range=spec["yAxis"]["domain"] if "yAxis" in spec else [0, 1], showgrid=False, row=1, col=1)
+    fig.update_xaxes(title=spec["xAxis"]["label"] if "xAxis" in spec else "Predicted", row=2 if has_distribution else 1, col=1)
     return fig
 
 
@@ -218,22 +229,44 @@ def assert_shared_display_group_series_identity(fixtures: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixtures", type=Path, default=Path("fixtures/v2"))
+    parser.add_argument("--demo-fixtures", type=Path, default=Path("fixtures/v2/demo"))
     parser.add_argument("--output", type=Path, default=Path("site/python-plotly"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     assert_shared_display_group_series_identity(args.fixtures)
-    fixtures = {
-        "roc": "roc.json",
-        "calibration": "calibration.json",
-        "precision-recall": "precision-recall-shared-population.json",
-        "gains": "gains-shared-population.json",
+
+    demo_files = {
+        "roc": args.demo_fixtures / "models-a-b-test-roc.json",
+        "calibration": args.demo_fixtures / "model-a-test-calibration.json",
+        "precision-recall": args.demo_fixtures / "models-a-b-test-precision-recall.json",
+        "gains": args.demo_fixtures / "models-a-b-test-gains.json",
     }
-    for chart, filename in fixtures.items():
-        spec = load_spec(args.fixtures / filename)
-        if chart == "calibration":
-            spec = scale_calibration_for_demo(spec)
-        render(spec).write_html(args.output / f"{chart}.html", include_plotlyjs=True, full_html=True,
-                                config={"displayModeBar": False})
+
+    for chart, path in demo_files.items():
+        if path.exists():
+            spec = load_spec(path)
+            render(spec).write_html(
+                args.output / f"{chart}.html",
+                include_plotlyjs=True,
+                full_html=True,
+                config={"displayModeBar": False},
+            )
+        else:
+            fallback_filename = {
+                "roc": "roc.json",
+                "calibration": "calibration.json",
+                "precision-recall": "precision-recall-shared-population.json",
+                "gains": "gains-shared-population.json",
+            }[chart]
+            spec = load_spec(args.fixtures / fallback_filename)
+            if chart == "calibration":
+                spec = scale_calibration_for_demo(spec)
+            render(spec).write_html(
+                args.output / f"{chart}.html",
+                include_plotlyjs=True,
+                full_html=True,
+                config={"displayModeBar": False},
+            )
 
 
 if __name__ == "__main__":
