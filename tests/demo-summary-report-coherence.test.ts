@@ -1,11 +1,14 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
-// Load report specs and demo specs
-import report1 from "../fixtures/v2/demo/report-1-one-model-one-pop.json";
-import report2 from "../fixtures/v2/demo/report-2-multi-models-one-pop.json";
-import report3 from "../fixtures/v2/demo/report-3-one-model-multi-pops.json";
+// Load composed demo report specs
+import { demoReport1, demoReport2, demoReport3 } from "../src/demo-reports.js";
 
+// Load standalone demo specs
 import roc1 from "../fixtures/v2/demo/model-a-test-roc.json";
 import pr1 from "../fixtures/v2/demo/model-a-test-precision-recall.json";
 import gains1 from "../fixtures/v2/demo/model-a-test-gains.json";
@@ -39,10 +42,23 @@ import { assertPredictionDistributionReferentialIntegrity } from "../src/spec/v2
 import { assertSummaryMetricsReferentialIntegrity } from "../src/spec/v2/validate-summary-metrics.js";
 import { assertPerformanceTableReferentialIntegrity } from "../src/spec/v2/validate-performance-table.js";
 
+import { Value } from "@sinclair/typebox/value";
+import { ReportSpecV1_1Schema } from "../src/spec/report.js";
+import { RocV2SpecSchema } from "../src/spec/v2/roc.js";
+import { CalibrationV2SpecSchema } from "../src/spec/v2/calibration.js";
+import { PrecisionRecallV2SpecSchema } from "../src/spec/v2/precision_recall.js";
+import { GainsV2SpecSchema } from "../src/spec/v2/gains.js";
+import { LiftV2SpecSchema } from "../src/spec/v2/lift.js";
+import { PredictionDistributionSpecSchema } from "../src/spec/v2/prediction-distribution.js";
+import { SummaryMetricsSpecSchema } from "../src/spec/v2/summary-metrics.js";
+import { PerformanceTableSpecSchema } from "../src/spec/v2/performance-table.js";
+
+import { renderReport } from "../src/render/report.js";
+
 describe("Summary Report Demo Coherence and Integrity Tests", () => {
   describe("Evaluation Design", () => {
     it("Report 1 contains exactly Model A — Test", () => {
-      expect(report1.title).toBe("Summary Report — One Model, One Population");
+      expect(demoReport1.title).toBe("Summary Report — One Model, One Population");
       const evs = sm1.evaluations;
       expect(evs).toHaveLength(1);
       expect(evs[0].id).toBe("Model A - Test");
@@ -51,7 +67,7 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
     });
 
     it("Report 2 contains exactly Model A — Test and Model B — Test", () => {
-      expect(report2.title).toBe("Summary Report — Multiple Models, One Population");
+      expect(demoReport2.title).toBe("Summary Report — Multiple Models, One Population");
       const evs = sm2.evaluations;
       expect(evs).toHaveLength(2);
       expect(evs[0].id).toBe("Model A - Test");
@@ -64,7 +80,7 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
     });
 
     it("Report 3 contains exactly Model A across Train, Test, and Validation", () => {
-      expect(report3.title).toBe("Summary Report — One Model, Multiple Populations");
+      expect(demoReport3.title).toBe("Summary Report — One Model, Multiple Populations");
       const evs = sm3.evaluations;
       expect(evs).toHaveLength(3);
 
@@ -84,7 +100,6 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
 
   describe("Same-Population Invariants (Model A vs Model B on Test)", () => {
     it("Model A — Test and Model B — Test share identical N, event totals, non-event totals, and prevalence", () => {
-      // Check prediction distribution total mass
       const evA_bins = pd2.bins.filter((b: any) => b.evaluationId === "Model A - Test");
       const evB_bins = pd2.bins.filter((b: any) => b.evaluationId === "Model B - Test");
 
@@ -99,7 +114,6 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
       expect(posA + negA).toBe(3000);
       expect(posB + negB).toBe(3000);
 
-      // Check summary metrics prevalence
       const prevMetric = sm2.metrics.find((m: any) => m.metric === "prevalence");
       expect(prevMetric).toBeDefined();
       expect(prevMetric?.estimate).toBe(round(posA / 3000, 4));
@@ -130,25 +144,20 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
     it("ROC, PR, Gains, Lift, Performance Table, and Prediction Distribution agree at corresponding cutoff operating points", () => {
       const cutoffTarget = 0.50;
 
-      // Model A — Test ROC
       const rocPoint = roc1.data.find((d: any) => d.cutoff === cutoffTarget);
       expect(rocPoint).toBeDefined();
 
-      // Model A — Test PR
       const prPoint = pr1.data.find((d: any) => d.cutoff === cutoffTarget);
       expect(prPoint).toBeDefined();
       expect(prPoint?.sensitivity).toBe(rocPoint?.sensitivity);
 
-      // Model A — Test Gains
       const gainsPoint = gains1.data.find((d: any) => d.cutoff === cutoffTarget);
       expect(gainsPoint).toBeDefined();
       expect(gainsPoint?.sensitivity).toBe(rocPoint?.sensitivity);
 
-      // Model A — Test Lift
       const liftPoint = lift1.data.find((d: any) => d.cutoff === cutoffTarget);
       expect(liftPoint).toBeDefined();
 
-      // Model A — Test Performance Table
       const perfRow = perf1.rows.find((r: any) => r.operatingPoint.cutoff === cutoffTarget);
       expect(perfRow).toBeDefined();
       const sensVal = perfRow?.values.find((v: any) => v.metricId === "sensitivity")?.estimate;
@@ -161,7 +170,6 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
       expect(ppvVal).toBe(prPoint?.ppv);
       expect(liftVal).toBe(liftPoint?.lift);
 
-      // Model A — Test Prediction Distribution OP
       const pdOp = pd1.operatingPoints.find((o: any) => o.type === "probability_threshold" && o.cutoff === cutoffTarget);
       expect(pdOp).toBeDefined();
       const pdSens = pdOp?.performance.find((m: any) => m.metricId === "sensitivity")?.estimate;
@@ -172,11 +180,15 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
   });
 
   describe("Calibration Identities", () => {
-    it("Calibration discrete groups and distribution histogram sum exactly to population N and preserve event counts", () => {
-      const specs = [calib1, calib2, calib3];
+    it("Calibration discrete groups and distribution histogram sum exactly to population N with finite numbers", () => {
+      const testCases = [
+        { spec: calib1, expectedN: [3000], expectedEvents: [1257] },
+        { spec: calib2, expectedN: [3000, 3000], expectedEvents: [1257, 1257] },
+        { spec: calib3, expectedN: [5000, 3000, 2000], expectedEvents: [2076, 1257, 924] },
+      ];
 
-      specs.forEach((spec: any) => {
-        spec.evaluations.forEach((ev: any) => {
+      testCases.forEach(({ spec, expectedN, expectedEvents }) => {
+        spec.evaluations.forEach((ev: any, idx: number) => {
           const seriesId = `series-${ev.id}`;
           const discreteRows = spec.data.filter((d: any) => d.seriesId === seriesId);
           expect(discreteRows.length).toBeGreaterThanOrEqual(10);
@@ -184,13 +196,23 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
           const groupSumN = discreteRows.reduce((acc: number, d: any) => acc + d.total, 0);
           const groupSumEvents = discreteRows.reduce((acc: number, d: any) => acc + d.events, 0);
 
-          const distBins = spec.distribution.filter((d: any) => d.seriesId === seriesId);
-          const distSumN = distBins.reduce((acc: number, d: any) => acc + (d.count ?? (d.nPositive + d.nNegative)), 0);
+          expect(Number.isFinite(groupSumN)).toBe(true);
+          expect(Number.isFinite(groupSumEvents)).toBe(true);
+          expect(groupSumN).toBe(expectedN[idx]);
+          expect(groupSumEvents).toBe(expectedEvents[idx]);
 
+          const distBins = spec.distribution.filter((d: any) => d.seriesId === seriesId);
+          const distSumN = distBins.reduce((acc: number, d: any) => acc + d.count, 0);
+
+          expect(Number.isFinite(distSumN)).toBe(true);
+          expect(distSumN).toBe(expectedN[idx]);
           expect(groupSumN).toBe(distSumN);
 
-          // Verify observed prop = events / total
           discreteRows.forEach((d: any) => {
+            expect(Number.isFinite(d.total)).toBe(true);
+            expect(Number.isFinite(d.events)).toBe(true);
+            expect(Number.isFinite(d.predicted)).toBe(true);
+            expect(Number.isFinite(d.observed)).toBe(true);
             expect(d.events).toBeLessThanOrEqual(d.total);
             expect(d.observed).toBe(round(d.events / d.total, 4));
           });
@@ -199,27 +221,55 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
     });
   });
 
-  describe("Referential Integrity and Report Isolation", () => {
-    it("all 3 report specs pass strict referential integrity validation", () => {
-      assertReportReferentialIntegrity(report1 as any);
-      assertReportReferentialIntegrity(report2 as any);
-      assertReportReferentialIntegrity(report3 as any);
+  describe("Referential Integrity, Schema Checking, and Report Component ID Uniqueness", () => {
+    it("all 3 report specs pass strict Value.Check(ReportSpecV1_1Schema) and referential integrity", () => {
+      [demoReport1, demoReport2, demoReport3].forEach((report) => {
+        expect(Value.Check(ReportSpecV1_1Schema, report)).toBe(true);
+        assertReportReferentialIntegrity(report);
+      });
     });
 
-    it("all embedded canonical component specs pass V2 referential integrity validation", () => {
-      const allSpecs = [
-        roc1, pr1, gains1, lift1, calib1,
-        roc2, pr2, gains2, lift2, calib2,
-        roc3, pr3, gains3, lift3, calib3
+    it("all standalone demo component specs pass explicit Value.Check and V2 referential integrity", () => {
+      const testPairs: [any, any][] = [
+        [roc1, RocV2SpecSchema],
+        [roc2, RocV2SpecSchema],
+        [roc3, RocV2SpecSchema],
+        [calib1, CalibrationV2SpecSchema],
+        [calib2, CalibrationV2SpecSchema],
+        [calib3, CalibrationV2SpecSchema],
+        [pr1, PrecisionRecallV2SpecSchema],
+        [pr2, PrecisionRecallV2SpecSchema],
+        [pr3, PrecisionRecallV2SpecSchema],
+        [gains1, GainsV2SpecSchema],
+        [gains2, GainsV2SpecSchema],
+        [gains3, GainsV2SpecSchema],
+        [lift1, LiftV2SpecSchema],
+        [lift2, LiftV2SpecSchema],
+        [lift3, LiftV2SpecSchema],
       ];
-      allSpecs.forEach((spec: any) => assertV2ReferentialIntegrity(spec));
 
-      [pd1, pd2, pd3].forEach((pd: any) => assertPredictionDistributionReferentialIntegrity(pd as any));
-      [sm1, sm2, sm3].forEach((sm: any) => assertSummaryMetricsReferentialIntegrity(sm as any));
-      [perf1, perf2, perf3].forEach((perf: any) => assertPerformanceTableReferentialIntegrity(perf as any));
+      testPairs.forEach(([spec, schema]) => {
+        expect(Value.Check(schema, spec)).toBe(true);
+        assertV2ReferentialIntegrity(spec);
+      });
+
+      [pd1, pd2, pd3].forEach((pd: any) => {
+        expect(Value.Check(PredictionDistributionSpecSchema, pd)).toBe(true);
+        assertPredictionDistributionReferentialIntegrity(pd);
+      });
+
+      [sm1, sm2, sm3].forEach((sm: any) => {
+        expect(Value.Check(SummaryMetricsSpecSchema, sm)).toBe(true);
+        assertSummaryMetricsReferentialIntegrity(sm);
+      });
+
+      [perf1, perf2, perf3].forEach((perf: any) => {
+        expect(Value.Check(PerformanceTableSpecSchema, perf)).toBe(true);
+        assertPerformanceTableReferentialIntegrity(perf);
+      });
     });
 
-    it("component IDs are unique within every report and across the rendered demo", () => {
+    it("component IDs are globally unique across all three demo reports", () => {
       const getCompIds = (report: any) => {
         const ids: string[] = [];
         report.sections.forEach((sec: any) => {
@@ -234,18 +284,69 @@ describe("Summary Report Demo Coherence and Integrity Tests", () => {
         return ids;
       };
 
-      const ids1 = getCompIds(report1);
-      const ids2 = getCompIds(report2);
-      const ids3 = getCompIds(report3);
+      const ids1 = getCompIds(demoReport1);
+      const ids2 = getCompIds(demoReport2);
+      const ids3 = getCompIds(demoReport3);
 
       expect(new Set(ids1).size).toBe(ids1.length);
       expect(new Set(ids2).size).toBe(ids2.length);
       expect(new Set(ids3).size).toBe(ids3.length);
+
+      const allIds = [...ids1, ...ids2, ...ids3];
+      expect(new Set(allIds).size).toBe(allIds.length);
     });
 
-    it("generator script execution is reproducible and byte-stable", () => {
-      const output = execSync("python3 scripts/generate-realistic-fixtures.py").toString();
-      expect(output).toContain("Successfully generated all demo fixtures");
+    it("rendered report DOM elements have globally unique element IDs", () => {
+      const container = document.createElement("div");
+      container.append(renderReport(demoReport1));
+      container.append(renderReport(demoReport2));
+      container.append(renderReport(demoReport3));
+
+      const elementsWithId = container.querySelectorAll("[id]");
+      const domIds = Array.from(elementsWithId).map((el) => el.getAttribute("id")!);
+
+      expect(new Set(domIds).size).toBe(domIds.length);
+    });
+  });
+
+  describe("Generator Reproducibility and Protected Fixture Invariants", () => {
+    it("generator output in a temporary directory matches committed demo fixtures byte-for-byte", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rtichoke-fixture-test-"));
+      try {
+        execSync(`python3 scripts/generate-realistic-fixtures.py "${tmpDir}"`);
+
+        const committedDir = path.resolve(__dirname, "../fixtures/v2/demo");
+        const generatedFiles = fs.readdirSync(tmpDir).sort();
+        const committedFiles = fs.readdirSync(committedDir).sort();
+
+        expect(generatedFiles).toEqual(committedFiles);
+
+        for (const filename of generatedFiles) {
+          const genPath = path.join(tmpDir, filename);
+          const comPath = path.join(committedDir, filename);
+
+          const genBuf = fs.readFileSync(genPath);
+          const comBuf = fs.readFileSync(comPath);
+
+          expect(genBuf.equals(comBuf)).toBe(true);
+        }
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("protected prediction distribution canonical fixtures remain byte-identical to origin/main", () => {
+      const protectedFiles = [
+        "fixtures/v2/prediction-distribution-single.json",
+        "fixtures/v2/prediction-distribution-multi.json",
+        "fixtures/v2/prediction-distribution-visual.json",
+      ];
+
+      for (const relPath of protectedFiles) {
+        const currentContent = fs.readFileSync(relPath);
+        const originContent = execSync(`git show origin/main:${relPath}`);
+        expect(currentContent.equals(originContent)).toBe(true);
+      }
     });
   });
 });

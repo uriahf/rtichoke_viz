@@ -1696,15 +1696,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9976
+          "estimate": 0.997613
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0075
+          "estimate": 0.007458
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4202
+          "estimate": 0.420241
         },
         {
           "metricId": "npv",
@@ -1712,7 +1712,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.003
+          "estimate": 1.002962
         }
       ]
     },
@@ -1741,23 +1741,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9976
+          "estimate": 0.997613
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0086
+          "estimate": 0.008606
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4205
+          "estimate": 0.420523
         },
         {
           "metricId": "npv",
-          "estimate": 0.8333
+          "estimate": 0.833333
         },
         {
           "metricId": "lift",
-          "estimate": 1.0036
+          "estimate": 1.003635
         }
       ]
     },
@@ -1786,15 +1786,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9976
+          "estimate": 0.997613
         },
         {
           "metricId": "specificity",
-          "estimate": 0.012
+          "estimate": 0.012048
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4214
+          "estimate": 0.421371
         },
         {
           "metricId": "npv",
@@ -1802,7 +1802,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.0057
+          "estimate": 1.005659
         }
       ]
     },
@@ -1831,23 +1831,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9968
+          "estimate": 0.996818
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0143
+          "estimate": 0.014343
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4217
+          "estimate": 0.421744
         },
         {
           "metricId": "npv",
-          "estimate": 0.8621
+          "estimate": 0.862069
         },
         {
           "metricId": "lift",
-          "estimate": 1.0065
+          "estimate": 1.006548
         }
       ]
     },
@@ -1876,23 +1876,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0195
+          "estimate": 0.019507
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4228
+          "estimate": 0.42283
         },
         {
           "metricId": "npv",
-          "estimate": 0.8718
+          "estimate": 0.871795
         },
         {
           "metricId": "lift",
-          "estimate": 1.0091
+          "estimate": 1.009141
         }
       ]
     },
@@ -1921,23 +1921,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0264
+          "estimate": 0.026391
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4246
+          "estimate": 0.424551
         },
         {
           "metricId": "npv",
-          "estimate": 0.902
+          "estimate": 0.901961
         },
         {
           "metricId": "lift",
-          "estimate": 1.0132
+          "estimate": 1.013247
         }
       ]
     },
@@ -1966,23 +1966,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0356
+          "estimate": 0.035571
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4269
+          "estimate": 0.426867
         },
         {
           "metricId": "npv",
-          "estimate": 0.9254
+          "estimate": 0.925373
         },
         {
           "metricId": "lift",
-          "estimate": 1.0188
+          "estimate": 1.018775
         }
       ]
     },
@@ -2011,23 +2011,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0465
+          "estimate": 0.046472
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4296
+          "estimate": 0.42965
         },
         {
           "metricId": "npv",
-          "estimate": 0.9419
+          "estimate": 0.94186
         },
         {
           "metricId": "lift",
-          "estimate": 1.0254
+          "estimate": 1.025418
         }
       ]
     },
@@ -2056,23 +2056,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0516
+          "estimate": 0.051635
         },
         {
           "metricId": "ppv",
-          "estimate": 0.431
+          "estimate": 0.430981
         },
         {
           "metricId": "npv",
-          "estimate": 0.9474
+          "estimate": 0.947368
         },
         {
           "metricId": "lift",
-          "estimate": 1.0286
+          "estimate": 1.028594
         }
       ]
     },
@@ -2101,23 +2101,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0585
+          "estimate": 0.05852
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4326
+          "estimate": 0.432573
         },
         {
           "metricId": "npv",
-          "estimate": 0.9444
+          "estimate": 0.944444
         },
         {
           "metricId": "lift",
-          "estimate": 1.0324
+          "estimate": 1.032393
         }
       ]
     },
@@ -2146,15 +2146,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0683
+          "estimate": 0.068273
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4351
+          "estimate": 0.43513
         },
         {
           "metricId": "npv",
@@ -2162,7 +2162,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.0385
+          "estimate": 1.038497
         }
       ]
     },
@@ -2191,23 +2191,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0775
+          "estimate": 0.077453
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4376
+          "estimate": 0.437566
         },
         {
           "metricId": "npv",
-          "estimate": 0.9574
+          "estimate": 0.957447
         },
         {
           "metricId": "lift",
-          "estimate": 1.0443
+          "estimate": 1.044309
         }
       ]
     },
@@ -2236,23 +2236,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0878
+          "estimate": 0.08778
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4403
+          "estimate": 0.440338
         },
         {
           "metricId": "npv",
-          "estimate": 0.9623
+          "estimate": 0.962264
         },
         {
           "metricId": "lift",
-          "estimate": 1.0509
+          "estimate": 1.050926
         }
       ]
     },
@@ -2281,23 +2281,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9944
+          "estimate": 0.994431
         },
         {
           "metricId": "specificity",
-          "estimate": 0.105
+          "estimate": 0.104991
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4448
+          "estimate": 0.44484
         },
         {
           "metricId": "npv",
-          "estimate": 0.9632
+          "estimate": 0.963158
         },
         {
           "metricId": "lift",
-          "estimate": 1.0617
+          "estimate": 1.06167
         }
       ]
     },
@@ -2326,23 +2326,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.992
+          "estimate": 0.992045
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1222
+          "estimate": 0.122203
         },
         {
           "metricId": "ppv",
-          "estimate": 0.449
+          "estimate": 0.449046
         },
         {
           "metricId": "npv",
-          "estimate": 0.9552
+          "estimate": 0.955157
         },
         {
           "metricId": "lift",
-          "estimate": 1.0717
+          "estimate": 1.071708
         }
       ]
     },
@@ -2371,23 +2371,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9905
+          "estimate": 0.990453
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1377
+          "estimate": 0.137694
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4531
+          "estimate": 0.453057
         },
         {
           "metricId": "npv",
-          "estimate": 0.9524
+          "estimate": 0.952381
         },
         {
           "metricId": "lift",
-          "estimate": 1.0813
+          "estimate": 1.081281
         }
       ]
     },
@@ -2416,23 +2416,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9817
+          "estimate": 0.981702
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1492
+          "estimate": 0.149168
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4542
+          "estimate": 0.454177
         },
         {
           "metricId": "npv",
-          "estimate": 0.9187
+          "estimate": 0.918728
         },
         {
           "metricId": "lift",
-          "estimate": 1.084
+          "estimate": 1.083956
         }
       ]
     },
@@ -2461,23 +2461,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9785
+          "estimate": 0.97852
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1635
+          "estimate": 0.163511
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4576
+          "estimate": 0.457589
         },
         {
           "metricId": "npv",
-          "estimate": 0.9135
+          "estimate": 0.913462
         },
         {
           "metricId": "lift",
-          "estimate": 1.0921
+          "estimate": 1.092099
         }
       ]
     },
@@ -2506,23 +2506,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9745
+          "estimate": 0.974543
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1761
+          "estimate": 0.176133
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4604
+          "estimate": 0.460353
         },
         {
           "metricId": "npv",
-          "estimate": 0.9056
+          "estimate": 0.905605
         },
         {
           "metricId": "lift",
-          "estimate": 1.0987
+          "estimate": 1.098695
         }
       ]
     },
@@ -2551,23 +2551,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.973
+          "estimate": 0.972951
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1928
+          "estimate": 0.192771
         },
         {
           "metricId": "ppv",
-          "estimate": 0.465
+          "estimate": 0.465019
         },
         {
           "metricId": "npv",
-          "estimate": 0.9081
+          "estimate": 0.908108
         },
         {
           "metricId": "lift",
-          "estimate": 1.1098
+          "estimate": 1.109831
         }
       ]
     },
@@ -2596,23 +2596,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9706
+          "estimate": 0.970565
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2077
+          "estimate": 0.207688
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4691
+          "estimate": 0.46905
         },
         {
           "metricId": "npv",
-          "estimate": 0.9073
+          "estimate": 0.907268
         },
         {
           "metricId": "lift",
-          "estimate": 1.1195
+          "estimate": 1.119452
         }
       ]
     },
@@ -2641,23 +2641,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.961
+          "estimate": 0.961018
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2266
+          "estimate": 0.226621
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4726
+          "estimate": 0.472613
         },
         {
           "metricId": "npv",
-          "estimate": 0.8896
+          "estimate": 0.88964
         },
         {
           "metricId": "lift",
-          "estimate": 1.128
+          "estimate": 1.127956
         }
       ]
     },
@@ -2686,23 +2686,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9578
+          "estimate": 0.957836
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2456
+          "estimate": 0.245554
         },
         {
           "metricId": "ppv",
-          "estimate": 0.478
+          "estimate": 0.477967
         },
         {
           "metricId": "npv",
-          "estimate": 0.8898
+          "estimate": 0.889813
         },
         {
           "metricId": "lift",
-          "estimate": 1.1407
+          "estimate": 1.140734
         }
       ]
     },
@@ -2731,23 +2731,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9515
+          "estimate": 0.951472
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2656
+          "estimate": 0.265634
         },
         {
           "metricId": "ppv",
-          "estimate": 0.483
+          "estimate": 0.483037
         },
         {
           "metricId": "npv",
-          "estimate": 0.8836
+          "estimate": 0.883588
         },
         {
           "metricId": "lift",
-          "estimate": 1.1528
+          "estimate": 1.152833
         }
       ]
     },
@@ -2776,23 +2776,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9491
+          "estimate": 0.949085
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2788
+          "estimate": 0.27883
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4869
+          "estimate": 0.486939
         },
         {
           "metricId": "npv",
-          "estimate": 0.8836
+          "estimate": 0.883636
         },
         {
           "metricId": "lift",
-          "estimate": 1.1621
+          "estimate": 1.162145
         }
       ]
     },
@@ -2821,23 +2821,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9443
+          "estimate": 0.944312
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2903
+          "estimate": 0.290304
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4897
+          "estimate": 0.489686
         },
         {
           "metricId": "npv",
-          "estimate": 0.8785
+          "estimate": 0.878472
         },
         {
           "metricId": "lift",
-          "estimate": 1.1687
+          "estimate": 1.168703
         }
       ]
     },
@@ -2866,23 +2866,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9403
+          "estimate": 0.940334
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3173
+          "estimate": 0.317269
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4983
+          "estimate": 0.498314
         },
         {
           "metricId": "npv",
-          "estimate": 0.8806
+          "estimate": 0.880573
         },
         {
           "metricId": "lift",
-          "estimate": 1.1893
+          "estimate": 1.189293
         }
       ]
     },
@@ -2911,23 +2911,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9348
+          "estimate": 0.934765
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3339
+          "estimate": 0.333907
         },
         {
           "metricId": "ppv",
-          "estimate": 0.503
+          "estimate": 0.502997
         },
         {
           "metricId": "npv",
-          "estimate": 0.8765
+          "estimate": 0.876506
         },
         {
           "metricId": "lift",
-          "estimate": 1.2005
+          "estimate": 1.200469
         }
       ]
     },
@@ -2956,23 +2956,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9308
+          "estimate": 0.930788
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3517
+          "estimate": 0.351692
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5087
+          "estimate": 0.508696
         },
         {
           "metricId": "npv",
-          "estimate": 0.8757
+          "estimate": 0.875714
         },
         {
           "metricId": "lift",
-          "estimate": 1.2141
+          "estimate": 1.214071
         }
       ]
     },
@@ -3001,23 +3001,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.926
+          "estimate": 0.926014
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3695
+          "estimate": 0.369478
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5144
+          "estimate": 0.514361
         },
         {
           "metricId": "npv",
-          "estimate": 0.8738
+          "estimate": 0.873813
         },
         {
           "metricId": "lift",
-          "estimate": 1.2276
+          "estimate": 1.227593
         }
       ]
     },
@@ -3046,23 +3046,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.922
+          "estimate": 0.922037
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3873
+          "estimate": 0.387263
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5204
+          "estimate": 0.520431
         },
         {
           "metricId": "npv",
-          "estimate": 0.8732
+          "estimate": 0.873221
         },
         {
           "metricId": "lift",
-          "estimate": 1.2421
+          "estimate": 1.242079
         }
       ]
     },
@@ -3091,23 +3091,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9149
+          "estimate": 0.914877
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4033
+          "estimate": 0.403328
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5251
+          "estimate": 0.525114
         },
         {
           "metricId": "npv",
-          "estimate": 0.8679
+          "estimate": 0.867901
         },
         {
           "metricId": "lift",
-          "estimate": 1.2533
+          "estimate": 1.253256
         }
       ]
     },
@@ -3136,23 +3136,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9093
+          "estimate": 0.909308
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4217
+          "estimate": 0.421687
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5314
+          "estimate": 0.531381
         },
         {
           "metricId": "npv",
-          "estimate": 0.8657
+          "estimate": 0.865724
         },
         {
           "metricId": "lift",
-          "estimate": 1.2682
+          "estimate": 1.268212
         }
       ]
     },
@@ -3181,23 +3181,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9061
+          "estimate": 0.906126
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4383
+          "estimate": 0.438325
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5378
+          "estimate": 0.537771
         },
         {
           "metricId": "npv",
-          "estimate": 0.8662
+          "estimate": 0.866213
         },
         {
           "metricId": "lift",
-          "estimate": 1.2835
+          "estimate": 1.283464
         }
       ]
     },
@@ -3226,23 +3226,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8982
+          "estimate": 0.89817
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4573
+          "estimate": 0.457258
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5441
+          "estimate": 0.544096
         },
         {
           "metricId": "npv",
-          "estimate": 0.8616
+          "estimate": 0.861622
         },
         {
           "metricId": "lift",
-          "estimate": 1.2986
+          "estimate": 1.298559
         }
       ]
     },
@@ -3271,23 +3271,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.887
+          "estimate": 0.887033
         },
         {
           "metricId": "specificity",
-          "estimate": 0.475
+          "estimate": 0.475043
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5493
+          "estimate": 0.549261
         },
         {
           "metricId": "npv",
-          "estimate": 0.8536
+          "estimate": 0.853608
         },
         {
           "metricId": "lift",
-          "estimate": 1.3109
+          "estimate": 1.310886
         }
       ]
     },
@@ -3316,23 +3316,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8815
+          "estimate": 0.881464
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4923
+          "estimate": 0.492255
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5559
+          "estimate": 0.555946
         },
         {
           "metricId": "npv",
-          "estimate": 0.852
+          "estimate": 0.852036
         },
         {
           "metricId": "lift",
-          "estimate": 1.3268
+          "estimate": 1.32684
         }
       ]
     },
@@ -3361,23 +3361,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8703
+          "estimate": 0.870326
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5077
+          "estimate": 0.507745
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5605
+          "estimate": 0.560451
         },
         {
           "metricId": "npv",
-          "estimate": 0.8445
+          "estimate": 0.844466
         },
         {
           "metricId": "lift",
-          "estimate": 1.3376
+          "estimate": 1.337591
         }
       ]
     },
@@ -3406,23 +3406,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8624
+          "estimate": 0.862371
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5221
+          "estimate": 0.522088
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5655
+          "estimate": 0.565467
         },
         {
           "metricId": "npv",
-          "estimate": 0.8403
+          "estimate": 0.840259
         },
         {
           "metricId": "lift",
-          "estimate": 1.3496
+          "estimate": 1.349563
         }
       ]
     },
@@ -3451,7 +3451,7 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8528
+          "estimate": 0.852824
         },
         {
           "metricId": "specificity",
@@ -3459,15 +3459,15 @@
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5717
+          "estimate": 0.571733
         },
         {
           "metricId": "npv",
-          "estimate": 0.8356
+          "estimate": 0.835556
         },
         {
           "metricId": "lift",
-          "estimate": 1.3645
+          "estimate": 1.364519
         }
       ]
     },
@@ -3496,23 +3496,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8369
+          "estimate": 0.836913
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5571
+          "estimate": 0.557085
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5768
+          "estimate": 0.576754
         },
         {
           "metricId": "npv",
-          "estimate": 0.8257
+          "estimate": 0.82568
         },
         {
           "metricId": "lift",
-          "estimate": 1.3765
+          "estimate": 1.376502
         }
       ]
     },
@@ -3541,23 +3541,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8274
+          "estimate": 0.827367
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5726
+          "estimate": 0.572576
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5826
+          "estimate": 0.582633
         },
         {
           "metricId": "npv",
-          "estimate": 0.8214
+          "estimate": 0.821399
         },
         {
           "metricId": "lift",
-          "estimate": 1.3905
+          "estimate": 1.390532
         }
       ]
     },
@@ -3586,23 +3586,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8123
+          "estimate": 0.812251
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5915
+          "estimate": 0.591509
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5892
+          "estimate": 0.589152
         },
         {
           "metricId": "npv",
-          "estimate": 0.8137
+          "estimate": 0.813733
         },
         {
           "metricId": "lift",
-          "estimate": 1.4061
+          "estimate": 1.40609
         }
       ]
     },
@@ -3631,23 +3631,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8027
+          "estimate": 0.802705
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6087
+          "estimate": 0.608721
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5967
+          "estimate": 0.596688
         },
         {
           "metricId": "npv",
-          "estimate": 0.8105
+          "estimate": 0.810542
         },
         {
           "metricId": "lift",
-          "estimate": 1.4241
+          "estimate": 1.424077
         }
       ]
     },
@@ -3676,23 +3676,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.79
+          "estimate": 0.789976
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6231
+          "estimate": 0.623064
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6018
+          "estimate": 0.601818
         },
         {
           "metricId": "npv",
-          "estimate": 0.8044
+          "estimate": 0.804444
         },
         {
           "metricId": "lift",
-          "estimate": 1.4363
+          "estimate": 1.43632
         }
       ]
     },
@@ -3721,23 +3721,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7749
+          "estimate": 0.774861
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6397
+          "estimate": 0.639702
         },
         {
           "metricId": "ppv",
-          "estimate": 0.608
+          "estimate": 0.60799
         },
         {
           "metricId": "npv",
-          "estimate": 0.7976
+          "estimate": 0.797568
         },
         {
           "metricId": "lift",
-          "estimate": 1.4511
+          "estimate": 1.45105
         }
       ]
     },
@@ -3766,23 +3766,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7597
+          "estimate": 0.759745
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6512
+          "estimate": 0.651176
         },
         {
           "metricId": "ppv",
-          "estimate": 0.611
+          "estimate": 0.611004
         },
         {
           "metricId": "npv",
-          "estimate": 0.7898
+          "estimate": 0.78984
         },
         {
           "metricId": "lift",
-          "estimate": 1.4582
+          "estimate": 1.458245
         }
       ]
     },
@@ -3811,23 +3811,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7414
+          "estimate": 0.741448
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6649
+          "estimate": 0.664945
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6148
+          "estimate": 0.614776
         },
         {
           "metricId": "npv",
-          "estimate": 0.781
+          "estimate": 0.780997
         },
         {
           "metricId": "lift",
-          "estimate": 1.4672
+          "estimate": 1.467245
         }
       ]
     },
@@ -3856,23 +3856,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7343
+          "estimate": 0.734288
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6776
+          "estimate": 0.677567
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6215
+          "estimate": 0.621549
         },
         {
           "metricId": "npv",
-          "estimate": 0.7795
+          "estimate": 0.779538
         },
         {
           "metricId": "lift",
-          "estimate": 1.4834
+          "estimate": 1.48341
         }
       ]
     },
@@ -3901,23 +3901,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7176
+          "estimate": 0.717582
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6913
+          "estimate": 0.691337
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6264
+          "estimate": 0.626389
         },
         {
           "metricId": "npv",
-          "estimate": 0.7724
+          "estimate": 0.772436
         },
         {
           "metricId": "lift",
-          "estimate": 1.495
+          "estimate": 1.494962
         }
       ]
     },
@@ -3946,23 +3946,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7033
+          "estimate": 0.703262
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7131
+          "estimate": 0.713138
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6387
+          "estimate": 0.638728
         },
         {
           "metricId": "npv",
-          "estimate": 0.7692
+          "estimate": 0.769183
         },
         {
           "metricId": "lift",
-          "estimate": 1.5244
+          "estimate": 1.524411
         }
       ]
     },
@@ -3991,23 +3991,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6913
+          "estimate": 0.691329
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7258
+          "estimate": 0.72576
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6451
+          "estimate": 0.645137
         },
         {
           "metricId": "npv",
-          "estimate": 0.7653
+          "estimate": 0.765275
         },
         {
           "metricId": "lift",
-          "estimate": 1.5397
+          "estimate": 1.539707
         }
       ]
     },
@@ -4036,23 +4036,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6762
+          "estimate": 0.676213
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7401
+          "estimate": 0.740103
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6523
+          "estimate": 0.652341
         },
         {
           "metricId": "npv",
-          "estimate": 0.7602
+          "estimate": 0.760165
         },
         {
           "metricId": "lift",
-          "estimate": 1.5569
+          "estimate": 1.556899
         }
       ]
     },
@@ -4081,23 +4081,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6659
+          "estimate": 0.665871
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7527
+          "estimate": 0.752725
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6601
+          "estimate": 0.660095
         },
         {
           "metricId": "npv",
-          "estimate": 0.7575
+          "estimate": 0.757506
         },
         {
           "metricId": "lift",
-          "estimate": 1.5754
+          "estimate": 1.575405
         }
       ]
     },
@@ -4126,23 +4126,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6539
+          "estimate": 0.653938
         },
         {
           "metricId": "specificity",
-          "estimate": 0.759
+          "estimate": 0.759036
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6618
+          "estimate": 0.661836
         },
         {
           "metricId": "npv",
-          "estimate": 0.7526
+          "estimate": 0.75256
         },
         {
           "metricId": "lift",
-          "estimate": 1.5796
+          "estimate": 1.57956
         }
       ]
     },
@@ -4171,23 +4171,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6388
+          "estimate": 0.638823
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7659
+          "estimate": 0.765921
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6631
+          "estimate": 0.663088
         },
         {
           "metricId": "npv",
-          "estimate": 0.7462
+          "estimate": 0.746227
         },
         {
           "metricId": "lift",
-          "estimate": 1.5825
+          "estimate": 1.58255
         }
       ]
     },
@@ -4216,23 +4216,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6229
+          "estimate": 0.622912
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7745
+          "estimate": 0.774527
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6658
+          "estimate": 0.665816
         },
         {
           "metricId": "npv",
-          "estimate": 0.7401
+          "estimate": 0.740132
         },
         {
           "metricId": "lift",
-          "estimate": 1.5891
+          "estimate": 1.58906
         }
       ]
     },
@@ -4261,23 +4261,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6102
+          "estimate": 0.610183
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7854
+          "estimate": 0.785427
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6722
+          "estimate": 0.672217
         },
         {
           "metricId": "npv",
-          "estimate": 0.7364
+          "estimate": 0.736417
         },
         {
           "metricId": "lift",
-          "estimate": 1.6043
+          "estimate": 1.604337
         }
       ]
     },
@@ -4306,23 +4306,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5951
+          "estimate": 0.595068
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7963
+          "estimate": 0.796328
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6782
+          "estimate": 0.67815
         },
         {
           "metricId": "npv",
-          "estimate": 0.7317
+          "estimate": 0.731682
         },
         {
           "metricId": "lift",
-          "estimate": 1.6185
+          "estimate": 1.618498
         }
       ]
     },
@@ -4351,23 +4351,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5792
+          "estimate": 0.579157
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8072
+          "estimate": 0.807229
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6842
+          "estimate": 0.684211
         },
         {
           "metricId": "npv",
-          "estimate": 0.7268
+          "estimate": 0.726756
         },
         {
           "metricId": "lift",
-          "estimate": 1.633
+          "estimate": 1.632961
         }
       ]
     },
@@ -4396,23 +4396,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5648
+          "estimate": 0.564837
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8176
+          "estimate": 0.817556
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6907
+          "estimate": 0.690661
         },
         {
           "metricId": "npv",
-          "estimate": 0.7226
+          "estimate": 0.722617
         },
         {
           "metricId": "lift",
-          "estimate": 1.6484
+          "estimate": 1.648357
         }
       ]
     },
@@ -4441,23 +4441,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5489
+          "estimate": 0.548926
         },
         {
           "metricId": "specificity",
-          "estimate": 0.829
+          "estimate": 0.82903
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6984
+          "estimate": 0.698381
         },
         {
           "metricId": "npv",
-          "estimate": 0.7182
+          "estimate": 0.718191
         },
         {
           "metricId": "lift",
-          "estimate": 1.6668
+          "estimate": 1.666779
         }
       ]
     },
@@ -4486,23 +4486,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5362
+          "estimate": 0.536197
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8411
+          "estimate": 0.841079
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7087
+          "estimate": 0.708728
         },
         {
           "metricId": "npv",
-          "estimate": 0.7155
+          "estimate": 0.715471
         },
         {
           "metricId": "lift",
-          "estimate": 1.6915
+          "estimate": 1.691474
         }
       ]
     },
@@ -4531,23 +4531,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5203
+          "estimate": 0.520286
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8508
+          "estimate": 0.850832
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7155
+          "estimate": 0.715536
         },
         {
           "metricId": "npv",
-          "estimate": 0.7109
+          "estimate": 0.71093
         },
         {
           "metricId": "lift",
-          "estimate": 1.7077
+          "estimate": 1.707723
         }
       ]
     },
@@ -4576,23 +4576,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5004
+          "estimate": 0.500398
         },
         {
           "metricId": "specificity",
-          "estimate": 0.86
+          "estimate": 0.860011
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7205
+          "estimate": 0.720504
         },
         {
           "metricId": "npv",
-          "estimate": 0.7047
+          "estimate": 0.704748
         },
         {
           "metricId": "lift",
-          "estimate": 1.7196
+          "estimate": 1.71958
         }
       ]
     },
@@ -4621,23 +4621,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4853
+          "estimate": 0.485282
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8646
+          "estimate": 0.864601
         },
         {
           "metricId": "ppv",
-          "estimate": 0.721
+          "estimate": 0.72104
         },
         {
           "metricId": "npv",
-          "estimate": 0.6996
+          "estimate": 0.699629
         },
         {
           "metricId": "lift",
-          "estimate": 1.7209
+          "estimate": 1.72086
         }
       ]
     },
@@ -4666,23 +4666,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4733
+          "estimate": 0.473349
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8715
+          "estimate": 0.871486
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7265
+          "estimate": 0.726496
         },
         {
           "metricId": "npv",
-          "estimate": 0.6965
+          "estimate": 0.69647
         },
         {
           "metricId": "lift",
-          "estimate": 1.7339
+          "estimate": 1.73388
         }
       ]
     },
@@ -4711,23 +4711,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4543
+          "estimate": 0.454256
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8761
+          "estimate": 0.876076
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7255
+          "estimate": 0.72554
         },
         {
           "metricId": "npv",
-          "estimate": 0.69
+          "estimate": 0.690014
         },
         {
           "metricId": "lift",
-          "estimate": 1.7316
+          "estimate": 1.731599
         }
       ]
     },
@@ -4756,23 +4756,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4399
+          "estimate": 0.439936
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8841
+          "estimate": 0.884108
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7325
+          "estimate": 0.73245
         },
         {
           "metricId": "npv",
-          "estimate": 0.6864
+          "estimate": 0.686414
         },
         {
           "metricId": "lift",
-          "estimate": 1.7481
+          "estimate": 1.748091
         }
       ]
     },
@@ -4801,23 +4801,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4256
+          "estimate": 0.425617
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8921
+          "estimate": 0.89214
         },
         {
           "metricId": "ppv",
-          "estimate": 0.74
+          "estimate": 0.739972
         },
         {
           "metricId": "npv",
-          "estimate": 0.6829
+          "estimate": 0.682916
         },
         {
           "metricId": "lift",
-          "estimate": 1.766
+          "estimate": 1.766044
         }
       ]
     },
@@ -4846,23 +4846,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4105
+          "estimate": 0.410501
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8979
+          "estimate": 0.897877
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7435
+          "estimate": 0.743516
         },
         {
           "metricId": "npv",
-          "estimate": 0.6787
+          "estimate": 0.678664
         },
         {
           "metricId": "lift",
-          "estimate": 1.7745
+          "estimate": 1.774501
         }
       ]
     },
@@ -4891,23 +4891,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3874
+          "estimate": 0.38743
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9065
+          "estimate": 0.906483
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7492
+          "estimate": 0.749231
         },
         {
           "metricId": "npv",
-          "estimate": 0.6723
+          "estimate": 0.67234
         },
         {
           "metricId": "lift",
-          "estimate": 1.7881
+          "estimate": 1.78814
         }
       ]
     },
@@ -4936,23 +4936,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3691
+          "estimate": 0.369133
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9174
+          "estimate": 0.917384
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7632
+          "estimate": 0.763158
         },
         {
           "metricId": "npv",
-          "estimate": 0.6685
+          "estimate": 0.668478
         },
         {
           "metricId": "lift",
-          "estimate": 1.8214
+          "estimate": 1.821379
         }
       ]
     },
@@ -4981,23 +4981,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.354
+          "estimate": 0.354018
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9231
+          "estimate": 0.923121
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7686
+          "estimate": 0.768566
         },
         {
           "metricId": "npv",
-          "estimate": 0.6646
+          "estimate": 0.664601
         },
         {
           "metricId": "lift",
-          "estimate": 1.8343
+          "estimate": 1.834288
         }
       ]
     },
@@ -5026,23 +5026,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3349
+          "estimate": 0.334924
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9306
+          "estimate": 0.930579
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7768
+          "estimate": 0.776753
         },
         {
           "metricId": "npv",
-          "estimate": 0.6599
+          "estimate": 0.659886
         },
         {
           "metricId": "lift",
-          "estimate": 1.8538
+          "estimate": 1.853825
         }
       ]
     },
@@ -5071,23 +5071,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3198
+          "estimate": 0.319809
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9363
+          "estimate": 0.936317
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7836
+          "estimate": 0.783626
         },
         {
           "metricId": "npv",
-          "estimate": 0.6562
+          "estimate": 0.656212
         },
         {
           "metricId": "lift",
-          "estimate": 1.8702
+          "estimate": 1.870228
         }
       ]
     },
@@ -5116,23 +5116,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3007
+          "estimate": 0.300716
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9409
+          "estimate": 0.940906
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7859
+          "estimate": 0.785863
         },
         {
           "metricId": "npv",
-          "estimate": 0.6511
+          "estimate": 0.651052
         },
         {
           "metricId": "lift",
-          "estimate": 1.8756
+          "estimate": 1.875568
         }
       ]
     },
@@ -5161,23 +5161,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2832
+          "estimate": 0.283214
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9472
+          "estimate": 0.947217
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7946
+          "estimate": 0.794643
         },
         {
           "metricId": "npv",
-          "estimate": 0.6469
+          "estimate": 0.646944
         },
         {
           "metricId": "lift",
-          "estimate": 1.8965
+          "estimate": 1.896522
         }
       ]
     },
@@ -5206,23 +5206,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2625
+          "estimate": 0.26253
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9547
+          "estimate": 0.954676
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8068
+          "estimate": 0.806846
         },
         {
           "metricId": "npv",
-          "estimate": 0.6422
+          "estimate": 0.642223
         },
         {
           "metricId": "lift",
-          "estimate": 1.9256
+          "estimate": 1.925647
         }
       ]
     },
@@ -5251,23 +5251,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2411
+          "estimate": 0.24105
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9633
+          "estimate": 0.963282
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8256
+          "estimate": 0.825613
         },
         {
           "metricId": "npv",
-          "estimate": 0.6377
+          "estimate": 0.637676
         },
         {
           "metricId": "lift",
-          "estimate": 1.9704
+          "estimate": 1.970437
         }
       ]
     },
@@ -5296,23 +5296,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2188
+          "estimate": 0.218775
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9702
+          "estimate": 0.970166
         },
         {
           "metricId": "ppv",
-          "estimate": 0.841
+          "estimate": 0.840979
         },
         {
           "metricId": "npv",
-          "estimate": 0.6326
+          "estimate": 0.632623
         },
         {
           "metricId": "lift",
-          "estimate": 2.0071
+          "estimate": 2.007109
         }
       ]
     },
@@ -5341,23 +5341,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1957
+          "estimate": 0.195704
         },
         {
           "metricId": "specificity",
-          "estimate": 0.973
+          "estimate": 0.973035
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8396
+          "estimate": 0.83959
         },
         {
           "metricId": "npv",
-          "estimate": 0.6265
+          "estimate": 0.626524
         },
         {
           "metricId": "lift",
-          "estimate": 2.0038
+          "estimate": 2.003796
         }
       ]
     },
@@ -5386,23 +5386,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1774
+          "estimate": 0.177407
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9771
+          "estimate": 0.977051
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8479
+          "estimate": 0.847909
         },
         {
           "metricId": "npv",
-          "estimate": 0.6222
+          "estimate": 0.622214
         },
         {
           "metricId": "lift",
-          "estimate": 2.0236
+          "estimate": 2.023649
         }
       ]
     },
@@ -5435,19 +5435,19 @@
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9811
+          "estimate": 0.981067
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8596
+          "estimate": 0.859574
         },
         {
           "metricId": "npv",
-          "estimate": 0.6184
+          "estimate": 0.618445
         },
         {
           "metricId": "lift",
-          "estimate": 2.0515
+          "estimate": 2.05149
         }
       ]
     },
@@ -5476,23 +5476,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1329
+          "estimate": 0.132856
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9839
+          "estimate": 0.983936
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8564
+          "estimate": 0.85641
         },
         {
           "metricId": "npv",
-          "estimate": 0.6114
+          "estimate": 0.611408
         },
         {
           "metricId": "lift",
-          "estimate": 2.0439
+          "estimate": 2.043939
         }
       ]
     },
@@ -5521,23 +5521,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1146
+          "estimate": 0.114558
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9862
+          "estimate": 0.986231
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8571
+          "estimate": 0.857143
         },
         {
           "metricId": "npv",
-          "estimate": 0.607
+          "estimate": 0.606992
         },
         {
           "metricId": "lift",
-          "estimate": 2.0457
+          "estimate": 2.045687
         }
       ]
     },
@@ -5566,23 +5566,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1018
+          "estimate": 0.10183
         },
         {
           "metricId": "specificity",
-          "estimate": 0.988
+          "estimate": 0.987952
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8591
+          "estimate": 0.85906
         },
         {
           "metricId": "npv",
-          "estimate": 0.604
+          "estimate": 0.603999
         },
         {
           "metricId": "lift",
-          "estimate": 2.0503
+          "estimate": 2.050263
         }
       ]
     },
@@ -5611,23 +5611,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0867
+          "estimate": 0.086714
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9902
+          "estimate": 0.990247
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8651
+          "estimate": 0.865079
         },
         {
           "metricId": "npv",
-          "estimate": 0.6006
+          "estimate": 0.600557
         },
         {
           "metricId": "lift",
-          "estimate": 2.0646
+          "estimate": 2.064629
         }
       ]
     },
@@ -5656,23 +5656,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0772
+          "estimate": 0.077168
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9914
+          "estimate": 0.991394
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8661
+          "estimate": 0.866071
         },
         {
           "metricId": "npv",
-          "estimate": 0.5983
+          "estimate": 0.598338
         },
         {
           "metricId": "lift",
-          "estimate": 2.067
+          "estimate": 2.066996
         }
       ]
     },
@@ -5701,11 +5701,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.07
+          "estimate": 0.070008
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9931
+          "estimate": 0.993115
         },
         {
           "metricId": "ppv",
@@ -5713,11 +5713,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.5969
+          "estimate": 0.596897
         },
         {
           "metricId": "lift",
-          "estimate": 2.1002
+          "estimate": 2.100239
         }
       ]
     },
@@ -5746,23 +5746,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0581
+          "estimate": 0.058075
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9954
+          "estimate": 0.99541
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9012
+          "estimate": 0.901235
         },
         {
           "metricId": "npv",
-          "estimate": 0.5944
+          "estimate": 0.594382
         },
         {
           "metricId": "lift",
-          "estimate": 2.1509
+          "estimate": 2.150918
         }
       ]
     },
@@ -5791,23 +5791,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0493
+          "estimate": 0.049324
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9966
+          "estimate": 0.996558
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9118
+          "estimate": 0.911765
         },
         {
           "metricId": "npv",
-          "estimate": 0.5924
+          "estimate": 0.592428
         },
         {
           "metricId": "lift",
-          "estimate": 2.176
+          "estimate": 2.176049
         }
       ]
     },
@@ -5836,23 +5836,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0374
+          "estimate": 0.037391
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9966
+          "estimate": 0.996558
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8868
+          "estimate": 0.886792
         },
         {
           "metricId": "npv",
-          "estimate": 0.5894
+          "estimate": 0.589413
         },
         {
           "metricId": "lift",
-          "estimate": 2.1164
+          "estimate": 2.11645
         }
       ]
     },
@@ -5881,23 +5881,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0278
+          "estimate": 0.027844
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9989
+          "estimate": 0.998853
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9459
+          "estimate": 0.945946
         },
         {
           "metricId": "npv",
-          "estimate": 0.5876
+          "estimate": 0.58758
         },
         {
           "metricId": "lift",
-          "estimate": 2.2576
+          "estimate": 2.257628
         }
       ]
     },
@@ -5926,23 +5926,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0159
+          "estimate": 0.015911
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9994
+          "estimate": 0.999426
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9524
+          "estimate": 0.952381
         },
         {
           "metricId": "npv",
-          "estimate": 0.5848
+          "estimate": 0.58476
         },
         {
           "metricId": "lift",
-          "estimate": 2.273
+          "estimate": 2.272986
         }
       ]
     },
@@ -5971,23 +5971,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0088
+          "estimate": 0.008751
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9994
+          "estimate": 0.999426
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9167
+          "estimate": 0.916667
         },
         {
           "metricId": "npv",
-          "estimate": 0.583
+          "estimate": 0.582999
         },
         {
           "metricId": "lift",
-          "estimate": 2.1877
+          "estimate": 2.187749
         }
       ]
     },
@@ -6016,7 +6016,7 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0032
+          "estimate": 0.003182
         },
         {
           "metricId": "specificity",
@@ -6028,11 +6028,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.5818
+          "estimate": 0.581776
         },
         {
           "metricId": "lift",
-          "estimate": 2.3866
+          "estimate": 2.386635
         }
       ]
     },
@@ -6061,7 +6061,7 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0008
+          "estimate": 0.000796
         },
         {
           "metricId": "specificity",
@@ -6073,11 +6073,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.5812
+          "estimate": 0.581194
         },
         {
           "metricId": "lift",
-          "estimate": 2.3866
+          "estimate": 2.386635
         }
       ]
     },
@@ -6241,23 +6241,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0231
+          "estimate": 0.023071
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9994
+          "estimate": 0.999426
         },
         {
           "metricId": "ppv",
-          "estimate": 0.9667
+          "estimate": 0.966667
         },
         {
           "metricId": "npv",
-          "estimate": 0.5865
+          "estimate": 0.586532
         },
         {
           "metricId": "lift",
-          "estimate": 2.3071
+          "estimate": 2.30708
         }
       ]
     },
@@ -6286,11 +6286,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.043
+          "estimate": 0.042959
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9966
+          "estimate": 0.996558
         },
         {
           "metricId": "ppv",
@@ -6298,11 +6298,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.5908
+          "estimate": 0.590816
         },
         {
           "metricId": "lift",
-          "estimate": 2.148
+          "estimate": 2.147971
         }
       ]
     },
@@ -6331,23 +6331,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0628
+          "estimate": 0.062848
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9937
+          "estimate": 0.993689
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8778
+          "estimate": 0.877778
         },
         {
           "metricId": "npv",
-          "estimate": 0.5952
+          "estimate": 0.595189
         },
         {
           "metricId": "lift",
-          "estimate": 2.0949
+          "estimate": 2.094935
         }
       ]
     },
@@ -6376,23 +6376,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.0827
+          "estimate": 0.082737
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9908
+          "estimate": 0.99082
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8667
+          "estimate": 0.866667
         },
         {
           "metricId": "npv",
-          "estimate": 0.5997
+          "estimate": 0.599653
         },
         {
           "metricId": "lift",
-          "estimate": 2.0684
+          "estimate": 2.068417
         }
       ]
     },
@@ -6421,11 +6421,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1026
+          "estimate": 0.102625
         },
         {
           "metricId": "specificity",
-          "estimate": 0.988
+          "estimate": 0.987952
         },
         {
           "metricId": "ppv",
@@ -6433,11 +6433,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.6042
+          "estimate": 0.604211
         },
         {
           "metricId": "lift",
-          "estimate": 2.0525
+          "estimate": 2.052506
         }
       ]
     },
@@ -6466,23 +6466,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1225
+          "estimate": 0.122514
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9851
+          "estimate": 0.985083
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8556
+          "estimate": 0.855556
         },
         {
           "metricId": "npv",
-          "estimate": 0.6089
+          "estimate": 0.608865
         },
         {
           "metricId": "lift",
-          "estimate": 2.0419
+          "estimate": 2.041899
         }
       ]
     },
@@ -6511,23 +6511,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1424
+          "estimate": 0.142403
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9822
+          "estimate": 0.982215
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8524
+          "estimate": 0.852381
         },
         {
           "metricId": "npv",
-          "estimate": 0.6136
+          "estimate": 0.61362
         },
         {
           "metricId": "lift",
-          "estimate": 2.0343
+          "estimate": 2.034322
         }
       ]
     },
@@ -6556,11 +6556,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.1623
+          "estimate": 0.162291
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9793
+          "estimate": 0.979346
         },
         {
           "metricId": "ppv",
@@ -6568,11 +6568,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.6185
+          "estimate": 0.618478
         },
         {
           "metricId": "lift",
-          "estimate": 2.0286
+          "estimate": 2.02864
         }
       ]
     },
@@ -6601,23 +6601,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.183
+          "estimate": 0.182975
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9771
+          "estimate": 0.977051
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8519
+          "estimate": 0.851852
         },
         {
           "metricId": "npv",
-          "estimate": 0.6238
+          "estimate": 0.62381
         },
         {
           "metricId": "lift",
-          "estimate": 2.0331
+          "estimate": 2.033059
         }
       ]
     },
@@ -6646,23 +6646,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2013
+          "estimate": 0.201273
         },
         {
           "metricId": "specificity",
-          "estimate": 0.973
+          "estimate": 0.973035
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8433
+          "estimate": 0.843333
         },
         {
           "metricId": "npv",
-          "estimate": 0.6281
+          "estimate": 0.628148
         },
         {
           "metricId": "lift",
-          "estimate": 2.0127
+          "estimate": 2.012729
         }
       ]
     },
@@ -6691,23 +6691,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2212
+          "estimate": 0.221161
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9702
+          "estimate": 0.970166
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8424
+          "estimate": 0.842424
         },
         {
           "metricId": "npv",
-          "estimate": 0.6333
+          "estimate": 0.633333
         },
         {
           "metricId": "lift",
-          "estimate": 2.0106
+          "estimate": 2.010559
         }
       ]
     },
@@ -6736,23 +6736,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2371
+          "estimate": 0.237072
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9644
+          "estimate": 0.964429
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8278
+          "estimate": 0.827778
         },
         {
           "metricId": "npv",
-          "estimate": 0.6367
+          "estimate": 0.636742
         },
         {
           "metricId": "lift",
-          "estimate": 1.9756
+          "estimate": 1.975603
         }
       ]
     },
@@ -6781,23 +6781,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2514
+          "estimate": 0.251392
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9575
+          "estimate": 0.957544
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8103
+          "estimate": 0.810256
         },
         {
           "metricId": "npv",
-          "estimate": 0.6395
+          "estimate": 0.639464
         },
         {
           "metricId": "lift",
-          "estimate": 1.9338
+          "estimate": 1.933786
         }
       ]
     },
@@ -6826,23 +6826,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2681
+          "estimate": 0.268099
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9524
+          "estimate": 0.952381
         },
         {
           "metricId": "ppv",
-          "estimate": 0.8024
+          "estimate": 0.802381
         },
         {
           "metricId": "npv",
-          "estimate": 0.6434
+          "estimate": 0.643411
         },
         {
           "metricId": "lift",
-          "estimate": 1.915
+          "estimate": 1.91499
         }
       ]
     },
@@ -6871,23 +6871,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.2848
+          "estimate": 0.284805
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9472
+          "estimate": 0.947217
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7956
+          "estimate": 0.795556
         },
         {
           "metricId": "npv",
-          "estimate": 0.6475
+          "estimate": 0.647451
         },
         {
           "metricId": "lift",
-          "estimate": 1.8987
+          "estimate": 1.898701
         }
       ]
     },
@@ -6916,11 +6916,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3007
+          "estimate": 0.300716
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9415
+          "estimate": 0.94148
         },
         {
           "metricId": "ppv",
@@ -6928,11 +6928,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.6512
+          "estimate": 0.65119
         },
         {
           "metricId": "lift",
-          "estimate": 1.8795
+          "estimate": 1.879475
         }
       ]
     },
@@ -6961,23 +6961,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3182
+          "estimate": 0.318218
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9369
+          "estimate": 0.93689
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7843
+          "estimate": 0.784314
         },
         {
           "metricId": "npv",
-          "estimate": 0.6558
+          "estimate": 0.655823
         },
         {
           "metricId": "lift",
-          "estimate": 1.8719
+          "estimate": 1.87187
         }
       ]
     },
@@ -7006,23 +7006,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3341
+          "estimate": 0.334129
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9312
+          "estimate": 0.931153
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7778
+          "estimate": 0.777778
         },
         {
           "metricId": "npv",
-          "estimate": 0.6598
+          "estimate": 0.659756
         },
         {
           "metricId": "lift",
-          "estimate": 1.8563
+          "estimate": 1.856272
         }
       ]
     },
@@ -7051,23 +7051,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3484
+          "estimate": 0.348449
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9243
+          "estimate": 0.924269
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7684
+          "estimate": 0.768421
         },
         {
           "metricId": "npv",
-          "estimate": 0.663
+          "estimate": 0.662963
         },
         {
           "metricId": "lift",
-          "estimate": 1.8339
+          "estimate": 1.83394
         }
       ]
     },
@@ -7096,23 +7096,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3667
+          "estimate": 0.366746
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9203
+          "estimate": 0.920252
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7683
+          "estimate": 0.768333
         },
         {
           "metricId": "npv",
-          "estimate": 0.6683
+          "estimate": 0.668333
         },
         {
           "metricId": "lift",
-          "estimate": 1.8337
+          "estimate": 1.833731
         }
       ]
     },
@@ -7141,23 +7141,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3787
+          "estimate": 0.378679
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9116
+          "estimate": 0.911647
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7556
+          "estimate": 0.755556
         },
         {
           "metricId": "npv",
-          "estimate": 0.6705
+          "estimate": 0.670464
         },
         {
           "metricId": "lift",
-          "estimate": 1.8032
+          "estimate": 1.803235
         }
       ]
     },
@@ -7186,23 +7186,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.3922
+          "estimate": 0.392204
         },
         {
           "metricId": "specificity",
-          "estimate": 0.9042
+          "estimate": 0.904188
         },
         {
           "metricId": "ppv",
-          "estimate": 0.747
+          "estimate": 0.74697
         },
         {
           "metricId": "npv",
-          "estimate": 0.6735
+          "estimate": 0.673504
         },
         {
           "metricId": "lift",
-          "estimate": 1.7827
+          "estimate": 1.782744
         }
       ]
     },
@@ -7231,23 +7231,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4081
+          "estimate": 0.408115
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8985
+          "estimate": 0.898451
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7435
+          "estimate": 0.743478
         },
         {
           "metricId": "npv",
-          "estimate": 0.6779
+          "estimate": 0.677922
         },
         {
           "metricId": "lift",
-          "estimate": 1.7744
+          "estimate": 1.774411
         }
       ]
     },
@@ -7276,23 +7276,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4248
+          "estimate": 0.424821
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8933
+          "estimate": 0.893287
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7417
+          "estimate": 0.741667
         },
         {
           "metricId": "npv",
-          "estimate": 0.6829
+          "estimate": 0.682895
         },
         {
           "metricId": "lift",
-          "estimate": 1.7701
+          "estimate": 1.770088
         }
       ]
     },
@@ -7321,11 +7321,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4368
+          "estimate": 0.436754
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8847
+          "estimate": 0.884682
         },
         {
           "metricId": "ppv",
@@ -7333,11 +7333,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.6853
+          "estimate": 0.685333
         },
         {
           "metricId": "lift",
-          "estimate": 1.747
+          "estimate": 1.747017
         }
       ]
     },
@@ -7366,23 +7366,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4495
+          "estimate": 0.449483
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8766
+          "estimate": 0.876649
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7244
+          "estimate": 0.724359
         },
         {
           "metricId": "npv",
-          "estimate": 0.6883
+          "estimate": 0.688288
         },
         {
           "metricId": "lift",
-          "estimate": 1.7288
+          "estimate": 1.72878
         }
       ]
     },
@@ -7411,23 +7411,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4694
+          "estimate": 0.469372
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8738
+          "estimate": 0.873781
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7284
+          "estimate": 0.728395
         },
         {
           "metricId": "npv",
-          "estimate": 0.6954
+          "estimate": 0.695434
         },
         {
           "metricId": "lift",
-          "estimate": 1.7384
+          "estimate": 1.738413
         }
       ]
     },
@@ -7456,23 +7456,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.4829
+          "estimate": 0.482896
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8663
+          "estimate": 0.866322
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7226
+          "estimate": 0.722619
         },
         {
           "metricId": "npv",
-          "estimate": 0.6991
+          "estimate": 0.699074
         },
         {
           "metricId": "lift",
-          "estimate": 1.7246
+          "estimate": 1.724628
         }
       ]
     },
@@ -7501,23 +7501,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.498
+          "estimate": 0.498011
         },
         {
           "metricId": "specificity",
-          "estimate": 0.86
+          "estimate": 0.860011
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7195
+          "estimate": 0.71954
         },
         {
           "metricId": "npv",
-          "estimate": 0.7038
+          "estimate": 0.703756
         },
         {
           "metricId": "lift",
-          "estimate": 1.7173
+          "estimate": 1.71728
         }
       ]
     },
@@ -7546,23 +7546,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5139
+          "estimate": 0.513922
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8543
+          "estimate": 0.854274
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7178
+          "estimate": 0.717778
         },
         {
           "metricId": "npv",
-          "estimate": 0.709
+          "estimate": 0.709048
         },
         {
           "metricId": "lift",
-          "estimate": 1.7131
+          "estimate": 1.713073
         }
       ]
     },
@@ -7591,23 +7591,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5274
+          "estimate": 0.527446
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8468
+          "estimate": 0.846816
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7129
+          "estimate": 0.712903
         },
         {
           "metricId": "npv",
-          "estimate": 0.713
+          "estimate": 0.713043
         },
         {
           "metricId": "lift",
-          "estimate": 1.7014
+          "estimate": 1.70144
         }
       ]
     },
@@ -7636,23 +7636,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5394
+          "estimate": 0.539379
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8382
+          "estimate": 0.83821
         },
         {
           "metricId": "ppv",
-          "estimate": 0.7063
+          "estimate": 0.70625
         },
         {
           "metricId": "npv",
-          "estimate": 0.7162
+          "estimate": 0.716176
         },
         {
           "metricId": "lift",
-          "estimate": 1.6856
+          "estimate": 1.685561
         }
       ]
     },
@@ -7681,23 +7681,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5497
+          "estimate": 0.549722
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8285
+          "estimate": 0.828457
         },
         {
           "metricId": "ppv",
-          "estimate": 0.698
+          "estimate": 0.69798
         },
         {
           "metricId": "npv",
-          "estimate": 0.7184
+          "estimate": 0.718408
         },
         {
           "metricId": "lift",
-          "estimate": 1.6658
+          "estimate": 1.665823
         }
       ]
     },
@@ -7726,23 +7726,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5625
+          "estimate": 0.56245
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8204
+          "estimate": 0.820425
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6931
+          "estimate": 0.693137
         },
         {
           "metricId": "npv",
-          "estimate": 0.7222
+          "estimate": 0.722222
         },
         {
           "metricId": "lift",
-          "estimate": 1.6543
+          "estimate": 1.654266
         }
       ]
     },
@@ -7771,23 +7771,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5736
+          "estimate": 0.573588
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8112
+          "estimate": 0.811245
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6867
+          "estimate": 0.686667
         },
         {
           "metricId": "npv",
-          "estimate": 0.7251
+          "estimate": 0.725128
         },
         {
           "metricId": "lift",
-          "estimate": 1.6388
+          "estimate": 1.638823
         }
       ]
     },
@@ -7816,23 +7816,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5863
+          "estimate": 0.586317
         },
         {
           "metricId": "specificity",
-          "estimate": 0.8032
+          "estimate": 0.803213
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6824
+          "estimate": 0.682407
         },
         {
           "metricId": "npv",
-          "estimate": 0.7292
+          "estimate": 0.729167
         },
         {
           "metricId": "lift",
-          "estimate": 1.6287
+          "estimate": 1.628657
         }
       ]
     },
@@ -7861,23 +7861,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.5982
+          "estimate": 0.59825
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7946
+          "estimate": 0.794607
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6775
+          "estimate": 0.677477
         },
         {
           "metricId": "npv",
-          "estimate": 0.7328
+          "estimate": 0.732804
         },
         {
           "metricId": "lift",
-          "estimate": 1.6169
+          "estimate": 1.616891
         }
       ]
     },
@@ -7906,23 +7906,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6094
+          "estimate": 0.609387
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7854
+          "estimate": 0.785427
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6719
+          "estimate": 0.67193
         },
         {
           "metricId": "npv",
-          "estimate": 0.736
+          "estimate": 0.736022
         },
         {
           "metricId": "lift",
-          "estimate": 1.6037
+          "estimate": 1.603651
         }
       ]
     },
@@ -7951,23 +7951,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6205
+          "estimate": 0.620525
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7762
+          "estimate": 0.776248
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6667
+          "estimate": 0.666667
         },
         {
           "metricId": "npv",
-          "estimate": 0.7393
+          "estimate": 0.739344
         },
         {
           "metricId": "lift",
-          "estimate": 1.5911
+          "estimate": 1.59109
         }
       ]
     },
@@ -7996,23 +7996,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.634
+          "estimate": 0.634049
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7688
+          "estimate": 0.768789
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6642
+          "estimate": 0.664167
         },
         {
           "metricId": "npv",
-          "estimate": 0.7444
+          "estimate": 0.744444
         },
         {
           "metricId": "lift",
-          "estimate": 1.5851
+          "estimate": 1.585123
         }
       ]
     },
@@ -8041,23 +8041,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6476
+          "estimate": 0.647574
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7613
+          "estimate": 0.761331
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6618
+          "estimate": 0.661789
         },
         {
           "metricId": "npv",
-          "estimate": 0.7497
+          "estimate": 0.749718
         },
         {
           "metricId": "lift",
-          "estimate": 1.5794
+          "estimate": 1.579448
         }
       ]
     },
@@ -8086,23 +8086,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6619
+          "estimate": 0.661893
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7544
+          "estimate": 0.754446
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6603
+          "estimate": 0.660317
         },
         {
           "metricId": "npv",
-          "estimate": 0.7557
+          "estimate": 0.755747
         },
         {
           "metricId": "lift",
-          "estimate": 1.5759
+          "estimate": 1.575937
         }
       ]
     },
@@ -8131,23 +8131,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.673
+          "estimate": 0.673031
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7453
+          "estimate": 0.745267
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6558
+          "estimate": 0.655814
         },
         {
           "metricId": "npv",
-          "estimate": 0.7596
+          "estimate": 0.759649
         },
         {
           "metricId": "lift",
-          "estimate": 1.5652
+          "estimate": 1.565188
         }
       ]
     },
@@ -8176,23 +8176,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6794
+          "estimate": 0.679395
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7326
+          "estimate": 0.732645
         },
         {
           "metricId": "ppv",
-          "estimate": 0.647
+          "estimate": 0.64697
         },
         {
           "metricId": "npv",
-          "estimate": 0.7601
+          "estimate": 0.760119
         },
         {
           "metricId": "lift",
-          "estimate": 1.5441
+          "estimate": 1.54408
         }
       ]
     },
@@ -8221,23 +8221,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.6921
+          "estimate": 0.692124
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7246
+          "estimate": 0.724613
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6444
+          "estimate": 0.644444
         },
         {
           "metricId": "npv",
-          "estimate": 0.7655
+          "estimate": 0.765455
         },
         {
           "metricId": "lift",
-          "estimate": 1.5381
+          "estimate": 1.538054
         }
       ]
     },
@@ -8266,23 +8266,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7017
+          "estimate": 0.701671
         },
         {
           "metricId": "specificity",
-          "estimate": 0.7143
+          "estimate": 0.714286
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6391
+          "estimate": 0.63913
         },
         {
           "metricId": "npv",
-          "estimate": 0.7685
+          "estimate": 0.768519
         },
         {
           "metricId": "lift",
-          "estimate": 1.5254
+          "estimate": 1.525371
         }
       ]
     },
@@ -8311,23 +8311,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7112
+          "estimate": 0.711217
         },
         {
           "metricId": "specificity",
-          "estimate": 0.704
+          "estimate": 0.703959
         },
         {
           "metricId": "ppv",
-          "estimate": 0.634
+          "estimate": 0.634043
         },
         {
           "metricId": "npv",
-          "estimate": 0.7717
+          "estimate": 0.771698
         },
         {
           "metricId": "lift",
-          "estimate": 1.5132
+          "estimate": 1.513228
         }
       ]
     },
@@ -8356,23 +8356,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7176
+          "estimate": 0.717582
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6913
+          "estimate": 0.691337
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6264
+          "estimate": 0.626389
         },
         {
           "metricId": "npv",
-          "estimate": 0.7724
+          "estimate": 0.772436
         },
         {
           "metricId": "lift",
-          "estimate": 1.495
+          "estimate": 1.494962
         }
       ]
     },
@@ -8401,23 +8401,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7295
+          "estimate": 0.729515
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6827
+          "estimate": 0.682731
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6238
+          "estimate": 0.62381
         },
         {
           "metricId": "npv",
-          "estimate": 0.7778
+          "estimate": 0.777778
         },
         {
           "metricId": "lift",
-          "estimate": 1.4888
+          "estimate": 1.488806
         }
       ]
     },
@@ -8446,11 +8446,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7375
+          "estimate": 0.73747
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6713
+          "estimate": 0.671256
         },
         {
           "metricId": "ppv",
@@ -8462,7 +8462,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.4749
+          "estimate": 1.47494
         }
       ]
     },
@@ -8491,23 +8491,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7478
+          "estimate": 0.747812
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6615
+          "estimate": 0.661503
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6144
+          "estimate": 0.614379
         },
         {
           "metricId": "npv",
-          "estimate": 0.7844
+          "estimate": 0.784354
         },
         {
           "metricId": "lift",
-          "estimate": 1.4663
+          "estimate": 1.466299
         }
       ]
     },
@@ -8536,23 +8536,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7582
+          "estimate": 0.758154
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6517
+          "estimate": 0.65175
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6109
+          "estimate": 0.610897
         },
         {
           "metricId": "npv",
-          "estimate": 0.7889
+          "estimate": 0.788889
         },
         {
           "metricId": "lift",
-          "estimate": 1.458
+          "estimate": 1.457989
         }
       ]
     },
@@ -8581,23 +8581,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7693
+          "estimate": 0.769292
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6426
+          "estimate": 0.64257
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6082
+          "estimate": 0.608176
         },
         {
           "metricId": "npv",
-          "estimate": 0.7943
+          "estimate": 0.794326
         },
         {
           "metricId": "lift",
-          "estimate": 1.4515
+          "estimate": 1.451494
         }
       ]
     },
@@ -8626,15 +8626,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.7804
+          "estimate": 0.78043
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6334
+          "estimate": 0.633391
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6056
+          "estimate": 0.605556
         },
         {
           "metricId": "npv",
@@ -8642,7 +8642,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.4452
+          "estimate": 1.44524
         }
       ]
     },
@@ -8671,23 +8671,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.79
+          "estimate": 0.789976
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6231
+          "estimate": 0.623064
         },
         {
           "metricId": "ppv",
-          "estimate": 0.6018
+          "estimate": 0.601818
         },
         {
           "metricId": "npv",
-          "estimate": 0.8044
+          "estimate": 0.804444
         },
         {
           "metricId": "lift",
-          "estimate": 1.4363
+          "estimate": 1.43632
         }
       ]
     },
@@ -8716,23 +8716,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8003
+          "estimate": 0.800318
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6133
+          "estimate": 0.61331
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5988
+          "estimate": 0.59881
         },
         {
           "metricId": "npv",
-          "estimate": 0.8098
+          "estimate": 0.809848
         },
         {
           "metricId": "lift",
-          "estimate": 1.4291
+          "estimate": 1.42914
         }
       ]
     },
@@ -8761,23 +8761,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8067
+          "estimate": 0.806683
         },
         {
           "metricId": "specificity",
-          "estimate": 0.6007
+          "estimate": 0.600688
         },
         {
           "metricId": "ppv",
-          "estimate": 0.593
+          "estimate": 0.592982
         },
         {
           "metricId": "npv",
-          "estimate": 0.8116
+          "estimate": 0.811628
         },
         {
           "metricId": "lift",
-          "estimate": 1.4152
+          "estimate": 1.415233
         }
       ]
     },
@@ -8806,23 +8806,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8154
+          "estimate": 0.815434
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5898
+          "estimate": 0.589788
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5891
+          "estimate": 0.58908
         },
         {
           "metricId": "npv",
-          "estimate": 0.8159
+          "estimate": 0.815873
         },
         {
           "metricId": "lift",
-          "estimate": 1.4059
+          "estimate": 1.40592
         }
       ]
     },
@@ -8851,23 +8851,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.825
+          "estimate": 0.82498
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5795
+          "estimate": 0.579461
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5859
+          "estimate": 0.585876
         },
         {
           "metricId": "npv",
-          "estimate": 0.8211
+          "estimate": 0.821138
         },
         {
           "metricId": "lift",
-          "estimate": 1.3983
+          "estimate": 1.398271
         }
       ]
     },
@@ -8896,15 +8896,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8329
+          "estimate": 0.832936
         },
         {
           "metricId": "specificity",
-          "estimate": 0.568
+          "estimate": 0.567986
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5817
+          "estimate": 0.581667
         },
         {
           "metricId": "npv",
@@ -8912,7 +8912,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.3882
+          "estimate": 1.388226
         }
       ]
     },
@@ -8941,23 +8941,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8385
+          "estimate": 0.838504
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5548
+          "estimate": 0.554791
         },
         {
           "metricId": "ppv",
-          "estimate": 0.576
+          "estimate": 0.575956
         },
         {
           "metricId": "npv",
-          "estimate": 0.8265
+          "estimate": 0.826496
         },
         {
           "metricId": "lift",
-          "estimate": 1.3746
+          "estimate": 1.374597
         }
       ]
     },
@@ -8986,23 +8986,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8473
+          "estimate": 0.847255
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5439
+          "estimate": 0.54389
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5726
+          "estimate": 0.572581
         },
         {
           "metricId": "npv",
-          "estimate": 0.8316
+          "estimate": 0.831579
         },
         {
           "metricId": "lift",
-          "estimate": 1.3665
+          "estimate": 1.366541
         }
       ]
     },
@@ -9031,23 +9031,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8568
+          "estimate": 0.856802
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5336
+          "estimate": 0.533563
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5698
+          "estimate": 0.569841
         },
         {
           "metricId": "npv",
-          "estimate": 0.8378
+          "estimate": 0.837838
         },
         {
           "metricId": "lift",
-          "estimate": 1.36
+          "estimate": 1.360003
         }
       ]
     },
@@ -9076,23 +9076,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8624
+          "estimate": 0.862371
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5204
+          "estimate": 0.520367
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5646
+          "estimate": 0.564583
         },
         {
           "metricId": "npv",
-          "estimate": 0.8398
+          "estimate": 0.839815
         },
         {
           "metricId": "lift",
-          "estimate": 1.3475
+          "estimate": 1.347454
         }
       ]
     },
@@ -9121,23 +9121,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8703
+          "estimate": 0.870326
         },
         {
           "metricId": "specificity",
-          "estimate": 0.5089
+          "estimate": 0.508893
         },
         {
           "metricId": "ppv",
-          "estimate": 0.561
+          "estimate": 0.561026
         },
         {
           "metricId": "npv",
-          "estimate": 0.8448
+          "estimate": 0.844762
         },
         {
           "metricId": "lift",
-          "estimate": 1.339
+          "estimate": 1.338963
         }
       ]
     },
@@ -9166,23 +9166,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8767
+          "estimate": 0.876691
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4963
+          "estimate": 0.496271
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5566
+          "estimate": 0.556566
         },
         {
           "metricId": "npv",
-          "estimate": 0.848
+          "estimate": 0.848039
         },
         {
           "metricId": "lift",
-          "estimate": 1.3283
+          "estimate": 1.328319
         }
       ]
     },
@@ -9211,23 +9211,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8839
+          "estimate": 0.88385
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4842
+          "estimate": 0.484223
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5527
+          "estimate": 0.552736
         },
         {
           "metricId": "npv",
-          "estimate": 0.8525
+          "estimate": 0.852525
         },
         {
           "metricId": "lift",
-          "estimate": 1.3192
+          "estimate": 1.31918
         }
       ]
     },
@@ -9256,23 +9256,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8894
+          "estimate": 0.889419
         },
         {
           "metricId": "specificity",
-          "estimate": 0.471
+          "estimate": 0.471027
         },
         {
           "metricId": "ppv",
-          "estimate": 0.548
+          "estimate": 0.548039
         },
         {
           "metricId": "npv",
-          "estimate": 0.8552
+          "estimate": 0.855208
         },
         {
           "metricId": "lift",
-          "estimate": 1.308
+          "estimate": 1.307969
         }
       ]
     },
@@ -9301,23 +9301,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.8982
+          "estimate": 0.89817
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4601
+          "estimate": 0.460126
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5454
+          "estimate": 0.545411
         },
         {
           "metricId": "npv",
-          "estimate": 0.8624
+          "estimate": 0.862366
         },
         {
           "metricId": "lift",
-          "estimate": 1.3017
+          "estimate": 1.301696
         }
       ]
     },
@@ -9346,23 +9346,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9037
+          "estimate": 0.903739
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4469
+          "estimate": 0.446931
         },
         {
           "metricId": "ppv",
-          "estimate": 0.541
+          "estimate": 0.540952
         },
         {
           "metricId": "npv",
-          "estimate": 0.8656
+          "estimate": 0.865556
         },
         {
           "metricId": "lift",
-          "estimate": 1.2911
+          "estimate": 1.291056
         }
       ]
     },
@@ -9391,23 +9391,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9077
+          "estimate": 0.907717
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4326
+          "estimate": 0.432587
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5357
+          "estimate": 0.535681
         },
         {
           "metricId": "npv",
-          "estimate": 0.8667
+          "estimate": 0.866667
         },
         {
           "metricId": "lift",
-          "estimate": 1.2785
+          "estimate": 1.278474
         }
       ]
     },
@@ -9436,23 +9436,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9109
+          "estimate": 0.910899
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4177
+          "estimate": 0.417671
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5301
+          "estimate": 0.530093
         },
         {
           "metricId": "npv",
-          "estimate": 0.8667
+          "estimate": 0.866667
         },
         {
           "metricId": "lift",
-          "estimate": 1.2651
+          "estimate": 1.265137
         }
       ]
     },
@@ -9481,23 +9481,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9149
+          "estimate": 0.914877
         },
         {
           "metricId": "specificity",
-          "estimate": 0.4033
+          "estimate": 0.403328
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5251
+          "estimate": 0.525114
         },
         {
           "metricId": "npv",
-          "estimate": 0.8679
+          "estimate": 0.867901
         },
         {
           "metricId": "lift",
-          "estimate": 1.2533
+          "estimate": 1.253256
         }
       ]
     },
@@ -9526,23 +9526,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9212
+          "estimate": 0.921241
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3907
+          "estimate": 0.390706
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5216
+          "estimate": 0.521622
         },
         {
           "metricId": "npv",
-          "estimate": 0.8731
+          "estimate": 0.873077
         },
         {
           "metricId": "lift",
-          "estimate": 1.2449
+          "estimate": 1.24492
         }
       ]
     },
@@ -9571,11 +9571,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9236
+          "estimate": 0.923628
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3752
+          "estimate": 0.375215
         },
         {
           "metricId": "ppv",
@@ -9587,7 +9587,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.2315
+          "estimate": 1.231504
         }
       ]
     },
@@ -9616,15 +9616,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9284
+          "estimate": 0.928401
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3614
+          "estimate": 0.361446
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5118
+          "estimate": 0.511842
         },
         {
           "metricId": "npv",
@@ -9632,7 +9632,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.2216
+          "estimate": 1.22158
         }
       ]
     },
@@ -9661,23 +9661,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9332
+          "estimate": 0.933174
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3477
+          "estimate": 0.347676
         },
         {
           "metricId": "ppv",
-          "estimate": 0.5078
+          "estimate": 0.507792
         },
         {
           "metricId": "npv",
-          "estimate": 0.8783
+          "estimate": 0.878261
         },
         {
           "metricId": "lift",
-          "estimate": 1.2119
+          "estimate": 1.211915
         }
       ]
     },
@@ -9706,23 +9706,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9364
+          "estimate": 0.936356
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3328
+          "estimate": 0.33276
         },
         {
           "metricId": "ppv",
-          "estimate": 0.503
+          "estimate": 0.502991
         },
         {
           "metricId": "npv",
-          "estimate": 0.8788
+          "estimate": 0.878788
         },
         {
           "metricId": "lift",
-          "estimate": 1.2005
+          "estimate": 1.200457
         }
       ]
     },
@@ -9751,23 +9751,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9395
+          "estimate": 0.939539
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3178
+          "estimate": 0.317843
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4983
+          "estimate": 0.498312
         },
         {
           "metricId": "npv",
-          "estimate": 0.8794
+          "estimate": 0.879365
         },
         {
           "metricId": "lift",
-          "estimate": 1.1893
+          "estimate": 1.189289
         }
       ]
     },
@@ -9796,23 +9796,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9419
+          "estimate": 0.941925
         },
         {
           "metricId": "specificity",
-          "estimate": 0.3024
+          "estimate": 0.302352
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4933
+          "estimate": 0.493333
         },
         {
           "metricId": "npv",
-          "estimate": 0.8783
+          "estimate": 0.878333
         },
         {
           "metricId": "lift",
-          "estimate": 1.1774
+          "estimate": 1.177407
         }
       ]
     },
@@ -9841,11 +9841,11 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9459
+          "estimate": 0.945903
         },
         {
           "metricId": "specificity",
-          "estimate": 0.288
+          "estimate": 0.288009
         },
         {
           "metricId": "ppv",
@@ -9853,11 +9853,11 @@
         },
         {
           "metricId": "npv",
-          "estimate": 0.8807
+          "estimate": 0.880702
         },
         {
           "metricId": "lift",
-          "estimate": 1.1678
+          "estimate": 1.167781
         }
       ]
     },
@@ -9886,23 +9886,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9499
+          "estimate": 0.949881
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2737
+          "estimate": 0.273666
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4854
+          "estimate": 0.485366
         },
         {
           "metricId": "npv",
-          "estimate": 0.8833
+          "estimate": 0.883333
         },
         {
           "metricId": "lift",
-          "estimate": 1.1584
+          "estimate": 1.158391
         }
       ]
     },
@@ -9931,23 +9931,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9539
+          "estimate": 0.953858
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2593
+          "estimate": 0.259323
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4815
+          "estimate": 0.481526
         },
         {
           "metricId": "npv",
-          "estimate": 0.8863
+          "estimate": 0.886275
         },
         {
           "metricId": "lift",
-          "estimate": 1.1492
+          "estimate": 1.149227
         }
       ]
     },
@@ -9976,23 +9976,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9578
+          "estimate": 0.957836
         },
         {
           "metricId": "specificity",
-          "estimate": 0.245
+          "estimate": 0.24498
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4778
+          "estimate": 0.477778
         },
         {
           "metricId": "npv",
-          "estimate": 0.8896
+          "estimate": 0.889583
         },
         {
           "metricId": "lift",
-          "estimate": 1.1403
+          "estimate": 1.140281
         }
       ]
     },
@@ -10021,23 +10021,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.961
+          "estimate": 0.961018
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2301
+          "estimate": 0.230063
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4737
+          "estimate": 0.473725
         },
         {
           "metricId": "npv",
-          "estimate": 0.8911
+          "estimate": 0.891111
         },
         {
           "metricId": "lift",
-          "estimate": 1.1306
+          "estimate": 1.13061
         }
       ]
     },
@@ -10066,15 +10066,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9666
+          "estimate": 0.966587
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2169
+          "estimate": 0.216867
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4709
+          "estimate": 0.47093
         },
         {
           "metricId": "npv",
@@ -10082,7 +10082,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.1239
+          "estimate": 1.123939
         }
       ]
     },
@@ -10111,23 +10111,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9706
+          "estimate": 0.970565
         },
         {
           "metricId": "specificity",
-          "estimate": 0.2025
+          "estimate": 0.202524
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4674
+          "estimate": 0.467433
         },
         {
           "metricId": "npv",
-          "estimate": 0.9051
+          "estimate": 0.905128
         },
         {
           "metricId": "lift",
-          "estimate": 1.1156
+          "estimate": 1.115592
         }
       ]
     },
@@ -10156,23 +10156,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.973
+          "estimate": 0.972951
         },
         {
           "metricId": "specificity",
-          "estimate": 0.187
+          "estimate": 0.187034
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4633
+          "estimate": 0.463258
         },
         {
           "metricId": "npv",
-          "estimate": 0.9056
+          "estimate": 0.905556
         },
         {
           "metricId": "lift",
-          "estimate": 1.1056
+          "estimate": 1.105627
         }
       ]
     },
@@ -10201,23 +10201,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9761
+          "estimate": 0.976134
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1721
+          "estimate": 0.172117
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4596
+          "estimate": 0.459551
         },
         {
           "metricId": "npv",
-          "estimate": 0.9091
+          "estimate": 0.909091
         },
         {
           "metricId": "lift",
-          "estimate": 1.0968
+          "estimate": 1.096779
         }
       ]
     },
@@ -10246,23 +10246,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9801
+          "estimate": 0.980111
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1578
+          "estimate": 0.157774
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4563
+          "estimate": 0.456296
         },
         {
           "metricId": "npv",
-          "estimate": 0.9167
+          "estimate": 0.916667
         },
         {
           "metricId": "lift",
-          "estimate": 1.089
+          "estimate": 1.089013
         }
       ]
     },
@@ -10291,23 +10291,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9841
+          "estimate": 0.984089
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1434
+          "estimate": 0.143431
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4531
+          "estimate": 0.453114
         },
         {
           "metricId": "npv",
-          "estimate": 0.9259
+          "estimate": 0.925926
         },
         {
           "metricId": "lift",
-          "estimate": 1.0814
+          "estimate": 1.081417
         }
       ]
     },
@@ -10336,23 +10336,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9912
+          "estimate": 0.991249
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1314
+          "estimate": 0.131383
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4514
+          "estimate": 0.451449
         },
         {
           "metricId": "npv",
-          "estimate": 0.9542
+          "estimate": 0.954167
         },
         {
           "metricId": "lift",
-          "estimate": 1.0774
+          "estimate": 1.077445
         }
       ]
     },
@@ -10381,23 +10381,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9928
+          "estimate": 0.99284
         },
         {
           "metricId": "specificity",
-          "estimate": 0.1153
+          "estimate": 0.115318
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4473
+          "estimate": 0.447312
         },
         {
           "metricId": "npv",
-          "estimate": 0.9571
+          "estimate": 0.957143
         },
         {
           "metricId": "lift",
-          "estimate": 1.0676
+          "estimate": 1.06757
         }
       ]
     },
@@ -10426,23 +10426,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9944
+          "estimate": 0.994431
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0993
+          "estimate": 0.099254
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4433
+          "estimate": 0.443262
         },
         {
           "metricId": "npv",
-          "estimate": 0.9611
+          "estimate": 0.961111
         },
         {
           "metricId": "lift",
-          "estimate": 1.0579
+          "estimate": 1.057906
         }
       ]
     },
@@ -10471,15 +10471,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0826
+          "estimate": 0.082616
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4389
+          "estimate": 0.438947
         },
         {
           "metricId": "npv",
@@ -10487,7 +10487,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.0476
+          "estimate": 1.047607
         }
       ]
     },
@@ -10516,15 +10516,15 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9952
+          "estimate": 0.995227
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0654
+          "estimate": 0.065404
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4344
+          "estimate": 0.434375
         },
         {
           "metricId": "npv",
@@ -10532,7 +10532,7 @@
         },
         {
           "metricId": "lift",
-          "estimate": 1.0367
+          "estimate": 1.036695
         }
       ]
     },
@@ -10561,23 +10561,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0488
+          "estimate": 0.048766
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4302
+          "estimate": 0.430241
         },
         {
           "metricId": "npv",
-          "estimate": 0.9444
+          "estimate": 0.944444
         },
         {
           "metricId": "lift",
-          "estimate": 1.0268
+          "estimate": 1.026827
         }
       ]
     },
@@ -10606,23 +10606,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.996
+          "estimate": 0.996022
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0316
+          "estimate": 0.031555
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4259
+          "estimate": 0.42585
         },
         {
           "metricId": "npv",
-          "estimate": 0.9167
+          "estimate": 0.916667
         },
         {
           "metricId": "lift",
-          "estimate": 1.0163
+          "estimate": 1.016349
         }
       ]
     },
@@ -10651,23 +10651,23 @@
         },
         {
           "metricId": "sensitivity",
-          "estimate": 0.9968
+          "estimate": 0.996818
         },
         {
           "metricId": "specificity",
-          "estimate": 0.0149
+          "estimate": 0.014917
         },
         {
           "metricId": "ppv",
-          "estimate": 0.4219
+          "estimate": 0.421886
         },
         {
           "metricId": "npv",
-          "estimate": 0.8667
+          "estimate": 0.866667
         },
         {
           "metricId": "lift",
-          "estimate": 1.0069
+          "estimate": 1.006887
         }
       ]
     },

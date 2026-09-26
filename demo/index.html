@@ -78,6 +78,9 @@
         margin-bottom: 1rem;
         font-style: italic;
       }
+      .report-demo-container[hidden] {
+        display: none !important;
+      }
       .report-preview {
         max-width: 900px;
         padding: 1.5rem;
@@ -167,30 +170,30 @@
           Select a demonstration report below to explore model and population performance comparisons.
         </p>
         <div class="demo-tabs" role="tablist" aria-label="Summary Report Examples">
-          <button class="demo-tab-button active" id="tab-btn-report-1" role="tab" aria-selected="true" aria-controls="report-demo-1-wrapper">
+          <button class="demo-tab-button active" id="tab-btn-report-1" role="tab" aria-selected="true" aria-controls="report-demo-1-wrapper" tabindex="0">
             1. One Model, One Population
           </button>
-          <button class="demo-tab-button" id="tab-btn-report-2" role="tab" aria-selected="false" aria-controls="report-demo-2-wrapper">
+          <button class="demo-tab-button" id="tab-btn-report-2" role="tab" aria-selected="false" aria-controls="report-demo-2-wrapper" tabindex="-1">
             2. Multiple Models, One Population
           </button>
-          <button class="demo-tab-button" id="tab-btn-report-3" role="tab" aria-selected="false" aria-controls="report-demo-3-wrapper">
+          <button class="demo-tab-button" id="tab-btn-report-3" role="tab" aria-selected="false" aria-controls="report-demo-3-wrapper" tabindex="-1">
             3. One Model, Multiple Populations
           </button>
         </div>
 
-        <div class="report-demo-container" id="report-demo-1-wrapper">
+        <div class="report-demo-container" id="report-demo-1-wrapper" role="tabpanel" aria-labelledby="tab-btn-report-1">
           <h3>Summary Report — One Model, One Population</h3>
           <p class="demo-subtitle">Model A evaluated on the Test population.</p>
           <div id="report-demo-1" class="report-preview"></div>
         </div>
 
-        <div class="report-demo-container" id="report-demo-2-wrapper" style="display: none;">
+        <div class="report-demo-container" id="report-demo-2-wrapper" role="tabpanel" aria-labelledby="tab-btn-report-2" hidden>
           <h3>Summary Report — Multiple Models, One Population</h3>
           <p class="demo-subtitle">Model A and Model B compared on the same Test population.</p>
           <div id="report-demo-2" class="report-preview"></div>
         </div>
 
-        <div class="report-demo-container" id="report-demo-3-wrapper" style="display: none;">
+        <div class="report-demo-container" id="report-demo-3-wrapper" role="tabpanel" aria-labelledby="tab-btn-report-3" hidden>
           <h3>Summary Report — One Model, Multiple Populations</h3>
           <p class="demo-subtitle">Model A evaluated across Train, Test and Validation populations.</p>
           <div id="report-demo-3" class="report-preview"></div>

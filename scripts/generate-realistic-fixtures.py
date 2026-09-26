@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import sys
 import random
 
 def generate_individual_observations(n_total=3000, model_type='high', seed=42):
@@ -789,191 +790,8 @@ def build_performance_table_spec(evaluations, eval_obs_map, selected_cutoffs=[0.
         "rows": rows_list
     }
 
-def create_report_spec(report_title, roc_spec, pr_spec, gains_spec, lift_spec, calib_spec, pred_dist_spec, summary_metrics_spec, perf_table_spec):
-    return {
-        "schemaVersion": "1.1",
-        "type": "report",
-        "title": report_title,
-        "sections": [
-            {
-                "id": "summary-metrics",
-                "title": "Summary Metrics",
-                "items": [
-                    {
-                        "type": "component",
-                        "id": "summary-metrics-component",
-                        "title": "Performance & Prevalence Summary",
-                        "spec": summary_metrics_spec
-                    }
-                ]
-            },
-            {
-                "id": "calibration",
-                "title": "Calibration",
-                "items": [
-                    {
-                        "type": "component",
-                        "id": "calibration-discrete",
-                        "title": "Calibration Analysis",
-                        "spec": calib_spec
-                    }
-                ]
-            },
-            {
-                "id": "discrimination",
-                "title": "Discrimination",
-                "items": [
-                    {
-                        "type": "group",
-                        "id": "probability-threshold",
-                        "title": "By Probability Threshold",
-                        "components": [
-                            {
-                                "type": "component",
-                                "id": "roc-threshold",
-                                "title": "Receiver Operating Characteristic (ROC)",
-                                "spec": roc_spec
-                            },
-                            {
-                                "type": "component",
-                                "id": "pr-threshold",
-                                "title": "Precision-Recall Curve",
-                                "spec": pr_spec
-                            },
-                            {
-                                "type": "component",
-                                "id": "gains-threshold",
-                                "title": "Cumulative Gains Chart",
-                                "spec": gains_spec
-                            },
-                            {
-                                "type": "component",
-                                "id": "lift-threshold",
-                                "title": "Lift Chart",
-                                "spec": lift_spec
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "prediction-distribution",
-                "title": "Prediction Distribution",
-                "items": [
-                    {
-                        "type": "component",
-                        "id": "pred-dist-component",
-                        "title": "Prediction Score Distribution",
-                        "spec": pred_dist_spec
-                    }
-                ]
-            },
-            {
-                "id": "performance-table",
-                "title": "Performance Table",
-                "items": [
-                    {
-                        "type": "component",
-                        "id": "perf-table-component",
-                        "title": "Performance Metrics Summary Table",
-                        "spec": perf_table_spec
-                    }
-                ]
-            }
-        ]
-    }
-
-def generate_single_spec():
-    obs = generate_individual_observations(3000, 'high', seed=42)
-    bins = create_score_histogram_bins(obs, "Model A")
-    grid = [round(i * 0.01, 2) for i in range(101)]
-
-    ops = calculate_producer_ops(obs, "Model A", bins, grid, grid)
-    rank_bins = create_producer_rank_bins(obs, "Model A", 0.01)
-
-    return {
-        "schemaVersion": "2.0",
-        "type": "prediction_distribution",
-        "title": "Realistic Single Model Prediction Distribution (by = 0.01)",
-        "evaluations": [
-            {
-                "id": "Model A",
-                "model": "Model A",
-                "population": "Overall Population"
-            }
-        ],
-        "operatingPoint": {
-            "dimension": "probability_threshold"
-        },
-        "bins": bins,
-        "rankBins": rank_bins,
-        "operatingPoints": ops
-    }
-
-def generate_multi_spec():
-    obs_a = generate_individual_observations(3000, 'high', seed=42)
-    obs_b = generate_individual_observations(3000, 'moderate', seed=101)
-    obs_sub = generate_individual_observations(2000, 'high_risk', seed=202)
-
-    bins_a = create_score_histogram_bins(obs_a, "Model A")
-    bins_b = create_score_histogram_bins(obs_b, "Model B")
-    bins_sub = create_score_histogram_bins(obs_sub, "Model A (High Risk)")
-
-    grid = [round(i * 0.01, 2) for i in range(101)]
-
-    ops_a = calculate_producer_ops(obs_a, "Model A", bins_a, grid, grid)
-    ops_b = calculate_producer_ops(obs_b, "Model B", bins_b, grid, grid)
-    ops_sub = calculate_producer_ops(obs_sub, "Model A (High Risk)", bins_sub, grid, grid)
-
-    rank_bins_a = create_producer_rank_bins(obs_a, "Model A", 0.01)
-    rank_bins_b = create_producer_rank_bins(obs_b, "Model B", 0.01)
-    rank_bins_sub = create_producer_rank_bins(obs_sub, "Model A (High Risk)", 0.01)
-
-    return {
-        "schemaVersion": "2.0",
-        "type": "prediction_distribution",
-        "title": "Realistic Multi-Evaluation Prediction Distribution (by = 0.01)",
-        "evaluations": [
-            {
-                "id": "Model A",
-                "model": "Model A (High Accuracy)",
-                "population": "Overall Population",
-                "label": "Model A (High Accuracy)"
-            },
-            {
-                "id": "Model B",
-                "model": "Model B (Moderate Accuracy)",
-                "population": "Overall Population",
-                "label": "Model B (Moderate Accuracy)"
-            },
-            {
-                "id": "Model A (High Risk)",
-                "model": "Model A (High Accuracy)",
-                "population": "High-Risk Subgroup",
-                "label": "Model A (High Risk Subgroup)"
-            }
-        ],
-        "operatingPoint": {
-            "dimension": "probability_threshold"
-        },
-        "bins": bins_a + bins_b + bins_sub,
-        "rankBins": rank_bins_a + rank_bins_b + rank_bins_sub,
-        "operatingPoints": ops_a + ops_b + ops_sub
-    }
-
-def generate_all_demo_fixtures():
-    os.makedirs("fixtures/v2/demo", exist_ok=True)
-
-    # Preserve original prediction distribution fixtures
-    single_pd_orig = generate_single_spec()
-    multi_pd_orig = generate_multi_spec()
-
-    with open("fixtures/v2/prediction-distribution-single.json", "w") as f:
-        json.dump(single_pd_orig, f, indent=2)
-    with open("fixtures/v2/prediction-distribution-multi.json", "w") as f:
-        json.dump(multi_pd_orig, f, indent=2)
-    with open("fixtures/v2/prediction-distribution-visual.json", "w") as f:
-        json.dump(multi_pd_orig, f, indent=2)
+def generate_all_demo_fixtures(target_dir="fixtures/v2/demo"):
+    os.makedirs(target_dir, exist_ok=True)
 
     # 1. Generate observation sets for the 3 reports
     obs_a_test, obs_b_test = generate_paired_test_observations(3000, seed=42)
@@ -997,11 +815,6 @@ def generate_all_demo_fixtures():
     summary_metrics_r1 = build_summary_metrics_spec(evals_r1, obs_r1)
     perf_table_r1 = build_performance_table_spec(evals_r1, obs_r1)
 
-    report_1 = create_report_spec(
-        "Summary Report — One Model, One Population",
-        roc_r1, pr_r1, gains_r1, lift_r1, calib_r1, pred_dist_r1, summary_metrics_r1, perf_table_r1
-    )
-
     # --- REPORT 2: Several Models, One Population ---
     evals_r2 = [
         {"id": "Model A - Test", "model": "Model A", "population": "Test", "label": "Model A — Test"},
@@ -1020,11 +833,6 @@ def generate_all_demo_fixtures():
     pred_dist_r2 = build_pred_dist_spec(evals_r2, obs_r2, "Prediction Distribution — Model Comparison (Test)")
     summary_metrics_r2 = build_summary_metrics_spec(evals_r2, obs_r2)
     perf_table_r2 = build_performance_table_spec(evals_r2, obs_r2)
-
-    report_2 = create_report_spec(
-        "Summary Report — Multiple Models, One Population",
-        roc_r2, pr_r2, gains_r2, lift_r2, calib_r2, pred_dist_r2, summary_metrics_r2, perf_table_r2
-    )
 
     # --- REPORT 3: One Model, Several Populations ---
     evals_r3 = [
@@ -1047,49 +855,42 @@ def generate_all_demo_fixtures():
     summary_metrics_r3 = build_summary_metrics_spec(evals_r3, obs_r3)
     perf_table_r3 = build_performance_table_spec(evals_r3, obs_r3)
 
-    report_3 = create_report_spec(
-        "Summary Report — One Model, Multiple Populations",
-        roc_r3, pr_r3, gains_r3, lift_r3, calib_r3, pred_dist_r3, summary_metrics_r3, perf_table_r3
-    )
-
-    # Save canonical component specifications & reports to fixtures/v2/demo/
+    # Save canonical standalone component specifications to target_dir
     fixtures_to_save = {
-        "fixtures/v2/demo/model-a-test-roc.json": roc_r1,
-        "fixtures/v2/demo/model-a-test-calibration.json": calib_r1,
-        "fixtures/v2/demo/model-a-test-precision-recall.json": pr_r1,
-        "fixtures/v2/demo/model-a-test-gains.json": gains_r1,
-        "fixtures/v2/demo/model-a-test-lift.json": lift_r1,
-        "fixtures/v2/demo/model-a-test-prediction-distribution.json": pred_dist_r1,
-        "fixtures/v2/demo/model-a-test-summary-metrics.json": summary_metrics_r1,
-        "fixtures/v2/demo/model-a-test-performance-table.json": perf_table_r1,
-        "fixtures/v2/demo/report-1-one-model-one-pop.json": report_1,
+        os.path.join(target_dir, "model-a-test-roc.json"): roc_r1,
+        os.path.join(target_dir, "model-a-test-calibration.json"): calib_r1,
+        os.path.join(target_dir, "model-a-test-precision-recall.json"): pr_r1,
+        os.path.join(target_dir, "model-a-test-gains.json"): gains_r1,
+        os.path.join(target_dir, "model-a-test-lift.json"): lift_r1,
+        os.path.join(target_dir, "model-a-test-prediction-distribution.json"): pred_dist_r1,
+        os.path.join(target_dir, "model-a-test-summary-metrics.json"): summary_metrics_r1,
+        os.path.join(target_dir, "model-a-test-performance-table.json"): perf_table_r1,
 
-        "fixtures/v2/demo/models-a-b-test-roc.json": roc_r2,
-        "fixtures/v2/demo/models-a-b-test-calibration.json": calib_r2,
-        "fixtures/v2/demo/models-a-b-test-precision-recall.json": pr_r2,
-        "fixtures/v2/demo/models-a-b-test-gains.json": gains_r2,
-        "fixtures/v2/demo/models-a-b-test-lift.json": lift_r2,
-        "fixtures/v2/demo/models-a-b-test-prediction-distribution.json": pred_dist_r2,
-        "fixtures/v2/demo/models-a-b-test-summary-metrics.json": summary_metrics_r2,
-        "fixtures/v2/demo/models-a-b-test-performance-table.json": perf_table_r2,
-        "fixtures/v2/demo/report-2-multi-models-one-pop.json": report_2,
+        os.path.join(target_dir, "models-a-b-test-roc.json"): roc_r2,
+        os.path.join(target_dir, "models-a-b-test-calibration.json"): calib_r2,
+        os.path.join(target_dir, "models-a-b-test-precision-recall.json"): pr_r2,
+        os.path.join(target_dir, "models-a-b-test-gains.json"): gains_r2,
+        os.path.join(target_dir, "models-a-b-test-lift.json"): lift_r2,
+        os.path.join(target_dir, "models-a-b-test-prediction-distribution.json"): pred_dist_r2,
+        os.path.join(target_dir, "models-a-b-test-summary-metrics.json"): summary_metrics_r2,
+        os.path.join(target_dir, "models-a-b-test-performance-table.json"): perf_table_r2,
 
-        "fixtures/v2/demo/model-a-train-test-val-roc.json": roc_r3,
-        "fixtures/v2/demo/model-a-train-test-val-calibration.json": calib_r3,
-        "fixtures/v2/demo/model-a-train-test-val-precision-recall.json": pr_r3,
-        "fixtures/v2/demo/model-a-train-test-val-gains.json": gains_r3,
-        "fixtures/v2/demo/model-a-train-test-val-lift.json": lift_r3,
-        "fixtures/v2/demo/model-a-train-test-val-prediction-distribution.json": pred_dist_r3,
-        "fixtures/v2/demo/model-a-train-test-val-summary-metrics.json": summary_metrics_r3,
-        "fixtures/v2/demo/model-a-train-test-val-performance-table.json": perf_table_r3,
-        "fixtures/v2/demo/report-3-one-model-multi-pops.json": report_3,
+        os.path.join(target_dir, "model-a-train-test-val-roc.json"): roc_r3,
+        os.path.join(target_dir, "model-a-train-test-val-calibration.json"): calib_r3,
+        os.path.join(target_dir, "model-a-train-test-val-precision-recall.json"): pr_r3,
+        os.path.join(target_dir, "model-a-train-test-val-gains.json"): gains_r3,
+        os.path.join(target_dir, "model-a-train-test-val-lift.json"): lift_r3,
+        os.path.join(target_dir, "model-a-train-test-val-prediction-distribution.json"): pred_dist_r3,
+        os.path.join(target_dir, "model-a-train-test-val-summary-metrics.json"): summary_metrics_r3,
+        os.path.join(target_dir, "model-a-train-test-val-performance-table.json"): perf_table_r3,
     }
 
     for path, data in fixtures_to_save.items():
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
-    print("Successfully generated all demo fixtures and report specifications under fixtures/v2/demo/")
+    print(f"Successfully generated all demo fixtures under {target_dir}")
 
 if __name__ == "__main__":
-    generate_all_demo_fixtures()
+    out_dir = sys.argv[1] if len(sys.argv) > 1 else "fixtures/v2/demo"
+    generate_all_demo_fixtures(out_dir)
