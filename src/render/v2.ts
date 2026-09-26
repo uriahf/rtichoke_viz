@@ -12,6 +12,8 @@ import type { PerformanceMetricId, PerformanceMetricValue } from "../spec/v2/per
 import { assertV2ReferentialIntegrity } from "../spec/v2/validate.js";
 
 
+let sliderIdCounter = 0;
+
 export const RTICHOKE_COLORS = [
   "#1b9e77",
   "#d95f02",
@@ -463,8 +465,11 @@ export function renderWithOperatingPointSelection<
       ? "Probability threshold"
       : "PPCR";
 
+  const sliderId = `rtichoke-v2-slider-${++sliderIdCounter}`;
+
   const label = document.createElement("label");
   label.className = "rtichoke-operating-point-label";
+  label.htmlFor = sliderId;
 
   const labelSpan = document.createElement("span");
   labelSpan.textContent = `${visibleLabelText}: `;
@@ -474,6 +479,7 @@ export function renderWithOperatingPointSelection<
 
   const slider = document.createElement("input");
   slider.type = "range";
+  slider.id = sliderId;
   slider.className = "rtichoke-operating-point-slider";
   slider.min = "0";
   slider.max = String(values.length - 1);
