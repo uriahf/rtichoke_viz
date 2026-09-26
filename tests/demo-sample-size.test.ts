@@ -5,8 +5,6 @@ import { MIN_DEMO_POPULATION_SIZE, scaleCalibrationForDemo } from "../src/demo-d
 import type { CalibrationV2Spec } from "../src/index.js";
 import calibrationFixture from "../fixtures/v2/calibration.json" with { type: "json" };
 import calibrationPopulationsFixture from "../fixtures/v2/calibration-populations.json" with { type: "json" };
-import demoCalibrationFixture from "../fixtures/v2/demo/calibration.json" with { type: "json" };
-import demoCalibrationPopulationsFixture from "../fixtures/v2/demo/calibration-populations.json" with { type: "json" };
 
 describe("Demo Sample Size & Calibration Scaling", () => {
   it("scaleCalibrationForDemo produces at least MIN_DEMO_POPULATION_SIZE observations per series", () => {
@@ -25,21 +23,6 @@ describe("Demo Sample Size & Calibration Scaling", () => {
           .reduce((sum, bin) => sum + bin.count, 0);
 
         expect(populationSum).toBeGreaterThanOrEqual(MIN_DEMO_POPULATION_SIZE);
-      }
-    }
-  });
-
-  it("verifies dedicated demo calibration fixtures have N >= 1000 and ~10 groups per population", () => {
-    for (const spec of [demoCalibrationFixture, demoCalibrationPopulationsFixture]) {
-      const distribution = spec.distribution ?? [];
-      const seriesIds = new Set(distribution.map((d) => d.seriesId));
-
-      for (const seriesId of seriesIds) {
-        const seriesBins = distribution.filter((d) => d.seriesId === seriesId);
-        const populationSum = seriesBins.reduce((sum, bin) => sum + bin.count, 0);
-
-        expect(populationSum).toBeGreaterThanOrEqual(MIN_DEMO_POPULATION_SIZE);
-        expect(seriesBins.length).toBeGreaterThanOrEqual(10);
       }
     }
   });
