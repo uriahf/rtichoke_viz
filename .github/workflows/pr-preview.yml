@@ -53,6 +53,12 @@ jobs:
           name: pr-preview-site
           path: pr-site
 
+      - name: Check out PR source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-source
+
       - name: Check out production source
         uses: actions/checkout@v4
         with:
@@ -117,7 +123,12 @@ jobs:
           fi
 
       - name: Verify assembled Pages site
-        run: bash main-source/scripts/verify-site-build.sh pages-site
+        run: |
+          if [ -f pr-source/scripts/verify-site-build.sh ]; then
+            bash pr-source/scripts/verify-site-build.sh pages-site
+          else
+            bash main-source/scripts/verify-site-build.sh pages-site
+          fi
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
