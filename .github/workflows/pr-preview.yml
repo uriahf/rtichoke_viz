@@ -29,6 +29,8 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv run --project consumers/python_plotly python consumers/python_plotly/render.py
+      - name: Verify PR site build
+        run: bash scripts/verify-site-build.sh site
       - uses: actions/upload-artifact@v4
         with:
           name: pr-preview-site
@@ -67,6 +69,16 @@ jobs:
           npm install
           npm run build:demo
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Build production Python Plotly comparisons
+        working-directory: main-source
+        run: uv run --project consumers/python_plotly python consumers/python_plotly/render.py
+
       - name: Check out preview store
         uses: actions/checkout@v4
         with:
@@ -103,6 +115,30 @@ jobs:
             mkdir -p pages-site/pr-preview
             cp -R preview-store/pr-preview/. pages-site/pr-preview/
           fi
+
+      - name: Verify assembled Pages site
+        run: |
+          set -euo pipefail
+          REQUIRED_FILES=(
+            "python-plotly/roc.html"
+            "python-plotly/calibration.html"
+            "python-plotly/precision-recall.html"
+            "python-plotly/gains.html"
+          )
+          echo "Verifying assembled Pages site in pages-site..."
+          for rel_path in "${REQUIRED_FILES[@]}"; do
+            file_path="pages-site/${rel_path}"
+            if [[ ! -f "${file_path}" ]]; then
+              echo "Error: Required site file missing: ${file_path}" >&2
+              exit 1
+            fi
+            if [[ ! -s "${file_path}" ]]; then
+              echo "Error: Required site file is empty: ${file_path}" >&2
+              exit 1
+            fi
+            echo "OK: ${file_path} ($(wc -c < "${file_path}") bytes)"
+          done
+          echo "Pages site verification PASSED."
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

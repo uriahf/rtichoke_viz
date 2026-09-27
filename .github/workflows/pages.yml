@@ -45,6 +45,8 @@ jobs:
             mkdir -p pages-site/pr-preview
             cp -R preview-store/pr-preview/. pages-site/pr-preview/
           fi
+      - name: Verify assembled Pages site
+        run: bash scripts/verify-site-build.sh pages-site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
