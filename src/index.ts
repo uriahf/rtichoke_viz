@@ -26,12 +26,17 @@ export { OperatingPointSchema, PerformanceEvaluationContextSchema, PerformanceMe
 export type { OperatingPoint, PerformanceEvaluationContext, PerformanceMetricDefinition, PerformanceMetricId, PerformanceMetricValue, PerformanceTableRow, PerformanceTableSpec } from "./spec/v2/performance-table.js";
 export { AUROCSummaryMetricSchema, PopulationSummaryOwnerSpecSchema, PrevalenceSummaryMetricSchema, SummaryMetricSchema, SummaryMetricsSpecSchema } from "./spec/v2/summary-metrics.js";
 export type { AUROCSummaryMetric, PopulationSummaryOwnerSpec, PrevalenceSummaryMetric, SummaryMetric, SummaryMetricsSpec } from "./spec/v2/summary-metrics.js";
+export { OutcomeStateSchema, StateDistributionSchema, StateStratumSchema } from "./spec/v2/state-distribution.js";
+export type { OutcomeState, StateDistribution, StateStratum } from "./spec/v2/state-distribution.js";
+export { OutcomeDistributionSpecSchema } from "./spec/v2/outcome-distribution.js";
+export type { OutcomeDistributionSpec } from "./spec/v2/outcome-distribution.js";
 export { PredictionDistributionBinSchema, PredictionDistributionOperatingPointSchema, PredictionDistributionSpecSchema } from "./spec/v2/prediction-distribution.js";
 export type { PredictionDistributionBin, PredictionDistributionOperatingPoint, PredictionDistributionSpec } from "./spec/v2/prediction-distribution.js";
 export { ReportComponentSchema, ReportComponentV1_1Schema, ReportGroupSchema, ReportSectionSchema, ReportSpecSchema, ReportSpecV1_0Schema, ReportSpecV1_1Schema, StandaloneCanonicalSpecSchema } from "./spec/report.js";
 export type { ReportComponent, ReportComponentV1_1, ReportGroup, ReportSection, ReportSpec, ReportSpecV1_0, ReportSpecV1_1, StandaloneCanonicalSpec } from "./spec/report.js";
 export { assertReportReferentialIntegrity } from "./spec/validate-report.js";
 export { assertPerformanceTableReferentialIntegrity } from "./spec/v2/validate-performance-table.js";
+export { assertOutcomeDistributionReferentialIntegrity, assertStateDistributionValid } from "./spec/v2/validate-outcome-distribution.js";
 export { assertPredictionDistributionReferentialIntegrity } from "./spec/v2/validate-prediction-distribution.js";
 export { assertSummaryMetricsReferentialIntegrity } from "./spec/v2/validate-summary-metrics.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
