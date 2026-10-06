@@ -1,6 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import { EvaluationSpecSchema, OperatingPointDimensionSchema } from "./common.js";
 import { PerformanceMetricValueSchema } from "./performance-table.js";
+import { StateDistributionSchema } from "./state-distribution.js";
 
 export const PredictionDistributionBinSchema = Type.Object({
   evaluationId: Type.String(),
@@ -44,6 +45,7 @@ export const PredictionDistributionSpecSchema = Type.Object({
   operatingPoints: Type.Array(PredictionDistributionOperatingPointSchema, {
     minItems: 1,
   }),
+  stateDistributions: Type.Optional(Type.Array(StateDistributionSchema)),
 });
 
 export type PredictionDistributionBin = Static<

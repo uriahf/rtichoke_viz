@@ -3,6 +3,7 @@ import type {
   PredictionDistributionOperatingPoint,
   PredictionDistributionSpec,
 } from "./prediction-distribution.js";
+import { assertStateDistributionValid } from "./validate-outcome-distribution.js";
 
 export function assertPredictionDistributionReferentialIntegrity(
   spec: PredictionDistributionSpec,
@@ -24,6 +25,12 @@ export function assertPredictionDistributionReferentialIntegrity(
       throw new Error(`duplicate evaluation id: ${evaluation.id}`);
     }
     evaluationIds.add(evaluation.id);
+  }
+
+  if (spec.stateDistributions) {
+    for (const dist of spec.stateDistributions) {
+      assertStateDistributionValid(dist, evaluationIds);
+    }
   }
 
   const binsByEvaluation = new Map<string, PredictionDistributionBin[]>();
