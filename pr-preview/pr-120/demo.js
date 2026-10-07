@@ -21966,14 +21966,18 @@ var STATE_COLOR_PALETTE = [
   // Grey
 ];
 var PREFERRED_STATE_COLORS = {
-  real_positive: "#1b9e77",
-  target_event: "#1b9e77",
-  real_competing: "#d95f02",
-  competing_outcome: "#d95f02",
-  real_negative: "#7570b3",
-  no_target_event: "#7570b3",
-  real_censored: "#94a3b8",
-  unknown: "#cbd5e1"
+  real_positive: "#4C5454",
+  real_positives_est: "#4C5454",
+  target_event: "#4C5454",
+  real_competing: "#C880B7",
+  real_competing_est: "#C880B7",
+  competing_outcome: "#C880B7",
+  real_negative: "#E0E0E0",
+  real_negatives_est: "#E0E0E0",
+  no_target_event: "#E0E0E0",
+  real_censored: "#E3F09B",
+  real_censored_est: "#E3F09B",
+  unknown: "#E3F09B"
 };
 function friendlyCensoringLabel(val) {
   if (!val) return "";
@@ -155632,6 +155636,18 @@ var outcome_distribution_default = {
   stateDistributions: [
     {
       evaluationId: "eval-canonical",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 0 },
+        { stateId: "real_competing", label: "Competing outcome", count: 0 },
+        { stateId: "real_negative", label: "No target event", count: 10 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
       horizon: 4.3,
       estimator: "raw",
       estimateOrigin: "event_table",
@@ -155748,6 +155764,18 @@ var outcome_distribution_default = {
         { stateId: "real_competing", label: "Competing outcome", count: 2 },
         { stateId: "real_negative", label: "No target event", count: 0 },
         { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 0 },
+        { stateId: "real_competing", label: "Competing outcome", count: 0 },
+        { stateId: "real_negative", label: "No target event", count: 10 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
