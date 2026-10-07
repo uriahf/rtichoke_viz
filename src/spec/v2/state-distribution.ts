@@ -28,6 +28,12 @@ export const StateDistributionSchema = Type.Object({
   evaluationId: Type.String(),
   horizon: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
   estimator: Type.String(),
+  estimateOrigin: Type.Optional(
+    Type.Union([
+      Type.Literal("event_table"),
+      Type.Literal("fixed_time_horizon"),
+    ]),
+  ),
   stratum: Type.Optional(StateStratumSchema),
   region: Type.Optional(Type.String()),
   censoringHeuristic: Type.Optional(Type.String()),

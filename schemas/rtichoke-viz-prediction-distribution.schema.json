@@ -319,6 +319,18 @@
           "estimator": {
             "type": "string"
           },
+          "estimateOrigin": {
+            "anyOf": [
+              {
+                "const": "event_table",
+                "type": "string"
+              },
+              {
+                "const": "fixed_time_horizon",
+                "type": "string"
+              }
+            ]
+          },
           "stratum": {
             "type": "object",
             "required": [

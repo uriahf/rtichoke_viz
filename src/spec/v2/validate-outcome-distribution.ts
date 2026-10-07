@@ -20,6 +20,17 @@ export function assertStateDistributionValid(
     );
   }
 
+  if (
+    dist.estimateOrigin !== undefined &&
+    dist.estimateOrigin !== null &&
+    dist.estimateOrigin !== "event_table" &&
+    dist.estimateOrigin !== "fixed_time_horizon"
+  ) {
+    throw new Error(
+      `invalid estimateOrigin '${dist.estimateOrigin}' for evaluation ${dist.evaluationId}`,
+    );
+  }
+
   if (!dist.states || dist.states.length === 0) {
     throw new Error(`states must be non-empty for evaluation ${dist.evaluationId}`);
   }
