@@ -155638,7 +155638,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 1 },
         { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 9 }
+        { stateId: "real_negative", label: "No target event", count: 9 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155649,7 +155650,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 2 },
         { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 8 }
+        { stateId: "real_negative", label: "No target event", count: 8 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155660,7 +155662,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 2 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 7 }
+        { stateId: "real_negative", label: "No target event", count: 7 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155671,7 +155674,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 3 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 6 }
+        { stateId: "real_negative", label: "No target event", count: 6 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155682,7 +155686,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 4 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 }
+        { stateId: "real_negative", label: "No target event", count: 5 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155693,7 +155698,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 4 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 }
+        { stateId: "real_negative", label: "No target event", count: 4 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 1 }
       ]
     },
     {
@@ -155704,7 +155710,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 4 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 }
+        { stateId: "real_negative", label: "No target event", count: 3 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     },
     {
@@ -155715,7 +155722,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 5 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 4 }
+        { stateId: "real_negative", label: "No target event", count: 2 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     },
     {
@@ -155726,7 +155734,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 5 },
         { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 3 }
+        { stateId: "real_negative", label: "No target event", count: 1 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     },
     {
@@ -155737,7 +155746,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 6 },
         { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 2 }
+        { stateId: "real_negative", label: "No target event", count: 0 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     },
     {
@@ -155748,7 +155758,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 2 },
         { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 8 }
+        { stateId: "real_negative", label: "No target event", count: 8 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155759,7 +155770,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 3 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 6 }
+        { stateId: "real_negative", label: "No target event", count: 6 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155770,7 +155782,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 4 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 }
+        { stateId: "real_negative", label: "No target event", count: 5 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
       ]
     },
     {
@@ -155781,7 +155794,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 5 },
         { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 4 }
+        { stateId: "real_negative", label: "No target event", count: 2 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     },
     {
@@ -155792,7 +155806,8 @@ var outcome_distribution_default = {
       states: [
         { stateId: "real_positive", label: "Target event", count: 6 },
         { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 2 }
+        { stateId: "real_negative", label: "No target event", count: 0 },
+        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
       ]
     }
   ]
