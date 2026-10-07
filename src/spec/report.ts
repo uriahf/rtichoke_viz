@@ -1,4 +1,5 @@
 import { Type, type Static } from "@sinclair/typebox";
+import { OutcomeDistributionSpecSchema } from "./v2/outcome-distribution.js";
 import { PredictionDistributionSpecSchema } from "./v2/prediction-distribution.js";
 import { RtichokeChartSpecV2Schema } from "./v2/chart.js";
 import { PerformanceTableSpecSchema } from "./v2/performance-table.js";
@@ -9,6 +10,7 @@ export const StandaloneCanonicalSpecSchema = Type.Union([
   PerformanceTableSpecSchema,
   SummaryMetricsSpecSchema,
   PredictionDistributionSpecSchema,
+  OutcomeDistributionSpecSchema,
 ]);
 
 /** Flat ReportSpec v1.0 component wrapper. */
