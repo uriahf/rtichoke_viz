@@ -81,6 +81,92 @@ describe("OutcomeDistributionSpec", () => {
     ).not.toThrow();
   });
 
+  it("validates OutcomeDistributionSpec with estimateOrigin: 'event_table'", () => {
+    const spec: OutcomeDistributionSpec = {
+      ...validSpec,
+      stateDistributions: [
+        {
+          ...validSpec.stateDistributions[0],
+          estimateOrigin: "event_table",
+        },
+      ],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, spec)).toBe(true);
+    expect(() =>
+      assertOutcomeDistributionReferentialIntegrity(spec),
+    ).not.toThrow();
+  });
+
+  it("validates OutcomeDistributionSpec with estimateOrigin: 'fixed_time_horizon'", () => {
+    const spec: OutcomeDistributionSpec = {
+      ...validSpec,
+      stateDistributions: [
+        {
+          ...validSpec.stateDistributions[0],
+          estimateOrigin: "fixed_time_horizon",
+        },
+      ],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, spec)).toBe(true);
+    expect(() =>
+      assertOutcomeDistributionReferentialIntegrity(spec),
+    ).not.toThrow();
+  });
+
+  it("validates OutcomeDistributionSpec when estimateOrigin is omitted", () => {
+    const spec: OutcomeDistributionSpec = {
+      ...validSpec,
+      stateDistributions: [
+        {
+          ...validSpec.stateDistributions[0],
+          estimateOrigin: undefined,
+        },
+      ],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, spec)).toBe(true);
+    expect(() =>
+      assertOutcomeDistributionReferentialIntegrity(spec),
+    ).not.toThrow();
+  });
+
+  it("fails TypeBox check and referential integrity on unknown estimateOrigin values", () => {
+    const specInvalidValue = {
+      ...validSpec,
+      stateDistributions: [
+        {
+          ...validSpec.stateDistributions[0],
+          estimateOrigin: "trajectory",
+        },
+      ],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, specInvalidValue)).toBe(
+      false,
+    );
+    expect(() =>
+      assertOutcomeDistributionReferentialIntegrity(
+        specInvalidValue as unknown as OutcomeDistributionSpec,
+      ),
+    ).toThrow("invalid estimateOrigin 'trajectory'");
+
+    const specInvalidPlural = {
+      ...validSpec,
+      stateDistributions: [
+        {
+          ...validSpec.stateDistributions[0],
+          estimateOrigin: "fixed_time_horizons",
+        },
+      ],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, specInvalidPlural)).toBe(
+      false,
+    );
+    expect(() =>
+      assertOutcomeDistributionReferentialIntegrity(
+        specInvalidPlural as unknown as OutcomeDistributionSpec,
+      ),
+    ).toThrow("invalid estimateOrigin 'fixed_time_horizons'");
+  });
+
   it("throws on duplicate evaluation id", () => {
     const invalidSpec: OutcomeDistributionSpec = {
       ...validSpec,
