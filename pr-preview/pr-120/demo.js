@@ -21986,12 +21986,15 @@ function friendlyCensoringLabel(val) {
 function friendlyCompetingLabel(val) {
   if (!val) return "";
   const map5 = {
+    adjusted_as_negative: "As negative",
+    adjusted_as_censored: "As censored",
+    adjusted_as_composite: "As composite",
     as_negative: "As negative",
     as_censored: "As censored",
     as_composite: "As composite",
     excluded: "Excluded"
   };
-  return map5[val] ?? val.replace(/_/g, " ");
+  return map5[val] ?? val.replace(/^adjusted_/, "").replace(/_/g, " ");
 }
 function processStateDistribution(dist) {
   const horizon = dist.horizon ?? 0;
