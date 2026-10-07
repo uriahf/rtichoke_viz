@@ -49,6 +49,7 @@ export type { V2GroupingContext } from "./adapters/v2.js";
 export { renderCalibration } from "./render/calibration.js";
 export { renderDecisionCurveV2 } from "./render/decision-curve.js";
 export { renderInterventionsAvoidedV2 } from "./render/interventions-avoided.js";
+export { renderOutcomeDistribution } from "./render/outcome-distribution.js";
 export { renderPerformanceTable } from "./render/performance-table.js";
 export { preparePredictionDistributionPlotData, renderPredictionDistribution } from "./render/prediction-distribution.js";
 export type { PredictionDistributionPreparedData } from "./render/prediction-distribution.js";

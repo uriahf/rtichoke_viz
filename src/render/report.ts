@@ -14,6 +14,7 @@ import {
 import { assertReportReferentialIntegrity } from "../spec/validate-report.js";
 import { renderDecisionCurveV2 } from "./decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
+import { renderOutcomeDistribution } from "./outcome-distribution.js";
 import { renderPerformanceTable } from "./performance-table.js";
 import { renderPredictionDistribution } from "./prediction-distribution.js";
 import { renderSummaryMetrics } from "./summary-metrics.js";
@@ -35,6 +36,8 @@ function renderStandaloneComponentContent(
       return renderPerformanceTable(spec);
     case "prediction_distribution":
       return renderPredictionDistribution(spec);
+    case "outcome_distribution":
+      return renderOutcomeDistribution(spec);
     case "roc":
       return renderRocV2(spec);
     case "calibration":
