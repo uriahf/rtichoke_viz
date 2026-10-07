@@ -94,6 +94,7 @@ describe("Outcome Distribution Renderer DOM and Wording", () => {
     expect(textContent).toContain("Target event");
     expect(textContent).toContain("Competing outcome");
     expect(textContent).toContain("No target event");
+    expect(textContent).toContain("Unknown / excluded");
 
     // Must NOT show estimator jargon or internal state IDs
     expect(textContent).not.toContain("Aalen-Johansen");
