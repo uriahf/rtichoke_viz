@@ -110,6 +110,7 @@ function createFixedHorizonFallbackSpec(): OutcomeDistributionSpec {
       {
         id: "eval-1",
         model: "Model Fallback",
+        population: "Test Cohort",
       },
     ],
     stateDistributions: [
@@ -268,6 +269,7 @@ describe("Outcome Distribution Renderer DOM and Wording", () => {
     spec.evaluations.push({
       id: "eval-2",
       model: "Model 2",
+      population: "Test Cohort",
     });
     spec.stateDistributions.push({
       evaluationId: "eval-2",
