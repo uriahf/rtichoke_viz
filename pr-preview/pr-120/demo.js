@@ -155617,6 +155617,187 @@ var prediction_distribution_visual_default = {
   ]
 };
 
+// fixtures/v2/outcome-distribution.json
+var outcome_distribution_default = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Outcome Distribution (Canonical Time Horizons Example)",
+  evaluations: [
+    {
+      id: "eval-canonical",
+      model: "Model A",
+      population: "Canonical Test Cohort"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-canonical",
+      horizon: 4.3,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 1 },
+        { stateId: "real_competing", label: "Competing outcome", count: 0 },
+        { stateId: "real_negative", label: "No target event", count: 9 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 9.7,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 2 },
+        { stateId: "real_competing", label: "Competing outcome", count: 0 },
+        { stateId: "real_negative", label: "No target event", count: 8 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 14.2,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 2 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 7 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 18.6,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 3 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 6 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 24.1,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 4 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 5 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 31.5,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 4 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 5 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 34.8,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 4 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 5 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 39.2,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 5 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 4 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 46,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 5 },
+        { stateId: "real_competing", label: "Competing outcome", count: 2 },
+        { stateId: "real_negative", label: "No target event", count: 3 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 49.9,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 6 },
+        { stateId: "real_competing", label: "Competing outcome", count: 2 },
+        { stateId: "real_negative", label: "No target event", count: 2 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 10,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 2 },
+        { stateId: "real_competing", label: "Competing outcome", count: 0 },
+        { stateId: "real_negative", label: "No target event", count: 8 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 20,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 3 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 6 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 4 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 5 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 40,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 5 },
+        { stateId: "real_competing", label: "Competing outcome", count: 1 },
+        { stateId: "real_negative", label: "No target event", count: 4 }
+      ]
+    },
+    {
+      evaluationId: "eval-canonical",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", label: "Target event", count: 6 },
+        { stateId: "real_competing", label: "Competing outcome", count: 2 },
+        { stateId: "real_negative", label: "No target event", count: 2 }
+      ]
+    }
+  ]
+};
+
 // fixtures/v2/decision-curve-single.json
 var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, netBenefit: 0.22 }, { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.15, netBenefit: 0.15 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.25, netBenefit: 0.09 }, { seriesId: "series-1", threshold: 0.3, netBenefit: 0.06 }, { seriesId: "series-1", threshold: 0.35, netBenefit: 0.02 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }, { seriesId: "series-1", threshold: 0.45, netBenefit: -0.06 }, { seriesId: "series-1", threshold: 0.5, netBenefit: -0.1 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.05, y: 0.236842 }, { x: 0.1, y: 0.222222 }, { x: 0.15, y: 0.205882 }, { x: 0.2, y: 0.125 }, { x: 0.25, y: 0.066667 }, { x: 0.3, y: 0 }, { x: 0.35, y: -0.076923 }, { x: 0.4, y: -0.166667 }, { x: 0.45, y: -0.272727 }, { x: 0.5, y: -0.4 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
 
@@ -155716,6 +155897,7 @@ var prModelsABTest = models_a_b_test_precision_recall_default2;
 var gainsModelsABTest = models_a_b_test_gains_default2;
 var liftModelsABTest = models_a_b_test_lift_default2;
 var predDistVisualFixture = prediction_distribution_visual_default;
+var outcomeDistributionFixture = outcome_distribution_default;
 var decisionCurveFixture = decision_curve_single_default;
 var interventionsAvoidedFixture = interventions_avoided_single_default;
 var gainsTimeFixture = gains_time_default;
@@ -155737,7 +155919,8 @@ var prPpcrHost = document.querySelector("#pr-ppcr-chart");
 var dcOpHost = document.querySelector("#dc-op-chart");
 var iaOpHost = document.querySelector("#ia-op-chart");
 var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
-if (!reportHost1 || !reportHost2 || !reportHost3 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost) {
+var outcomeDistHost = document.querySelector("#outcome-distribution-chart");
+if (!reportHost1 || !reportHost2 || !reportHost3 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
   throw new Error("Demo chart containers are missing");
 }
 reportHost1.append(
@@ -155861,6 +156044,9 @@ liftTimeHost.append(renderLiftV2(liftTimeFixture));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
 predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture));
+if (outcomeDistHost) {
+  outcomeDistHost.append(renderOutcomeDistribution(outcomeDistributionFixture));
+}
 export {
   setupDemoTabs
 };
