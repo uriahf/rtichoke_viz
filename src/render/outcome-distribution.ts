@@ -36,16 +36,20 @@ const STATE_COLOR_PALETTE = [
   "#666666", // Grey
 ];
 
-/** Preferred colors for common state IDs */
+/** Preferred colors for common state IDs matching prevalence/outcome-accounting style */
 const PREFERRED_STATE_COLORS: Record<string, string> = {
-  real_positive: "#1b9e77",
-  target_event: "#1b9e77",
-  real_competing: "#d95f02",
-  competing_outcome: "#d95f02",
-  real_negative: "#7570b3",
-  no_target_event: "#7570b3",
-  real_censored: "#94a3b8",
-  unknown: "#cbd5e1",
+  real_positive: "#4C5454",
+  real_positives_est: "#4C5454",
+  target_event: "#4C5454",
+  real_competing: "#C880B7",
+  real_competing_est: "#C880B7",
+  competing_outcome: "#C880B7",
+  real_negative: "#E0E0E0",
+  real_negatives_est: "#E0E0E0",
+  no_target_event: "#E0E0E0",
+  real_censored: "#E3F09B",
+  real_censored_est: "#E3F09B",
+  unknown: "#E3F09B",
 };
 
 function friendlyCensoringLabel(val?: string | null): string {

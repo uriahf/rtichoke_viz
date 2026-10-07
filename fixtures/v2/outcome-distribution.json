@@ -12,6 +12,18 @@
   "stateDistributions": [
     {
       "evaluationId": "eval-canonical",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "event_table",
+      "states": [
+        { "stateId": "real_positive", "label": "Target event", "count": 0 },
+        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
+        { "stateId": "real_negative", "label": "No target event", "count": 10 },
+        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+      ]
+    },
+    {
+      "evaluationId": "eval-canonical",
       "horizon": 4.3,
       "estimator": "raw",
       "estimateOrigin": "event_table",
@@ -128,6 +140,18 @@
         { "stateId": "real_competing", "label": "Competing outcome", "count": 2 },
         { "stateId": "real_negative", "label": "No target event", "count": 0 },
         { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+      ]
+    },
+    {
+      "evaluationId": "eval-canonical",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "label": "Target event", "count": 0 },
+        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
+        { "stateId": "real_negative", "label": "No target event", "count": 10 },
+        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
       ]
     },
     {
