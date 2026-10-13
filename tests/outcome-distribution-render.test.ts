@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import canonicalFixture from "../fixtures/v2/outcome-distribution.json" with { type: "json" };
+import largeFixture from "../fixtures/v2/outcome-distribution-large.json" with { type: "json" };
+import populationsFixture from "../fixtures/v2/outcome-distribution-populations.json" with { type: "json" };
 import { renderOutcomeDistribution } from "../src/render/outcome-distribution.js";
 import { renderReport } from "../src/render/report.js";
 import type { ReportSpec } from "../src/spec/report.js";
@@ -287,6 +289,50 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     expect(controlsMultiText).toContain("Evaluation:");
     expect(controlsMultiText).toContain("Model A");
     expect(controlsMultiText).toContain("Model 2");
+  });
+
+  it("renders large sample size fixture (N = 3,000 observations) with count-first readout formatting", () => {
+    const spec = structuredClone(largeFixture) as OutcomeDistributionSpec;
+    const root = renderOutcomeDistribution(spec);
+
+    expect(root.className).toBe("rtichoke-outcome-distribution");
+    const readoutTable = root.querySelector(
+      ".rtichoke-outcome-distribution__readout-table",
+    );
+    expect(readoutTable).not.toBeNull();
+    const textContent = root.textContent ?? "";
+
+    expect(textContent).toContain("1,257 / 3,000 (41.9%)");
+    expect(textContent).toContain("342 / 3,000 (11.4%)");
+  });
+
+  it("renders multiple populations fixture with interactive evaluation radio group selector", () => {
+    const spec = structuredClone(populationsFixture) as OutcomeDistributionSpec;
+    const root = renderOutcomeDistribution(spec);
+
+    expect(root.className).toBe("rtichoke-outcome-distribution");
+    const controls = root.querySelector(".rtichoke-outcome-distribution__controls");
+    expect(controls).not.toBeNull();
+    const controlsText = controls?.textContent ?? "";
+
+    expect(controlsText).toContain("Evaluation:");
+    expect(controlsText).toContain("Train Cohort (N = 5,000)");
+    expect(controlsText).toContain("Test Cohort (N = 3,000)");
+    expect(controlsText).toContain("Validation Cohort (N = 2,000)");
+
+    // Initial selected evaluation is Train Cohort
+    expect(root.textContent).toContain("2,076 / 5,000 (41.5%)");
+
+    // Select Test Cohort radio button
+    const testRadio = root.querySelector<HTMLInputElement>(
+      'input[type="radio"][value="eval-test"]',
+    );
+    expect(testRadio).not.toBeNull();
+    testRadio!.checked = true;
+    testRadio!.dispatchEvent(new Event("change"));
+
+    // Readout updates to Test Cohort values (N = 3,000)
+    expect(root.textContent).toContain("1,257 / 3,000 (41.9%)");
   });
 
   it("integrates into ReportSpec v1.0 and v1.1 and renders via renderReport()", () => {

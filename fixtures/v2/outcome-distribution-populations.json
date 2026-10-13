@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Outcome Distribution — Multiple Populations (Train, Test, Validation)",
+  "evaluations": [
+    {
+      "id": "eval-train",
+      "model": "Model A",
+      "population": "Train Cohort (N = 5,000)",
+      "label": "Train Cohort (N = 5,000)"
+    },
+    {
+      "id": "eval-test",
+      "model": "Model A",
+      "population": "Test Cohort (N = 3,000)",
+      "label": "Test Cohort (N = 3,000)"
+    },
+    {
+      "id": "eval-val",
+      "model": "Model A",
+      "population": "Validation Cohort (N = 2,000)",
+      "label": "Validation Cohort (N = 2,000)"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "eval-train",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 0 },
+        { "stateId": "real_competing", "count": 0 },
+        { "stateId": "real_negative", "count": 5000 },
+        { "stateId": "real_censored", "count": 0 }
+      ]
+    },
+    {
+      "evaluationId": "eval-train",
+      "horizon": 30,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 1500 },
+        { "stateId": "real_competing", "count": 400 },
+        { "stateId": "real_negative", "count": 2800 },
+        { "stateId": "real_censored", "count": 300 }
+      ]
+    },
+    {
+      "evaluationId": "eval-train",
+      "horizon": 50,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 2076 },
+        { "stateId": "real_competing", "count": 524 },
+        { "stateId": "real_negative", "count": 2000 },
+        { "stateId": "real_censored", "count": 400 }
+      ]
+    },
+    {
+      "evaluationId": "eval-test",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 0 },
+        { "stateId": "real_competing", "count": 0 },
+        { "stateId": "real_negative", "count": 3000 },
+        { "stateId": "real_censored", "count": 0 }
+      ]
+    },
+    {
+      "evaluationId": "eval-test",
+      "horizon": 30,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 920 },
+        { "stateId": "real_competing", "count": 240 },
+        { "stateId": "real_negative", "count": 1690 },
+        { "stateId": "real_censored", "count": 150 }
+      ]
+    },
+    {
+      "evaluationId": "eval-test",
+      "horizon": 50,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 1257 },
+        { "stateId": "real_competing", "count": 342 },
+        { "stateId": "real_negative", "count": 1201 },
+        { "stateId": "real_censored", "count": 200 }
+      ]
+    },
+    {
+      "evaluationId": "eval-val",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 0 },
+        { "stateId": "real_competing", "count": 0 },
+        { "stateId": "real_negative", "count": 2000 },
+        { "stateId": "real_censored", "count": 0 }
+      ]
+    },
+    {
+      "evaluationId": "eval-val",
+      "horizon": 30,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 680 },
+        { "stateId": "real_competing", "count": 180 },
+        { "stateId": "real_negative", "count": 1040 },
+        { "stateId": "real_censored", "count": 100 }
+      ]
+    },
+    {
+      "evaluationId": "eval-val",
+      "horizon": 50,
+      "estimator": "raw",
+      "estimateOrigin": "fixed_time_horizon",
+      "states": [
+        { "stateId": "real_positive", "count": 924 },
+        { "stateId": "real_competing", "count": 256 },
+        { "stateId": "real_negative", "count": 670 },
+        { "stateId": "real_censored", "count": 150 }
+      ]
+    }
+  ]
+}
