@@ -22046,7 +22046,7 @@ function buildOutcomeTooltip(horizon, st, totalCount, totalMass, digits, isTraje
   if (countVal !== null && countVal !== void 0) {
     fields.push(["Count", countVal]);
   }
-  fields.push(["Share", `${st.percentage.toFixed(1)}%`]);
+  fields.push(["Percent", `${st.percentage.toFixed(1)}%`]);
   if (totalVal !== null && totalVal !== void 0) {
     fields.push(["Denominator", totalVal]);
   }
@@ -22246,7 +22246,7 @@ function renderOutcomeDistribution(spec, options = {}) {
       const thOutcome = document.createElement("th");
       thOutcome.textContent = "Outcome";
       const thShare = document.createElement("th");
-      thShare.textContent = "Share & Count";
+      thShare.textContent = "Count / Total (%)";
       rHeadRow.append(thOutcome, thShare);
       rHead.append(rHeadRow);
       readoutTable.append(rHead);
@@ -22267,7 +22267,7 @@ function renderOutcomeDistribution(spec, options = {}) {
         const barFill = document.createElement("div");
         barFill.className = "rtichoke-performance-table__bar-fill";
         barFill.style.backgroundColor = stateColor;
-        barFill.style.opacity = "0.25";
+        barFill.style.opacity = "0.45";
         const widthPct = Math.min(Math.max(st.percentage, 0), 100);
         barFill.style.width = `${widthPct}%`;
         barContainer.append(barFill);
@@ -22363,7 +22363,7 @@ function renderOutcomeDistribution(spec, options = {}) {
         const isSelected = fh === currentActiveHorizon;
         marks2.push(
           ruleX([fh], {
-            stroke: isSelected ? "#2563eb" : theme.axis.color,
+            stroke: theme.axis.color,
             strokeWidth: isSelected ? 2.5 : 1,
             strokeDasharray: isSelected ? void 0 : "3,3"
           })
@@ -22382,7 +22382,7 @@ function renderOutcomeDistribution(spec, options = {}) {
                 y: 102,
                 text: "label",
                 dy: -10,
-                fill: "#2563eb",
+                fill: theme.axis.color,
                 fontSize: 11,
                 fontWeight: 700
               }
@@ -22455,7 +22455,7 @@ function renderOutcomeDistribution(spec, options = {}) {
         line: true
       },
       y: {
-        label: "Share (%)",
+        label: "Outcomes",
         domain: [0, 100],
         grid: false,
         line: true,
