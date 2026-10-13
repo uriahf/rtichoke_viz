@@ -155745,6 +155745,303 @@ var outcome_distribution_default = {
   ]
 };
 
+// fixtures/v2/outcome-distribution-large.json
+var outcome_distribution_large_default = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Outcome Distribution \u2014 Large Sample (N = 3,000 Observations)",
+  evaluations: [
+    {
+      id: "eval-test-cohort",
+      model: "Model A",
+      population: "Test Cohort (N = 3,000)"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 0 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 3e3 },
+        { stateId: "real_censored", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 10,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 320 },
+        { stateId: "real_competing", count: 80 },
+        { stateId: "real_negative", count: 2550 },
+        { stateId: "real_censored", count: 50 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 20,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 650 },
+        { stateId: "real_competing", count: 160 },
+        { stateId: "real_negative", count: 2090 },
+        { stateId: "real_censored", count: 100 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 920 },
+        { stateId: "real_competing", count: 240 },
+        { stateId: "real_negative", count: 1690 },
+        { stateId: "real_censored", count: 150 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 40,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 1120 },
+        { stateId: "real_competing", count: 300 },
+        { stateId: "real_negative", count: 1400 },
+        { stateId: "real_censored", count: 180 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "event_table",
+      states: [
+        { stateId: "real_positive", count: 1257 },
+        { stateId: "real_competing", count: 342 },
+        { stateId: "real_negative", count: 1201 },
+        { stateId: "real_censored", count: 200 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 0 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 3e3 },
+        { stateId: "real_censored", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 10,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 320 },
+        { stateId: "real_competing", count: 80 },
+        { stateId: "real_negative", count: 2550 },
+        { stateId: "real_censored", count: 50 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 20,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 650 },
+        { stateId: "real_competing", count: 160 },
+        { stateId: "real_negative", count: 2090 },
+        { stateId: "real_censored", count: 100 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 920 },
+        { stateId: "real_competing", count: 240 },
+        { stateId: "real_negative", count: 1690 },
+        { stateId: "real_censored", count: 150 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 40,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 1120 },
+        { stateId: "real_competing", count: 300 },
+        { stateId: "real_negative", count: 1400 },
+        { stateId: "real_censored", count: 180 }
+      ]
+    },
+    {
+      evaluationId: "eval-test-cohort",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 1257 },
+        { stateId: "real_competing", count: 342 },
+        { stateId: "real_negative", count: 1201 },
+        { stateId: "real_censored", count: 200 }
+      ]
+    }
+  ]
+};
+
+// fixtures/v2/outcome-distribution-populations.json
+var outcome_distribution_populations_default = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Outcome Distribution \u2014 Multiple Populations (Train, Test, Validation)",
+  evaluations: [
+    {
+      id: "eval-train",
+      model: "Model A",
+      population: "Train Cohort (N = 5,000)",
+      label: "Train Cohort (N = 5,000)"
+    },
+    {
+      id: "eval-test",
+      model: "Model A",
+      population: "Test Cohort (N = 3,000)",
+      label: "Test Cohort (N = 3,000)"
+    },
+    {
+      id: "eval-val",
+      model: "Model A",
+      population: "Validation Cohort (N = 2,000)",
+      label: "Validation Cohort (N = 2,000)"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-train",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 0 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 5e3 },
+        { stateId: "real_censored", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-train",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 1500 },
+        { stateId: "real_competing", count: 400 },
+        { stateId: "real_negative", count: 2800 },
+        { stateId: "real_censored", count: 300 }
+      ]
+    },
+    {
+      evaluationId: "eval-train",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 2076 },
+        { stateId: "real_competing", count: 524 },
+        { stateId: "real_negative", count: 2e3 },
+        { stateId: "real_censored", count: 400 }
+      ]
+    },
+    {
+      evaluationId: "eval-test",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 0 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 3e3 },
+        { stateId: "real_censored", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-test",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 920 },
+        { stateId: "real_competing", count: 240 },
+        { stateId: "real_negative", count: 1690 },
+        { stateId: "real_censored", count: 150 }
+      ]
+    },
+    {
+      evaluationId: "eval-test",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 1257 },
+        { stateId: "real_competing", count: 342 },
+        { stateId: "real_negative", count: 1201 },
+        { stateId: "real_censored", count: 200 }
+      ]
+    },
+    {
+      evaluationId: "eval-val",
+      horizon: 0,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 0 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 2e3 },
+        { stateId: "real_censored", count: 0 }
+      ]
+    },
+    {
+      evaluationId: "eval-val",
+      horizon: 30,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 680 },
+        { stateId: "real_competing", count: 180 },
+        { stateId: "real_negative", count: 1040 },
+        { stateId: "real_censored", count: 100 }
+      ]
+    },
+    {
+      evaluationId: "eval-val",
+      horizon: 50,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      states: [
+        { stateId: "real_positive", count: 924 },
+        { stateId: "real_competing", count: 256 },
+        { stateId: "real_negative", count: 670 },
+        { stateId: "real_censored", count: 150 }
+      ]
+    }
+  ]
+};
+
 // fixtures/v2/decision-curve-single.json
 var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, netBenefit: 0.22 }, { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.15, netBenefit: 0.15 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.25, netBenefit: 0.09 }, { seriesId: "series-1", threshold: 0.3, netBenefit: 0.06 }, { seriesId: "series-1", threshold: 0.35, netBenefit: 0.02 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }, { seriesId: "series-1", threshold: 0.45, netBenefit: -0.06 }, { seriesId: "series-1", threshold: 0.5, netBenefit: -0.1 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.05, y: 0.236842 }, { x: 0.1, y: 0.222222 }, { x: 0.15, y: 0.205882 }, { x: 0.2, y: 0.125 }, { x: 0.25, y: 0.066667 }, { x: 0.3, y: 0 }, { x: 0.35, y: -0.076923 }, { x: 0.4, y: -0.166667 }, { x: 0.45, y: -0.272727 }, { x: 0.5, y: -0.4 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
 
@@ -155845,6 +156142,8 @@ var gainsModelsABTest = models_a_b_test_gains_default2;
 var liftModelsABTest = models_a_b_test_lift_default2;
 var predDistVisualFixture = prediction_distribution_visual_default;
 var outcomeDistributionFixture = outcome_distribution_default;
+var outcomeDistributionLargeFixture = outcome_distribution_large_default;
+var outcomeDistributionPopulationsFixture = outcome_distribution_populations_default;
 var decisionCurveFixture = decision_curve_single_default;
 var interventionsAvoidedFixture = interventions_avoided_single_default;
 var gainsTimeFixture = gains_time_default;
@@ -155867,6 +156166,8 @@ var dcOpHost = document.querySelector("#dc-op-chart");
 var iaOpHost = document.querySelector("#ia-op-chart");
 var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
 var outcomeDistHost = document.querySelector("#outcome-distribution-chart");
+var outcomeDistLargeHost = document.querySelector("#outcome-distribution-large-chart");
+var outcomeDistPopulationsHost = document.querySelector("#outcome-distribution-populations-chart");
 if (!reportHost1 || !reportHost2 || !reportHost3 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
   throw new Error("Demo chart containers are missing");
 }
@@ -155993,6 +156294,12 @@ iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
 predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture));
 if (outcomeDistHost) {
   outcomeDistHost.append(renderOutcomeDistribution(outcomeDistributionFixture));
+}
+if (outcomeDistLargeHost) {
+  outcomeDistLargeHost.append(renderOutcomeDistribution(outcomeDistributionLargeFixture));
+}
+if (outcomeDistPopulationsHost) {
+  outcomeDistPopulationsHost.append(renderOutcomeDistribution(outcomeDistributionPopulationsFixture));
 }
 export {
   setupDemoTabs
