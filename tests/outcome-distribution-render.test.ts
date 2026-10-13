@@ -230,7 +230,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     expect(svgInnerHTML).toContain("Percent:");
     expect(svgInnerHTML).toContain("Accounting: Raw observed status");
     expect(svgInnerHTML).toContain(
-      "Censored before or at horizon; no censoring adjustment is applied.",
+      "Censored before horizon; no censoring adjustment is applied.",
     );
   });
 

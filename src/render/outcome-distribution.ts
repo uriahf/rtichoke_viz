@@ -179,7 +179,7 @@ function buildOutcomeTooltip(
   if (st.stateId === "real_censored" || st.label.toLowerCase().includes("censored")) {
     fields.push([
       "Note",
-      "Censored before or at horizon; no censoring adjustment is applied.",
+      "Censored before horizon; no censoring adjustment is applied.",
     ]);
   }
 
