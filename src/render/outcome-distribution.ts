@@ -344,6 +344,33 @@ export function renderOutcomeDistribution(
       return;
     }
 
+    // Defensive check: detect if multiple heuristic/method variants exist for any (estimateOrigin, horizon)
+    const originHorizonKeys = new Set<string>();
+    let hasMultipleHeuristicVariants = false;
+
+    for (const d of evalDists) {
+      const originKey = d.estimateOrigin ?? "unspecified";
+      const key = `${originKey}:${d.horizon ?? 0}`;
+      if (originHorizonKeys.has(key)) {
+        hasMultipleHeuristicVariants = true;
+        break;
+      }
+      originHorizonKeys.add(key);
+    }
+
+    if (hasMultipleHeuristicVariants) {
+      sliderControl.style.display = "none";
+      legendDiv.style.display = "none";
+      readoutDiv.replaceChildren();
+      chartDiv.replaceChildren();
+      const msg = document.createElement("p");
+      msg.className = "rtichoke-outcome-distribution__empty";
+      msg.textContent =
+        "Multiple heuristic/method variants detected for evaluation; unsupported data state.";
+      chartDiv.append(msg);
+      return;
+    }
+
     const eventTableRows = evalDists
       .filter((d) => d.estimateOrigin === "event_table")
       .map(processStateDistribution)
@@ -442,19 +469,21 @@ export function renderOutcomeDistribution(
         const tdLabel = document.createElement("td");
         const badge = document.createElement("span");
         badge.className = "rtichoke-performance-table__badge";
-        badge.style.backgroundColor = getStateColor(st.stateId, st.label);
+        const stateColor = getStateColor(st.stateId, st.label);
+        badge.style.backgroundColor = stateColor;
         tdLabel.append(badge, document.createTextNode(st.label));
 
         const tdShare = document.createElement("td");
         tdShare.className = "rtichoke-outcome-distribution__readout-cell";
 
-        // Dynamic in-cell bar representing percentage/share (0% to 100%)
+        // Dynamic in-cell bar representing percentage/share (0% to 100%) using row state color
         const barContainer = document.createElement("div");
         barContainer.className = "rtichoke-performance-table__bar";
 
         const barFill = document.createElement("div");
-        barFill.className =
-          "rtichoke-performance-table__bar-fill rtichoke-performance-table__bar-fill--neutral";
+        barFill.className = "rtichoke-performance-table__bar-fill";
+        barFill.style.backgroundColor = stateColor;
+        barFill.style.opacity = "0.25";
         const widthPct = Math.min(Math.max(st.percentage, 0), 100);
         barFill.style.width = `${widthPct}%`;
         barContainer.append(barFill);
@@ -693,7 +722,7 @@ export function renderOutcomeDistribution(
             line: true,
           },
       y: {
-        label: "Outcome status",
+        label: "Share (%)",
         domain: [0, 100],
         grid: false,
         line: true,

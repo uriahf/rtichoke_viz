@@ -86,7 +86,11 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       ".rtichoke-outcome-distribution__readout-cell",
     );
     expect(readoutCell).not.toBeNull();
-    expect(readoutCell?.querySelector(".rtichoke-performance-table__bar")).not.toBeNull();
+    const barFill = readoutCell?.querySelector(
+      ".rtichoke-performance-table__bar-fill",
+    ) as HTMLElement;
+    expect(barFill).not.toBeNull();
+    expect(barFill.style.backgroundColor).not.toBe("");
     expect(readoutCell?.textContent).toMatch(/\d+ \/ \d+ \(\d+\.\d+%\)/);
 
     // Slider present
@@ -170,7 +174,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     expect(textCustom).toContain("My Custom Control");
   });
 
-  it("renders fixed-horizon fallback mode with stacked bars and y-axis label 'Outcome status'", () => {
+  it("renders fixed-horizon fallback mode with stacked bars and y-axis label 'Share (%)'", () => {
     const spec = createFixedHorizonFallbackSpec();
     const root = renderOutcomeDistribution(spec);
 
@@ -190,7 +194,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
 
     // SVG y-axis label
     const yAxisLabel = root.querySelector('[aria-label$="axis label"]');
-    expect(yAxisLabel?.textContent).toContain("Outcome status");
+    expect(yAxisLabel?.textContent).toContain("Share (%)");
 
     // Must NOT contain jargon
     expect(textContent).not.toContain("Aalen-Johansen");
@@ -227,32 +231,27 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     );
   });
 
-  it("does NOT render heuristic controls even if multiple heuristic records exist", () => {
-    const spec = createTrajectorySpec();
-    spec.stateDistributions.push(
-      {
-        evaluationId: "eval-canonical",
-        horizon: 20,
-        estimator: "aalen_johansen",
-        estimateOrigin: "fixed_time_horizon",
-        censoringHeuristic: "excluded",
-        competingHeuristic: "adjusted_as_negative",
-        states: [
-          { stateId: "real_positive", label: "Target event", estimate: 0.15 },
-          { stateId: "real_negative", label: "No target event", estimate: 0.85 },
-        ],
-      },
-    );
+  it("displays explicit unsupported message when multiple heuristic variants exist for the same horizon", () => {
+    const spec = createFixedHorizonFallbackSpec();
+    // Add a duplicate variant for the same horizon=10 and estimateOrigin='fixed_time_horizon'
+    spec.stateDistributions.push({
+      evaluationId: "eval-1",
+      horizon: 10,
+      estimator: "raw",
+      estimateOrigin: "fixed_time_horizon",
+      censoringHeuristic: "excluded",
+      states: [
+        { stateId: "real_positive", count: 3 },
+        { stateId: "real_negative", count: 7 },
+      ],
+    });
 
     const root = renderOutcomeDistribution(spec);
-    const controls = root.querySelector(
-      ".rtichoke-outcome-distribution__controls",
-    );
-    const controlsText = controls?.textContent ?? "";
+    const text = root.textContent ?? "";
 
-    // Heuristic radio controls MUST NOT be rendered
-    expect(controlsText).not.toContain("Censoring:");
-    expect(controlsText).not.toContain("Competing:");
+    expect(text).toContain(
+      "Multiple heuristic/method variants detected for evaluation; unsupported data state.",
+    );
   });
 
   it("renders active evaluation selector when multiple evaluations exist and omits selector when single evaluation exists", () => {
