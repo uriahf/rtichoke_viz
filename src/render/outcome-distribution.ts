@@ -170,7 +170,7 @@ function buildOutcomeTooltip(
   if (countVal !== null && countVal !== undefined) {
     fields.push(["Count", countVal]);
   }
-  fields.push(["Share", `${st.percentage.toFixed(1)}%`]);
+  fields.push(["Percent", `${st.percentage.toFixed(1)}%`]);
   if (totalVal !== null && totalVal !== undefined) {
     fields.push(["Denominator", totalVal]);
   }
@@ -453,7 +453,7 @@ export function renderOutcomeDistribution(
       thOutcome.textContent = "Outcome";
 
       const thShare = document.createElement("th");
-      thShare.textContent = "Share & Count";
+      thShare.textContent = "Count / Total (%)";
 
       rHeadRow.append(thOutcome, thShare);
       rHead.append(rHeadRow);
@@ -476,14 +476,14 @@ export function renderOutcomeDistribution(
         const tdShare = document.createElement("td");
         tdShare.className = "rtichoke-outcome-distribution__readout-cell";
 
-        // Dynamic in-cell bar representing percentage/share (0% to 100%) using row state color
+        // Dynamic in-cell bar representing percentage/share (0% to 100%) using row state color (opacity 0.45)
         const barContainer = document.createElement("div");
         barContainer.className = "rtichoke-performance-table__bar";
 
         const barFill = document.createElement("div");
         barFill.className = "rtichoke-performance-table__bar-fill";
         barFill.style.backgroundColor = stateColor;
-        barFill.style.opacity = "0.25";
+        barFill.style.opacity = "0.45";
         const widthPct = Math.min(Math.max(st.percentage, 0), 100);
         barFill.style.width = `${widthPct}%`;
         barContainer.append(barFill);
@@ -609,12 +609,12 @@ export function renderOutcomeDistribution(
         ),
       );
 
-      // Draw vertical marker lines at fixed horizons
+      // Draw vertical marker lines at fixed horizons using neutral axis color
       for (const fh of fixedHorizons) {
         const isSelected = fh === currentActiveHorizon;
         marks.push(
           Plot.ruleX([fh], {
-            stroke: isSelected ? "#2563eb" : theme.axis.color,
+            stroke: theme.axis.color,
             strokeWidth: isSelected ? 2.5 : 1,
             strokeDasharray: isSelected ? undefined : "3,3",
           }),
@@ -634,7 +634,7 @@ export function renderOutcomeDistribution(
                 y: 102,
                 text: "label",
                 dy: -10,
-                fill: "#2563eb",
+                fill: theme.axis.color,
                 fontSize: 11,
                 fontWeight: 700,
               },
@@ -722,7 +722,7 @@ export function renderOutcomeDistribution(
             line: true,
           },
       y: {
-        label: "Share (%)",
+        label: "Outcomes",
         domain: [0, 100],
         grid: false,
         line: true,

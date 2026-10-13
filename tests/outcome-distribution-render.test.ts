@@ -79,9 +79,9 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       ".rtichoke-outcome-distribution__readout-table",
     );
     expect(readoutTable).not.toBeNull();
-    expect(readoutTable?.textContent).toContain("Share & Count");
+    expect(readoutTable?.textContent).toContain("Count / Total (%)");
 
-    // Check count-first format <count> / <total> (<pct>%) and in-cell bar
+    // Check count-first format <count> / <total> (<pct>%) and in-cell bar with opacity 0.45
     const readoutCell = root.querySelector(
       ".rtichoke-outcome-distribution__readout-cell",
     );
@@ -91,6 +91,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     ) as HTMLElement;
     expect(barFill).not.toBeNull();
     expect(barFill.style.backgroundColor).not.toBe("");
+    expect(barFill.style.opacity).toBe("0.45");
     expect(readoutCell?.textContent).toMatch(/\d+ \/ \d+ \(\d+\.\d+%\)/);
 
     // Slider present
@@ -174,7 +175,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     expect(textCustom).toContain("My Custom Control");
   });
 
-  it("renders fixed-horizon fallback mode with stacked bars and y-axis label 'Share (%)'", () => {
+  it("renders fixed-horizon fallback mode with stacked bars and y-axis label 'Outcomes'", () => {
     const spec = createFixedHorizonFallbackSpec();
     const root = renderOutcomeDistribution(spec);
 
@@ -194,7 +195,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
 
     // SVG y-axis label
     const yAxisLabel = root.querySelector('[aria-label$="axis label"]');
-    expect(yAxisLabel?.textContent).toContain("Share (%)");
+    expect(yAxisLabel?.textContent).toContain("Outcomes");
 
     // Must NOT contain jargon
     expect(textContent).not.toContain("Aalen-Johansen");
@@ -224,7 +225,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     const svgInnerHTML = root.querySelector("svg")?.innerHTML ?? "";
     expect(svgInnerHTML).toContain("Horizon: 10");
     expect(svgInnerHTML).toContain("Outcome status:");
-    expect(svgInnerHTML).toContain("Share:");
+    expect(svgInnerHTML).toContain("Percent:");
     expect(svgInnerHTML).toContain("Accounting: Raw observed status");
     expect(svgInnerHTML).toContain(
       "Censored before or at horizon; no censoring adjustment is applied.",
