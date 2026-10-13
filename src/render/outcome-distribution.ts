@@ -1,6 +1,6 @@
 import * as Plot from "@observablehq/plot";
 import type { OutcomeDistributionSpec } from "../spec/v2/outcome-distribution.js";
-import type { OutcomeState, StateDistribution } from "../spec/v2/state-distribution.js";
+import type { StateDistribution } from "../spec/v2/state-distribution.js";
 import { assertOutcomeDistributionReferentialIntegrity } from "../spec/v2/validate-outcome-distribution.js";
 import {
   resolveV2RenderOptions,
@@ -12,31 +12,19 @@ import {
 let outcomeDistributionInstanceCounter = 0;
 let outcomeDistributionSliderCounter = 0;
 
-/** Default friendly labels for common internal state IDs */
-const DEFAULT_STATE_LABELS: Record<string, string> = {
-  real_positive: "Target event",
-  target_event: "Target event",
-  real_competing: "Competing outcome",
-  competing_outcome: "Competing outcome",
-  real_negative: "No target event",
-  no_target_event: "No target event",
-  real_censored: "Unknown / excluded",
-  unknown: "Unknown / excluded",
+/** Canonical default user-facing labels for internal state IDs */
+const CANONICAL_STATE_LABELS: Record<string, string> = {
+  real_positive: "Event",
+  target_event: "Event",
+  real_competing: "Competing event",
+  competing_outcome: "Competing event",
+  real_negative: "Event-free",
+  no_target_event: "Event-free",
+  real_censored: "Censored",
+  unknown: "Censored",
 };
 
-/** Palette for outcome states */
-const STATE_COLOR_PALETTE = [
-  "#1b9e77", // Target event / green-teal
-  "#d95f02", // Competing outcome / orange
-  "#7570b3", // No target event / purple
-  "#e7298a", // Secondary accent / pink
-  "#66a61e", // Olive
-  "#e6ab02", // Gold / yellow
-  "#a6761d", // Brown
-  "#666666", // Grey
-];
-
-/** Preferred colors for common state IDs matching prevalence/outcome-accounting style */
+/** Palette for outcome states matching prevalence/outcome-accounting style */
 const PREFERRED_STATE_COLORS: Record<string, string> = {
   real_positive: "#4C5454",
   real_positives_est: "#4C5454",
@@ -52,27 +40,25 @@ const PREFERRED_STATE_COLORS: Record<string, string> = {
   unknown: "#E3F09B",
 };
 
-function friendlyCensoringLabel(val?: string | null): string {
-  if (!val) return "";
-  const map: Record<string, string> = {
-    adjusted: "Adjusted",
-    excluded: "Excluded",
-  };
-  return map[val] ?? val.replace(/_/g, " ");
-}
+const STATE_COLOR_PALETTE = [
+  "#1b9e77",
+  "#d95f02",
+  "#7570b3",
+  "#e7298a",
+  "#66a61e",
+  "#e6ab02",
+  "#a6761d",
+  "#666666",
+];
 
-function friendlyCompetingLabel(val?: string | null): string {
-  if (!val) return "";
-  const map: Record<string, string> = {
-    adjusted_as_negative: "As negative",
-    adjusted_as_censored: "As censored",
-    adjusted_as_composite: "As composite",
-    as_negative: "As negative",
-    as_censored: "As censored",
-    as_composite: "As composite",
-    excluded: "Excluded",
-  };
-  return map[val] ?? val.replace(/^adjusted_/, "").replace(/_/g, " ");
+function resolveStateLabel(stateId: string, customLabel?: string | null): string {
+  if (customLabel && customLabel.trim() !== "") {
+    return customLabel;
+  }
+  if (CANONICAL_STATE_LABELS[stateId]) {
+    return CANONICAL_STATE_LABELS[stateId];
+  }
+  return stateId;
 }
 
 interface ProcessedStateRow {
@@ -131,7 +117,7 @@ function processStateDistribution(
   }
 
   const processedStates: ProcessedStateRow[] = states.map((s) => {
-    const label = s.label ?? DEFAULT_STATE_LABELS[s.stateId] ?? s.stateId;
+    const label = resolveStateLabel(s.stateId, s.label);
     let proportion = 0;
 
     if (hasEstimate && s.estimate !== undefined && s.estimate !== null) {
@@ -164,6 +150,40 @@ function processStateDistribution(
     totalMass,
     totalCount,
   };
+}
+
+function buildOutcomeTooltip(
+  horizon: number,
+  st: ProcessedStateRow,
+  totalCount: number | null,
+  totalMass: number | null,
+  digits: number,
+  isTrajectory: boolean,
+): string {
+  const fields: Array<[string, unknown]> = [];
+  fields.push([isTrajectory ? "Time" : "Horizon", horizon]);
+  fields.push(["Outcome status", st.label]);
+
+  const countVal = st.count ?? st.mass;
+  const totalVal = totalCount ?? totalMass;
+
+  if (countVal !== null && countVal !== undefined) {
+    fields.push(["Count", countVal]);
+  }
+  fields.push(["Share", `${st.percentage.toFixed(1)}%`]);
+  if (totalVal !== null && totalVal !== undefined) {
+    fields.push(["Denominator", totalVal]);
+  }
+  fields.push(["Accounting", "Raw observed status"]);
+
+  if (st.stateId === "real_censored" || st.label.toLowerCase().includes("censored")) {
+    fields.push([
+      "Note",
+      "Censored before or at horizon; no censoring adjustment is applied.",
+    ]);
+  }
+
+  return tooltip(digits, fields);
 }
 
 export function renderOutcomeDistribution(
@@ -257,9 +277,6 @@ export function renderOutcomeDistribution(
     return col;
   };
 
-  // State Variables
-  let currentCensoringHeuristic: string | undefined = undefined;
-  let currentCompetingHeuristic: string | undefined = undefined;
   let currentActiveHorizon: number | null = null;
 
   const updateChart = () => {
@@ -294,8 +311,6 @@ export function renderOutcomeDistribution(
         radio.addEventListener("change", () => {
           if (radio.checked) {
             currentEvalId = ev.id;
-            currentCensoringHeuristic = undefined;
-            currentCompetingHeuristic = undefined;
             currentActiveHorizon = null;
             updateChart();
           }
@@ -318,7 +333,6 @@ export function renderOutcomeDistribution(
     );
 
     if (evalDists.length === 0) {
-      // Empty state
       sliderControl.style.display = "none";
       legendDiv.style.display = "none";
       readoutDiv.replaceChildren();
@@ -330,163 +344,12 @@ export function renderOutcomeDistribution(
       return;
     }
 
-    // 2. Heuristics handling
-    const heuristicPairs = new Map<
-      string,
-      { censoring?: string; competing?: string }
-    >();
-
-    for (const d of evalDists) {
-      const key = `${d.censoringHeuristic ?? ""}|${d.competingHeuristic ?? ""}`;
-      if (!heuristicPairs.has(key)) {
-        heuristicPairs.set(key, {
-          censoring: d.censoringHeuristic,
-          competing: d.competingHeuristic,
-        });
-      }
-    }
-
-    const uniqueHeuristicCombinations = Array.from(heuristicPairs.values());
-
-    if (uniqueHeuristicCombinations.length > 1) {
-      // Multiple combinations exist -> render controls
-      const censSet = new Set<string>();
-      const compSet = new Set<string>();
-
-      for (const comb of uniqueHeuristicCombinations) {
-        if (comb.censoring) censSet.add(comb.censoring);
-        if (comb.competing) compSet.add(comb.competing);
-      }
-
-      // Initialize default selections if needed
-      if (
-        !currentCensoringHeuristic ||
-        !censSet.has(currentCensoringHeuristic)
-      ) {
-        currentCensoringHeuristic = Array.from(censSet)[0];
-      }
-      if (
-        !currentCompetingHeuristic ||
-        !compSet.has(currentCompetingHeuristic)
-      ) {
-        currentCompetingHeuristic = Array.from(compSet)[0];
-      }
-
-      // Censoring Heuristic Control
-      if (censSet.size > 1) {
-        const censGroup = document.createElement("div");
-        censGroup.className = "rtichoke-pd-radio-group";
-        censGroup.setAttribute("role", "radiogroup");
-        censGroup.setAttribute("aria-label", "Censoring Heuristic");
-
-        const censLabel = document.createElement("span");
-        censLabel.className = "rtichoke-pd-radio-group-label";
-        censLabel.textContent = "Censoring:";
-        censGroup.append(censLabel);
-
-        const censOptions = document.createElement("div");
-        censOptions.className = "rtichoke-pd-radio-options";
-
-        for (const censVal of censSet) {
-          const optionLabel = document.createElement("label");
-          optionLabel.className = "rtichoke-pd-radio-option";
-
-          const radio = document.createElement("input");
-          radio.type = "radio";
-          radio.name = `od-cens-${instanceId}`;
-          radio.value = censVal;
-          radio.checked = censVal === currentCensoringHeuristic;
-
-          radio.addEventListener("change", () => {
-            if (radio.checked) {
-              currentCensoringHeuristic = censVal;
-              updateChart();
-            }
-          });
-
-          const span = document.createElement("span");
-          span.textContent = friendlyCensoringLabel(censVal);
-
-          optionLabel.append(radio, span);
-          censOptions.append(optionLabel);
-        }
-
-        censGroup.append(censOptions);
-        controlsDiv.append(censGroup);
-      }
-
-      // Competing Heuristic Control
-      if (compSet.size > 1) {
-        const compGroup = document.createElement("div");
-        compGroup.className = "rtichoke-pd-radio-group";
-        compGroup.setAttribute("role", "radiogroup");
-        compGroup.setAttribute("aria-label", "Competing Heuristic");
-
-        const compLabel = document.createElement("span");
-        compLabel.className = "rtichoke-pd-radio-group-label";
-        compLabel.textContent = "Competing:";
-        compGroup.append(compLabel);
-
-        const compOptions = document.createElement("div");
-        compOptions.className = "rtichoke-pd-radio-options";
-
-        for (const compVal of compSet) {
-          const optionLabel = document.createElement("label");
-          optionLabel.className = "rtichoke-pd-radio-option";
-
-          const radio = document.createElement("input");
-          radio.type = "radio";
-          radio.name = `od-comp-${instanceId}`;
-          radio.value = compVal;
-          radio.checked = compVal === currentCompetingHeuristic;
-
-          radio.addEventListener("change", () => {
-            if (radio.checked) {
-              currentCompetingHeuristic = compVal;
-              updateChart();
-            }
-          });
-
-          const span = document.createElement("span");
-          span.textContent = friendlyCompetingLabel(compVal);
-
-          optionLabel.append(radio, span);
-          compOptions.append(optionLabel);
-        }
-
-        compGroup.append(compOptions);
-        controlsDiv.append(compGroup);
-      }
-    } else if (uniqueHeuristicCombinations.length === 1) {
-      currentCensoringHeuristic = uniqueHeuristicCombinations[0].censoring;
-      currentCompetingHeuristic = uniqueHeuristicCombinations[0].competing;
-    }
-
-    // Filter distributions matching active heuristics
-    const activeDists = evalDists.filter((d) => {
-      if (
-        currentCensoringHeuristic &&
-        d.censoringHeuristic &&
-        d.censoringHeuristic !== currentCensoringHeuristic
-      ) {
-        return false;
-      }
-      if (
-        currentCompetingHeuristic &&
-        d.competingHeuristic &&
-        d.competingHeuristic !== currentCompetingHeuristic
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    const eventTableRows = activeDists
+    const eventTableRows = evalDists
       .filter((d) => d.estimateOrigin === "event_table")
       .map(processStateDistribution)
       .sort((a, b) => a.horizon - b.horizon);
 
-    const fixedHorizonRows = activeDists
+    const fixedHorizonRows = evalDists
       .filter((d) => d.estimateOrigin === "fixed_time_horizon")
       .map(processStateDistribution)
       .sort((a, b) => a.horizon - b.horizon);
@@ -497,14 +360,14 @@ export function renderOutcomeDistribution(
     ).sort((a, b) => a - b);
 
     if (eventTableRows.length === 0 && fixedHorizonRows.length === 0) {
-      // Empty state
       sliderControl.style.display = "none";
       legendDiv.style.display = "none";
       readoutDiv.replaceChildren();
       chartDiv.replaceChildren();
       const emptyMsg = document.createElement("p");
       emptyMsg.className = "rtichoke-outcome-distribution__empty";
-      emptyMsg.textContent = "No outcome distribution data found for current selection.";
+      emptyMsg.textContent =
+        "No outcome distribution data found for current selection.";
       chartDiv.append(emptyMsg);
       return;
     }
@@ -518,7 +381,7 @@ export function renderOutcomeDistribution(
         currentActiveHorizon === null ||
         !fixedHorizons.includes(currentActiveHorizon)
       ) {
-        currentActiveHorizon = fixedHorizons[fixedHorizons.length - 1]; // default to last or first
+        currentActiveHorizon = fixedHorizons[fixedHorizons.length - 1];
       }
 
       const hIdx = fixedHorizons.indexOf(currentActiveHorizon);
@@ -561,27 +424,18 @@ export function renderOutcomeDistribution(
 
       const thOutcome = document.createElement("th");
       thOutcome.textContent = "Outcome";
-      const thPct = document.createElement("th");
-      thPct.textContent = "Percentage";
-      rHeadRow.append(thOutcome, thPct);
 
-      let countHeaderLabel: string | null = null;
-      if (activeDataRow.totalMass !== null) {
-        countHeaderLabel = "Estimated count";
-      } else if (activeDataRow.totalCount !== null) {
-        countHeaderLabel = "Count";
-      }
+      const thShare = document.createElement("th");
+      thShare.textContent = "Share & Count";
 
-      if (countHeaderLabel) {
-        const thCount = document.createElement("th");
-        thCount.textContent = countHeaderLabel;
-        rHeadRow.append(thCount);
-      }
-
+      rHeadRow.append(thOutcome, thShare);
       rHead.append(rHeadRow);
       readoutTable.append(rHead);
 
       const rBody = document.createElement("tbody");
+      const totalDenominator =
+        activeDataRow.totalCount ?? activeDataRow.totalMass;
+
       for (const st of activeDataRow.states) {
         const tr = document.createElement("tr");
 
@@ -591,27 +445,40 @@ export function renderOutcomeDistribution(
         badge.style.backgroundColor = getStateColor(st.stateId, st.label);
         tdLabel.append(badge, document.createTextNode(st.label));
 
-        const tdPct = document.createElement("td");
-        tdPct.style.textAlign = "right";
-        tdPct.textContent = `${st.percentage.toFixed(1)}%`;
+        const tdShare = document.createElement("td");
+        tdShare.className = "rtichoke-outcome-distribution__readout-cell";
 
-        tr.append(tdLabel, tdPct);
+        // Dynamic in-cell bar representing percentage/share (0% to 100%)
+        const barContainer = document.createElement("div");
+        barContainer.className = "rtichoke-performance-table__bar";
 
-        if (countHeaderLabel) {
-          const tdCount = document.createElement("td");
-          tdCount.style.textAlign = "right";
-          let cntVal = "—";
-          if (st.mass !== null) {
-            cntVal = st.mass.toLocaleString();
-          } else if (st.count !== null) {
-            cntVal = st.count.toLocaleString();
-          }
-          tdCount.textContent = cntVal;
-          tr.append(tdCount);
+        const barFill = document.createElement("div");
+        barFill.className =
+          "rtichoke-performance-table__bar-fill rtichoke-performance-table__bar-fill--neutral";
+        const widthPct = Math.min(Math.max(st.percentage, 0), 100);
+        barFill.style.width = `${widthPct}%`;
+        barContainer.append(barFill);
+
+        const contentSpan = document.createElement("span");
+        contentSpan.className = "rtichoke-performance-table__cell-text";
+
+        const countVal = st.count ?? st.mass;
+        if (
+          countVal !== null &&
+          countVal !== undefined &&
+          totalDenominator !== null &&
+          totalDenominator !== undefined
+        ) {
+          contentSpan.textContent = `${countVal.toLocaleString()} / ${totalDenominator.toLocaleString()} (${st.percentage.toFixed(1)}%)`;
+        } else {
+          contentSpan.textContent = `${st.percentage.toFixed(1)}%`;
         }
 
+        tdShare.append(barContainer, contentSpan);
+        tr.append(tdLabel, tdShare);
         rBody.append(tr);
       }
+
       readoutTable.append(rBody);
       readoutCard.append(readoutTable);
       readoutDiv.append(readoutCard);
@@ -677,18 +544,14 @@ export function renderOutcomeDistribution(
       for (const row of eventTableRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
-          const countInfo =
-            st.mass !== null
-              ? `Estimated count: ${st.mass}`
-              : st.count !== null
-                ? `Count: ${st.count}`
-                : "";
-          const tipText = tooltip(digits, [
-            ["Time", row.horizon],
-            ["Outcome", st.label],
-            ["Percentage", `${st.percentage.toFixed(1)}%`],
-            ...(countInfo ? [countInfo.split(": ") as [string, any]] : []),
-          ]);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            true,
+          );
 
           plotData.push({
             horizon: row.horizon,
@@ -713,7 +576,6 @@ export function renderOutcomeDistribution(
             strokeWidth: 0.5,
             curve: "step-after",
             title: (d) => d.title,
-            tip: true,
           }),
         ),
       );
@@ -766,18 +628,14 @@ export function renderOutcomeDistribution(
       for (const row of fixedHorizonRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
-          const countInfo =
-            st.mass !== null
-              ? `Estimated count: ${st.mass}`
-              : st.count !== null
-                ? `Count: ${st.count}`
-                : "";
-          const tipText = tooltip(digits, [
-            ["Time", row.horizon],
-            ["Outcome", st.label],
-            ["Percentage", `${st.percentage.toFixed(1)}%`],
-            ...(countInfo ? [countInfo.split(": ") as [string, any]] : []),
-          ]);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            false,
+          );
 
           plotData.push({
             horizonLabel: `Time: ${row.horizon}`,
@@ -802,7 +660,6 @@ export function renderOutcomeDistribution(
             stroke: theme.axis.color,
             strokeWidth: 0.75,
             title: (d) => d.title,
-            tip: true,
           }),
         ),
       );
@@ -836,7 +693,7 @@ export function renderOutcomeDistribution(
             line: true,
           },
       y: {
-        label: "Percentage",
+        label: "Outcome status",
         domain: [0, 100],
         grid: false,
         line: true,
@@ -856,27 +713,10 @@ export function renderOutcomeDistribution(
     const evalDists = spec.stateDistributions.filter(
       (d) => d.evaluationId === currentEvalId,
     );
-    const activeDists = evalDists.filter((d) => {
-      if (
-        currentCensoringHeuristic &&
-        d.censoringHeuristic &&
-        d.censoringHeuristic !== currentCensoringHeuristic
-      ) {
-        return false;
-      }
-      if (
-        currentCompetingHeuristic &&
-        d.competingHeuristic &&
-        d.competingHeuristic !== currentCompetingHeuristic
-      ) {
-        return false;
-      }
-      return true;
-    });
 
     const fixedHorizons = Array.from(
       new Set(
-        activeDists
+        evalDists
           .filter((d) => d.estimateOrigin === "fixed_time_horizon")
           .map((d) => d.horizon ?? 0),
       ),
