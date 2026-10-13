@@ -35,6 +35,8 @@ import gainsModelsABTestData from "../fixtures/v2/demo/models-a-b-test-gains.jso
 import liftModelsABTestData from "../fixtures/v2/demo/models-a-b-test-lift.json" with { type: "json" };
 import predDistVisualData from "../fixtures/v2/prediction-distribution-visual.json" with { type: "json" };
 import outcomeDistributionData from "../fixtures/v2/outcome-distribution.json" with { type: "json" };
+import outcomeDistributionLargeData from "../fixtures/v2/outcome-distribution-large.json" with { type: "json" };
+import outcomeDistributionPopulationsData from "../fixtures/v2/outcome-distribution-populations.json" with { type: "json" };
 
 // Standalone proofs for contract tests
 import decisionCurveData from "../fixtures/v2/decision-curve-single.json" with { type: "json" };
@@ -51,6 +53,8 @@ const gainsModelsABTest = gainsModelsABTestData as GainsV2Spec;
 const liftModelsABTest = liftModelsABTestData as LiftV2Spec;
 const predDistVisualFixture = predDistVisualData as PredictionDistributionSpec;
 const outcomeDistributionFixture = outcomeDistributionData as OutcomeDistributionSpec;
+const outcomeDistributionLargeFixture = outcomeDistributionLargeData as OutcomeDistributionSpec;
+const outcomeDistributionPopulationsFixture = outcomeDistributionPopulationsData as OutcomeDistributionSpec;
 
 const decisionCurveFixture = decisionCurveData as DecisionCurveV2Spec;
 const interventionsAvoidedFixture = interventionsAvoidedData as InterventionsAvoidedV2Spec;
@@ -76,6 +80,8 @@ const dcOpHost = document.querySelector<HTMLElement>("#dc-op-chart");
 const iaOpHost = document.querySelector<HTMLElement>("#ia-op-chart");
 const predDistVisualHost = document.querySelector<HTMLElement>("#pred-dist-visual-chart");
 const outcomeDistHost = document.querySelector<HTMLElement>("#outcome-distribution-chart");
+const outcomeDistLargeHost = document.querySelector<HTMLElement>("#outcome-distribution-large-chart");
+const outcomeDistPopulationsHost = document.querySelector<HTMLElement>("#outcome-distribution-populations-chart");
 
 if (
   !reportHost1 ||
@@ -246,4 +252,10 @@ iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
 predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture));
 if (outcomeDistHost) {
   outcomeDistHost.append(renderOutcomeDistribution(outcomeDistributionFixture));
+}
+if (outcomeDistLargeHost) {
+  outcomeDistLargeHost.append(renderOutcomeDistribution(outcomeDistributionLargeFixture));
+}
+if (outcomeDistPopulationsHost) {
+  outcomeDistPopulationsHost.append(renderOutcomeDistribution(outcomeDistributionPopulationsFixture));
 }
