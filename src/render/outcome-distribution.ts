@@ -607,6 +607,22 @@ export function renderOutcomeDistribution(
         ),
       );
 
+      // 2. Step-Line Boundaries between adjacent stacked state layers
+      marks.push(
+        Plot.lineY(
+          plotData,
+          Plot.stackY({
+            x: "horizon",
+            y: "percentage",
+            z: "stateId",
+            stroke: theme.axis.color,
+            strokeWidth: 0.75,
+            strokeOpacity: 0.6,
+            curve: "step-after",
+          }),
+        ),
+      );
+
       // Draw vertical marker lines at fixed horizons using neutral axis color
       for (const fh of fixedHorizons) {
         const isSelected = fh === currentActiveHorizon;

@@ -384,13 +384,13 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     ).not.toBeNull();
   });
 
-  it("does not apply stroke to trajectory step-area plot while preserving ruleX fixed horizon reference lines", () => {
+  it("renders unstroked step-area fills with separate lineY state boundary paths and ruleX reference lines", () => {
     const spec = createTrajectorySpec();
     const root = renderOutcomeDistribution(spec);
     const svg = root.querySelector("svg");
     expect(svg).not.toBeNull();
 
-    // Check area mark group and area paths: no stroke attribute on area group or area paths
+    // 1. Check area mark group and area paths: no stroke attribute on area group or area paths
     const areaGroup = svg?.querySelector('g[aria-label="area"]');
     expect(areaGroup).not.toBeNull();
     expect(areaGroup?.getAttribute("stroke")).toBeNull();
@@ -404,7 +404,21 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       expect(path.getAttribute("fill")).not.toBeNull();
     });
 
-    // Check fixed horizon reference lines (ruleX) retain expected stroke styling
+    // 2. Check line mark group (step-line state boundaries): line group has 1 distinct path per outcome state
+    const lineGroup = svg?.querySelector('g[aria-label="line"]');
+    expect(lineGroup).not.toBeNull();
+    const lineGroupStroke = lineGroup?.getAttribute("stroke");
+    const linePaths = lineGroup?.querySelectorAll("path");
+    // Verify that separate paths exist for each state layer (e.g. 4 paths for 4 outcome states)
+    expect(linePaths?.length).toBe(4);
+
+    const hasLineStroke = Boolean(
+      lineGroupStroke ||
+        Array.from(linePaths ?? []).some((path) => path.getAttribute("stroke")),
+    );
+    expect(hasLineStroke).toBe(true);
+
+    // 3. Check fixed horizon reference lines (ruleX) retain expected stroke styling
     const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
     expect(ruleGroup).not.toBeNull();
     const ruleGroupStroke = ruleGroup?.getAttribute("stroke");
