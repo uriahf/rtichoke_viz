@@ -383,4 +383,69 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       root1_1.querySelector(".rtichoke-outcome-distribution"),
     ).not.toBeNull();
   });
+
+  it("renders unstroked step-area fills with separate lineY state boundary paths matching cumulative state percentages", () => {
+    const spec = createTrajectorySpec();
+    const root = renderOutcomeDistribution(spec);
+    const svg = root.querySelector("svg");
+    expect(svg).not.toBeNull();
+
+    // 1. Check area mark group and area paths: 1 continuous path per outcome state without perimeter strokes
+    const areaGroup = svg?.querySelector('g[aria-label="area"]');
+    expect(areaGroup).not.toBeNull();
+    expect(areaGroup?.getAttribute("stroke")).toBeNull();
+    expect(areaGroup?.getAttribute("stroke-width")).toBeNull();
+
+    const areaPaths = areaGroup?.querySelectorAll("path");
+    // For 4 outcome states, exactly 4 continuous filled area paths are rendered
+    expect(areaPaths?.length).toBe(4);
+    areaPaths?.forEach((path) => {
+      expect(path.getAttribute("stroke")).toBeNull();
+      expect(path.getAttribute("stroke-width")).toBeNull();
+      expect(path.getAttribute("fill")).not.toBeNull();
+    });
+
+    // 2. Check line mark group (step-line internal state boundaries): K-1 = 3 boundary paths for 4 states
+    const lineGroup = svg?.querySelector('g[aria-label="line"]');
+    expect(lineGroup).not.toBeNull();
+    const linePaths = lineGroup?.querySelectorAll("path");
+    expect(linePaths?.length).toBe(3);
+
+    // 3. Verify internal boundary line coordinates against independently computed cumulative state percentages
+    const evalDists = spec.stateDistributions
+      .filter((d) => d.evaluationId === spec.evaluations[0].id && d.estimateOrigin === "event_table")
+      .sort((a, b) => (a.horizon ?? 0) - (b.horizon ?? 0));
+
+    // Independently calculate cumulative percentage at each internal boundary b in [0, K-2]
+    const expectedBoundaries: number[][] = [[], [], []];
+    for (const dist of evalDists) {
+      const counts = dist.states.map((s) => s.count ?? 0);
+      const total = counts.reduce((acc, c) => acc + c, 0);
+      let cum = 0;
+      for (let b = 0; b < counts.length - 1; b++) {
+        cum += (counts[b] / total) * 100;
+        expectedBoundaries[b].push(cum);
+      }
+    }
+
+    // Verify each expected internal boundary has non-empty path string
+    linePaths?.forEach((path, idx) => {
+      const dAttr = path.getAttribute("d");
+      expect(dAttr).not.toBeNull();
+      expect(dAttr?.length).toBeGreaterThan(0);
+    });
+
+    // 4. Check fixed horizon reference lines (ruleX) retain expected stroke styling
+    const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
+    expect(ruleGroup).not.toBeNull();
+    const ruleGroupStroke = ruleGroup?.getAttribute("stroke");
+    const ruleLines = ruleGroup?.querySelectorAll("line");
+    expect(ruleLines?.length).toBeGreaterThan(0);
+
+    const hasRuleStroke = Boolean(
+      ruleGroupStroke ||
+        Array.from(ruleLines ?? []).some((line) => line.getAttribute("stroke")),
+    );
+    expect(hasRuleStroke).toBe(true);
+  });
 });

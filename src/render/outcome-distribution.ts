@@ -599,15 +599,53 @@ export function renderOutcomeDistribution(
           Plot.stackY({
             x: "horizon",
             y: "percentage",
+            z: "stateId",
             fill: (d) => d.color,
             fillOpacity: 0.85,
-            stroke: theme.axis.color,
-            strokeWidth: 0.5,
             curve: "step-after",
-            title: (d) => d.title,
           }),
         ),
       );
+
+      // 2. Step-Line Boundaries between adjacent stacked state layers
+      // Compute cumulative state percentage boundaries C_b(t) = sum_{j=1}^b P_j(t) for internal boundaries b in [1, K-1]
+      const uniqueStateIds = Array.from(new Set(plotData.map((d) => d.stateId)));
+      const numInternalBoundaries = uniqueStateIds.length - 1;
+
+      if (numInternalBoundaries > 0) {
+        const boundaryData: Array<{
+          boundaryIndex: number;
+          horizon: number;
+          cumulativePercentage: number;
+        }> = [];
+
+        for (const row of eventTableRows) {
+          let cumulative = 0;
+          for (let b = 0; b < numInternalBoundaries; b++) {
+            const st = row.states[b];
+            if (st) {
+              cumulative += st.percentage;
+              boundaryData.push({
+                boundaryIndex: b,
+                horizon: row.horizon,
+                cumulativePercentage: cumulative,
+              });
+            }
+          }
+        }
+
+        marks.push(
+          Plot.lineY(boundaryData, {
+            x: "horizon",
+            y: "cumulativePercentage",
+            z: "boundaryIndex",
+            stroke: theme.axis.color,
+            strokeWidth: 1,
+            strokeOpacity: 0.8,
+            curve: "step-after",
+          }),
+        );
+      }
 
       // Draw vertical marker lines at fixed horizons using neutral axis color
       for (const fh of fixedHorizons) {
