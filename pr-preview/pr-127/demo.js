@@ -22353,27 +22353,43 @@ function renderOutcomeDistribution(spec, options = {}) {
           stackY({
             x: "horizon",
             y: "percentage",
+            z: "stateId",
             fill: (d) => d.color,
             fillOpacity: 0.85,
-            curve: "step-after",
-            title: (d) => d.title
-          })
-        )
-      );
-      marks2.push(
-        lineY(
-          plotData,
-          stackY({
-            x: "horizon",
-            y: "percentage",
-            z: "stateId",
-            stroke: theme.axis.color,
-            strokeWidth: 0.75,
-            strokeOpacity: 0.6,
             curve: "step-after"
           })
         )
       );
+      const uniqueStateIds = Array.from(new Set(plotData.map((d) => d.stateId)));
+      const numInternalBoundaries = uniqueStateIds.length - 1;
+      if (numInternalBoundaries > 0) {
+        const boundaryData = [];
+        for (const row of eventTableRows) {
+          let cumulative = 0;
+          for (let b = 0; b < numInternalBoundaries; b++) {
+            const st = row.states[b];
+            if (st) {
+              cumulative += st.percentage;
+              boundaryData.push({
+                boundaryIndex: b,
+                horizon: row.horizon,
+                cumulativePercentage: cumulative
+              });
+            }
+          }
+        }
+        marks2.push(
+          lineY(boundaryData, {
+            x: "horizon",
+            y: "cumulativePercentage",
+            z: "boundaryIndex",
+            stroke: theme.axis.color,
+            strokeWidth: 1,
+            strokeOpacity: 0.8,
+            curve: "step-after"
+          })
+        );
+      }
       for (const fh of fixedHorizons) {
         const isSelected = fh === currentActiveHorizon;
         marks2.push(
