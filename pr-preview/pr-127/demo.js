@@ -20054,6 +20054,9 @@ function line(data, { x: x2, y: y2, ...options } = {}) {
   [x2, y2] = maybeTuple(x2, y2);
   return new Line(data, { ...options, x: x2, y: y2 });
 }
+function lineY(data, { x: x2 = indexOf, y: y2 = identity6, ...options } = {}) {
+  return new Line(data, maybeDenseIntervalX({ ...options, x: x2, y: y2 }));
+}
 
 // node_modules/@observablehq/plot/src/index.js
 Mark.prototype.plot = function({ marks: marks2 = [], ...options } = {}) {
@@ -22354,6 +22357,20 @@ function renderOutcomeDistribution(spec, options = {}) {
             fillOpacity: 0.85,
             curve: "step-after",
             title: (d) => d.title
+          })
+        )
+      );
+      marks2.push(
+        lineY(
+          plotData,
+          stackY({
+            x: "horizon",
+            y: "percentage",
+            z: "stateId",
+            stroke: theme.axis.color,
+            strokeWidth: 0.75,
+            strokeOpacity: 0.6,
+            curve: "step-after"
           })
         )
       );
