@@ -206,7 +206,8 @@ export function renderOutcomeDistribution(
   container.style.maxWidth = "100%";
 
   // Title
-  const titleText = spec.title ?? "Outcome Distribution";
+  const isObservedStep = spec.xAxisKind === "step";
+  const titleText = spec.title ?? (isObservedStep ? "Observed State Distribution" : "Outcome Distribution");
   const titleEl = document.createElement("h3");
   titleEl.className = "rtichoke-outcome-distribution__title";
   titleEl.textContent = titleText;
@@ -262,7 +263,7 @@ export function renderOutcomeDistribution(
   let nextColorIdx = 0;
 
   const getStateColor = (stateId: string, label: string): string => {
-    const key = `${stateId}:${label}`;
+    const key = isObservedStep ? stateId : `${stateId}:${label}`;
     if (stateColorMap.has(key)) return stateColorMap.get(key)!;
 
     if (PREFERRED_STATE_COLORS[stateId]) {
@@ -371,6 +372,14 @@ export function renderOutcomeDistribution(
       return;
     }
 
+    const observedRows = evalDists.filter((d) => d.estimateOrigin === "observed_step")
+      .map(processStateDistribution).sort((a, b) => a.horizon - b.horizon);
+    if (isObservedStep) {
+      for (const row of observedRows) {
+        const byId = new Map(row.states.map(s => [s.stateId, s]));
+        row.states = spec.stateOrder!.map(id => byId.get(id) ?? ({stateId: id, label: id, proportion: 0, percentage: 0, estimate: null, mass: null, count: 0}));
+      }
+    }
     const eventTableRows = evalDists
       .filter((d) => d.estimateOrigin === "event_table")
       .map(processStateDistribution)
@@ -383,10 +392,10 @@ export function renderOutcomeDistribution(
 
     // Extract available fixed horizon time points
     const fixedHorizons = Array.from(
-      new Set(fixedHorizonRows.map((r) => r.horizon)),
+      new Set((isObservedStep ? observedRows : fixedHorizonRows).map((r) => r.horizon)),
     ).sort((a, b) => a - b);
 
-    if (eventTableRows.length === 0 && fixedHorizonRows.length === 0) {
+    if (eventTableRows.length === 0 && fixedHorizonRows.length === 0 && observedRows.length === 0) {
       sliderControl.style.display = "none";
       legendDiv.style.display = "none";
       readoutDiv.replaceChildren();
@@ -417,9 +426,9 @@ export function renderOutcomeDistribution(
       slider.step = "1";
       slider.value = String(Math.max(0, hIdx));
 
-      sliderLabelText.textContent = "Time: ";
+      sliderLabelText.textContent = isObservedStep ? "Step: " : "Time: ";
       sliderValueText.textContent = currentActiveHorizon.toFixed(digits);
-      slider.setAttribute("aria-label", "Time horizon");
+      slider.setAttribute("aria-label", isObservedStep ? "Step" : "Time horizon");
       slider.setAttribute(
         "aria-valuetext",
         currentActiveHorizon.toFixed(digits),
@@ -431,7 +440,7 @@ export function renderOutcomeDistribution(
     // Active horizon breakdown readout
     readoutDiv.replaceChildren();
     const activeDataRow =
-      fixedHorizonRows.find((r) => r.horizon === currentActiveHorizon) ??
+      (isObservedStep ? observedRows : fixedHorizonRows).find((r) => r.horizon === currentActiveHorizon) ??
       eventTableRows.find((r) => r.horizon === currentActiveHorizon);
 
     if (activeDataRow) {
@@ -440,7 +449,7 @@ export function renderOutcomeDistribution(
 
       const readoutHeader = document.createElement("div");
       readoutHeader.className = "rtichoke-outcome-distribution__readout-header";
-      readoutHeader.textContent = `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
+      readoutHeader.textContent = isObservedStep ? `Step = ${activeDataRow.horizon}` : `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
       readoutCard.append(readoutHeader);
 
       const readoutTable = document.createElement("table");
@@ -450,7 +459,7 @@ export function renderOutcomeDistribution(
       const rHeadRow = document.createElement("tr");
 
       const thOutcome = document.createElement("th");
-      thOutcome.textContent = "Outcome";
+      thOutcome.textContent = isObservedStep ? "State" : "Outcome";
 
       const thShare = document.createElement("th");
       thShare.textContent = "Count / Total (%)";
@@ -520,16 +529,16 @@ export function renderOutcomeDistribution(
     const legendTitle = document.createElement("span");
     legendTitle.style.fontWeight = "600";
     legendTitle.style.marginRight = "0.5rem";
-    legendTitle.textContent = "Outcome:";
+    legendTitle.textContent = isObservedStep ? "State:" : "Outcome:";
     legendDiv.append(legendTitle);
 
     // Get all unique state labels present across active rows
     const allStatesMap = new Map<string, { stateId: string; label: string }>();
-    const rowsToScan = isTrajectoryMode ? eventTableRows : fixedHorizonRows;
+    const rowsToScan = isObservedStep ? observedRows : isTrajectoryMode ? eventTableRows : fixedHorizonRows;
     for (const r of rowsToScan) {
       for (const st of r.states) {
-        if (!allStatesMap.has(st.label)) {
-          allStatesMap.set(st.label, { stateId: st.stateId, label: st.label });
+        if (!allStatesMap.has(isObservedStep ? st.stateId : st.label)) {
+          allStatesMap.set(isObservedStep ? st.stateId : st.label, { stateId: st.stateId, label: st.label });
         }
       }
     }
@@ -654,20 +663,15 @@ export function renderOutcomeDistribution(
         title: string;
       }> = [];
 
-      for (const row of fixedHorizonRows) {
+      for (const row of isObservedStep ? observedRows : fixedHorizonRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
-          const tipText = buildOutcomeTooltip(
-            row.horizon,
-            st,
-            row.totalCount,
-            row.totalMass,
-            digits,
-            false,
-          );
+          const tipText = isObservedStep
+            ? tooltip(digits, [["Step", row.horizon], ["State", st.label], ["Count", st.count ?? 0], ["Proportion", `${st.percentage.toFixed(1)}%`], ["N observed", row.totalCount]])
+            : buildOutcomeTooltip(row.horizon, st, row.totalCount, row.totalMass, digits, false);
 
           plotData.push({
-            horizonLabel: `Time: ${row.horizon}`,
+            horizonLabel: `${isObservedStep ? "Step" : "Time"}: ${row.horizon}`,
             horizon: row.horizon,
             stateId: st.stateId,
             label: st.label,
@@ -717,12 +721,12 @@ export function renderOutcomeDistribution(
             tickPadding: theme.axis.tickPadding,
           }
         : {
-            label: "Time",
+            label: isObservedStep ? "Step" : "Time",
             grid: false,
             line: true,
           },
       y: {
-        label: "Outcomes",
+        label: isObservedStep ? "Proportion (%)" : "Outcomes",
         domain: [0, 100],
         grid: false,
         line: true,
@@ -746,7 +750,7 @@ export function renderOutcomeDistribution(
     const fixedHorizons = Array.from(
       new Set(
         evalDists
-          .filter((d) => d.estimateOrigin === "fixed_time_horizon")
+          .filter((d) => d.estimateOrigin === (isObservedStep ? "observed_step" : "fixed_time_horizon"))
           .map((d) => d.horizon ?? 0),
       ),
     ).sort((a, b) => a - b);

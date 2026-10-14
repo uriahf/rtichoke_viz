@@ -6,6 +6,8 @@ export const OutcomeDistributionSpecSchema = Type.Object({
   schemaVersion: Type.Literal("2.0"),
   type: Type.Literal("outcome_distribution"),
   title: Type.Optional(Type.String()),
+  xAxisKind: Type.Optional(Type.Union([Type.Literal("time"), Type.Literal("step")])),
+  stateOrder: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
   evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
   stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
 });
