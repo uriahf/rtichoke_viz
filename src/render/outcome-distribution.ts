@@ -601,8 +601,6 @@ export function renderOutcomeDistribution(
             y: "percentage",
             fill: (d) => d.color,
             fillOpacity: 0.85,
-            stroke: theme.axis.color,
-            strokeWidth: 0.5,
             curve: "step-after",
             title: (d) => d.title,
           }),

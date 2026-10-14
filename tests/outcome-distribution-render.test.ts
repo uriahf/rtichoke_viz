@@ -383,4 +383,38 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       root1_1.querySelector(".rtichoke-outcome-distribution"),
     ).not.toBeNull();
   });
+
+  it("does not apply stroke to trajectory step-area plot while preserving ruleX fixed horizon reference lines", () => {
+    const spec = createTrajectorySpec();
+    const root = renderOutcomeDistribution(spec);
+    const svg = root.querySelector("svg");
+    expect(svg).not.toBeNull();
+
+    // Check area mark group and area paths: no stroke attribute on area group or area paths
+    const areaGroup = svg?.querySelector('g[aria-label="area"]');
+    expect(areaGroup).not.toBeNull();
+    expect(areaGroup?.getAttribute("stroke")).toBeNull();
+    expect(areaGroup?.getAttribute("stroke-width")).toBeNull();
+
+    const areaPaths = areaGroup?.querySelectorAll("path");
+    expect(areaPaths?.length).toBeGreaterThan(0);
+    areaPaths?.forEach((path) => {
+      expect(path.getAttribute("stroke")).toBeNull();
+      expect(path.getAttribute("stroke-width")).toBeNull();
+      expect(path.getAttribute("fill")).not.toBeNull();
+    });
+
+    // Check fixed horizon reference lines (ruleX) retain expected stroke styling
+    const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
+    expect(ruleGroup).not.toBeNull();
+    const ruleGroupStroke = ruleGroup?.getAttribute("stroke");
+    const ruleLines = ruleGroup?.querySelectorAll("line");
+    expect(ruleLines?.length).toBeGreaterThan(0);
+
+    const hasRuleStroke = Boolean(
+      ruleGroupStroke ||
+        Array.from(ruleLines ?? []).some((line) => line.getAttribute("stroke")),
+    );
+    expect(hasRuleStroke).toBe(true);
+  });
 });
