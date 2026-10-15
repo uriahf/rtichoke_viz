@@ -22078,14 +22078,55 @@ var TRUE_BLUE_PALETTE_STOPS = [
   "#155A98",
   "#103C70"
 ];
+var NOMINAL_COLORFUL_MINIMAL_PALETTE = [
+  "#2672B9",
+  "#FFC247",
+  "#9E91CF",
+  "#E68A31",
+  "#7CC4E4",
+  "#6D7797",
+  "#D7B86B",
+  "#B9B1CC"
+];
+function hexToRgb(hex2) {
+  const clean = hex2.replace("#", "");
+  const num = parseInt(clean, 16);
+  return [num >> 16 & 255, num >> 8 & 255, num & 255];
+}
+function rgbToHex(r, g, b) {
+  const toHex = (n) => Math.min(255, Math.max(0, Math.round(n))).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+function interpolateHex(color1, color22, factor) {
+  const [r1, g1, b1] = hexToRgb(color1);
+  const [r2, g2, b2] = hexToRgb(color22);
+  return rgbToHex(
+    r1 + factor * (r2 - r1),
+    g1 + factor * (g2 - g1),
+    b1 + factor * (b2 - b1)
+  );
+}
 function getOrdinalTrueBluePalette(n) {
-  if (n <= 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
-  if (n >= 8) return TRUE_BLUE_PALETTE_STOPS.slice(0, n);
-  const colors = [];
+  if (n <= 0) return [];
+  if (n === 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
   const maxIdx = TRUE_BLUE_PALETTE_STOPS.length - 1;
+  const colors = [];
   for (let i = 0; i < n; i++) {
-    const idx = Math.round(i * maxIdx / (n - 1));
-    colors.push(TRUE_BLUE_PALETTE_STOPS[idx]);
+    const t = i * maxIdx / (n - 1);
+    if (n <= 8) {
+      colors.push(TRUE_BLUE_PALETTE_STOPS[Math.round(t)]);
+    } else {
+      const idx1 = Math.floor(t);
+      const idx2 = Math.min(maxIdx, Math.ceil(t));
+      const factor = t - idx1;
+      colors.push(
+        interpolateHex(
+          TRUE_BLUE_PALETTE_STOPS[idx1],
+          TRUE_BLUE_PALETTE_STOPS[idx2],
+          factor
+        )
+      );
+    }
   }
   return colors;
 }
@@ -22249,29 +22290,40 @@ function renderOutcomeDistribution(spec, options = {}) {
   const effectiveStateScale = spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
   const isOrdinal2 = effectiveStateScale === "ordinal";
   const stateColorMap = /* @__PURE__ */ new Map();
-  if (isOrdinal2 && spec.stateDistributions.length > 0) {
+  if (spec.stateDistributions.length > 0) {
+    const isObservedStep = spec.stateDistributions.some(
+      (d) => d.estimateOrigin === "observed_step"
+    );
     const firstDistStates = spec.stateDistributions[0].states;
     const nStates = firstDistStates.length;
-    const ordinalPalette = getOrdinalTrueBluePalette(nStates);
-    firstDistStates.forEach((s2, idx) => {
-      const label = resolveStateLabel(
-        s2.stateId,
-        s2.label,
-        spec.stateDistributions[0].estimateOrigin === "observed_step"
-      );
-      stateColorMap.set(`${s2.stateId}:${label}`, ordinalPalette[idx]);
-    });
+    if (isOrdinal2) {
+      const ordinalPalette = getOrdinalTrueBluePalette(nStates);
+      firstDistStates.forEach((s2, idx) => {
+        const label = resolveStateLabel(s2.stateId, s2.label, isObservedStep);
+        stateColorMap.set(`${s2.stateId}:${label}`, ordinalPalette[idx]);
+      });
+    } else if (isObservedStep) {
+      firstDistStates.forEach((s2, idx) => {
+        const label = resolveStateLabel(s2.stateId, s2.label, isObservedStep);
+        const col = NOMINAL_COLORFUL_MINIMAL_PALETTE[idx % NOMINAL_COLORFUL_MINIMAL_PALETTE.length];
+        stateColorMap.set(`${s2.stateId}:${label}`, col);
+      });
+    }
   }
   let nextColorIdx = 0;
   const getStateColor = (stateId, label) => {
     const key = `${stateId}:${label}`;
     if (stateColorMap.has(key)) return stateColorMap.get(key);
-    if (!isOrdinal2 && PREFERRED_STATE_COLORS[stateId]) {
+    const isObservedStep = spec.stateDistributions.some(
+      (d) => d.estimateOrigin === "observed_step"
+    );
+    if (!isOrdinal2 && !isObservedStep && PREFERRED_STATE_COLORS[stateId]) {
       const col2 = PREFERRED_STATE_COLORS[stateId];
       stateColorMap.set(key, col2);
       return col2;
     }
-    const col = STATE_COLOR_PALETTE[nextColorIdx % STATE_COLOR_PALETTE.length];
+    const palette = isObservedStep ? NOMINAL_COLORFUL_MINIMAL_PALETTE : STATE_COLOR_PALETTE;
+    const col = palette[nextColorIdx % palette.length];
     nextColorIdx++;
     stateColorMap.set(key, col);
     return col;
@@ -114536,6 +114588,237 @@ var demoReport3 = buildDemoReport(
   { sm: model_a_train_test_val_summary_metrics_default, calib: model_a_train_test_val_calibration_default, roc: model_a_train_test_val_roc_default, pr: model_a_train_test_val_precision_recall_default, gains: model_a_train_test_val_gains_default, lift: model_a_train_test_val_lift_default, pd: model_a_train_test_val_prediction_distribution_default, perf: model_a_train_test_val_performance_table_default }
 );
 
+// src/demo-observed-step-specs.ts
+var observedStepRawSpec = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Observed Step Distribution \u2014 Raw / Excluded Counts (Steps 1, 2, 3, 5)",
+  stateScale: "nominal",
+  evaluations: [
+    {
+      id: "eval-raw-demo",
+      model: "Model A",
+      population: "Test"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-raw-demo",
+      horizon: 1,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "remission", label: "Remission", count: 80 },
+        { stateId: "relapse", label: "Relapse", count: 15 },
+        { stateId: "death", label: "Death", count: 5 }
+      ]
+    },
+    {
+      evaluationId: "eval-raw-demo",
+      horizon: 2,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "remission", label: "Remission", count: 65 },
+        { stateId: "relapse", label: "Relapse", count: 25 },
+        { stateId: "death", label: "Death", count: 10 }
+      ]
+    },
+    {
+      evaluationId: "eval-raw-demo",
+      horizon: 3,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "remission", label: "Remission", count: 50 },
+        { stateId: "relapse", label: "Relapse", count: 30 },
+        { stateId: "death", label: "Death", count: 20 }
+      ]
+    },
+    {
+      evaluationId: "eval-raw-demo",
+      horizon: 5,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "remission", label: "Remission", count: 35 },
+        { stateId: "relapse", label: "Relapse", count: 35 },
+        { stateId: "death", label: "Death", count: 30 }
+      ]
+    }
+  ]
+};
+var observedStepAjSpec = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Observed Step Distribution \u2014 AJ-Adjusted State Occupancy",
+  stateScale: "nominal",
+  evaluations: [
+    {
+      id: "eval-aj-demo",
+      model: "Model A",
+      population: "Validation"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-aj-demo",
+      horizon: 1,
+      estimator: "aalen_johansen",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_a", label: "Stable", estimate: 0.85 },
+        { stateId: "state_b", label: "Progression", estimate: 0.1 },
+        { stateId: "state_c", label: "Terminal", estimate: 0.05 }
+      ]
+    },
+    {
+      evaluationId: "eval-aj-demo",
+      horizon: 2,
+      estimator: "aalen_johansen",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_a", label: "Stable", estimate: 0.7 },
+        { stateId: "state_b", label: "Progression", estimate: 0.2 },
+        { stateId: "state_c", label: "Terminal", estimate: 0.1 }
+      ]
+    },
+    {
+      evaluationId: "eval-aj-demo",
+      horizon: 3,
+      estimator: "aalen_johansen",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_a", label: "Stable", estimate: 0.55 },
+        { stateId: "state_b", label: "Progression", estimate: 0.28 },
+        { stateId: "state_c", label: "Terminal", estimate: 0.17 }
+      ]
+    },
+    {
+      evaluationId: "eval-aj-demo",
+      horizon: 4,
+      estimator: "aalen_johansen",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_a", label: "Stable", estimate: 0.42 },
+        { stateId: "state_b", label: "Progression", estimate: 0.33 },
+        { stateId: "state_c", label: "Terminal", estimate: 0.25 }
+      ]
+    }
+  ]
+};
+var observedStepOrdinalSpec = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Observed Step Distribution \u2014 Ordinal States (5 Levels, True Blue Palette)",
+  stateScale: "ordinal",
+  evaluations: [
+    {
+      id: "eval-ordinal-demo",
+      model: "Severity Predictor",
+      population: "Cohort 1"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-ordinal-demo",
+      horizon: 1,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "stage_1", label: "Stage I (Mild)", count: 250 },
+        { stateId: "stage_2", label: "Stage II (Moderate)", count: 300 },
+        { stateId: "stage_3", label: "Stage III (Severe)", count: 250 },
+        { stateId: "stage_4", label: "Stage IV (Critical)", count: 120 },
+        { stateId: "stage_5", label: "Stage V (Terminal)", count: 80 }
+      ]
+    },
+    {
+      evaluationId: "eval-ordinal-demo",
+      horizon: 2,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "stage_1", label: "Stage I (Mild)", count: 180 },
+        { stateId: "stage_2", label: "Stage II (Moderate)", count: 280 },
+        { stateId: "stage_3", label: "Stage III (Severe)", count: 290 },
+        { stateId: "stage_4", label: "Stage IV (Critical)", count: 150 },
+        { stateId: "stage_5", label: "Stage V (Terminal)", count: 100 }
+      ]
+    },
+    {
+      evaluationId: "eval-ordinal-demo",
+      horizon: 3,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "stage_1", label: "Stage I (Mild)", count: 120 },
+        { stateId: "stage_2", label: "Stage II (Moderate)", count: 220 },
+        { stateId: "stage_3", label: "Stage III (Severe)", count: 310 },
+        { stateId: "stage_4", label: "Stage IV (Critical)", count: 200 },
+        { stateId: "stage_5", label: "Stage V (Terminal)", count: 150 }
+      ]
+    }
+  ]
+};
+var observedStepNominalSpec = {
+  schemaVersion: "2.0",
+  type: "outcome_distribution",
+  title: "Observed Step Distribution \u2014 Nominal States (6 Levels, Colorful Minimal Palette)",
+  stateScale: "nominal",
+  evaluations: [
+    {
+      id: "eval-nominal-demo",
+      model: "Multi-State Model",
+      population: "Registry"
+    }
+  ],
+  stateDistributions: [
+    {
+      evaluationId: "eval-nominal-demo",
+      horizon: 1,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_home", label: "Home", count: 400 },
+        { stateId: "state_outpatient", label: "Outpatient", count: 250 },
+        { stateId: "state_ward", label: "General Ward", count: 180 },
+        { stateId: "state_icu", label: "ICU", count: 80 },
+        { stateId: "state_rehab", label: "Rehabilitation", count: 60 },
+        { stateId: "state_discharged", label: "Transferred", count: 30 }
+      ]
+    },
+    {
+      evaluationId: "eval-nominal-demo",
+      horizon: 2,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_home", label: "Home", count: 350 },
+        { stateId: "state_outpatient", label: "Outpatient", count: 220 },
+        { stateId: "state_ward", label: "General Ward", count: 190 },
+        { stateId: "state_icu", label: "ICU", count: 100 },
+        { stateId: "state_rehab", label: "Rehabilitation", count: 90 },
+        { stateId: "state_discharged", label: "Transferred", count: 50 }
+      ]
+    },
+    {
+      evaluationId: "eval-nominal-demo",
+      horizon: 3,
+      estimator: "raw",
+      estimateOrigin: "observed_step",
+      states: [
+        { stateId: "state_home", label: "Home", count: 310 },
+        { stateId: "state_outpatient", label: "Outpatient", count: 200 },
+        { stateId: "state_ward", label: "General Ward", count: 180 },
+        { stateId: "state_icu", label: "ICU", count: 120 },
+        { stateId: "state_rehab", label: "Rehabilitation", count: 110 },
+        { stateId: "state_discharged", label: "Transferred", count: 80 }
+      ]
+    }
+  ]
+};
+
 // fixtures/v2/demo/model-a-test-roc.json with { type: 'json' }
 var model_a_test_roc_default2 = {
   schemaVersion: "2.0",
@@ -156473,6 +156756,10 @@ var predDistVisualHost = document.querySelector("#pred-dist-visual-chart");
 var outcomeDistHost = document.querySelector("#outcome-distribution-chart");
 var outcomeDistLargeHost = document.querySelector("#outcome-distribution-large-chart");
 var outcomeDistPopulationsHost = document.querySelector("#outcome-distribution-populations-chart");
+var observedStepRawHost = document.querySelector("#observed-step-raw-chart");
+var observedStepAjHost = document.querySelector("#observed-step-aj-chart");
+var observedStepOrdinalHost = document.querySelector("#observed-step-ordinal-chart");
+var observedStepNominalHost = document.querySelector("#observed-step-nominal-chart");
 if (!reportHost1 || !reportHost2 || !reportHost3 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
   throw new Error("Demo chart containers are missing");
 }
@@ -156605,6 +156892,18 @@ if (outcomeDistLargeHost) {
 }
 if (outcomeDistPopulationsHost) {
   outcomeDistPopulationsHost.append(renderOutcomeDistribution(outcomeDistributionPopulationsFixture));
+}
+if (observedStepRawHost) {
+  observedStepRawHost.append(renderOutcomeDistribution(observedStepRawSpec));
+}
+if (observedStepAjHost) {
+  observedStepAjHost.append(renderOutcomeDistribution(observedStepAjSpec));
+}
+if (observedStepOrdinalHost) {
+  observedStepOrdinalHost.append(renderOutcomeDistribution(observedStepOrdinalSpec));
+}
+if (observedStepNominalHost) {
+  observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
 }
 export {
   setupDemoTabs
