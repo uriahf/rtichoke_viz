@@ -39,6 +39,9 @@ export const StateDistributionSchema = Type.Object({
   region: Type.Optional(Type.String()),
   censoringHeuristic: Type.Optional(Type.String()),
   competingHeuristic: Type.Optional(Type.String()),
+  stateScale: Type.Optional(
+    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")]),
+  ),
   states: Type.Array(OutcomeStateSchema, { minItems: 1 }),
   regimeId: Type.Optional(Type.String()),
   interventionId: Type.Optional(Type.String()),

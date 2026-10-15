@@ -51,6 +51,32 @@ const STATE_COLOR_PALETTE = [
   "#666666",
 ];
 
+/** True Blue sequential palette stops for ordinal state scales (8 stops from lowest/lightest to highest/darkest) */
+export const TRUE_BLUE_PALETTE_STOPS = [
+  "#EDF5FD",
+  "#D5E8FA",
+  "#AFD4F3",
+  "#7EB9E7",
+  "#4999D7",
+  "#2477BB",
+  "#155A98",
+  "#103C70",
+];
+
+/** Resolve sequential True Blue colors for N ordered levels (N in 1..8) */
+export function getOrdinalTrueBluePalette(n: number): string[] {
+  if (n <= 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
+  if (n >= 8) return TRUE_BLUE_PALETTE_STOPS.slice(0, n);
+
+  const colors: string[] = [];
+  const maxIdx = TRUE_BLUE_PALETTE_STOPS.length - 1;
+  for (let i = 0; i < n; i++) {
+    const idx = Math.round((i * maxIdx) / (n - 1));
+    colors.push(TRUE_BLUE_PALETTE_STOPS[idx]);
+  }
+  return colors;
+}
+
 function resolveStateLabel(
   stateId: string,
   customLabel?: string | null,
@@ -289,15 +315,34 @@ export function renderOutcomeDistribution(
 
   container.append(sliderControl, legendDiv, chartDiv);
 
-  // State Color Mapping cache
+  // Determine state scale from spec or state distribution
+  const effectiveStateScale =
+    spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
+  const isOrdinal = effectiveStateScale === "ordinal";
+
+  // Pre-initialize ordinal state color palette mapping if stateScale === "ordinal"
   const stateColorMap = new Map<string, string>();
+  if (isOrdinal && spec.stateDistributions.length > 0) {
+    const firstDistStates = spec.stateDistributions[0].states;
+    const nStates = firstDistStates.length;
+    const ordinalPalette = getOrdinalTrueBluePalette(nStates);
+    firstDistStates.forEach((s, idx) => {
+      const label = resolveStateLabel(
+        s.stateId,
+        s.label,
+        spec.stateDistributions[0].estimateOrigin === "observed_step",
+      );
+      stateColorMap.set(`${s.stateId}:${label}`, ordinalPalette[idx]);
+    });
+  }
+
   let nextColorIdx = 0;
 
   const getStateColor = (stateId: string, label: string): string => {
     const key = `${stateId}:${label}`;
     if (stateColorMap.has(key)) return stateColorMap.get(key)!;
 
-    if (PREFERRED_STATE_COLORS[stateId]) {
+    if (!isOrdinal && PREFERRED_STATE_COLORS[stateId]) {
       const col = PREFERRED_STATE_COLORS[stateId];
       stateColorMap.set(key, col);
       return col;
@@ -642,218 +687,11 @@ export function renderOutcomeDistribution(
     // Chart Marks
     const marks: Plot.Markish[] = [];
 
-    if (isTrajectoryMode) {
-      const activeRows = isObservedStepMode ? observedStepRows : eventTableRows;
-
-      // Group active rows into continuous segments.
-      // For observed_step, adjacent rows with step_{i+1} === step_i + 1 belong to the same segment.
-      // Non-consecutive steps (e.g. 1 and 5) form separate disjoint segments so areas do not bridge across unobserved steps.
-      const segments: ProcessedHorizonData[][] = [];
-      if (activeRows.length > 0) {
-        let currentSegment: ProcessedHorizonData[] = [activeRows[0]];
-        for (let i = 1; i < activeRows.length; i++) {
-          const prev = activeRows[i - 1];
-          const curr = activeRows[i];
-          const isConsecutive = isObservedStepMode
-            ? curr.horizon === prev.horizon + 1
-            : true;
-
-          if (isConsecutive) {
-            currentSegment.push(curr);
-          } else {
-            segments.push(currentSegment);
-            currentSegment = [curr];
-          }
-        }
-        segments.push(currentSegment);
-      }
-
-      for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-        const seg = segments[segIdx];
-        if (seg.length > 1) {
-          // Multi-step consecutive segment: render stacked step-area
-          const plotData: Array<{
-            horizon: number;
-            stateId: string;
-            label: string;
-            percentage: number;
-            color: string;
-            title: string;
-          }> = [];
-
-          for (const row of seg) {
-            for (const st of row.states) {
-              const color = getStateColor(st.stateId, st.label);
-              const tipText = buildOutcomeTooltip(
-                row.horizon,
-                st,
-                row.totalCount,
-                row.totalMass,
-                digits,
-                true,
-                row.estimator,
-                row.estimateOrigin,
-              );
-
-              plotData.push({
-                horizon: row.horizon,
-                stateId: st.stateId,
-                label: st.label,
-                percentage: st.percentage,
-                color,
-                title: tipText,
-              });
-            }
-          }
-
-          marks.push(
-            Plot.areaY(
-              plotData,
-              Plot.stackY({
-                x: "horizon",
-                y: "percentage",
-                z: "stateId",
-                fill: (d) => d.color,
-                fillOpacity: 0.85,
-                curve: "step-after",
-              }),
-            ),
-          );
-
-          // Internal boundary lines for segment
-          const firstRowStates = seg[0]?.states ?? [];
-          const numInternalBoundaries = firstRowStates.length - 1;
-
-          if (numInternalBoundaries > 0) {
-            const boundaryData: Array<{
-              boundaryIndex: number;
-              horizon: number;
-              cumulativePercentage: number;
-            }> = [];
-
-            for (const row of seg) {
-              let cumulative = 0;
-              for (let b = 0; b < numInternalBoundaries; b++) {
-                const st = row.states[b];
-                if (st) {
-                  cumulative += st.percentage;
-                  boundaryData.push({
-                    boundaryIndex: b,
-                    horizon: row.horizon,
-                    cumulativePercentage: cumulative,
-                  });
-                }
-              }
-            }
-
-            marks.push(
-              Plot.lineY(boundaryData, {
-                x: "horizon",
-                y: "cumulativePercentage",
-                z: "boundaryIndex",
-                stroke: theme.axis.color,
-                strokeWidth: 1,
-                strokeOpacity: 0.8,
-                curve: "step-after",
-              }),
-            );
-          }
-        }
-      }
-
-      // Render step marker rules and explicit hover target bars for EVERY active step
-      const stepWidth = 0.4;
-      for (const row of activeRows) {
-        const fh = row.horizon;
-        const isSelected = fh === currentActiveHorizon;
-
-        marks.push(
-          Plot.ruleX([fh], {
-            stroke: theme.axis.color,
-            strokeWidth: isSelected ? 2.5 : 1,
-            strokeDasharray: isSelected ? undefined : "3,3",
-          }),
-        );
-
-        if (isSelected) {
-          const ruleLabel = isObservedStepMode
-            ? `Step = ${fh}`
-            : `Time = ${fh.toFixed(digits)}`;
-          marks.push(
-            Plot.text(
-              [
-                {
-                  x: fh,
-                  label: ruleLabel,
-                },
-              ],
-              {
-                x: "x",
-                y: 102,
-                text: "label",
-                dy: -10,
-                fill: theme.axis.color,
-                fontSize: 11,
-                fontWeight: 700,
-              },
-            ),
-          );
-        }
-
-        // Interactive stacked hover bar targets at step position
-        const hoverData: Array<{
-          step: number;
-          stateId: string;
-          percentage: number;
-          color: string;
-          title: string;
-        }> = [];
-
-        for (const st of row.states) {
-          const color = getStateColor(st.stateId, st.label);
-          const tipText = buildOutcomeTooltip(
-            fh,
-            st,
-            row.totalCount,
-            row.totalMass,
-            digits,
-            true,
-            row.estimator,
-            row.estimateOrigin,
-          );
-
-          hoverData.push({
-            step: fh,
-            stateId: st.stateId,
-            percentage: st.percentage,
-            color,
-            title: tipText,
-          });
-        }
-
-        // Stacked vertical rects (barY) at step position
-        marks.push(
-          Plot.barY(
-            hoverData,
-            Plot.stackY({
-              x: "step",
-              y: "percentage",
-              z: "stateId",
-              fill: (d) => d.color,
-              fillOpacity: segments.some((s) => s.length === 1 && s[0].horizon === fh) ? 0.85 : 0.01,
-              stroke: segments.some((s) => s.length === 1 && s[0].horizon === fh) ? theme.axis.color : "transparent",
-              strokeWidth: 0.5,
-              title: (d) => d.title,
-            }),
-          ),
-        );
-      }
-    } else {
-      // Stacked Bar Chart (Single step or fixed horizons fallback)
-      const activeRows = isObservedStepMode ? observedStepRows : fixedHorizonRows;
+    if (isObservedStepMode) {
+      // Discrete/ordinal 100% stacked bar chart for ALL observed_step distributions
       const plotData: Array<{
-        horizonLabel: string;
-        horizon: number;
+        step: number;
+        stepLabel: string;
         stateId: string;
         label: string;
         percentage: number;
@@ -861,7 +699,7 @@ export function renderOutcomeDistribution(
         title: string;
       }> = [];
 
-      for (const row of activeRows) {
+      for (const row of observedStepRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
           const tipText = buildOutcomeTooltip(
@@ -876,9 +714,212 @@ export function renderOutcomeDistribution(
           );
 
           plotData.push({
-            horizonLabel: isObservedStepMode
-              ? `Step ${row.horizon}`
-              : `Time: ${row.horizon}`,
+            step: row.horizon,
+            stepLabel: `Step ${row.horizon}`,
+            stateId: st.stateId,
+            label: st.label,
+            percentage: st.percentage,
+            color,
+            title: tipText,
+          });
+        }
+      }
+
+      // Render 100% stacked bars on discrete step axis
+      marks.push(
+        Plot.barY(
+          plotData,
+          Plot.stackY({
+            x: "step",
+            y: "percentage",
+            z: "stateId",
+            fill: (d) => d.color,
+            fillOpacity: 0.88,
+            stroke: theme.axis.color,
+            strokeWidth: 0.75,
+            title: (d) => d.title,
+          }),
+        ),
+      );
+
+      // Active step indicator rule
+      if (currentActiveHorizon !== null) {
+        marks.push(
+          Plot.ruleX([currentActiveHorizon], {
+            stroke: theme.axis.color,
+            strokeWidth: 2.5,
+          }),
+        );
+        marks.push(
+          Plot.text(
+            [
+              {
+                x: currentActiveHorizon,
+                label: `Step = ${currentActiveHorizon}`,
+              },
+            ],
+            {
+              x: "x",
+              y: 102,
+              text: "label",
+              dy: -10,
+              fill: theme.axis.color,
+              fontSize: 11,
+              fontWeight: 700,
+            },
+          ),
+        );
+      }
+    } else if (eventTableRows.length > 0) {
+      // Existing time-dependent continuous event_table stacked step-area trajectory
+      const plotData: Array<{
+        horizon: number;
+        stateId: string;
+        label: string;
+        percentage: number;
+        color: string;
+        title: string;
+      }> = [];
+
+      for (const row of eventTableRows) {
+        for (const st of row.states) {
+          const color = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            true,
+            row.estimator,
+            row.estimateOrigin,
+          );
+
+          plotData.push({
+            horizon: row.horizon,
+            stateId: st.stateId,
+            label: st.label,
+            percentage: st.percentage,
+            color,
+            title: tipText,
+          });
+        }
+      }
+
+      marks.push(
+        Plot.areaY(
+          plotData,
+          Plot.stackY({
+            x: "horizon",
+            y: "percentage",
+            z: "stateId",
+            fill: (d) => d.color,
+            fillOpacity: 0.85,
+            curve: "step-after",
+          }),
+        ),
+      );
+
+      // Internal boundary lines
+      const firstRowStates = eventTableRows[0]?.states ?? [];
+      const numInternalBoundaries = firstRowStates.length - 1;
+
+      if (numInternalBoundaries > 0) {
+        const boundaryData: Array<{
+          boundaryIndex: number;
+          horizon: number;
+          cumulativePercentage: number;
+        }> = [];
+
+        for (const row of eventTableRows) {
+          let cumulative = 0;
+          for (let b = 0; b < numInternalBoundaries; b++) {
+            const st = row.states[b];
+            if (st) {
+              cumulative += st.percentage;
+              boundaryData.push({
+                boundaryIndex: b,
+                horizon: row.horizon,
+                cumulativePercentage: cumulative,
+              });
+            }
+          }
+        }
+
+        marks.push(
+          Plot.lineY(boundaryData, {
+            x: "horizon",
+            y: "cumulativePercentage",
+            z: "boundaryIndex",
+            stroke: theme.axis.color,
+            strokeWidth: 1,
+            strokeOpacity: 0.8,
+            curve: "step-after",
+          }),
+        );
+      }
+
+      // Vertical marker lines at fixed horizons
+      for (const fh of availableSteps) {
+        const isSelected = fh === currentActiveHorizon;
+        marks.push(
+          Plot.ruleX([fh], {
+            stroke: theme.axis.color,
+            strokeWidth: isSelected ? 2.5 : 1,
+            strokeDasharray: isSelected ? undefined : "3,3",
+          }),
+        );
+
+        if (isSelected) {
+          marks.push(
+            Plot.text(
+              [
+                {
+                  x: fh,
+                  label: `Time = ${fh.toFixed(digits)}`,
+                },
+              ],
+              {
+                x: "x",
+                y: 102,
+                text: "label",
+                dy: -10,
+                fill: theme.axis.color,
+                fontSize: 11,
+                fontWeight: 700,
+              },
+            ),
+          );
+        }
+      }
+    } else {
+      // Fallback Stacked Bar Chart for fixed_time_horizon
+      const plotData: Array<{
+        horizonLabel: string;
+        horizon: number;
+        stateId: string;
+        label: string;
+        percentage: number;
+        color: string;
+        title: string;
+      }> = [];
+
+      for (const row of fixedHorizonRows) {
+        for (const st of row.states) {
+          const color = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            false,
+            row.estimator,
+            row.estimateOrigin,
+          );
+
+          plotData.push({
+            horizonLabel: `Time: ${row.horizon}`,
             horizon: row.horizon,
             stateId: st.stateId,
             label: st.label,

@@ -5721,6 +5721,18 @@
                                 "competingHeuristic": {
                                   "type": "string"
                                 },
+                                "stateScale": {
+                                  "anyOf": [
+                                    {
+                                      "const": "ordinal",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "nominal",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
                                 "states": {
                                   "minItems": 1,
                                   "type": "array",
@@ -6892,6 +6904,18 @@
                             "competingHeuristic": {
                               "type": "string"
                             },
+                            "stateScale": {
+                              "anyOf": [
+                                {
+                                  "const": "ordinal",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "nominal",
+                                  "type": "string"
+                                }
+                              ]
+                            },
                             "states": {
                               "minItems": 1,
                               "type": "array",
@@ -6996,6 +7020,18 @@
                       },
                       "title": {
                         "type": "string"
+                      },
+                      "stateScale": {
+                        "anyOf": [
+                          {
+                            "const": "ordinal",
+                            "type": "string"
+                          },
+                          {
+                            "const": "nominal",
+                            "type": "string"
+                          }
+                        ]
                       },
                       "evaluations": {
                         "minItems": 1,
@@ -7163,6 +7199,18 @@
                             },
                             "competingHeuristic": {
                               "type": "string"
+                            },
+                            "stateScale": {
+                              "anyOf": [
+                                {
+                                  "const": "ordinal",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "nominal",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             "states": {
                               "minItems": 1,
@@ -12999,6 +13047,18 @@
                                           "competingHeuristic": {
                                             "type": "string"
                                           },
+                                          "stateScale": {
+                                            "anyOf": [
+                                              {
+                                                "const": "ordinal",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "const": "nominal",
+                                                "type": "string"
+                                              }
+                                            ]
+                                          },
                                           "states": {
                                             "minItems": 1,
                                             "type": "array",
@@ -14170,6 +14230,18 @@
                                       "competingHeuristic": {
                                         "type": "string"
                                       },
+                                      "stateScale": {
+                                        "anyOf": [
+                                          {
+                                            "const": "ordinal",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "nominal",
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
                                       "states": {
                                         "minItems": 1,
                                         "type": "array",
@@ -14274,6 +14346,18 @@
                                 },
                                 "title": {
                                   "type": "string"
+                                },
+                                "stateScale": {
+                                  "anyOf": [
+                                    {
+                                      "const": "ordinal",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "nominal",
+                                      "type": "string"
+                                    }
+                                  ]
                                 },
                                 "evaluations": {
                                   "minItems": 1,
@@ -14441,6 +14525,18 @@
                                       },
                                       "competingHeuristic": {
                                         "type": "string"
+                                      },
+                                      "stateScale": {
+                                        "anyOf": [
+                                          {
+                                            "const": "ordinal",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "nominal",
+                                            "type": "string"
+                                          }
+                                        ]
                                       },
                                       "states": {
                                         "minItems": 1,
@@ -20255,6 +20351,18 @@
                                                 "competingHeuristic": {
                                                   "type": "string"
                                                 },
+                                                "stateScale": {
+                                                  "anyOf": [
+                                                    {
+                                                      "const": "ordinal",
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "const": "nominal",
+                                                      "type": "string"
+                                                    }
+                                                  ]
+                                                },
                                                 "states": {
                                                   "minItems": 1,
                                                   "type": "array",
@@ -21426,6 +21534,18 @@
                                             "competingHeuristic": {
                                               "type": "string"
                                             },
+                                            "stateScale": {
+                                              "anyOf": [
+                                                {
+                                                  "const": "ordinal",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "nominal",
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            },
                                             "states": {
                                               "minItems": 1,
                                               "type": "array",
@@ -21530,6 +21650,18 @@
                                       },
                                       "title": {
                                         "type": "string"
+                                      },
+                                      "stateScale": {
+                                        "anyOf": [
+                                          {
+                                            "const": "ordinal",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "nominal",
+                                            "type": "string"
+                                          }
+                                        ]
                                       },
                                       "evaluations": {
                                         "minItems": 1,
@@ -21697,6 +21829,18 @@
                                             },
                                             "competingHeuristic": {
                                               "type": "string"
+                                            },
+                                            "stateScale": {
+                                              "anyOf": [
+                                                {
+                                                  "const": "ordinal",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "nominal",
+                                                  "type": "string"
+                                                }
+                                              ]
                                             },
                                             "states": {
                                               "minItems": 1,

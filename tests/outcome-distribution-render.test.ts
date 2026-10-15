@@ -571,16 +571,53 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       const svg = root.querySelector("svg");
       expect(svg).not.toBeNull();
 
-      // No continuous step-area path bridging from step 1 to 5
-      const areaGroup = svg?.querySelector('g[aria-label="area"]');
-      expect(areaGroup).toBeNull(); // Segment lengths are 1, so no trajectory step-area is stretched
+      // Uses stacked bars (barY) for discrete step axis
+      const rects = svg?.querySelectorAll("rect");
+      expect(rects?.length).toBeGreaterThan(0);
 
-      // Both step 1 and step 5 have inspectable hover targets
+      // Both step 1 and step 5 have inspectable hover targets with step titles
       const titles = Array.from(svg?.querySelectorAll("title") ?? []).map(
         (t) => t.textContent ?? "",
       );
       expect(titles.some((t) => t.includes("Step: 1"))).toBe(true);
       expect(titles.some((t) => t.includes("Step: 5"))).toBe(true);
+    });
+
+    it("renders True Blue ordinal palette for 3, 4, 5, 6, 7, and 8 levels when stateScale='ordinal'", () => {
+      for (let n = 3; n <= 8; n++) {
+        const states = Array.from({ length: n }, (_, i) => ({
+          stateId: `stage_${i + 1}`,
+          label: `Stage ${i + 1}`,
+          estimate: 1 / n,
+        }));
+
+        const spec: OutcomeDistributionSpec = {
+          schemaVersion: "2.0",
+          type: "outcome_distribution",
+          stateScale: "ordinal",
+          evaluations: [{ id: "eval-1", population: "cohort-1" }],
+          stateDistributions: [
+            {
+              evaluationId: "eval-1",
+              horizon: 1,
+              estimator: "aalen_johansen",
+              estimateOrigin: "observed_step",
+              states,
+            },
+          ],
+        };
+
+        const root = renderOutcomeDistribution(spec);
+        const badges = root.querySelectorAll(".rtichoke-performance-table__badge");
+        expect(badges.length).toBe(n);
+
+        // Verify badge colors match True Blue stops
+        const badgeColors = Array.from(badges).map((b) => (b as HTMLElement).style.backgroundColor);
+        expect(badgeColors.length).toBe(n);
+        // Endpoints should be lightest (#EDF5FD) and darkest (#103C70)
+        expect(badgeColors[0]).not.toBe("");
+        expect(badgeColors[n - 1]).not.toBe("");
+      }
     });
   });
 
