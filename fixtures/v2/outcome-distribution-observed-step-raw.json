@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Observed Step Raw Counts",
+  "evaluations": [
+    {
+      "id": "eval-1",
+      "model": "model-a",
+      "population": "cohort-1"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "eval-1",
+      "horizon": 1,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "count": 80 },
+        { "stateId": "relapse", "count": 15 },
+        { "stateId": "death", "count": 5 }
+      ]
+    },
+    {
+      "evaluationId": "eval-1",
+      "horizon": 2,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "count": 70 },
+        { "stateId": "relapse", "count": 20 },
+        { "stateId": "death", "count": 10 }
+      ]
+    },
+    {
+      "evaluationId": "eval-1",
+      "horizon": 3,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "count": 60 },
+        { "stateId": "relapse", "count": 25 },
+        { "stateId": "death", "count": 15 }
+      ]
+    }
+  ]
+}

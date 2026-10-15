@@ -328,6 +328,10 @@
               {
                 "const": "fixed_time_horizon",
                 "type": "string"
+              },
+              {
+                "const": "observed_step",
+                "type": "string"
               }
             ]
           },

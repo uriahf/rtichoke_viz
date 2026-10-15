@@ -328,6 +328,223 @@ describe("OutcomeDistributionSpec", () => {
       assertOutcomeDistributionReferentialIntegrity(invalidSpec),
     ).toThrow("stratum rankLower 0.9 cannot exceed rankUpper 0.1");
   });
+
+  describe("observed_step validations", () => {
+    it("validates a well-formed observed_step raw count spec", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 10 },
+              { stateId: "state_b", count: 90 },
+            ],
+          },
+        ],
+      };
+      expect(Value.Check(OutcomeDistributionSpecSchema, spec)).toBe(true);
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).not.toThrow();
+    });
+
+    it("validates a well-formed observed_step AJ adjusted spec with 1e-8 tolerance", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", estimate: 0.3333333333333333 },
+              { stateId: "state_b", estimate: 0.3333333333333333 },
+              { stateId: "state_c", estimate: 0.3333333333333334 },
+            ],
+          },
+        ],
+      };
+      expect(Value.Check(OutcomeDistributionSpecSchema, spec)).toBe(true);
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).not.toThrow();
+    });
+
+    it("rejects non-integer step in observed_step", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1.5,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "state_a", count: 10 }],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("step (horizon) must be a non-negative integer");
+    });
+
+    it("rejects unsupported estimator in observed_step", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "kaplan_meier",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "state_a", count: 10 }],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("unsupported estimator 'kaplan_meier'");
+    });
+
+    it("rejects missing state counts when estimator is raw", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "state_a", estimate: 0.5 }],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("count is required for state state_a when estimator is 'raw'");
+    });
+
+    it("rejects total count of 0 in raw observed_step", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 0 },
+              { stateId: "state_b", count: 0 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("total observed count across states must be greater than zero");
+    });
+
+    it("rejects AJ estimates when sum exceeds 1.0 + 1e-8 threshold", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", estimate: 0.6 },
+              { stateId: "state_b", estimate: 0.401 }, // Sum = 1.001 (diff = 0.001 > 1e-8)
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("occupancy estimates across states must sum to 1.0");
+    });
+
+    it("rejects duplicate step distributions for the same evaluation and estimator", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "state_a", count: 10 }],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "state_a", count: 15 }],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("duplicate distribution for evaluation eval-1");
+    });
+
+    it("rejects inconsistent state ordering across steps", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 10 },
+              { stateId: "state_b", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_b", count: 25 },
+              { stateId: "state_a", count: 15 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("inconsistent state ordering across steps");
+    });
+  });
 });
 
 describe("PredictionDistributionSpec with stateDistributions", () => {

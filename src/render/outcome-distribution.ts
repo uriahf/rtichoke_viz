@@ -51,11 +51,15 @@ const STATE_COLOR_PALETTE = [
   "#666666",
 ];
 
-function resolveStateLabel(stateId: string, customLabel?: string | null): string {
+function resolveStateLabel(
+  stateId: string,
+  customLabel?: string | null,
+  isObservedStep?: boolean,
+): string {
   if (customLabel && customLabel.trim() !== "") {
     return customLabel;
   }
-  if (CANONICAL_STATE_LABELS[stateId]) {
+  if (!isObservedStep && CANONICAL_STATE_LABELS[stateId]) {
     return CANONICAL_STATE_LABELS[stateId];
   }
   return stateId;
@@ -88,6 +92,7 @@ function processStateDistribution(
 ): ProcessedHorizonData {
   const horizon = dist.horizon ?? 0;
   const states = dist.states;
+  const isObservedStep = dist.estimateOrigin === "observed_step";
 
   let hasEstimate = false;
   let hasMass = false;
@@ -117,10 +122,14 @@ function processStateDistribution(
   }
 
   const processedStates: ProcessedStateRow[] = states.map((s) => {
-    const label = resolveStateLabel(s.stateId, s.label);
+    const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
     let proportion = 0;
 
-    if (hasEstimate && s.estimate !== undefined && s.estimate !== null) {
+    if (dist.estimator === "aalen_johansen" && s.estimate !== undefined && s.estimate !== null) {
+      proportion = s.estimate;
+    } else if (dist.estimator === "raw" && s.count !== undefined && s.count !== null && totalCount && totalCount > 0) {
+      proportion = s.count / totalCount;
+    } else if (hasEstimate && s.estimate !== undefined && s.estimate !== null) {
       proportion = s.estimate;
     } else if (hasMass && s.mass !== undefined && s.mass !== null && totalMass && totalMass > 0) {
       proportion = s.mass / totalMass;
@@ -159,28 +168,51 @@ function buildOutcomeTooltip(
   totalMass: number | null,
   digits: number,
   isTrajectory: boolean,
+  estimator?: string,
+  estimateOrigin?: string,
 ): string {
   const fields: Array<[string, unknown]> = [];
-  fields.push([isTrajectory ? "Time" : "Horizon", horizon]);
-  fields.push(["Outcome status", st.label]);
 
-  const countVal = st.count ?? st.mass;
-  const totalVal = totalCount ?? totalMass;
+  if (estimateOrigin === "observed_step") {
+    fields.push(["Step", horizon]);
+    fields.push(["State", st.label]);
 
-  if (countVal !== null && countVal !== undefined) {
-    fields.push(["Count", countVal]);
-  }
-  fields.push(["Percent", `${st.percentage.toFixed(1)}%`]);
-  if (totalVal !== null && totalVal !== undefined) {
-    fields.push(["Denominator", totalVal]);
-  }
-  fields.push(["Accounting", "Raw observed status"]);
+    if (estimator === "aalen_johansen") {
+      if (st.estimate !== null) {
+        fields.push(["AJ estimated occupancy", st.estimate.toFixed(digits)]);
+      }
+      fields.push(["Percentage", `${st.percentage.toFixed(1)}%`]);
+    } else {
+      if (st.count !== null) {
+        fields.push(["Observed count", st.count]);
+      }
+      if (totalCount !== null) {
+        fields.push(["Observed denominator", totalCount]);
+      }
+      fields.push(["Observed percentage", `${st.percentage.toFixed(1)}%`]);
+    }
+  } else {
+    fields.push([isTrajectory ? "Time" : "Horizon", horizon]);
+    fields.push(["Outcome status", st.label]);
 
-  if (st.stateId === "real_censored" || st.label.toLowerCase().includes("censored")) {
-    fields.push([
-      "Note",
-      "Censored before horizon; no censoring adjustment is applied.",
-    ]);
+    const countVal = st.count ?? st.mass;
+    const totalVal = totalCount ?? totalMass;
+
+    if (countVal !== null && countVal !== undefined) {
+      fields.push(["Count", countVal]);
+    }
+    fields.push(["Percent", `${st.percentage.toFixed(1)}%`]);
+    if (totalVal !== null && totalVal !== undefined) {
+      fields.push(["Denominator", totalVal]);
+    }
+    fields.push(["Accounting", "Raw observed status"]);
+
+    if (st.stateId === "real_censored" || st.label.toLowerCase().includes("censored")) {
+      fields.push([
+        "Note",
+        "Censored before horizon; no censoring adjustment is applied.",
+      ]);
+    }
   }
 
   return tooltip(digits, fields);
@@ -381,12 +413,23 @@ export function renderOutcomeDistribution(
       .map(processStateDistribution)
       .sort((a, b) => a.horizon - b.horizon);
 
-    // Extract available fixed horizon time points
-    const fixedHorizons = Array.from(
-      new Set(fixedHorizonRows.map((r) => r.horizon)),
-    ).sort((a, b) => a - b);
+    const observedStepRows = evalDists
+      .filter((d) => d.estimateOrigin === "observed_step")
+      .map(processStateDistribution)
+      .sort((a, b) => a.horizon - b.horizon);
 
-    if (eventTableRows.length === 0 && fixedHorizonRows.length === 0) {
+    const isObservedStepMode = observedStepRows.length > 0;
+
+    // Extract available step/horizon points
+    const availableSteps = isObservedStepMode
+      ? Array.from(new Set(observedStepRows.map((r) => r.horizon))).sort((a, b) => a - b)
+      : Array.from(new Set(fixedHorizonRows.map((r) => r.horizon))).sort((a, b) => a - b);
+
+    if (
+      eventTableRows.length === 0 &&
+      fixedHorizonRows.length === 0 &&
+      observedStepRows.length === 0
+    ) {
       sliderControl.style.display = "none";
       legendDiv.style.display = "none";
       readoutDiv.replaceChildren();
@@ -399,21 +442,46 @@ export function renderOutcomeDistribution(
       return;
     }
 
-    const isTrajectoryMode = eventTableRows.length > 0;
+    const isTrajectoryMode = eventTableRows.length > 0 || (isObservedStepMode && observedStepRows.length > 1);
+    const isSingleStepMode = isObservedStepMode && observedStepRows.length === 1;
 
-    // Fixed Horizon Slider setup
-    if (fixedHorizons.length > 0) {
+    // Slider setup
+    if (isObservedStepMode) {
+      if (observedStepRows.length > 1) {
+        sliderControl.style.display = "flex";
+        if (
+          currentActiveHorizon === null ||
+          !availableSteps.includes(currentActiveHorizon)
+        ) {
+          currentActiveHorizon = availableSteps[availableSteps.length - 1];
+        }
+
+        const hIdx = availableSteps.indexOf(currentActiveHorizon);
+        slider.min = "0";
+        slider.max = String(Math.max(0, availableSteps.length - 1));
+        slider.step = "1";
+        slider.value = String(Math.max(0, hIdx));
+
+        sliderLabelText.textContent = "Step: ";
+        sliderValueText.textContent = String(currentActiveHorizon);
+        slider.setAttribute("aria-label", "Step");
+        slider.setAttribute("aria-valuetext", String(currentActiveHorizon));
+      } else {
+        sliderControl.style.display = "none";
+        currentActiveHorizon = availableSteps[0];
+      }
+    } else if (availableSteps.length > 0) {
       sliderControl.style.display = "flex";
       if (
         currentActiveHorizon === null ||
-        !fixedHorizons.includes(currentActiveHorizon)
+        !availableSteps.includes(currentActiveHorizon)
       ) {
-        currentActiveHorizon = fixedHorizons[fixedHorizons.length - 1];
+        currentActiveHorizon = availableSteps[availableSteps.length - 1];
       }
 
-      const hIdx = fixedHorizons.indexOf(currentActiveHorizon);
+      const hIdx = availableSteps.indexOf(currentActiveHorizon);
       slider.min = "0";
-      slider.max = String(Math.max(0, fixedHorizons.length - 1));
+      slider.max = String(Math.max(0, availableSteps.length - 1));
       slider.step = "1";
       slider.value = String(Math.max(0, hIdx));
 
@@ -430,9 +498,10 @@ export function renderOutcomeDistribution(
 
     // Active horizon breakdown readout
     readoutDiv.replaceChildren();
-    const activeDataRow =
-      fixedHorizonRows.find((r) => r.horizon === currentActiveHorizon) ??
-      eventTableRows.find((r) => r.horizon === currentActiveHorizon);
+    const activeDataRow = isObservedStepMode
+      ? observedStepRows.find((r) => r.horizon === currentActiveHorizon)
+      : (fixedHorizonRows.find((r) => r.horizon === currentActiveHorizon) ??
+         eventTableRows.find((r) => r.horizon === currentActiveHorizon));
 
     if (activeDataRow) {
       const readoutCard = document.createElement("div");
@@ -440,7 +509,9 @@ export function renderOutcomeDistribution(
 
       const readoutHeader = document.createElement("div");
       readoutHeader.className = "rtichoke-outcome-distribution__readout-header";
-      readoutHeader.textContent = `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
+      readoutHeader.textContent = isObservedStepMode
+        ? `Active Step: Step = ${activeDataRow.horizon}`
+        : `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
       readoutCard.append(readoutHeader);
 
       const readoutTable = document.createElement("table");
@@ -450,10 +521,14 @@ export function renderOutcomeDistribution(
       const rHeadRow = document.createElement("tr");
 
       const thOutcome = document.createElement("th");
-      thOutcome.textContent = "Outcome";
+      thOutcome.textContent = isObservedStepMode ? "State" : "Outcome";
 
       const thShare = document.createElement("th");
-      thShare.textContent = "Count / Total (%)";
+      if (isObservedStepMode && activeDataRow.estimator === "aalen_johansen") {
+        thShare.textContent = "Occupancy (%)";
+      } else {
+        thShare.textContent = "Count / Total (%)";
+      }
 
       rHeadRow.append(thOutcome, thShare);
       rHead.append(rHeadRow);
@@ -491,16 +566,20 @@ export function renderOutcomeDistribution(
         const contentSpan = document.createElement("span");
         contentSpan.className = "rtichoke-performance-table__cell-text";
 
-        const countVal = st.count ?? st.mass;
-        if (
-          countVal !== null &&
-          countVal !== undefined &&
-          totalDenominator !== null &&
-          totalDenominator !== undefined
-        ) {
-          contentSpan.textContent = `${countVal.toLocaleString()} / ${totalDenominator.toLocaleString()} (${st.percentage.toFixed(1)}%)`;
-        } else {
+        if (isObservedStepMode && activeDataRow.estimator === "aalen_johansen") {
           contentSpan.textContent = `${st.percentage.toFixed(1)}%`;
+        } else {
+          const countVal = st.count ?? st.mass;
+          if (
+            countVal !== null &&
+            countVal !== undefined &&
+            totalDenominator !== null &&
+            totalDenominator !== undefined
+          ) {
+            contentSpan.textContent = `${countVal.toLocaleString()} / ${totalDenominator.toLocaleString()} (${st.percentage.toFixed(1)}%)`;
+          } else {
+            contentSpan.textContent = `${st.percentage.toFixed(1)}%`;
+          }
         }
 
         tdShare.append(barContainer, contentSpan);
@@ -525,7 +604,11 @@ export function renderOutcomeDistribution(
 
     // Get all unique state labels present across active rows
     const allStatesMap = new Map<string, { stateId: string; label: string }>();
-    const rowsToScan = isTrajectoryMode ? eventTableRows : fixedHorizonRows;
+    const rowsToScan = isObservedStepMode
+      ? observedStepRows
+      : isTrajectoryMode
+        ? eventTableRows
+        : fixedHorizonRows;
     for (const r of rowsToScan) {
       for (const st of r.states) {
         if (!allStatesMap.has(st.label)) {
@@ -560,6 +643,8 @@ export function renderOutcomeDistribution(
     const marks: Plot.Markish[] = [];
 
     if (isTrajectoryMode) {
+      const activeRows = isObservedStepMode ? observedStepRows : eventTableRows;
+
       // 1. Stacked Step-Area Trajectory Plot
       const plotData: Array<{
         horizon: number;
@@ -570,7 +655,7 @@ export function renderOutcomeDistribution(
         title: string;
       }> = [];
 
-      for (const row of eventTableRows) {
+      for (const row of activeRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
           const tipText = buildOutcomeTooltip(
@@ -580,6 +665,8 @@ export function renderOutcomeDistribution(
             row.totalMass,
             digits,
             true,
+            row.estimator,
+            row.estimateOrigin,
           );
 
           plotData.push({
@@ -608,9 +695,8 @@ export function renderOutcomeDistribution(
       );
 
       // 2. Step-Line Boundaries between adjacent stacked state layers
-      // Compute cumulative state percentage boundaries C_b(t) = sum_{j=1}^b P_j(t) for internal boundaries b in [1, K-1]
-      const uniqueStateIds = Array.from(new Set(plotData.map((d) => d.stateId)));
-      const numInternalBoundaries = uniqueStateIds.length - 1;
+      const firstRowStates = activeRows[0]?.states ?? [];
+      const numInternalBoundaries = firstRowStates.length - 1;
 
       if (numInternalBoundaries > 0) {
         const boundaryData: Array<{
@@ -619,7 +705,7 @@ export function renderOutcomeDistribution(
           cumulativePercentage: number;
         }> = [];
 
-        for (const row of eventTableRows) {
+        for (const row of activeRows) {
           let cumulative = 0;
           for (let b = 0; b < numInternalBoundaries; b++) {
             const st = row.states[b];
@@ -647,8 +733,8 @@ export function renderOutcomeDistribution(
         );
       }
 
-      // Draw vertical marker lines at fixed horizons using neutral axis color
-      for (const fh of fixedHorizons) {
+      // Draw vertical marker lines at available steps/horizons
+      for (const fh of availableSteps) {
         const isSelected = fh === currentActiveHorizon;
         marks.push(
           Plot.ruleX([fh], {
@@ -659,12 +745,15 @@ export function renderOutcomeDistribution(
         );
 
         if (isSelected) {
+          const ruleLabel = isObservedStepMode
+            ? `Step = ${fh}`
+            : `Time = ${fh.toFixed(digits)}`;
           marks.push(
             Plot.text(
               [
                 {
                   x: fh,
-                  label: `Time = ${fh.toFixed(digits)}`,
+                  label: ruleLabel,
                 },
               ],
               {
@@ -681,7 +770,8 @@ export function renderOutcomeDistribution(
         }
       }
     } else {
-      // 2. Fixed Horizon Fallback Stacked Bar Chart
+      // Stacked Bar Chart (Single step or fixed horizons fallback)
+      const activeRows = isObservedStepMode ? observedStepRows : fixedHorizonRows;
       const plotData: Array<{
         horizonLabel: string;
         horizon: number;
@@ -692,7 +782,7 @@ export function renderOutcomeDistribution(
         title: string;
       }> = [];
 
-      for (const row of fixedHorizonRows) {
+      for (const row of activeRows) {
         for (const st of row.states) {
           const color = getStateColor(st.stateId, st.label);
           const tipText = buildOutcomeTooltip(
@@ -702,10 +792,14 @@ export function renderOutcomeDistribution(
             row.totalMass,
             digits,
             false,
+            row.estimator,
+            row.estimateOrigin,
           );
 
           plotData.push({
-            horizonLabel: `Time: ${row.horizon}`,
+            horizonLabel: isObservedStepMode
+              ? `Step ${row.horizon}`
+              : `Time: ${row.horizon}`,
             horizon: row.horizon,
             stateId: st.stateId,
             label: st.label,
@@ -722,6 +816,7 @@ export function renderOutcomeDistribution(
           Plot.stackY({
             x: "horizonLabel",
             y: "percentage",
+            z: "stateId",
             fill: (d) => d.color,
             fillOpacity: 0.88,
             stroke: theme.axis.color,
@@ -745,22 +840,38 @@ export function renderOutcomeDistribution(
         fontFamily: theme.typography.fontFamily,
         fontSize: `${theme.typography.fontSize}px`,
       },
-      x: isTrajectoryMode
-        ? {
-            label: "Time",
-            grid: false,
-            line: true,
-            ticks: theme.axis.ticks,
-            tickSize: theme.axis.tickSize,
-            tickPadding: theme.axis.tickPadding,
-          }
-        : {
-            label: "Time",
-            grid: false,
-            line: true,
-          },
+      x: isObservedStepMode
+        ? isTrajectoryMode
+          ? {
+              label: "Step",
+              grid: false,
+              line: true,
+              ticks: availableSteps,
+              tickFormat: (d: number) => String(d),
+              tickSize: theme.axis.tickSize,
+              tickPadding: theme.axis.tickPadding,
+            }
+          : {
+              label: "Step",
+              grid: false,
+              line: true,
+            }
+        : isTrajectoryMode
+          ? {
+              label: "Time",
+              grid: false,
+              line: true,
+              ticks: theme.axis.ticks,
+              tickSize: theme.axis.tickSize,
+              tickPadding: theme.axis.tickPadding,
+            }
+          : {
+              label: "Time",
+              grid: false,
+              line: true,
+            },
       y: {
-        label: "Outcomes",
+        label: isObservedStepMode ? "State occupancy (%)" : "Outcomes",
         domain: [0, 100],
         grid: false,
         line: true,
@@ -781,17 +892,29 @@ export function renderOutcomeDistribution(
       (d) => d.evaluationId === currentEvalId,
     );
 
-    const fixedHorizons = Array.from(
-      new Set(
-        evalDists
-          .filter((d) => d.estimateOrigin === "fixed_time_horizon")
-          .map((d) => d.horizon ?? 0),
-      ),
-    ).sort((a, b) => a - b);
+    const isObservedStep = evalDists.some(
+      (d) => d.estimateOrigin === "observed_step",
+    );
+
+    const steps = isObservedStep
+      ? Array.from(
+          new Set(
+            evalDists
+              .filter((d) => d.estimateOrigin === "observed_step")
+              .map((d) => d.horizon ?? 0),
+          ),
+        ).sort((a, b) => a - b)
+      : Array.from(
+          new Set(
+            evalDists
+              .filter((d) => d.estimateOrigin === "fixed_time_horizon")
+              .map((d) => d.horizon ?? 0),
+          ),
+        ).sort((a, b) => a - b);
 
     const idx = Number(slider.value);
-    if (idx >= 0 && idx < fixedHorizons.length) {
-      currentActiveHorizon = fixedHorizons[idx];
+    if (idx >= 0 && idx < steps.length) {
+      currentActiveHorizon = steps[idx];
       updateChart();
     }
   });

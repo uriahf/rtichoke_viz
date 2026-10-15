@@ -32,6 +32,7 @@ export const StateDistributionSchema = Type.Object({
     Type.Union([
       Type.Literal("event_table"),
       Type.Literal("fixed_time_horizon"),
+      Type.Literal("observed_step"),
     ]),
   ),
   stratum: Type.Optional(StateStratumSchema),

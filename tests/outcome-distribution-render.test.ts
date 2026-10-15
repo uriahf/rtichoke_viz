@@ -435,6 +435,113 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       expect(dAttr?.length).toBeGreaterThan(0);
     });
 
+  describe("observed_step rendering", () => {
+    it("renders raw observed_step longitudinal trajectory with Step axis and Step tooltips", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "Longitudinal Raw Step Distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 80 },
+              { stateId: "relapse", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 60 },
+              { stateId: "relapse", count: 40 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const text = root.textContent ?? "";
+
+      expect(text).toContain("Step");
+      expect(text).toContain("Active Step: Step = 2");
+      expect(text).toContain("State");
+      expect(text).toContain("remission");
+      expect(text).toContain("relapse");
+      expect(text).not.toContain("Event"); // Should not apply canonical mapping for arbitrary states
+
+      const svgHtml = root.querySelector("svg")?.innerHTML ?? "";
+      expect(svgHtml).toContain("Step: 2");
+      expect(svgHtml).toContain("Observed count: 40");
+      expect(svgHtml).toContain("Observed denominator: 100");
+      expect(svgHtml).toContain("Observed percentage: 40.0%");
+    });
+
+    it("renders AJ-adjusted observed_step occupancy with Percentage and no count/denominator terminology", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "AJ Step Distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 10,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", label: "In Remission", estimate: 0.75 },
+              { stateId: "relapse", label: "Relapsed", estimate: 0.25 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const text = root.textContent ?? "";
+
+      expect(text).toContain("Occupancy (%)");
+      expect(text).toContain("75.0%");
+      expect(text).toContain("25.0%");
+      expect(text).not.toContain("Count / Total");
+      expect(text).not.toContain("Raw observed status");
+
+      const svgHtml = root.querySelector("svg")?.innerHTML ?? "";
+      expect(svgHtml).toContain("AJ estimated occupancy: 0.75");
+      expect(svgHtml).toContain("Percentage: 75.0%");
+      expect(svgHtml).not.toContain("Observed count");
+      expect(svgHtml).not.toContain("Observed denominator");
+    });
+
+    it("renders a single observed_step without a slider control", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 3,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "active", count: 100 }],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const slider = root.querySelector(".rtichoke-operating-point-control");
+      expect((slider as HTMLElement)?.style.display).toBe("none");
+      expect(root.textContent).toContain("Active Step: Step = 3");
+    });
+  });
+
     // 4. Check fixed horizon reference lines (ruleX) retain expected stroke styling
     const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
     expect(ruleGroup).not.toBeNull();
