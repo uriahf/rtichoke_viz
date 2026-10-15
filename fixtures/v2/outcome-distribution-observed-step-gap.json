@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Observed Step Non-Consecutive Gap Example",
+  "evaluations": [
+    {
+      "id": "eval-1",
+      "model": "model-a",
+      "population": "cohort-1"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "eval-1",
+      "horizon": 1,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "count": 80 },
+        { "stateId": "relapse", "count": 20 }
+      ]
+    },
+    {
+      "evaluationId": "eval-1",
+      "horizon": 5,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "count": 50 },
+        { "stateId": "relapse", "count": 50 }
+      ]
+    }
+  ]
+}

@@ -645,97 +645,128 @@ export function renderOutcomeDistribution(
     if (isTrajectoryMode) {
       const activeRows = isObservedStepMode ? observedStepRows : eventTableRows;
 
-      // 1. Stacked Step-Area Trajectory Plot
-      const plotData: Array<{
-        horizon: number;
-        stateId: string;
-        label: string;
-        percentage: number;
-        color: string;
-        title: string;
-      }> = [];
+      // Group active rows into continuous segments.
+      // For observed_step, adjacent rows with step_{i+1} === step_i + 1 belong to the same segment.
+      // Non-consecutive steps (e.g. 1 and 5) form separate disjoint segments so areas do not bridge across unobserved steps.
+      const segments: ProcessedHorizonData[][] = [];
+      if (activeRows.length > 0) {
+        let currentSegment: ProcessedHorizonData[] = [activeRows[0]];
+        for (let i = 1; i < activeRows.length; i++) {
+          const prev = activeRows[i - 1];
+          const curr = activeRows[i];
+          const isConsecutive = isObservedStepMode
+            ? curr.horizon === prev.horizon + 1
+            : true;
 
-      for (const row of activeRows) {
-        for (const st of row.states) {
-          const color = getStateColor(st.stateId, st.label);
-          const tipText = buildOutcomeTooltip(
-            row.horizon,
-            st,
-            row.totalCount,
-            row.totalMass,
-            digits,
-            true,
-            row.estimator,
-            row.estimateOrigin,
-          );
-
-          plotData.push({
-            horizon: row.horizon,
-            stateId: st.stateId,
-            label: st.label,
-            percentage: st.percentage,
-            color,
-            title: tipText,
-          });
+          if (isConsecutive) {
+            currentSegment.push(curr);
+          } else {
+            segments.push(currentSegment);
+            currentSegment = [curr];
+          }
         }
+        segments.push(currentSegment);
       }
 
-      marks.push(
-        Plot.areaY(
-          plotData,
-          Plot.stackY({
-            x: "horizon",
-            y: "percentage",
-            z: "stateId",
-            fill: (d) => d.color,
-            fillOpacity: 0.85,
-            curve: "step-after",
-          }),
-        ),
-      );
+      for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+        const seg = segments[segIdx];
+        if (seg.length > 1) {
+          // Multi-step consecutive segment: render stacked step-area
+          const plotData: Array<{
+            horizon: number;
+            stateId: string;
+            label: string;
+            percentage: number;
+            color: string;
+            title: string;
+          }> = [];
 
-      // 2. Step-Line Boundaries between adjacent stacked state layers
-      const firstRowStates = activeRows[0]?.states ?? [];
-      const numInternalBoundaries = firstRowStates.length - 1;
+          for (const row of seg) {
+            for (const st of row.states) {
+              const color = getStateColor(st.stateId, st.label);
+              const tipText = buildOutcomeTooltip(
+                row.horizon,
+                st,
+                row.totalCount,
+                row.totalMass,
+                digits,
+                true,
+                row.estimator,
+                row.estimateOrigin,
+              );
 
-      if (numInternalBoundaries > 0) {
-        const boundaryData: Array<{
-          boundaryIndex: number;
-          horizon: number;
-          cumulativePercentage: number;
-        }> = [];
-
-        for (const row of activeRows) {
-          let cumulative = 0;
-          for (let b = 0; b < numInternalBoundaries; b++) {
-            const st = row.states[b];
-            if (st) {
-              cumulative += st.percentage;
-              boundaryData.push({
-                boundaryIndex: b,
+              plotData.push({
                 horizon: row.horizon,
-                cumulativePercentage: cumulative,
+                stateId: st.stateId,
+                label: st.label,
+                percentage: st.percentage,
+                color,
+                title: tipText,
               });
             }
           }
-        }
 
-        marks.push(
-          Plot.lineY(boundaryData, {
-            x: "horizon",
-            y: "cumulativePercentage",
-            z: "boundaryIndex",
-            stroke: theme.axis.color,
-            strokeWidth: 1,
-            strokeOpacity: 0.8,
-            curve: "step-after",
-          }),
-        );
+          marks.push(
+            Plot.areaY(
+              plotData,
+              Plot.stackY({
+                x: "horizon",
+                y: "percentage",
+                z: "stateId",
+                fill: (d) => d.color,
+                fillOpacity: 0.85,
+                curve: "step-after",
+              }),
+            ),
+          );
+
+          // Internal boundary lines for segment
+          const firstRowStates = seg[0]?.states ?? [];
+          const numInternalBoundaries = firstRowStates.length - 1;
+
+          if (numInternalBoundaries > 0) {
+            const boundaryData: Array<{
+              boundaryIndex: number;
+              horizon: number;
+              cumulativePercentage: number;
+            }> = [];
+
+            for (const row of seg) {
+              let cumulative = 0;
+              for (let b = 0; b < numInternalBoundaries; b++) {
+                const st = row.states[b];
+                if (st) {
+                  cumulative += st.percentage;
+                  boundaryData.push({
+                    boundaryIndex: b,
+                    horizon: row.horizon,
+                    cumulativePercentage: cumulative,
+                  });
+                }
+              }
+            }
+
+            marks.push(
+              Plot.lineY(boundaryData, {
+                x: "horizon",
+                y: "cumulativePercentage",
+                z: "boundaryIndex",
+                stroke: theme.axis.color,
+                strokeWidth: 1,
+                strokeOpacity: 0.8,
+                curve: "step-after",
+              }),
+            );
+          }
+        }
       }
 
-      // Draw vertical marker lines at available steps/horizons
-      for (const fh of availableSteps) {
+      // Render step marker rules and explicit hover target bars for EVERY active step
+      const stepWidth = 0.4;
+      for (const row of activeRows) {
+        const fh = row.horizon;
         const isSelected = fh === currentActiveHorizon;
+
         marks.push(
           Plot.ruleX([fh], {
             stroke: theme.axis.color,
@@ -768,6 +799,54 @@ export function renderOutcomeDistribution(
             ),
           );
         }
+
+        // Interactive stacked hover bar targets at step position
+        const hoverData: Array<{
+          step: number;
+          stateId: string;
+          percentage: number;
+          color: string;
+          title: string;
+        }> = [];
+
+        for (const st of row.states) {
+          const color = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            fh,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            true,
+            row.estimator,
+            row.estimateOrigin,
+          );
+
+          hoverData.push({
+            step: fh,
+            stateId: st.stateId,
+            percentage: st.percentage,
+            color,
+            title: tipText,
+          });
+        }
+
+        // Stacked vertical rects (barY) at step position
+        marks.push(
+          Plot.barY(
+            hoverData,
+            Plot.stackY({
+              x: "step",
+              y: "percentage",
+              z: "stateId",
+              fill: (d) => d.color,
+              fillOpacity: segments.some((s) => s.length === 1 && s[0].horizon === fh) ? 0.85 : 0.01,
+              stroke: segments.some((s) => s.length === 1 && s[0].horizon === fh) ? theme.axis.color : "transparent",
+              strokeWidth: 0.5,
+              title: (d) => d.title,
+            }),
+          ),
+        );
       }
     } else {
       // Stacked Bar Chart (Single step or fixed horizons fallback)

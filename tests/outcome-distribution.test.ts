@@ -509,7 +509,40 @@ describe("OutcomeDistributionSpec", () => {
       };
       expect(() =>
         assertOutcomeDistributionReferentialIntegrity(spec),
-      ).toThrow("duplicate distribution for evaluation eval-1");
+      ).toThrow("multiple state distributions defined for evaluation eval-1 at step/horizon 1");
+    });
+
+    it("rejects multi-estimator specs combining raw and aalen_johansen at the same step", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 10 },
+              { stateId: "state_b", count: 90 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", estimate: 0.1 },
+              { stateId: "state_b", estimate: 0.9 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("multiple state distributions defined for evaluation eval-1 at step/horizon 1");
     });
 
     it("rejects inconsistent state ordering across steps", () => {

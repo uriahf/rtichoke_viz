@@ -234,9 +234,8 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     );
   });
 
-  it("displays explicit unsupported message when multiple heuristic variants exist for the same horizon", () => {
+  it("rejects when multiple heuristic or method variants exist for the same step or horizon", () => {
     const spec = createFixedHorizonFallbackSpec();
-    // Add a duplicate variant for the same horizon=10 and estimateOrigin='fixed_time_horizon'
     spec.stateDistributions.push({
       evaluationId: "eval-1",
       horizon: 10,
@@ -249,11 +248,8 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       ],
     });
 
-    const root = renderOutcomeDistribution(spec);
-    const text = root.textContent ?? "";
-
-    expect(text).toContain(
-      "Multiple heuristic/method variants detected for evaluation; unsupported data state.",
+    expect(() => renderOutcomeDistribution(spec)).toThrow(
+      "multiple state distributions defined for evaluation eval-1 at step/horizon 10",
     );
   });
 
@@ -539,6 +535,52 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       const slider = root.querySelector(".rtichoke-operating-point-control");
       expect((slider as HTMLElement)?.style.display).toBe("none");
       expect(root.textContent).toContain("Active Step: Step = 3");
+    });
+
+    it("does not bridge step-area fills across unobserved step gaps (e.g. steps 1 and 5)", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "Step Gap Test",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 80 },
+              { stateId: "relapse", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 5,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 50 },
+              { stateId: "relapse", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const svg = root.querySelector("svg");
+      expect(svg).not.toBeNull();
+
+      // No continuous step-area path bridging from step 1 to 5
+      const areaGroup = svg?.querySelector('g[aria-label="area"]');
+      expect(areaGroup).toBeNull(); // Segment lengths are 1, so no trajectory step-area is stretched
+
+      // Both step 1 and step 5 have inspectable hover targets
+      const titles = Array.from(svg?.querySelectorAll("title") ?? []).map(
+        (t) => t.textContent ?? "",
+      );
+      expect(titles.some((t) => t.includes("Step: 1"))).toBe(true);
+      expect(titles.some((t) => t.includes("Step: 5"))).toBe(true);
     });
   });
 

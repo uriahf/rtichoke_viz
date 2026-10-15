@@ -209,10 +209,20 @@ export function assertOutcomeDistributionReferentialIntegrity(
   }
 
   const seenKeys = new Set<string>();
+  const originHorizonKeys = new Set<string>();
   const evalStateOrders = new Map<string, string[]>();
 
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
+
+    const originKey = dist.estimateOrigin ?? "unspecified";
+    const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+    if (originHorizonKeys.has(horizonKey)) {
+      throw new Error(
+        `multiple state distributions defined for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`,
+      );
+    }
+    originHorizonKeys.add(horizonKey);
 
     if (dist.estimateOrigin === "observed_step") {
       const key = `${dist.evaluationId}|${dist.estimator}|${dist.horizon}|${dist.censoringHeuristic ?? ""}|${dist.competingHeuristic ?? ""}`;
