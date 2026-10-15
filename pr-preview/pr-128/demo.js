@@ -3679,9 +3679,18 @@ function assertOutcomeDistributionReferentialIntegrity(spec) {
     throw new Error("stateDistributions must be non-empty");
   }
   const seenKeys = /* @__PURE__ */ new Set();
+  const originHorizonKeys = /* @__PURE__ */ new Set();
   const evalStateOrders = /* @__PURE__ */ new Map();
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
+    const originKey = dist.estimateOrigin ?? "unspecified";
+    const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+    if (originHorizonKeys.has(horizonKey)) {
+      throw new Error(
+        `multiple state distributions defined for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
+      );
+    }
+    originHorizonKeys.add(horizonKey);
     if (dist.estimateOrigin === "observed_step") {
       const key = `${dist.evaluationId}|${dist.estimator}|${dist.horizon}|${dist.censoringHeuristic ?? ""}|${dist.competingHeuristic ?? ""}`;
       if (seenKeys.has(key)) {
@@ -22457,74 +22466,97 @@ function renderOutcomeDistribution(spec, options = {}) {
     const marks2 = [];
     if (isTrajectoryMode) {
       const activeRows = isObservedStepMode ? observedStepRows : eventTableRows;
-      const plotData = [];
-      for (const row of activeRows) {
-        for (const st of row.states) {
-          const color3 = getStateColor(st.stateId, st.label);
-          const tipText = buildOutcomeTooltip(
-            row.horizon,
-            st,
-            row.totalCount,
-            row.totalMass,
-            digits,
-            true,
-            row.estimator,
-            row.estimateOrigin
-          );
-          plotData.push({
-            horizon: row.horizon,
-            stateId: st.stateId,
-            label: st.label,
-            percentage: st.percentage,
-            color: color3,
-            title: tipText
-          });
+      const segments = [];
+      if (activeRows.length > 0) {
+        let currentSegment = [activeRows[0]];
+        for (let i = 1; i < activeRows.length; i++) {
+          const prev = activeRows[i - 1];
+          const curr = activeRows[i];
+          const isConsecutive = isObservedStepMode ? curr.horizon === prev.horizon + 1 : true;
+          if (isConsecutive) {
+            currentSegment.push(curr);
+          } else {
+            segments.push(currentSegment);
+            currentSegment = [curr];
+          }
         }
+        segments.push(currentSegment);
       }
-      marks2.push(
-        areaY(
-          plotData,
-          stackY({
-            x: "horizon",
-            y: "percentage",
-            z: "stateId",
-            fill: (d) => d.color,
-            fillOpacity: 0.85,
-            curve: "step-after"
-          })
-        )
-      );
-      const firstRowStates = activeRows[0]?.states ?? [];
-      const numInternalBoundaries = firstRowStates.length - 1;
-      if (numInternalBoundaries > 0) {
-        const boundaryData = [];
-        for (const row of activeRows) {
-          let cumulative = 0;
-          for (let b = 0; b < numInternalBoundaries; b++) {
-            const st = row.states[b];
-            if (st) {
-              cumulative += st.percentage;
-              boundaryData.push({
-                boundaryIndex: b,
+      for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+        const seg = segments[segIdx];
+        if (seg.length > 1) {
+          const plotData = [];
+          for (const row of seg) {
+            for (const st of row.states) {
+              const color3 = getStateColor(st.stateId, st.label);
+              const tipText = buildOutcomeTooltip(
+                row.horizon,
+                st,
+                row.totalCount,
+                row.totalMass,
+                digits,
+                true,
+                row.estimator,
+                row.estimateOrigin
+              );
+              plotData.push({
                 horizon: row.horizon,
-                cumulativePercentage: cumulative
+                stateId: st.stateId,
+                label: st.label,
+                percentage: st.percentage,
+                color: color3,
+                title: tipText
               });
             }
           }
+          marks2.push(
+            areaY(
+              plotData,
+              stackY({
+                x: "horizon",
+                y: "percentage",
+                z: "stateId",
+                fill: (d) => d.color,
+                fillOpacity: 0.85,
+                curve: "step-after"
+              })
+            )
+          );
+          const firstRowStates = seg[0]?.states ?? [];
+          const numInternalBoundaries = firstRowStates.length - 1;
+          if (numInternalBoundaries > 0) {
+            const boundaryData = [];
+            for (const row of seg) {
+              let cumulative = 0;
+              for (let b = 0; b < numInternalBoundaries; b++) {
+                const st = row.states[b];
+                if (st) {
+                  cumulative += st.percentage;
+                  boundaryData.push({
+                    boundaryIndex: b,
+                    horizon: row.horizon,
+                    cumulativePercentage: cumulative
+                  });
+                }
+              }
+            }
+            marks2.push(
+              lineY(boundaryData, {
+                x: "horizon",
+                y: "cumulativePercentage",
+                z: "boundaryIndex",
+                stroke: theme.axis.color,
+                strokeWidth: 1,
+                strokeOpacity: 0.8,
+                curve: "step-after"
+              })
+            );
+          }
         }
-        marks2.push(
-          lineY(boundaryData, {
-            x: "horizon",
-            y: "cumulativePercentage",
-            z: "boundaryIndex",
-            stroke: theme.axis.color,
-            strokeWidth: 1,
-            strokeOpacity: 0.8,
-            curve: "step-after"
-          })
-        );
       }
-      for (const fh of availableSteps) {
+      const stepWidth = 0.4;
+      for (const row of activeRows) {
+        const fh = row.horizon;
         const isSelected = fh === currentActiveHorizon;
         marks2.push(
           ruleX([fh], {
@@ -22555,6 +22587,42 @@ function renderOutcomeDistribution(spec, options = {}) {
             )
           );
         }
+        const hoverData = [];
+        for (const st of row.states) {
+          const color3 = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            fh,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            true,
+            row.estimator,
+            row.estimateOrigin
+          );
+          hoverData.push({
+            step: fh,
+            stateId: st.stateId,
+            percentage: st.percentage,
+            color: color3,
+            title: tipText
+          });
+        }
+        marks2.push(
+          barY(
+            hoverData,
+            stackY({
+              x: "step",
+              y: "percentage",
+              z: "stateId",
+              fill: (d) => d.color,
+              fillOpacity: segments.some((s2) => s2.length === 1 && s2[0].horizon === fh) ? 0.85 : 0.01,
+              stroke: segments.some((s2) => s2.length === 1 && s2[0].horizon === fh) ? theme.axis.color : "transparent",
+              strokeWidth: 0.5,
+              title: (d) => d.title
+            })
+          )
+        );
       }
     } else {
       const activeRows = isObservedStepMode ? observedStepRows : fixedHorizonRows;
