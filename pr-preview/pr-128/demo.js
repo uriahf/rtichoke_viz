@@ -3255,6 +3255,9 @@ var StateDistributionSchema = Type.Object({
   region: Type.Optional(Type.String()),
   censoringHeuristic: Type.Optional(Type.String()),
   competingHeuristic: Type.Optional(Type.String()),
+  stateScale: Type.Optional(
+    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
+  ),
   states: Type.Array(OutcomeStateSchema, { minItems: 1 }),
   regimeId: Type.Optional(Type.String()),
   interventionId: Type.Optional(Type.String()),
@@ -3411,6 +3414,9 @@ var OutcomeDistributionSpecSchema = Type.Object({
   schemaVersion: Type.Literal("2.0"),
   type: Type.Literal("outcome_distribution"),
   title: Type.Optional(Type.String()),
+  stateScale: Type.Optional(
+    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
+  ),
   evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
   stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 })
 });
@@ -22062,6 +22068,27 @@ var STATE_COLOR_PALETTE = [
   "#a6761d",
   "#666666"
 ];
+var TRUE_BLUE_PALETTE_STOPS = [
+  "#EDF5FD",
+  "#D5E8FA",
+  "#AFD4F3",
+  "#7EB9E7",
+  "#4999D7",
+  "#2477BB",
+  "#155A98",
+  "#103C70"
+];
+function getOrdinalTrueBluePalette(n) {
+  if (n <= 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
+  if (n >= 8) return TRUE_BLUE_PALETTE_STOPS.slice(0, n);
+  const colors = [];
+  const maxIdx = TRUE_BLUE_PALETTE_STOPS.length - 1;
+  for (let i = 0; i < n; i++) {
+    const idx = Math.round(i * maxIdx / (n - 1));
+    colors.push(TRUE_BLUE_PALETTE_STOPS[idx]);
+  }
+  return colors;
+}
 function resolveStateLabel(stateId, customLabel, isObservedStep) {
   if (customLabel && customLabel.trim() !== "") {
     return customLabel;
@@ -22219,12 +22246,27 @@ function renderOutcomeDistribution(spec, options = {}) {
   const chartDiv = document.createElement("div");
   chartDiv.className = "rtichoke-outcome-distribution__chart";
   container.append(sliderControl, legendDiv, chartDiv);
+  const effectiveStateScale = spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
+  const isOrdinal2 = effectiveStateScale === "ordinal";
   const stateColorMap = /* @__PURE__ */ new Map();
+  if (isOrdinal2 && spec.stateDistributions.length > 0) {
+    const firstDistStates = spec.stateDistributions[0].states;
+    const nStates = firstDistStates.length;
+    const ordinalPalette = getOrdinalTrueBluePalette(nStates);
+    firstDistStates.forEach((s2, idx) => {
+      const label = resolveStateLabel(
+        s2.stateId,
+        s2.label,
+        spec.stateDistributions[0].estimateOrigin === "observed_step"
+      );
+      stateColorMap.set(`${s2.stateId}:${label}`, ordinalPalette[idx]);
+    });
+  }
   let nextColorIdx = 0;
   const getStateColor = (stateId, label) => {
     const key = `${stateId}:${label}`;
     if (stateColorMap.has(key)) return stateColorMap.get(key);
-    if (PREFERRED_STATE_COLORS[stateId]) {
+    if (!isOrdinal2 && PREFERRED_STATE_COLORS[stateId]) {
       const col2 = PREFERRED_STATE_COLORS[stateId];
       stateColorMap.set(key, col2);
       return col2;
@@ -22464,99 +22506,143 @@ function renderOutcomeDistribution(spec, options = {}) {
       legendDiv.append(item);
     }
     const marks2 = [];
-    if (isTrajectoryMode) {
-      const activeRows = isObservedStepMode ? observedStepRows : eventTableRows;
-      const segments = [];
-      if (activeRows.length > 0) {
-        let currentSegment = [activeRows[0]];
-        for (let i = 1; i < activeRows.length; i++) {
-          const prev = activeRows[i - 1];
-          const curr = activeRows[i];
-          const isConsecutive = isObservedStepMode ? curr.horizon === prev.horizon + 1 : true;
-          if (isConsecutive) {
-            currentSegment.push(curr);
-          } else {
-            segments.push(currentSegment);
-            currentSegment = [curr];
-          }
+    if (isObservedStepMode) {
+      const plotData = [];
+      for (const row of observedStepRows) {
+        for (const st of row.states) {
+          const color3 = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            false,
+            row.estimator,
+            row.estimateOrigin
+          );
+          plotData.push({
+            step: row.horizon,
+            stepLabel: `Step ${row.horizon}`,
+            stateId: st.stateId,
+            label: st.label,
+            percentage: st.percentage,
+            color: color3,
+            title: tipText
+          });
         }
-        segments.push(currentSegment);
       }
-      for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-        const seg = segments[segIdx];
-        if (seg.length > 1) {
-          const plotData = [];
-          for (const row of seg) {
-            for (const st of row.states) {
-              const color3 = getStateColor(st.stateId, st.label);
-              const tipText = buildOutcomeTooltip(
-                row.horizon,
-                st,
-                row.totalCount,
-                row.totalMass,
-                digits,
-                true,
-                row.estimator,
-                row.estimateOrigin
-              );
-              plotData.push({
+      marks2.push(
+        barY(
+          plotData,
+          stackY({
+            x: "step",
+            y: "percentage",
+            z: "stateId",
+            fill: (d) => d.color,
+            fillOpacity: 0.88,
+            stroke: theme.axis.color,
+            strokeWidth: 0.75,
+            title: (d) => d.title
+          })
+        )
+      );
+      if (currentActiveHorizon !== null) {
+        marks2.push(
+          ruleX([currentActiveHorizon], {
+            stroke: theme.axis.color,
+            strokeWidth: 2.5
+          })
+        );
+        marks2.push(
+          text(
+            [
+              {
+                x: currentActiveHorizon,
+                label: `Step = ${currentActiveHorizon}`
+              }
+            ],
+            {
+              x: "x",
+              y: 102,
+              text: "label",
+              dy: -10,
+              fill: theme.axis.color,
+              fontSize: 11,
+              fontWeight: 700
+            }
+          )
+        );
+      }
+    } else if (eventTableRows.length > 0) {
+      const plotData = [];
+      for (const row of eventTableRows) {
+        for (const st of row.states) {
+          const color3 = getStateColor(st.stateId, st.label);
+          const tipText = buildOutcomeTooltip(
+            row.horizon,
+            st,
+            row.totalCount,
+            row.totalMass,
+            digits,
+            true,
+            row.estimator,
+            row.estimateOrigin
+          );
+          plotData.push({
+            horizon: row.horizon,
+            stateId: st.stateId,
+            label: st.label,
+            percentage: st.percentage,
+            color: color3,
+            title: tipText
+          });
+        }
+      }
+      marks2.push(
+        areaY(
+          plotData,
+          stackY({
+            x: "horizon",
+            y: "percentage",
+            z: "stateId",
+            fill: (d) => d.color,
+            fillOpacity: 0.85,
+            curve: "step-after"
+          })
+        )
+      );
+      const firstRowStates = eventTableRows[0]?.states ?? [];
+      const numInternalBoundaries = firstRowStates.length - 1;
+      if (numInternalBoundaries > 0) {
+        const boundaryData = [];
+        for (const row of eventTableRows) {
+          let cumulative = 0;
+          for (let b = 0; b < numInternalBoundaries; b++) {
+            const st = row.states[b];
+            if (st) {
+              cumulative += st.percentage;
+              boundaryData.push({
+                boundaryIndex: b,
                 horizon: row.horizon,
-                stateId: st.stateId,
-                label: st.label,
-                percentage: st.percentage,
-                color: color3,
-                title: tipText
+                cumulativePercentage: cumulative
               });
             }
           }
-          marks2.push(
-            areaY(
-              plotData,
-              stackY({
-                x: "horizon",
-                y: "percentage",
-                z: "stateId",
-                fill: (d) => d.color,
-                fillOpacity: 0.85,
-                curve: "step-after"
-              })
-            )
-          );
-          const firstRowStates = seg[0]?.states ?? [];
-          const numInternalBoundaries = firstRowStates.length - 1;
-          if (numInternalBoundaries > 0) {
-            const boundaryData = [];
-            for (const row of seg) {
-              let cumulative = 0;
-              for (let b = 0; b < numInternalBoundaries; b++) {
-                const st = row.states[b];
-                if (st) {
-                  cumulative += st.percentage;
-                  boundaryData.push({
-                    boundaryIndex: b,
-                    horizon: row.horizon,
-                    cumulativePercentage: cumulative
-                  });
-                }
-              }
-            }
-            marks2.push(
-              lineY(boundaryData, {
-                x: "horizon",
-                y: "cumulativePercentage",
-                z: "boundaryIndex",
-                stroke: theme.axis.color,
-                strokeWidth: 1,
-                strokeOpacity: 0.8,
-                curve: "step-after"
-              })
-            );
-          }
         }
+        marks2.push(
+          lineY(boundaryData, {
+            x: "horizon",
+            y: "cumulativePercentage",
+            z: "boundaryIndex",
+            stroke: theme.axis.color,
+            strokeWidth: 1,
+            strokeOpacity: 0.8,
+            curve: "step-after"
+          })
+        );
       }
-      const stepWidth = 0.4;
-      for (const row of activeRows) {
-        const fh = row.horizon;
+      for (const fh of availableSteps) {
         const isSelected = fh === currentActiveHorizon;
         marks2.push(
           ruleX([fh], {
@@ -22566,13 +22652,12 @@ function renderOutcomeDistribution(spec, options = {}) {
           })
         );
         if (isSelected) {
-          const ruleLabel = isObservedStepMode ? `Step = ${fh}` : `Time = ${fh.toFixed(digits)}`;
           marks2.push(
             text(
               [
                 {
                   x: fh,
-                  label: ruleLabel
+                  label: `Time = ${fh.toFixed(digits)}`
                 }
               ],
               {
@@ -22587,47 +22672,10 @@ function renderOutcomeDistribution(spec, options = {}) {
             )
           );
         }
-        const hoverData = [];
-        for (const st of row.states) {
-          const color3 = getStateColor(st.stateId, st.label);
-          const tipText = buildOutcomeTooltip(
-            fh,
-            st,
-            row.totalCount,
-            row.totalMass,
-            digits,
-            true,
-            row.estimator,
-            row.estimateOrigin
-          );
-          hoverData.push({
-            step: fh,
-            stateId: st.stateId,
-            percentage: st.percentage,
-            color: color3,
-            title: tipText
-          });
-        }
-        marks2.push(
-          barY(
-            hoverData,
-            stackY({
-              x: "step",
-              y: "percentage",
-              z: "stateId",
-              fill: (d) => d.color,
-              fillOpacity: segments.some((s2) => s2.length === 1 && s2[0].horizon === fh) ? 0.85 : 0.01,
-              stroke: segments.some((s2) => s2.length === 1 && s2[0].horizon === fh) ? theme.axis.color : "transparent",
-              strokeWidth: 0.5,
-              title: (d) => d.title
-            })
-          )
-        );
       }
     } else {
-      const activeRows = isObservedStepMode ? observedStepRows : fixedHorizonRows;
       const plotData = [];
-      for (const row of activeRows) {
+      for (const row of fixedHorizonRows) {
         for (const st of row.states) {
           const color3 = getStateColor(st.stateId, st.label);
           const tipText = buildOutcomeTooltip(
@@ -22641,7 +22689,7 @@ function renderOutcomeDistribution(spec, options = {}) {
             row.estimateOrigin
           );
           plotData.push({
-            horizonLabel: isObservedStepMode ? `Step ${row.horizon}` : `Time: ${row.horizon}`,
+            horizonLabel: `Time: ${row.horizon}`,
             horizon: row.horizon,
             stateId: st.stateId,
             label: st.label,
