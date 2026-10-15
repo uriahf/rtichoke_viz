@@ -24,6 +24,12 @@ import type {
 } from "./index.js";
 
 import { demoReport1, demoReport2, demoReport3 } from "./demo-reports.js";
+import {
+  observedStepRawSpec,
+  observedStepAjSpec,
+  observedStepOrdinalSpec,
+  observedStepNominalSpec,
+} from "./demo-observed-step-specs.js";
 
 // Standalone realistic demo specs
 import rocModelATestData from "../fixtures/v2/demo/model-a-test-roc.json" with { type: "json" };
@@ -82,6 +88,11 @@ const predDistVisualHost = document.querySelector<HTMLElement>("#pred-dist-visua
 const outcomeDistHost = document.querySelector<HTMLElement>("#outcome-distribution-chart");
 const outcomeDistLargeHost = document.querySelector<HTMLElement>("#outcome-distribution-large-chart");
 const outcomeDistPopulationsHost = document.querySelector<HTMLElement>("#outcome-distribution-populations-chart");
+
+const observedStepRawHost = document.querySelector<HTMLElement>("#observed-step-raw-chart");
+const observedStepAjHost = document.querySelector<HTMLElement>("#observed-step-aj-chart");
+const observedStepOrdinalHost = document.querySelector<HTMLElement>("#observed-step-ordinal-chart");
+const observedStepNominalHost = document.querySelector<HTMLElement>("#observed-step-nominal-chart");
 
 if (
   !reportHost1 ||
@@ -258,4 +269,17 @@ if (outcomeDistLargeHost) {
 }
 if (outcomeDistPopulationsHost) {
   outcomeDistPopulationsHost.append(renderOutcomeDistribution(outcomeDistributionPopulationsFixture));
+}
+
+if (observedStepRawHost) {
+  observedStepRawHost.append(renderOutcomeDistribution(observedStepRawSpec));
+}
+if (observedStepAjHost) {
+  observedStepAjHost.append(renderOutcomeDistribution(observedStepAjSpec));
+}
+if (observedStepOrdinalHost) {
+  observedStepOrdinalHost.append(renderOutcomeDistribution(observedStepOrdinalSpec));
+}
+if (observedStepNominalHost) {
+  observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
 }

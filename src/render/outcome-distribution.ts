@@ -63,16 +63,64 @@ export const TRUE_BLUE_PALETTE_STOPS = [
   "#103C70",
 ];
 
-/** Resolve sequential True Blue colors for N ordered levels (N in 1..8) */
-export function getOrdinalTrueBluePalette(n: number): string[] {
-  if (n <= 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
-  if (n >= 8) return TRUE_BLUE_PALETTE_STOPS.slice(0, n);
+/** Colorful Minimal palette for nominal outcome states in observed-step distributions */
+export const NOMINAL_COLORFUL_MINIMAL_PALETTE = [
+  "#2672B9",
+  "#FFC247",
+  "#9E91CF",
+  "#E68A31",
+  "#7CC4E4",
+  "#6D7797",
+  "#D7B86B",
+  "#B9B1CC",
+];
 
-  const colors: string[] = [];
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const num = parseInt(clean, 16);
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (n: number) =>
+    Math.min(255, Math.max(0, Math.round(n))).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+function interpolateHex(color1: string, color2: string, factor: number): string {
+  const [r1, g1, b1] = hexToRgb(color1);
+  const [r2, g2, b2] = hexToRgb(color2);
+  return rgbToHex(
+    r1 + factor * (r2 - r1),
+    g1 + factor * (g2 - g1),
+    b1 + factor * (b2 - b1),
+  );
+}
+
+/** Resolve sequential True Blue colors for N ordered levels (supporting arbitrary N >= 1) */
+export function getOrdinalTrueBluePalette(n: number): string[] {
+  if (n <= 0) return [];
+  if (n === 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
+
   const maxIdx = TRUE_BLUE_PALETTE_STOPS.length - 1;
+  const colors: string[] = [];
+
   for (let i = 0; i < n; i++) {
-    const idx = Math.round((i * maxIdx) / (n - 1));
-    colors.push(TRUE_BLUE_PALETTE_STOPS[idx]);
+    const t = (i * maxIdx) / (n - 1);
+    if (n <= 8) {
+      colors.push(TRUE_BLUE_PALETTE_STOPS[Math.round(t)]);
+    } else {
+      const idx1 = Math.floor(t);
+      const idx2 = Math.min(maxIdx, Math.ceil(t));
+      const factor = t - idx1;
+      colors.push(
+        interpolateHex(
+          TRUE_BLUE_PALETTE_STOPS[idx1],
+          TRUE_BLUE_PALETTE_STOPS[idx2],
+          factor,
+        ),
+      );
+    }
   }
   return colors;
 }
@@ -315,25 +363,36 @@ export function renderOutcomeDistribution(
 
   container.append(sliderControl, legendDiv, chartDiv);
 
-  // Determine state scale from spec or state distribution
+  // Determine authoritative state scale from component spec (with fallback to state distribution for backward compatibility)
   const effectiveStateScale =
     spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
   const isOrdinal = effectiveStateScale === "ordinal";
 
-  // Pre-initialize ordinal state color palette mapping if stateScale === "ordinal"
+  // Pre-initialize state color palette mapping across all state distributions to ensure stability
   const stateColorMap = new Map<string, string>();
-  if (isOrdinal && spec.stateDistributions.length > 0) {
+  if (spec.stateDistributions.length > 0) {
+    const isObservedStep = spec.stateDistributions.some(
+      (d) => d.estimateOrigin === "observed_step",
+    );
     const firstDistStates = spec.stateDistributions[0].states;
     const nStates = firstDistStates.length;
-    const ordinalPalette = getOrdinalTrueBluePalette(nStates);
-    firstDistStates.forEach((s, idx) => {
-      const label = resolveStateLabel(
-        s.stateId,
-        s.label,
-        spec.stateDistributions[0].estimateOrigin === "observed_step",
-      );
-      stateColorMap.set(`${s.stateId}:${label}`, ordinalPalette[idx]);
-    });
+
+    if (isOrdinal) {
+      const ordinalPalette = getOrdinalTrueBluePalette(nStates);
+      firstDistStates.forEach((s, idx) => {
+        const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
+        stateColorMap.set(`${s.stateId}:${label}`, ordinalPalette[idx]);
+      });
+    } else if (isObservedStep) {
+      firstDistStates.forEach((s, idx) => {
+        const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
+        const col =
+          NOMINAL_COLORFUL_MINIMAL_PALETTE[
+            idx % NOMINAL_COLORFUL_MINIMAL_PALETTE.length
+          ];
+        stateColorMap.set(`${s.stateId}:${label}`, col);
+      });
+    }
   }
 
   let nextColorIdx = 0;
@@ -342,13 +401,20 @@ export function renderOutcomeDistribution(
     const key = `${stateId}:${label}`;
     if (stateColorMap.has(key)) return stateColorMap.get(key)!;
 
-    if (!isOrdinal && PREFERRED_STATE_COLORS[stateId]) {
+    const isObservedStep = spec.stateDistributions.some(
+      (d) => d.estimateOrigin === "observed_step",
+    );
+
+    if (!isOrdinal && !isObservedStep && PREFERRED_STATE_COLORS[stateId]) {
       const col = PREFERRED_STATE_COLORS[stateId];
       stateColorMap.set(key, col);
       return col;
     }
 
-    const col = STATE_COLOR_PALETTE[nextColorIdx % STATE_COLOR_PALETTE.length];
+    const palette = isObservedStep
+      ? NOMINAL_COLORFUL_MINIMAL_PALETTE
+      : STATE_COLOR_PALETTE;
+    const col = palette[nextColorIdx % palette.length];
     nextColorIdx++;
     stateColorMap.set(key, col);
     return col;

@@ -431,6 +431,20 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       expect(dAttr?.length).toBeGreaterThan(0);
     });
 
+    // 4. Check fixed horizon reference lines (ruleX) retain expected stroke styling
+    const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
+    expect(ruleGroup).not.toBeNull();
+    const ruleGroupStroke = ruleGroup?.getAttribute("stroke");
+    const ruleLines = ruleGroup?.querySelectorAll("line");
+    expect(ruleLines?.length).toBeGreaterThan(0);
+
+    const hasRuleStroke = Boolean(
+      ruleGroupStroke ||
+        Array.from(ruleLines ?? []).some((line) => line.getAttribute("stroke")),
+    );
+    expect(hasRuleStroke).toBe(true);
+  });
+
   describe("observed_step rendering", () => {
     it("renders raw observed_step longitudinal trajectory with Step axis and Step tooltips", () => {
       const spec: OutcomeDistributionSpec = {
@@ -619,19 +633,120 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
         expect(badgeColors[n - 1]).not.toBe("");
       }
     });
-  });
 
-    // 4. Check fixed horizon reference lines (ruleX) retain expected stroke styling
-    const ruleGroup = svg?.querySelector('g[aria-label="rule"]');
-    expect(ruleGroup).not.toBeNull();
-    const ruleGroupStroke = ruleGroup?.getAttribute("stroke");
-    const ruleLines = ruleGroup?.querySelectorAll("line");
-    expect(ruleLines?.length).toBeGreaterThan(0);
+    it("supports arbitrary ordinal state counts > 8 using RGB interpolation across True Blue stops", () => {
+      const n = 12;
+      const states = Array.from({ length: n }, (_, i) => ({
+        stateId: `stage_${i + 1}`,
+        label: `Stage ${i + 1}`,
+        estimate: 1 / n,
+      }));
 
-    const hasRuleStroke = Boolean(
-      ruleGroupStroke ||
-        Array.from(ruleLines ?? []).some((line) => line.getAttribute("stroke")),
-    );
-    expect(hasRuleStroke).toBe(true);
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "ordinal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states,
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badges = root.querySelectorAll(".rtichoke-performance-table__badge");
+      expect(badges.length).toBe(12);
+    });
+
+    it("renders Colorful Minimal palette for nominal states in observed_step distributions", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "home", count: 50 },
+              { stateId: "outpatient", count: 30 },
+              { stateId: "ward", count: 20 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badges = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+      expect(badges.length).toBe(3);
+
+      // Colorful Minimal palette first 3 colors: #2672B9, #FFC247, #9E91CF
+      expect(badges[0].style.backgroundColor).toBe("rgb(38, 114, 185)"); // #2672B9
+      expect(badges[1].style.backgroundColor).toBe("rgb(255, 194, 71)"); // #FFC247
+      expect(badges[2].style.backgroundColor).toBe("rgb(158, 145, 207)"); // #9E91CF
+    });
+
+    it("maintains stable state-color mappings across multiple steps", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 50 },
+              { stateId: "b", count: 50 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 20 },
+              { stateId: "b", count: 80 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badgesStep1 = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+
+      // State 'a' and state 'b' color
+      const colorA = badgesStep1[0].style.backgroundColor;
+      const colorB = badgesStep1[1].style.backgroundColor;
+
+      // Select step 2
+      const slider = root.querySelector(
+        ".rtichoke-operating-point-slider",
+      ) as HTMLInputElement;
+      slider.value = "1";
+      slider.dispatchEvent(new Event("input"));
+
+      const badgesStep2 = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+      expect(badgesStep2[0].style.backgroundColor).toBe(colorA);
+      expect(badgesStep2[1].style.backgroundColor).toBe(colorB);
+    });
   });
 });
