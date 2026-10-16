@@ -3255,9 +3255,6 @@ var StateDistributionSchema = Type.Object({
   region: Type.Optional(Type.String()),
   censoringHeuristic: Type.Optional(Type.String()),
   competingHeuristic: Type.Optional(Type.String()),
-  stateScale: Type.Optional(
-    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
-  ),
   states: Type.Array(OutcomeStateSchema, { minItems: 1 }),
   regimeId: Type.Optional(Type.String()),
   interventionId: Type.Optional(Type.String()),
@@ -22287,45 +22284,49 @@ function renderOutcomeDistribution(spec, options = {}) {
   const chartDiv = document.createElement("div");
   chartDiv.className = "rtichoke-outcome-distribution__chart";
   container.append(sliderControl, legendDiv, chartDiv);
-  const effectiveStateScale = spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
+  const effectiveStateScale = spec.stateScale ?? "nominal";
   const isOrdinal2 = effectiveStateScale === "ordinal";
   const stateColorMap = /* @__PURE__ */ new Map();
   if (spec.stateDistributions.length > 0) {
     const isObservedStep = spec.stateDistributions.some(
       (d) => d.estimateOrigin === "observed_step"
     );
-    const firstDistStates = spec.stateDistributions[0].states;
-    const nStates = firstDistStates.length;
+    const uniqueStateIds = [];
+    for (const dist of spec.stateDistributions) {
+      for (const s2 of dist.states) {
+        if (!uniqueStateIds.includes(s2.stateId)) {
+          uniqueStateIds.push(s2.stateId);
+        }
+      }
+    }
+    const nStates = uniqueStateIds.length;
     if (isOrdinal2) {
       const ordinalPalette = getOrdinalTrueBluePalette(nStates);
-      firstDistStates.forEach((s2, idx) => {
-        const label = resolveStateLabel(s2.stateId, s2.label, isObservedStep);
-        stateColorMap.set(`${s2.stateId}:${label}`, ordinalPalette[idx]);
+      uniqueStateIds.forEach((sId, idx) => {
+        stateColorMap.set(sId, ordinalPalette[idx]);
       });
     } else if (isObservedStep) {
-      firstDistStates.forEach((s2, idx) => {
-        const label = resolveStateLabel(s2.stateId, s2.label, isObservedStep);
+      uniqueStateIds.forEach((sId, idx) => {
         const col = NOMINAL_COLORFUL_MINIMAL_PALETTE[idx % NOMINAL_COLORFUL_MINIMAL_PALETTE.length];
-        stateColorMap.set(`${s2.stateId}:${label}`, col);
+        stateColorMap.set(sId, col);
       });
     }
   }
   let nextColorIdx = 0;
-  const getStateColor = (stateId, label) => {
-    const key = `${stateId}:${label}`;
-    if (stateColorMap.has(key)) return stateColorMap.get(key);
+  const getStateColor = (stateId) => {
+    if (stateColorMap.has(stateId)) return stateColorMap.get(stateId);
     const isObservedStep = spec.stateDistributions.some(
       (d) => d.estimateOrigin === "observed_step"
     );
     if (!isOrdinal2 && !isObservedStep && PREFERRED_STATE_COLORS[stateId]) {
       const col2 = PREFERRED_STATE_COLORS[stateId];
-      stateColorMap.set(key, col2);
+      stateColorMap.set(stateId, col2);
       return col2;
     }
     const palette = isObservedStep ? NOMINAL_COLORFUL_MINIMAL_PALETTE : STATE_COLOR_PALETTE;
     const col = palette[nextColorIdx % palette.length];
     nextColorIdx++;
-    stateColorMap.set(key, col);
+    stateColorMap.set(stateId, col);
     return col;
   };
   let currentActiveHorizon = null;
@@ -22427,10 +22428,13 @@ function renderOutcomeDistribution(spec, options = {}) {
           currentActiveHorizon = availableSteps[availableSteps.length - 1];
         }
         const hIdx = availableSteps.indexOf(currentActiveHorizon);
+        const maxIdx = availableSteps.length - 1;
+        const pct = maxIdx > 0 ? hIdx / maxIdx * 100 : 100;
         slider.min = "0";
-        slider.max = String(Math.max(0, availableSteps.length - 1));
+        slider.max = String(Math.max(0, maxIdx));
         slider.step = "1";
         slider.value = String(Math.max(0, hIdx));
+        slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
         sliderLabelText.textContent = "Step: ";
         sliderValueText.textContent = String(currentActiveHorizon);
         slider.setAttribute("aria-label", "Step");
@@ -22445,10 +22449,13 @@ function renderOutcomeDistribution(spec, options = {}) {
         currentActiveHorizon = availableSteps[availableSteps.length - 1];
       }
       const hIdx = availableSteps.indexOf(currentActiveHorizon);
+      const maxIdx = availableSteps.length - 1;
+      const pct = maxIdx > 0 ? hIdx / maxIdx * 100 : 100;
       slider.min = "0";
-      slider.max = String(Math.max(0, availableSteps.length - 1));
+      slider.max = String(Math.max(0, maxIdx));
       slider.step = "1";
       slider.value = String(Math.max(0, hIdx));
+      slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
       sliderLabelText.textContent = "Time: ";
       sliderValueText.textContent = currentActiveHorizon.toFixed(digits);
       slider.setAttribute("aria-label", "Time horizon");
@@ -22490,7 +22497,7 @@ function renderOutcomeDistribution(spec, options = {}) {
         const tdLabel = document.createElement("td");
         const badge = document.createElement("span");
         badge.className = "rtichoke-performance-table__badge";
-        const stateColor = getStateColor(st.stateId, st.label);
+        const stateColor = getStateColor(st.stateId);
         badge.style.backgroundColor = stateColor;
         tdLabel.append(badge, document.createTextNode(st.label));
         const tdShare = document.createElement("td");
@@ -22547,7 +22554,7 @@ function renderOutcomeDistribution(spec, options = {}) {
       swatch.className = "rtichoke-legend-swatch";
       const lineSpan = document.createElement("span");
       lineSpan.className = "rtichoke-legend-line";
-      lineSpan.style.backgroundColor = getStateColor(st.stateId, st.label);
+      lineSpan.style.backgroundColor = getStateColor(st.stateId);
       lineSpan.style.height = "10px";
       lineSpan.style.borderRadius = "2px";
       swatch.append(lineSpan);
@@ -22562,7 +22569,7 @@ function renderOutcomeDistribution(spec, options = {}) {
       const plotData = [];
       for (const row of observedStepRows) {
         for (const st of row.states) {
-          const color3 = getStateColor(st.stateId, st.label);
+          const color3 = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -22592,7 +22599,7 @@ function renderOutcomeDistribution(spec, options = {}) {
             y: "percentage",
             z: "stateId",
             fill: (d) => d.color,
-            fillOpacity: 0.88,
+            fillOpacity: (d) => currentActiveHorizon === null || d.step <= currentActiveHorizon ? 0.88 : 0.28,
             stroke: theme.axis.color,
             strokeWidth: 0.75,
             title: (d) => d.title
@@ -22601,27 +22608,14 @@ function renderOutcomeDistribution(spec, options = {}) {
       );
       if (currentActiveHorizon !== null) {
         marks2.push(
-          ruleX([currentActiveHorizon], {
-            stroke: theme.axis.color,
-            strokeWidth: 2.5
-          })
-        );
-        marks2.push(
-          text(
-            [
-              {
-                x: currentActiveHorizon,
-                label: `Step = ${currentActiveHorizon}`
-              }
-            ],
+          barY(
+            [{ step: currentActiveHorizon, percentage: 100 }],
             {
-              x: "x",
-              y: 102,
-              text: "label",
-              dy: -10,
-              fill: theme.axis.color,
-              fontSize: 11,
-              fontWeight: 700
+              x: "step",
+              y: "percentage",
+              fill: "none",
+              stroke: theme.axis.color,
+              strokeWidth: 2.5
             }
           )
         );
@@ -22630,7 +22624,7 @@ function renderOutcomeDistribution(spec, options = {}) {
       const plotData = [];
       for (const row of eventTableRows) {
         for (const st of row.states) {
-          const color3 = getStateColor(st.stateId, st.label);
+          const color3 = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -22729,7 +22723,7 @@ function renderOutcomeDistribution(spec, options = {}) {
       const plotData = [];
       for (const row of fixedHorizonRows) {
         for (const st of row.states) {
-          const color3 = getStateColor(st.stateId, st.label);
+          const color3 = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -22817,6 +22811,22 @@ function renderOutcomeDistribution(spec, options = {}) {
       marks: marks2
     };
     const chartSvg = themedPlot(plotSpec, theme);
+    if (isObservedStepMode) {
+      chartSvg.addEventListener("click", (evt) => {
+        const target = evt.target;
+        if (target && target.tagName.toLowerCase() === "rect") {
+          const titleText2 = target.querySelector("title")?.textContent ?? target.getAttribute("aria-label") ?? target.textContent ?? "";
+          const match = titleText2.match(/Step\s*[:=\n]?\s*(\d+)/i);
+          if (match) {
+            const clickedStep = Number(match[1]);
+            if (availableSteps.includes(clickedStep) && clickedStep !== currentActiveHorizon) {
+              currentActiveHorizon = clickedStep;
+              updateChart();
+            }
+          }
+        }
+      });
+    }
     chartDiv.replaceChildren(chartSvg);
   };
   slider.addEventListener("input", () => {
