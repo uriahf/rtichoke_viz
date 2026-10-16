@@ -22429,12 +22429,10 @@ function renderOutcomeDistribution(spec, options = {}) {
         }
         const hIdx = availableSteps.indexOf(currentActiveHorizon);
         const maxIdx = availableSteps.length - 1;
-        const pct = maxIdx > 0 ? hIdx / maxIdx * 100 : 100;
         slider.min = "0";
         slider.max = String(Math.max(0, maxIdx));
         slider.step = "1";
         slider.value = String(Math.max(0, hIdx));
-        slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
         sliderLabelText.textContent = "Step: ";
         sliderValueText.textContent = String(currentActiveHorizon);
         slider.setAttribute("aria-label", "Step");
@@ -22450,12 +22448,10 @@ function renderOutcomeDistribution(spec, options = {}) {
       }
       const hIdx = availableSteps.indexOf(currentActiveHorizon);
       const maxIdx = availableSteps.length - 1;
-      const pct = maxIdx > 0 ? hIdx / maxIdx * 100 : 100;
       slider.min = "0";
       slider.max = String(Math.max(0, maxIdx));
       slider.step = "1";
       slider.value = String(Math.max(0, hIdx));
-      slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
       sliderLabelText.textContent = "Time: ";
       sliderValueText.textContent = currentActiveHorizon.toFixed(digits);
       slider.setAttribute("aria-label", "Time horizon");
@@ -22811,22 +22807,6 @@ function renderOutcomeDistribution(spec, options = {}) {
       marks: marks2
     };
     const chartSvg = themedPlot(plotSpec, theme);
-    if (isObservedStepMode) {
-      chartSvg.addEventListener("click", (evt) => {
-        const target = evt.target;
-        if (target && target.tagName.toLowerCase() === "rect") {
-          const titleText2 = target.querySelector("title")?.textContent ?? target.getAttribute("aria-label") ?? target.textContent ?? "";
-          const match = titleText2.match(/Step\s*[:=\n]?\s*(\d+)/i);
-          if (match) {
-            const clickedStep = Number(match[1]);
-            if (availableSteps.includes(clickedStep) && clickedStep !== currentActiveHorizon) {
-              currentActiveHorizon = clickedStep;
-              updateChart();
-            }
-          }
-        }
-      });
-    }
     chartDiv.replaceChildren(chartSvg);
   };
   slider.addEventListener("input", () => {
