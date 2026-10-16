@@ -234,9 +234,8 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
     );
   });
 
-  it("displays explicit unsupported message when multiple heuristic variants exist for the same horizon", () => {
+  it("rejects when multiple heuristic or method variants exist for the same step or horizon", () => {
     const spec = createFixedHorizonFallbackSpec();
-    // Add a duplicate variant for the same horizon=10 and estimateOrigin='fixed_time_horizon'
     spec.stateDistributions.push({
       evaluationId: "eval-1",
       horizon: 10,
@@ -249,11 +248,8 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       ],
     });
 
-    const root = renderOutcomeDistribution(spec);
-    const text = root.textContent ?? "";
-
-    expect(text).toContain(
-      "Multiple heuristic/method variants detected for evaluation; unsupported data state.",
+    expect(() => renderOutcomeDistribution(spec)).toThrow(
+      "multiple state distributions defined for evaluation eval-1 at step/horizon 10",
     );
   });
 
@@ -447,5 +443,411 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
         Array.from(ruleLines ?? []).some((line) => line.getAttribute("stroke")),
     );
     expect(hasRuleStroke).toBe(true);
+  });
+
+  describe("observed_step rendering", () => {
+    it("renders raw observed_step longitudinal trajectory with Step axis and Step tooltips", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "Longitudinal Raw Step Distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 80 },
+              { stateId: "relapse", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 60 },
+              { stateId: "relapse", count: 40 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const text = root.textContent ?? "";
+
+      expect(text).toContain("Step");
+      expect(text).toContain("Active Step: Step = 2");
+      expect(text).toContain("State");
+      expect(text).toContain("remission");
+      expect(text).toContain("relapse");
+      expect(text).not.toContain("Event"); // Should not apply canonical mapping for arbitrary states
+
+      const svgHtml = root.querySelector("svg")?.innerHTML ?? "";
+      expect(svgHtml).toContain("Step: 2");
+      expect(svgHtml).toContain("Observed count: 40");
+      expect(svgHtml).toContain("Observed denominator: 100");
+      expect(svgHtml).toContain("Observed percentage: 40.0%");
+    });
+
+    it("renders AJ-adjusted observed_step occupancy with Percentage and no count/denominator terminology", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "AJ Step Distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 10,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", label: "In Remission", estimate: 0.75 },
+              { stateId: "relapse", label: "Relapsed", estimate: 0.25 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const text = root.textContent ?? "";
+
+      expect(text).toContain("Occupancy (%)");
+      expect(text).toContain("75.0%");
+      expect(text).toContain("25.0%");
+      expect(text).not.toContain("Count / Total");
+      expect(text).not.toContain("Raw observed status");
+
+      const svgHtml = root.querySelector("svg")?.innerHTML ?? "";
+      expect(svgHtml).toContain("AJ estimated occupancy: 0.75");
+      expect(svgHtml).toContain("Percentage: 75.0%");
+      expect(svgHtml).not.toContain("Observed count");
+      expect(svgHtml).not.toContain("Observed denominator");
+    });
+
+    it("renders a single observed_step without a slider control", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 3,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "active", count: 100 }],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const slider = root.querySelector(".rtichoke-operating-point-control");
+      expect((slider as HTMLElement)?.style.display).toBe("none");
+      expect(root.textContent).toContain("Active Step: Step = 3");
+    });
+
+    it("does not bridge step-area fills across unobserved step gaps (e.g. steps 1 and 5)", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        title: "Step Gap Test",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 80 },
+              { stateId: "relapse", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 5,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "remission", count: 50 },
+              { stateId: "relapse", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const svg = root.querySelector("svg");
+      expect(svg).not.toBeNull();
+
+      // Uses stacked bars (barY) for discrete step axis
+      const rects = svg?.querySelectorAll("rect");
+      expect(rects?.length).toBeGreaterThan(0);
+
+      // Both step 1 and step 5 have inspectable hover targets with step titles
+      const titles = Array.from(svg?.querySelectorAll("title") ?? []).map(
+        (t) => t.textContent ?? "",
+      );
+      expect(titles.some((t) => t.includes("Step: 1"))).toBe(true);
+      expect(titles.some((t) => t.includes("Step: 5"))).toBe(true);
+    });
+
+    it("renders True Blue ordinal palette for 3, 4, 5, 6, 7, and 8 levels when stateScale='ordinal'", () => {
+      for (let n = 3; n <= 8; n++) {
+        const states = Array.from({ length: n }, (_, i) => ({
+          stateId: `stage_${i + 1}`,
+          label: `Stage ${i + 1}`,
+          estimate: 1 / n,
+        }));
+
+        const spec: OutcomeDistributionSpec = {
+          schemaVersion: "2.0",
+          type: "outcome_distribution",
+          stateScale: "ordinal",
+          evaluations: [{ id: "eval-1", population: "cohort-1" }],
+          stateDistributions: [
+            {
+              evaluationId: "eval-1",
+              horizon: 1,
+              estimator: "aalen_johansen",
+              estimateOrigin: "observed_step",
+              states,
+            },
+          ],
+        };
+
+        const root = renderOutcomeDistribution(spec);
+        const badges = root.querySelectorAll(".rtichoke-performance-table__badge");
+        expect(badges.length).toBe(n);
+
+        // Verify badge colors match True Blue stops
+        const badgeColors = Array.from(badges).map((b) => (b as HTMLElement).style.backgroundColor);
+        expect(badgeColors.length).toBe(n);
+        // Endpoints should be lightest (#EDF5FD) and darkest (#103C70)
+        expect(badgeColors[0]).not.toBe("");
+        expect(badgeColors[n - 1]).not.toBe("");
+      }
+    });
+
+    it("supports arbitrary ordinal state counts > 8 using RGB interpolation across True Blue stops", () => {
+      const n = 12;
+      const states = Array.from({ length: n }, (_, i) => ({
+        stateId: `stage_${i + 1}`,
+        label: `Stage ${i + 1}`,
+        estimate: 1 / n,
+      }));
+
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "ordinal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "aalen_johansen",
+            estimateOrigin: "observed_step",
+            states,
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badges = root.querySelectorAll(".rtichoke-performance-table__badge");
+      expect(badges.length).toBe(12);
+    });
+
+    it("renders Colorful Minimal palette for nominal states in observed_step distributions", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "home", count: 50 },
+              { stateId: "outpatient", count: 30 },
+              { stateId: "ward", count: 20 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badges = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+      expect(badges.length).toBe(3);
+
+      // Colorful Minimal palette first 3 colors: #2672B9, #FFC247, #9E91CF
+      expect(badges[0].style.backgroundColor).toBe("rgb(38, 114, 185)"); // #2672B9
+      expect(badges[1].style.backgroundColor).toBe("rgb(255, 194, 71)"); // #FFC247
+      expect(badges[2].style.backgroundColor).toBe("rgb(158, 145, 207)"); // #9E91CF
+    });
+
+    it("maintains stable state-color mappings across multiple steps", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 50 },
+              { stateId: "b", count: 50 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 20 },
+              { stateId: "b", count: 80 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const badgesStep1 = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+
+      // State 'a' and state 'b' color
+      const colorA = badgesStep1[0].style.backgroundColor;
+      const colorB = badgesStep1[1].style.backgroundColor;
+
+      // Select step 2
+      const slider = root.querySelector(
+        ".rtichoke-operating-point-slider",
+      ) as HTMLInputElement;
+      slider.value = "1";
+      slider.dispatchEvent(new Event("input"));
+
+      const badgesStep2 = Array.from(
+        root.querySelectorAll(".rtichoke-performance-table__badge"),
+      ) as HTMLElement[];
+      expect(badgesStep2[0].style.backgroundColor).toBe(colorA);
+      expect(badgesStep2[1].style.backgroundColor).toBe(colorB);
+    });
+
+    it("verifies removal of bar click-to-select handler and custom slider inline background override", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 50 },
+              { stateId: "b", count: 50 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 30 },
+              { stateId: "b", count: 70 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+
+      // (a) Slider has no inline background override or linear-gradient
+      const slider = root.querySelector(".rtichoke-operating-point-slider") as HTMLInputElement;
+      expect(slider).not.toBeNull();
+      expect(slider.style.background).toBe("");
+
+      // (b) Clicking a bar element does NOT change the selected step from 2 to 1
+      expect(root.textContent).toContain("Active Step: Step = 2");
+      const rect = root.querySelector("svg rect");
+      expect(rect).not.toBeNull();
+      rect?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+      // Active step remains 2
+      expect(root.textContent).toContain("Active Step: Step = 2");
+    });
+
+    it("maintains stable state color identity when state label changes", () => {
+      const spec1: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "stable_id_1", label: "Label Version A", count: 50 },
+              { stateId: "stable_id_2", label: "Label Version B", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root1 = renderOutcomeDistribution(spec1);
+      const badge1 = root1.querySelector(
+        ".rtichoke-performance-table__badge",
+      ) as HTMLElement;
+      const color1 = badge1.style.backgroundColor;
+
+      const spec2: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "stable_id_1", label: "Completely Different Label", count: 50 },
+              { stateId: "stable_id_2", label: "Another Label", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root2 = renderOutcomeDistribution(spec2);
+      const badge2 = root2.querySelector(
+        ".rtichoke-performance-table__badge",
+      ) as HTMLElement;
+      const color2 = badge2.style.backgroundColor;
+
+      // Colors mapped by stateId remain identical despite label change
+      expect(color1).toBe(color2);
+    });
   });
 });

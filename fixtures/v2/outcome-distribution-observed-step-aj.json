@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Observed Step AJ Adjusted Occupancy",
+  "evaluations": [
+    {
+      "id": "eval-1",
+      "model": "model-a",
+      "population": "cohort-1"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "eval-1",
+      "horizon": 1,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "label": "Remission Phase", "estimate": 0.8 },
+        { "stateId": "relapse", "label": "Relapse Phase", "estimate": 0.15 },
+        { "stateId": "death", "label": "Deceased", "estimate": 0.05 }
+      ]
+    },
+    {
+      "evaluationId": "eval-1",
+      "horizon": 2,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "remission", "label": "Remission Phase", "estimate": 0.7 },
+        { "stateId": "relapse", "label": "Relapse Phase", "estimate": 0.2 },
+        { "stateId": "death", "label": "Deceased", "estimate": 0.1 }
+      ]
+    }
+  ]
+}

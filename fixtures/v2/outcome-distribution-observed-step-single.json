@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Observed Step Single Step",
+  "evaluations": [
+    {
+      "id": "eval-1",
+      "model": "model-a",
+      "population": "cohort-1"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "eval-1",
+      "horizon": 5,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        { "stateId": "healthy", "count": 120 },
+        { "stateId": "sick", "count": 30 }
+      ]
+    }
+  ]
+}
