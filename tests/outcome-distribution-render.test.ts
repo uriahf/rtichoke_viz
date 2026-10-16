@@ -749,11 +749,10 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       expect(badgesStep2[1].style.backgroundColor).toBe(colorB);
     });
 
-    it("renders bold bar outline around selected step bar without vertical rule line, cumulative opacity, and slider track gradient", () => {
+    it("verifies removal of bar click-to-select handler and custom slider inline background override", () => {
       const spec: OutcomeDistributionSpec = {
         schemaVersion: "2.0",
         type: "outcome_distribution",
-        stateScale: "nominal",
         evaluations: [{ id: "eval-1", population: "cohort-1" }],
         stateDistributions: [
           {
@@ -780,20 +779,19 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       };
 
       const root = renderOutcomeDistribution(spec);
-      const svg = root.querySelector("svg");
-      expect(svg).not.toBeNull();
 
-      // Ensure no vertical selection line (ruleX) is rendered for observed_step
-      const textNodes = Array.from(svg?.querySelectorAll("text") ?? []);
-      expect(textNodes.some((t) => t.textContent?.includes("Step ="))).toBe(false);
+      // (a) Slider has no inline background override or linear-gradient
+      const slider = root.querySelector(".rtichoke-operating-point-slider") as HTMLInputElement;
+      expect(slider).not.toBeNull();
+      expect(slider.style.background).toBe("");
 
-      // Slider track linear-gradient background present
-      const slider = root.querySelector(
-        ".rtichoke-operating-point-slider",
-      ) as HTMLInputElement;
-      expect(slider.style.background).toContain("linear-gradient");
+      // (b) Clicking a bar element does NOT change the selected step from 2 to 1
+      expect(root.textContent).toContain("Active Step: Step = 2");
+      const rect = root.querySelector("svg rect");
+      expect(rect).not.toBeNull();
+      rect?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-      // Verify readout card
+      // Active step remains 2
       expect(root.textContent).toContain("Active Step: Step = 2");
     });
 
