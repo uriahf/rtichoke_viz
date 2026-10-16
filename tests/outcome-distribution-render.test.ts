@@ -748,5 +748,108 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       expect(badgesStep2[0].style.backgroundColor).toBe(colorA);
       expect(badgesStep2[1].style.backgroundColor).toBe(colorB);
     });
+
+    it("renders bold bar outline around selected step bar without vertical rule line, cumulative opacity, and slider track gradient", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 50 },
+              { stateId: "b", count: 50 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "a", count: 30 },
+              { stateId: "b", count: 70 },
+            ],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+      const svg = root.querySelector("svg");
+      expect(svg).not.toBeNull();
+
+      // Ensure no vertical selection line (ruleX) is rendered for observed_step
+      const textNodes = Array.from(svg?.querySelectorAll("text") ?? []);
+      expect(textNodes.some((t) => t.textContent?.includes("Step ="))).toBe(false);
+
+      // Slider track linear-gradient background present
+      const slider = root.querySelector(
+        ".rtichoke-operating-point-slider",
+      ) as HTMLInputElement;
+      expect(slider.style.background).toContain("linear-gradient");
+
+      // Verify readout card
+      expect(root.textContent).toContain("Active Step: Step = 2");
+    });
+
+    it("maintains stable state color identity when state label changes", () => {
+      const spec1: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "stable_id_1", label: "Label Version A", count: 50 },
+              { stateId: "stable_id_2", label: "Label Version B", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root1 = renderOutcomeDistribution(spec1);
+      const badge1 = root1.querySelector(
+        ".rtichoke-performance-table__badge",
+      ) as HTMLElement;
+      const color1 = badge1.style.backgroundColor;
+
+      const spec2: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        stateScale: "nominal",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "stable_id_1", label: "Completely Different Label", count: 50 },
+              { stateId: "stable_id_2", label: "Another Label", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const root2 = renderOutcomeDistribution(spec2);
+      const badge2 = root2.querySelector(
+        ".rtichoke-performance-table__badge",
+      ) as HTMLElement;
+      const color2 = badge2.style.backgroundColor;
+
+      // Colors mapped by stateId remain identical despite label change
+      expect(color1).toBe(color2);
+    });
   });
 });

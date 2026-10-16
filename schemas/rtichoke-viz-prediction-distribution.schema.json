@@ -434,18 +434,6 @@
           "competingHeuristic": {
             "type": "string"
           },
-          "stateScale": {
-            "anyOf": [
-              {
-                "const": "ordinal",
-                "type": "string"
-              },
-              {
-                "const": "nominal",
-                "type": "string"
-              }
-            ]
-          },
           "states": {
             "minItems": 1,
             "type": "array",

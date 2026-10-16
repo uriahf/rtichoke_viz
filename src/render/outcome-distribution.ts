@@ -363,43 +363,46 @@ export function renderOutcomeDistribution(
 
   container.append(sliderControl, legendDiv, chartDiv);
 
-  // Determine authoritative state scale from component spec (with fallback to state distribution for backward compatibility)
-  const effectiveStateScale =
-    spec.stateScale ?? spec.stateDistributions[0]?.stateScale ?? "nominal";
+  // Determine authoritative state scale from component spec
+  const effectiveStateScale = spec.stateScale ?? "nominal";
   const isOrdinal = effectiveStateScale === "ordinal";
 
-  // Pre-initialize state color palette mapping across all state distributions to ensure stability
+  // Pre-initialize state color palette mapping strictly by stateId across all state distributions
   const stateColorMap = new Map<string, string>();
   if (spec.stateDistributions.length > 0) {
     const isObservedStep = spec.stateDistributions.some(
       (d) => d.estimateOrigin === "observed_step",
     );
-    const firstDistStates = spec.stateDistributions[0].states;
-    const nStates = firstDistStates.length;
+    const uniqueStateIds: string[] = [];
+    for (const dist of spec.stateDistributions) {
+      for (const s of dist.states) {
+        if (!uniqueStateIds.includes(s.stateId)) {
+          uniqueStateIds.push(s.stateId);
+        }
+      }
+    }
+    const nStates = uniqueStateIds.length;
 
     if (isOrdinal) {
       const ordinalPalette = getOrdinalTrueBluePalette(nStates);
-      firstDistStates.forEach((s, idx) => {
-        const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
-        stateColorMap.set(`${s.stateId}:${label}`, ordinalPalette[idx]);
+      uniqueStateIds.forEach((sId, idx) => {
+        stateColorMap.set(sId, ordinalPalette[idx]);
       });
     } else if (isObservedStep) {
-      firstDistStates.forEach((s, idx) => {
-        const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
+      uniqueStateIds.forEach((sId, idx) => {
         const col =
           NOMINAL_COLORFUL_MINIMAL_PALETTE[
             idx % NOMINAL_COLORFUL_MINIMAL_PALETTE.length
           ];
-        stateColorMap.set(`${s.stateId}:${label}`, col);
+        stateColorMap.set(sId, col);
       });
     }
   }
 
   let nextColorIdx = 0;
 
-  const getStateColor = (stateId: string, label: string): string => {
-    const key = `${stateId}:${label}`;
-    if (stateColorMap.has(key)) return stateColorMap.get(key)!;
+  const getStateColor = (stateId: string): string => {
+    if (stateColorMap.has(stateId)) return stateColorMap.get(stateId)!;
 
     const isObservedStep = spec.stateDistributions.some(
       (d) => d.estimateOrigin === "observed_step",
@@ -407,7 +410,7 @@ export function renderOutcomeDistribution(
 
     if (!isOrdinal && !isObservedStep && PREFERRED_STATE_COLORS[stateId]) {
       const col = PREFERRED_STATE_COLORS[stateId];
-      stateColorMap.set(key, col);
+      stateColorMap.set(stateId, col);
       return col;
     }
 
@@ -416,7 +419,7 @@ export function renderOutcomeDistribution(
       : STATE_COLOR_PALETTE;
     const col = palette[nextColorIdx % palette.length];
     nextColorIdx++;
-    stateColorMap.set(key, col);
+    stateColorMap.set(stateId, col);
     return col;
   };
 
@@ -568,10 +571,14 @@ export function renderOutcomeDistribution(
         }
 
         const hIdx = availableSteps.indexOf(currentActiveHorizon);
+        const maxIdx = availableSteps.length - 1;
+        const pct = maxIdx > 0 ? (hIdx / maxIdx) * 100 : 100;
+
         slider.min = "0";
-        slider.max = String(Math.max(0, availableSteps.length - 1));
+        slider.max = String(Math.max(0, maxIdx));
         slider.step = "1";
         slider.value = String(Math.max(0, hIdx));
+        slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
 
         sliderLabelText.textContent = "Step: ";
         sliderValueText.textContent = String(currentActiveHorizon);
@@ -591,10 +598,14 @@ export function renderOutcomeDistribution(
       }
 
       const hIdx = availableSteps.indexOf(currentActiveHorizon);
+      const maxIdx = availableSteps.length - 1;
+      const pct = maxIdx > 0 ? (hIdx / maxIdx) * 100 : 100;
+
       slider.min = "0";
-      slider.max = String(Math.max(0, availableSteps.length - 1));
+      slider.max = String(Math.max(0, maxIdx));
       slider.step = "1";
       slider.value = String(Math.max(0, hIdx));
+      slider.style.background = `linear-gradient(to right, #4b5563 0%, #4b5563 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
 
       sliderLabelText.textContent = "Time: ";
       sliderValueText.textContent = currentActiveHorizon.toFixed(digits);
@@ -655,7 +666,7 @@ export function renderOutcomeDistribution(
         const tdLabel = document.createElement("td");
         const badge = document.createElement("span");
         badge.className = "rtichoke-performance-table__badge";
-        const stateColor = getStateColor(st.stateId, st.label);
+        const stateColor = getStateColor(st.stateId);
         badge.style.backgroundColor = stateColor;
         tdLabel.append(badge, document.createTextNode(st.label));
 
@@ -737,7 +748,7 @@ export function renderOutcomeDistribution(
 
       const lineSpan = document.createElement("span");
       lineSpan.className = "rtichoke-legend-line";
-      lineSpan.style.backgroundColor = getStateColor(st.stateId, st.label);
+        lineSpan.style.backgroundColor = getStateColor(st.stateId);
       lineSpan.style.height = "10px";
       lineSpan.style.borderRadius = "2px";
       swatch.append(lineSpan);
@@ -767,7 +778,7 @@ export function renderOutcomeDistribution(
 
       for (const row of observedStepRows) {
         for (const st of row.states) {
-          const color = getStateColor(st.stateId, st.label);
+          const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -791,7 +802,7 @@ export function renderOutcomeDistribution(
         }
       }
 
-      // Render 100% stacked bars on discrete step axis
+      // Render 100% stacked bars with cumulative opacity (full opacity for steps <= selected horizon, faded for step > selected horizon)
       marks.push(
         Plot.barY(
           plotData,
@@ -800,7 +811,10 @@ export function renderOutcomeDistribution(
             y: "percentage",
             z: "stateId",
             fill: (d) => d.color,
-            fillOpacity: 0.88,
+            fillOpacity: (d) =>
+              currentActiveHorizon === null || d.step <= currentActiveHorizon
+                ? 0.88
+                : 0.28,
             stroke: theme.axis.color,
             strokeWidth: 0.75,
             title: (d) => d.title,
@@ -808,30 +822,17 @@ export function renderOutcomeDistribution(
         ),
       );
 
-      // Active step indicator rule
+      // Selected horizon bar bold outline (no vertical line)
       if (currentActiveHorizon !== null) {
         marks.push(
-          Plot.ruleX([currentActiveHorizon], {
-            stroke: theme.axis.color,
-            strokeWidth: 2.5,
-          }),
-        );
-        marks.push(
-          Plot.text(
-            [
-              {
-                x: currentActiveHorizon,
-                label: `Step = ${currentActiveHorizon}`,
-              },
-            ],
+          Plot.barY(
+            [{ step: currentActiveHorizon, percentage: 100 }],
             {
-              x: "x",
-              y: 102,
-              text: "label",
-              dy: -10,
-              fill: theme.axis.color,
-              fontSize: 11,
-              fontWeight: 700,
+              x: "step",
+              y: "percentage",
+              fill: "none",
+              stroke: theme.axis.color,
+              strokeWidth: 2.5,
             },
           ),
         );
@@ -849,7 +850,7 @@ export function renderOutcomeDistribution(
 
       for (const row of eventTableRows) {
         for (const st of row.states) {
-          const color = getStateColor(st.stateId, st.label);
+          const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -972,7 +973,7 @@ export function renderOutcomeDistribution(
 
       for (const row of fixedHorizonRows) {
         for (const st of row.states) {
-          const color = getStateColor(st.stateId, st.label);
+          const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
             row.horizon,
             st,
@@ -1070,6 +1071,31 @@ export function renderOutcomeDistribution(
     };
 
     const chartSvg = themedPlot(plotSpec, theme);
+
+    if (isObservedStepMode) {
+      chartSvg.addEventListener("click", (evt) => {
+        const target = evt.target as HTMLElement | null;
+        if (target && target.tagName.toLowerCase() === "rect") {
+          const titleText =
+            target.querySelector("title")?.textContent ??
+            target.getAttribute("aria-label") ??
+            target.textContent ??
+            "";
+          const match = titleText.match(/Step\s*[:=\n]?\s*(\d+)/i);
+          if (match) {
+            const clickedStep = Number(match[1]);
+            if (
+              availableSteps.includes(clickedStep) &&
+              clickedStep !== currentActiveHorizon
+            ) {
+              currentActiveHorizon = clickedStep;
+              updateChart();
+            }
+          }
+        }
+      });
+    }
+
     chartDiv.replaceChildren(chartSvg);
   };
 
