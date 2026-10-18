@@ -1,0 +1,34 @@
+name: Attach committed v0.24.0 release assets
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b535e664284f7248d702d1918e07895409e1f3ba
+          fetch-depth: 0
+      - name: Verify immutable committed archive
+        run: |
+          bash scripts/verify-committed-release.sh
+          cd release
+          sha256sum -c rtichoke-viz-0.24.0.tar.gz.sha256
+      - name: Verify release and attach missing artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view v0.24.0 >/dev/null
+          for asset in rtichoke-viz-0.24.0.tar.gz rtichoke-viz-0.24.0.tar.gz.sha256; do
+            if gh release view v0.24.0 --json assets --jq '.assets[].name' | grep -Fxq "$asset"; then
+              echo "Existing $asset: refusing to overwrite"
+              continue
+            fi
+            gh release upload v0.24.0 "release/$asset"
+          done
+          gh release view v0.24.0 --json assets --jq '.assets[].name'
