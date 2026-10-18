@@ -1,0 +1,40 @@
+name: Prepare v0.24.0 committed release artifacts
+
+on:
+  push:
+    branches:
+      - release/v0.24.0-observed-steps
+    paths:
+      - .github/workflows/prepare-v024-temporary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node scripts/smoke-dist.mjs
+      - run: npm run schema
+      - name: Create immutable release files
+        run: bash scripts/package-release.sh release
+      - name: Commit release artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add release/rtichoke-viz-0.24.0 release/rtichoke-viz-0.24.0.tar.gz release/rtichoke-viz-0.24.0.tar.gz.sha256
+          git commit -m "build: commit verified rtichoke_viz v0.24.0 release artifacts"
+          git push origin HEAD:release/v0.24.0-observed-steps
+      - name: Verify committed release
+        run: bash scripts/verify-committed-release.sh
