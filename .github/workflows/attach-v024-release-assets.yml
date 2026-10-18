@@ -15,9 +15,11 @@ jobs:
           fetch-depth: 0
       - name: Verify immutable committed archive
         run: |
-          bash scripts/verify-committed-release.sh
+          set -euo pipefail
           cd release
           sha256sum -c rtichoke-viz-0.24.0.tar.gz.sha256
+          test -s rtichoke-viz-0.24.0.tar.gz
+          test -s rtichoke-viz-0.24.0.tar.gz.sha256
       - name: Verify release and attach missing artifacts
         env:
           GH_TOKEN: ${{ github.token }}
