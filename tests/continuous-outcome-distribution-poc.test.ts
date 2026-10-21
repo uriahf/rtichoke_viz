@@ -104,14 +104,22 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
     expect(el.querySelector(".rtichoke-outcome-distribution__title")?.textContent).toContain("Continuous Outcome Distribution");
 
     // Heatmap SVG present
-    const svgEl = el.querySelector(".rtichoke-continuous-heatmap-wrapper svg");
-    expect(svgEl).not.toBeNull();
+    const heatmapSvg = el.querySelector(".rtichoke-continuous-heatmap-wrapper svg");
+    expect(heatmapSvg).not.toBeNull();
 
-    // Toggle Excluded Panel
+    // Histogram SVG permanently present side-by-side
+    const histogramSvg = el.querySelector(".rtichoke-continuous-histogram-wrapper svg");
+    expect(histogramSvg).not.toBeNull();
+
+    // Excluded panel expanded by default
+    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
+
+    // Toggle Excluded Panel button toggles visibility
     const toggleExclBtn = el.querySelector<HTMLButtonElement>(".rtichoke-continuous-toggle-excluded");
     expect(toggleExclBtn).not.toBeNull();
-    toggleExclBtn?.click();
-
+    toggleExclBtn?.click(); // collapse
+    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).not.toContain("Scenario A has complete follow-up");
+    toggleExclBtn?.click(); // re-expand
     expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
   });
 });

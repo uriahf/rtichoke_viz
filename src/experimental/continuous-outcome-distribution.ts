@@ -166,8 +166,8 @@ export function renderContinuousOutcomeDistributionPOC(
   let activeScenario: ContinuousScenario = options.initialScenario ?? "A";
   let activeNumBins: BinCount = options.initialNumBins ?? 20;
   let selectedStep = 35; // default to step 35
-  let isHistogramOpen = false;
-  let isExcludedExpanded = false;
+  let isHistogramOpen = true; // Always open / visible
+  let isExcludedExpanded = true; // Expanded by default to clearly show censored subjects in Scenario B
 
   // Root container
   const container = document.createElement("div");
@@ -203,21 +203,19 @@ export function renderContinuousOutcomeDistributionPOC(
   const mainLayoutDiv = document.createElement("div");
   mainLayoutDiv.className = "rtichoke-continuous-main-layout";
   mainLayoutDiv.style.display = "flex";
-  mainLayoutDiv.style.flexWrap = "wrap";
+  mainLayoutDiv.style.flexDirection = "row";
+  mainLayoutDiv.style.flexWrap = "nowrap";
   mainLayoutDiv.style.gap = "1rem";
-  mainLayoutDiv.style.alignItems = "stretch";
+  mainLayoutDiv.style.alignItems = "flex-start";
   container.append(mainLayoutDiv);
 
   const heatmapWrapper = document.createElement("div");
   heatmapWrapper.className = "rtichoke-continuous-heatmap-wrapper";
-  heatmapWrapper.style.flex = "1 1 60%";
-  heatmapWrapper.style.minWidth = "320px";
+  heatmapWrapper.style.flex = "0 0 58%";
 
   const histogramWrapper = document.createElement("div");
   histogramWrapper.className = "rtichoke-continuous-histogram-wrapper";
-  histogramWrapper.style.flex = "0 0 35%";
-  histogramWrapper.style.minWidth = "280px";
-  histogramWrapper.style.display = "none"; // hidden initially
+  histogramWrapper.style.flex = "0 0 38%";
 
   mainLayoutDiv.append(heatmapWrapper, histogramWrapper);
 
@@ -396,7 +394,8 @@ export function renderContinuousOutcomeDistributionPOC(
       }
     }
 
-    const heatmapWidth = isHistogramOpen ? Math.round(theme.width * 0.60) : theme.width;
+    // Fixed, stable width for heatmap based on available layout space
+    const heatmapWidth = Math.round((theme.width - 20) * 0.58);
 
     // Heatmap marks
     const heatmapMarks: Plot.Markish[] = [
@@ -477,7 +476,7 @@ export function renderContinuousOutcomeDistributionPOC(
       theme,
     );
 
-    // Make heatmap step columns interactive (click to open/select step)
+    // Make heatmap step columns interactive (click to select step)
     const svgEl = heatmapPlot as unknown as SVGSVGElement;
     svgEl.style.cursor = "pointer";
     svgEl.addEventListener("click", (evt) => {
@@ -490,7 +489,6 @@ export function renderContinuousOutcomeDistributionPOC(
           if (match) {
             const clickedStep = parseInt(match[1], 10);
             selectedStep = clickedStep;
-            isHistogramOpen = true; // Click step opens histogram
             slider.value = String(selectedStep);
             sliderValueText.textContent = String(selectedStep);
             renderAll();
@@ -503,107 +501,85 @@ export function renderContinuousOutcomeDistributionPOC(
 
     heatmapWrapper.append(heatmapPlot);
 
-    // 4. Render Side-by-Side Histogram (if open)
+    // 4. Render Side-by-Side Histogram (Permanently Visible)
     histogramWrapper.replaceChildren();
-    if (isHistogramOpen) {
-      histogramWrapper.style.display = "block";
+    histogramWrapper.style.display = "block";
 
-      const histHeader = document.createElement("div");
-      histHeader.style.display = "flex";
-      histHeader.style.justifyContent = "space-between";
-      histHeader.style.alignItems = "center";
-      histHeader.style.marginBottom = "0.5rem";
-      histHeader.style.paddingBottom = "0.25rem";
-      histHeader.style.borderBottom = "1px solid #e5e7eb";
+    const histHeader = document.createElement("div");
+    histHeader.style.display = "flex";
+    histHeader.style.justifyContent = "space-between";
+    histHeader.style.alignItems = "center";
+    histHeader.style.marginBottom = "0.5rem";
+    histHeader.style.paddingBottom = "0.25rem";
+    histHeader.style.borderBottom = "1px solid #e5e7eb";
 
-      const histTitle = document.createElement("div");
-      histTitle.style.fontWeight = "600";
-      histTitle.style.fontSize = "13px";
-      histTitle.style.color = "#1f2937";
-      histTitle.textContent = `Step ${selectedStep} Distribution (n = ${currentStepSummary.includedCount})`;
+    const histTitle = document.createElement("div");
+    histTitle.style.fontWeight = "600";
+    histTitle.style.fontSize = "13px";
+    histTitle.style.color = "#1f2937";
+    histTitle.textContent = `Step ${selectedStep} Detail (n = ${currentStepSummary.includedCount})`;
 
-      const closeBtn = document.createElement("button");
-      closeBtn.type = "button";
-      closeBtn.className = "rtichoke-continuous-close-btn";
-      closeBtn.setAttribute("aria-label", "Close detail histogram");
-      closeBtn.textContent = "✕ Close";
-      closeBtn.style.background = "none";
-      closeBtn.style.border = "1px solid #d1d5db";
-      closeBtn.style.borderRadius = "4px";
-      closeBtn.style.padding = "2px 8px";
-      closeBtn.style.fontSize = "12px";
-      closeBtn.style.cursor = "pointer";
-      closeBtn.style.color = "#4b5563";
+    histHeader.append(histTitle);
 
-      closeBtn.addEventListener("click", () => {
-        isHistogramOpen = false;
-        renderAll();
-      });
+    const histData = currentStepSummary.cells.map((c) => ({
+      ...c,
+      title: tooltip(digits, [
+        ["Step", c.step],
+        ["Reals", c.binLabel],
+        ["Count", `${c.count} / ${c.includedCount}`],
+        ["Proportion", `${c.percentage.toFixed(1)}%`],
+      ]),
+    }));
 
-      histHeader.append(histTitle, closeBtn);
+    const histWidth = Math.round((theme.width - 20) * 0.38);
 
-      const histData = currentStepSummary.cells.map((c) => ({
-        ...c,
-        title: tooltip(digits, [
-          ["Step", c.step],
-          ["Reals", c.binLabel],
-          ["Count", `${c.count} / ${c.includedCount}`],
-          ["Proportion", `${c.percentage.toFixed(1)}%`],
-        ]),
-      }));
-
-      const histWidth = Math.max(200, Math.round(theme.width * 0.35));
-
-      const histPlot = themedPlot(
-        {
-          width: histWidth,
-          height: Math.round(theme.height * 0.65) - 30,
-          marginTop: theme.margins.top,
-          marginRight: 15,
-          marginBottom: theme.margins.bottom,
-          marginLeft: 45,
-          style: {
-            background: theme.background,
-            color: theme.axis.color,
-            fontFamily: theme.typography.fontFamily,
-            fontSize: `${theme.typography.fontSize}px`,
-          },
-          x: {
-            label: "Reals (Outcome Value)",
-            domain: [0, 1.0],
-            ticks: 5,
-            tickFormat: (d: number) => d.toFixed(2),
-            grid: false,
-            line: true,
-          },
-          y: {
-            label: "Proportion (%)",
-            domain: [0, jointUpperProp * 100],
-            ticks: 5,
-            tickFormat: (d: number) => `${d}%`,
-            grid: true,
-            line: true,
-          },
-          marks: [
-            Plot.rectY(histData, {
-              x1: "binLower",
-              x2: "binUpper",
-              y: "percentage",
-              fill: "#2477BB",
-              fillOpacity: 0.85,
-              stroke: "#ffffff",
-              strokeWidth: 0.5,
-              title: (d) => d.title,
-            }),
-          ],
+    const histPlot = themedPlot(
+      {
+        width: histWidth,
+        height: Math.round(theme.height * 0.65) - 25,
+        marginTop: theme.margins.top + 10,
+        marginRight: 15,
+        marginBottom: theme.margins.bottom,
+        marginLeft: 45,
+        style: {
+          background: theme.background,
+          color: theme.axis.color,
+          fontFamily: theme.typography.fontFamily,
+          fontSize: `${theme.typography.fontSize}px`,
         },
-        theme,
-      );
+        x: {
+          label: "Reals (Outcome Value)",
+          domain: [0, 1.0],
+          ticks: 5,
+          tickFormat: (d: number) => d.toFixed(2),
+          grid: false,
+          line: true,
+        },
+        y: {
+          label: "Proportion (%)",
+          domain: [0, jointUpperProp * 100],
+          ticks: 5,
+          tickFormat: (d: number) => `${d}%`,
+          grid: true,
+          line: true,
+        },
+        marks: [
+          Plot.rectY(histData, {
+            x1: "binLower",
+            x2: "binUpper",
+            y: "percentage",
+            fill: "#2477BB",
+            fillOpacity: 0.85,
+            stroke: "#ffffff",
+            strokeWidth: 0.5,
+            title: (d) => d.title,
+          }),
+        ],
+      },
+      theme,
+    );
 
-      histogramWrapper.append(histHeader, histPlot);
-    } else {
-      histogramWrapper.style.display = "none";
-    }
+    histogramWrapper.append(histHeader, histPlot);
 
     // 5. Render Color Scale Legend
     legendDiv.replaceChildren();
@@ -707,8 +683,9 @@ export function renderContinuousOutcomeDistributionPOC(
         const maxExclPct = Math.max(...scenarioStats.map((s) => s.excludedPercentage), 5);
 
         const exclMarks: Plot.Markish[] = [
-          Plot.barY(exclPlotData, {
-            x: "step",
+          Plot.rectY(exclPlotData, {
+            x1: (d) => d.step - 0.5,
+            x2: (d) => d.step + 0.5,
             y: "excludedPercentage",
             fill: "#e7298a",
             fillOpacity: (d) => d.opacity,
