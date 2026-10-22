@@ -197,32 +197,50 @@ export function renderContinuousOutcomeDistributionPOC(
   controlsDiv.style.marginBottom = "1rem";
   container.append(controlsDiv);
 
-  // Layout wrapper for Heatmap + Histogram side-by-side
+  // Left Column (Heatmap + Legend + Slider + Excluded) vs Right Column (Detail Histogram)
   const mainLayoutDiv = document.createElement("div");
   mainLayoutDiv.className = "rtichoke-continuous-main-layout";
   mainLayoutDiv.style.display = "flex";
   mainLayoutDiv.style.flexDirection = "row";
   mainLayoutDiv.style.flexWrap = "nowrap";
-  mainLayoutDiv.style.gap = "1rem";
+  mainLayoutDiv.style.gap = "1.5rem";
   mainLayoutDiv.style.alignItems = "flex-start";
   container.append(mainLayoutDiv);
 
+  // Left Column
+  const leftColumn = document.createElement("div");
+  leftColumn.className = "rtichoke-continuous-left-column";
+  leftColumn.style.flex = "0 0 58%";
+  leftColumn.style.display = "flex";
+  leftColumn.style.flexDirection = "column";
+
+  // Right Column
+  const rightColumn = document.createElement("div");
+  rightColumn.className = "rtichoke-continuous-right-column";
+  rightColumn.style.flex = "0 0 38%";
+
+  mainLayoutDiv.append(leftColumn, rightColumn);
+
   const heatmapWrapper = document.createElement("div");
   heatmapWrapper.className = "rtichoke-continuous-heatmap-wrapper";
-  heatmapWrapper.style.flex = "0 0 58%";
 
-  const histogramWrapper = document.createElement("div");
-  histogramWrapper.className = "rtichoke-continuous-histogram-wrapper";
-  histogramWrapper.style.flex = "0 0 38%";
+  // Legend Area for continuous color scale
+  const legendDiv = document.createElement("div");
+  legendDiv.className = "rtichoke-continuous-legend";
+  legendDiv.style.display = "flex";
+  legendDiv.style.alignItems = "center";
+  legendDiv.style.gap = "0.75rem";
+  legendDiv.style.marginLeft = `${theme.margins.left + 5}px`;
+  legendDiv.style.marginTop = "0.5rem";
+  legendDiv.style.marginBottom = "0.75rem";
 
-  mainLayoutDiv.append(heatmapWrapper, histogramWrapper);
-
-  // Slider control container below main charts
+  // Slider control container aligned precisely with heatmap x-axis inner margins
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
-  sliderControl.style.marginLeft = `${theme.margins.left}px`;
+  sliderControl.style.marginLeft = `${theme.margins.left + 5}px`;
   sliderControl.style.marginRight = `${theme.margins.right}px`;
-  sliderControl.style.marginTop = "0.75rem";
+  sliderControl.style.marginTop = "0.5rem";
+  sliderControl.style.marginBottom = "1rem";
 
   const sliderId = `rtichoke-cod-slider-${++continuousSliderCounter}`;
   const sliderLabel = document.createElement("label");
@@ -247,28 +265,17 @@ export function renderContinuousOutcomeDistributionPOC(
   slider.setAttribute("aria-label", "Step");
 
   sliderControl.append(sliderLabel, slider);
-  container.append(sliderControl);
 
-  // Legend Area for continuous color scale
-  const legendDiv = document.createElement("div");
-  legendDiv.className = "rtichoke-continuous-legend";
-  legendDiv.style.display = "flex";
-  legendDiv.style.alignItems = "center";
-  legendDiv.style.gap = "0.75rem";
-  legendDiv.style.marginLeft = `${theme.margins.left}px`;
-  legendDiv.style.marginTop = "0.5rem";
-  legendDiv.style.marginBottom = "0.75rem";
-  container.append(legendDiv);
-
-  // Excluded summary readout and expandable panel container
+  // Excluded summary readout and expandable panel container in left column
   const excludedSection = document.createElement("div");
   excludedSection.className = "rtichoke-continuous-excluded-section";
-  excludedSection.style.marginTop = "1rem";
-  excludedSection.style.padding = "0.75rem 1rem";
-  excludedSection.style.backgroundColor = "#f9fafb";
-  excludedSection.style.border = "1px solid #e5e7eb";
-  excludedSection.style.borderRadius = "6px";
-  container.append(excludedSection);
+  excludedSection.style.marginTop = "0.5rem";
+  excludedSection.style.padding = "0.75rem 0";
+  excludedSection.style.backgroundColor = "transparent";
+
+  leftColumn.append(heatmapWrapper, legendDiv, sliderControl, excludedSection);
+
+  const histogramWrapper = rightColumn;
 
   // Master Render / Update function
   const renderAll = () => {

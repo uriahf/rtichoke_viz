@@ -99,8 +99,8 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
     const heatmapSvg = el.querySelector(".rtichoke-continuous-heatmap-wrapper svg");
     expect(heatmapSvg).not.toBeNull();
 
-    // Histogram SVG permanently present side-by-side
-    const histogramSvg = el.querySelector(".rtichoke-continuous-histogram-wrapper svg");
+    // Histogram SVG permanently present side-by-side in right column
+    const histogramSvg = el.querySelector(".rtichoke-continuous-right-column svg");
     expect(histogramSvg).not.toBeNull();
 
     // Confirm bin resolution radio is no longer present
