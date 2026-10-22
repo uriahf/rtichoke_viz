@@ -1,5 +1,77 @@
-import type { OutcomeDistributionSpec } from "./outcome-distribution.js";
+import type { OutcomeDistributionSpec, PopulationExclusion } from "./outcome-distribution.js";
 import type { StateDistribution } from "./state-distribution.js";
+import type { HeuristicPairKey } from "./heuristics.js";
+
+const VALID_HEURISTIC_PAIR_KEYS = new Set<HeuristicPairKey>([
+  "excluded:excluded",
+  "excluded:adjusted_as_censored",
+  "excluded:adjusted_as_negative",
+  "excluded:adjusted_as_composite",
+  "adjusted:excluded",
+  "adjusted:adjusted_as_censored",
+  "adjusted:adjusted_as_negative",
+  "adjusted:adjusted_as_composite",
+]);
+
+/** Validate a single PopulationExclusion entry. */
+export function assertPopulationExclusionValid(
+  exclusion: PopulationExclusion,
+  validEvaluationIds?: Set<string>,
+): void {
+  if (validEvaluationIds && !validEvaluationIds.has(exclusion.evaluationId)) {
+    throw new Error(`unknown evaluation id: ${exclusion.evaluationId}`);
+  }
+
+  if (
+    !Number.isInteger(exclusion.originalSampleSize) ||
+    exclusion.originalSampleSize <= 0
+  ) {
+    throw new Error(
+      `originalSampleSize must be a positive integer for evaluation ${exclusion.evaluationId}`,
+    );
+  }
+
+  const seenHorizons = new Set<number>();
+  for (const counts of exclusion.excludedCounts) {
+    if (!Number.isFinite(counts.horizon) || counts.horizon < 0) {
+      throw new Error(
+        `horizon must be non-negative in excludedCounts for evaluation ${exclusion.evaluationId}`,
+      );
+    }
+    if (seenHorizons.has(counts.horizon)) {
+      throw new Error(
+        `duplicate horizon ${counts.horizon} in excludedCounts for evaluation ${exclusion.evaluationId}`,
+      );
+    }
+    seenHorizons.add(counts.horizon);
+
+    if (
+      !Number.isInteger(counts.censoredExcludedCount) ||
+      counts.censoredExcludedCount < 0
+    ) {
+      throw new Error(
+        `censoredExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`,
+      );
+    }
+
+    if (
+      !Number.isInteger(counts.competingExcludedCount) ||
+      counts.competingExcludedCount < 0
+    ) {
+      throw new Error(
+        `competingExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`,
+      );
+    }
+
+    const totalExcluded =
+      counts.censoredExcludedCount + counts.competingExcludedCount;
+    if (totalExcluded > exclusion.originalSampleSize) {
+      throw new Error(
+        `total excluded count (${totalExcluded}) exceeds original sample size (${exclusion.originalSampleSize}) for evaluation ${exclusion.evaluationId} at horizon ${counts.horizon}`,
+      );
+    }
+  }
+}
 
 /** Validate a single StateDistribution object. */
 export function assertStateDistributionValid(
@@ -246,6 +318,49 @@ export function assertOutcomeDistributionReferentialIntegrity(
           throw new Error(
             `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`,
           );
+        }
+      }
+    }
+  }
+
+  // Validate variants if present
+  if (spec.variants) {
+    for (const [key, variant] of Object.entries(spec.variants)) {
+      if (!VALID_HEURISTIC_PAIR_KEYS.has(key as HeuristicPairKey)) {
+        throw new Error(`invalid variant heuristic pair key: '${key}'`);
+      }
+      if (!variant) continue;
+
+      if (variant.status === "available") {
+        if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
+          throw new Error(`variant '${key}' stateDistributions must be non-empty`);
+        }
+
+        const variantOriginHorizonKeys = new Set<string>();
+        for (const dist of variant.stateDistributions) {
+          assertStateDistributionValid(dist, evaluationIds);
+
+          const originKey = dist.estimateOrigin ?? "unspecified";
+          const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+          if (variantOriginHorizonKeys.has(horizonKey)) {
+            throw new Error(
+              `variant '${key}' has multiple state distributions for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`,
+            );
+          }
+          variantOriginHorizonKeys.add(horizonKey);
+        }
+
+        if (variant.exclusions) {
+          const exclusionEvalIds = new Set<string>();
+          for (const exclusion of variant.exclusions) {
+            if (exclusionEvalIds.has(exclusion.evaluationId)) {
+              throw new Error(
+                `variant '${key}' has duplicate exclusion entry for evaluation ${exclusion.evaluationId}`,
+              );
+            }
+            exclusionEvalIds.add(exclusion.evaluationId);
+            assertPopulationExclusionValid(exclusion, evaluationIds);
+          }
         }
       }
     }
