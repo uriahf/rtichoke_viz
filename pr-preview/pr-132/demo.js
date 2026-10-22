@@ -28183,6 +28183,9 @@ var COMPETING_OPTIONS = [
   "adjusted_as_composite"
 ];
 function getComponentHeuristicStatus(spec) {
+  if (spec.heuristicPolicy === "independent" || spec.heuristicIndependent === true) {
+    return "independent";
+  }
   if (spec.type === "outcome_distribution") {
     if (spec.variants) {
       return "aware";
@@ -28190,6 +28193,24 @@ function getComponentHeuristicStatus(spec) {
     return "unavailable";
   }
   return "unavailable";
+}
+function getHorizonsForOutcomeDistributionSpec(spec, evalId) {
+  const currentEvalId = evalId ?? spec.evaluations[0]?.id;
+  const evalDists = spec.stateDistributions.filter(
+    (d) => d.evaluationId === currentEvalId
+  );
+  const isObservedStep = evalDists.some(
+    (d) => d.estimateOrigin === "observed_step"
+  );
+  const originType = isObservedStep ? "observed_step" : "fixed_time_horizon";
+  const matchingDists = evalDists.filter(
+    (d) => d.estimateOrigin === originType
+  );
+  const distsToScan = matchingDists.length > 0 ? matchingDists : evalDists.filter((d) => d.estimateOrigin === "event_table");
+  const horizons2 = Array.from(
+    new Set(distsToScan.map((d) => d.horizon ?? 0))
+  ).sort((a2, b) => a2 - b);
+  return horizons2;
 }
 function parseHeuristicPairKey(key) {
   const parts = key.split(":");
@@ -28463,44 +28484,93 @@ function renderReportV1_1(spec, options) {
     root2.append(nav);
   }
   const componentRegistry = /* @__PURE__ */ new Map();
-  const updateComponentContent = (spec2, contentEl) => {
-    let currentHorizonVal;
-    const existingSlider = contentEl.querySelector(
-      ".rtichoke-operating-point-slider"
-    );
-    if (existingSlider) {
-      const parsedVal = Number(existingSlider.value);
-      if (Number.isFinite(parsedVal)) {
-        currentHorizonVal = parsedVal;
+  const updateComponentContent = (compSpec, contentEl, force = false) => {
+    const status = getComponentHeuristicStatus(compSpec);
+    if (status === "independent") {
+      if (contentEl.children.length === 0) {
+        contentEl.append(renderStandaloneComponentContent(compSpec));
       }
-    }
-    contentEl.replaceChildren();
-    if (!activeHeuristicPair) {
-      contentEl.append(renderStandaloneComponentContent(spec2));
       return;
     }
-    const { resolvedSpec, isUnavailable } = resolveActiveSpecForComponent(
-      spec2,
-      activeHeuristicPair
+    const { resolvedSpec, isUnavailable } = activeHeuristicPair ? resolveActiveSpecForComponent(compSpec, activeHeuristicPair) : { resolvedSpec: compSpec, isUnavailable: false };
+    const currentVariantKey = isUnavailable ? `unavailable:${activeHeuristicPair}` : activeHeuristicPair ?? "default";
+    const entry = Array.from(componentRegistry.values()).find(
+      (e) => e.contentEl === contentEl
     );
-    if (isUnavailable || !resolvedSpec) {
-      contentEl.append(renderUnavailablePlaceholder(activeHeuristicPair));
-    } else {
-      const renderedNode = renderStandaloneComponentContent(resolvedSpec);
-      if (currentHorizonVal !== void 0) {
-        const newSlider = renderedNode.querySelector(
-          ".rtichoke-operating-point-slider"
-        );
-        if (newSlider) {
-          const maxVal = Number(newSlider.max) || 0;
-          const targetVal = Math.min(Math.max(0, currentHorizonVal), maxVal);
-          if (String(targetVal) !== newSlider.value) {
-            newSlider.value = String(targetVal);
-            newSlider.dispatchEvent(new Event("input"));
+    if (!force && entry && entry.lastRenderedVariantKey === currentVariantKey && entry.lastIsUnavailable === isUnavailable) {
+      return;
+    }
+    let previousSelectedHorizon;
+    if (compSpec.type === "outcome_distribution" && entry && entry.spec.type === "outcome_distribution") {
+      const existingSlider = contentEl.querySelector(
+        ".rtichoke-operating-point-slider"
+      );
+      if (existingSlider) {
+        const parsedIdx = Number(existingSlider.value);
+        if (Number.isFinite(parsedIdx)) {
+          const prevVariantKey = entry.lastRenderedVariantKey;
+          let prevSpec;
+          if (prevVariantKey && prevVariantKey.startsWith("unavailable")) {
+            prevSpec = void 0;
+          } else if (prevVariantKey && entry.spec.variants) {
+            const v = entry.spec.variants[prevVariantKey];
+            if (v && v.status === "available") {
+              prevSpec = {
+                ...entry.spec,
+                stateDistributions: v.stateDistributions
+              };
+            }
+          } else {
+            prevSpec = entry.spec;
+          }
+          if (prevSpec) {
+            const prevHorizons = getHorizonsForOutcomeDistributionSpec(prevSpec);
+            if (parsedIdx >= 0 && parsedIdx < prevHorizons.length) {
+              previousSelectedHorizon = prevHorizons[parsedIdx];
+            }
           }
         }
       }
+    }
+    contentEl.replaceChildren();
+    if (isUnavailable || !resolvedSpec) {
+      const unavailPair = activeHeuristicPair ?? "default:default";
+      contentEl.append(renderUnavailablePlaceholder(unavailPair));
+    } else {
+      const renderedNode = renderStandaloneComponentContent(resolvedSpec);
       contentEl.append(renderedNode);
+      if (previousSelectedHorizon !== void 0 && resolvedSpec.type === "outcome_distribution") {
+        const newSlider = contentEl.querySelector(
+          ".rtichoke-operating-point-slider"
+        );
+        if (newSlider) {
+          const newHorizons = getHorizonsForOutcomeDistributionSpec(resolvedSpec);
+          if (newHorizons.length > 0) {
+            let targetIdx = newHorizons.indexOf(previousSelectedHorizon);
+            if (targetIdx === -1) {
+              let minDiff = Infinity;
+              targetIdx = 0;
+              for (let i = 0; i < newHorizons.length; i++) {
+                const diff = Math.abs(
+                  newHorizons[i] - previousSelectedHorizon
+                );
+                if (diff < minDiff) {
+                  minDiff = diff;
+                  targetIdx = i;
+                }
+              }
+            }
+            if (String(targetIdx) !== newSlider.value) {
+              newSlider.value = String(targetIdx);
+              newSlider.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          }
+        }
+      }
+    }
+    if (entry) {
+      entry.lastRenderedVariantKey = currentVariantKey;
+      entry.lastIsUnavailable = isUnavailable;
     }
   };
   let syncRadioControlsUI;
@@ -28534,65 +28604,79 @@ function renderReportV1_1(spec, options) {
     const compOptionsDiv = document.createElement("div");
     compOptionsDiv.className = "rtichoke-report__heuristics-options";
     compFieldset.append(compOptionsDiv);
+    const censoringRadios = /* @__PURE__ */ new Map();
+    const competingRadios = /* @__PURE__ */ new Map();
+    for (const censVal of CENSORING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-censoring`;
+      radio.value = censVal;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+          onHeuristicSelectionChange(censVal, currentParsed.competing);
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+      label.append(radio, span);
+      censOptionsDiv.append(label);
+      censoringRadios.set(censVal, { input: radio, label });
+    }
+    for (const compVal of COMPETING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-competing`;
+      radio.value = compVal;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+          onHeuristicSelectionChange(currentParsed.censoring, compVal);
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+      label.append(radio, span);
+      compOptionsDiv.append(label);
+      competingRadios.set(compVal, { input: radio, label });
+    }
     groupsRow.append(censFieldset, compFieldset);
     controlsContainer.append(titleEl, groupsRow);
     root2.append(controlsContainer);
     syncRadioControlsUI = () => {
       if (!activeHeuristicPair) return;
       const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
-      censOptionsDiv.replaceChildren();
       for (const censVal of CENSORING_OPTIONS) {
+        const item = censoringRadios.get(censVal);
+        if (!item) continue;
         const isCensAvailable = availableHeuristics.some(
           (k2) => parseHeuristicPairKey(k2).censoring === censVal
         );
-        const label = document.createElement("label");
-        label.className = "rtichoke-report__heuristics-option";
-        if (!isCensAvailable) {
-          label.classList.add("rtichoke-report__heuristics-option--disabled");
-        }
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = `rtichoke-report-${instanceId}-censoring`;
-        radio.value = censVal;
-        radio.checked = currentParsed.censoring === censVal;
-        radio.disabled = !isCensAvailable;
-        radio.addEventListener("change", () => {
-          if (radio.checked) {
-            onHeuristicSelectionChange(censVal, currentParsed.competing);
-          }
-        });
-        const span = document.createElement("span");
-        span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
-        label.append(radio, span);
-        censOptionsDiv.append(label);
+        item.input.checked = currentParsed.censoring === censVal;
+        item.input.disabled = !isCensAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCensAvailable
+        );
       }
-      compOptionsDiv.replaceChildren();
       for (const compVal of COMPETING_OPTIONS) {
+        const item = competingRadios.get(compVal);
+        if (!item) continue;
         const candidateKey = makeHeuristicPairKey(
           currentParsed.censoring,
           compVal
         );
         const isCompAvailable = availableHeuristics.includes(candidateKey);
-        const label = document.createElement("label");
-        label.className = "rtichoke-report__heuristics-option";
-        if (!isCompAvailable) {
-          label.classList.add("rtichoke-report__heuristics-option--disabled");
-        }
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = `rtichoke-report-${instanceId}-competing`;
-        radio.value = compVal;
-        radio.checked = currentParsed.competing === compVal;
-        radio.disabled = !isCompAvailable;
-        radio.addEventListener("change", () => {
-          if (radio.checked) {
-            onHeuristicSelectionChange(currentParsed.censoring, compVal);
-          }
-        });
-        const span = document.createElement("span");
-        span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
-        label.append(radio, span);
-        compOptionsDiv.append(label);
+        item.input.checked = currentParsed.competing === compVal;
+        item.input.disabled = !isCompAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCompAvailable
+        );
       }
     };
     const onHeuristicSelectionChange = (targetCensoring, targetCompeting) => {
