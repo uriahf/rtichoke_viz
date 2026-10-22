@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { Value } from "@sinclair/typebox/value";
 import {
   ReportSpecSchema,
   type ReportSpecV1_1,
@@ -18,12 +19,14 @@ describe("PR 1: Interactive Heuristics Schema Foundation", () => {
   const fixtureReport = JSON.parse(fixtureJson) as ReportSpecV1_1;
 
   it("validates the committed eight-variant Fixture A report against ReportSpecSchema and referential integrity", () => {
+    expect(Value.Check(ReportSpecSchema, fixtureReport)).toBe(true);
     expect(() =>
       assertReportReferentialIntegrity(fixtureReport),
     ).not.toThrow();
 
     const comp = fixtureReport.sections[0].items[0];
     if (comp.type === "component") {
+      expect(Value.Check(OutcomeDistributionSpecSchema, comp.spec)).toBe(true);
       expect(() =>
         assertOutcomeDistributionReferentialIntegrity(comp.spec as any),
       ).not.toThrow();
@@ -88,12 +91,24 @@ describe("PR 1: Interactive Heuristics Schema Foundation", () => {
     }
   });
 
-  it("rejects report with malformed heuristic key", () => {
+  it("rejects report with malformed heuristic key both structurally and in referential integrity", () => {
     const invalidReport = JSON.parse(JSON.stringify(fixtureReport));
     invalidReport.heuristics.active = "invalid:key";
+    expect(Value.Check(ReportSpecSchema, invalidReport)).toBe(false);
     expect(() => assertReportReferentialIntegrity(invalidReport)).toThrow(
       "invalid active heuristic pair key: 'invalid:key'",
     );
+  });
+
+  it("rejects malformed variant payload structurally via TypeBox", () => {
+    const invalidReport = JSON.parse(JSON.stringify(fixtureReport));
+    const comp = invalidReport.sections[0].items[0];
+    comp.spec.variants["excluded:excluded"] = {
+      status: "available",
+      stateDistributions: [], // minItems: 1 violation
+      exclusions: [],
+    };
+    expect(Value.Check(OutcomeDistributionSpecSchema, comp.spec)).toBe(false);
   });
 
   it("rejects report with duplicate heuristic in available array", () => {
