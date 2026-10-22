@@ -3,3 +3,5 @@ dist/
 site/
 .tmp/
 coverage/
+server.log
+server.pid

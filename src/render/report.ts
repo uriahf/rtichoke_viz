@@ -12,6 +12,8 @@ import {
   ReportSpecV1_1Schema,
 } from "../spec/report.js";
 import { assertReportReferentialIntegrity } from "../spec/validate-report.js";
+import type { HeuristicPairKey } from "../spec/v2/heuristics.js";
+import type { OutcomeDistributionSpec } from "../spec/v2/outcome-distribution.js";
 import { renderDecisionCurveV2 } from "./decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
 import { renderOutcomeDistribution } from "./outcome-distribution.js";
@@ -25,6 +27,169 @@ import {
   renderPrecisionRecallV2,
   renderRocV2,
 } from "./v2.js";
+
+let reportInstanceCounter = 0;
+
+export const CENSORING_HEURISTIC_LABELS: Record<string, string> = {
+  excluded: "Excluded",
+  adjusted: "Adjusted",
+};
+
+export const COMPETING_HEURISTIC_LABELS: Record<string, string> = {
+  excluded: "Excluded",
+  adjusted_as_censored: "Adjusted as censored",
+  adjusted_as_negative: "Adjusted as negative",
+  adjusted_as_composite: "Adjusted as composite",
+};
+
+export const CENSORING_OPTIONS = ["excluded", "adjusted"] as const;
+export const COMPETING_OPTIONS = [
+  "excluded",
+  "adjusted_as_censored",
+  "adjusted_as_negative",
+  "adjusted_as_composite",
+] as const;
+
+export type ComponentHeuristicStatus = "aware" | "independent" | "unavailable";
+
+export function getComponentHeuristicStatus(
+  spec: StandaloneCanonicalSpec,
+): ComponentHeuristicStatus {
+  if (spec.type === "outcome_distribution") {
+    if (spec.variants) {
+      return "aware";
+    }
+    return "unavailable";
+  }
+  // Currently other components do not have precomputed variants in PR 2.
+  return "unavailable";
+}
+
+export function parseHeuristicPairKey(
+  key: HeuristicPairKey,
+): { censoring: string; competing: string } {
+  const parts = key.split(":");
+  return {
+    censoring: parts[0],
+    competing: parts[1],
+  };
+}
+
+export function makeHeuristicPairKey(
+  censoring: string,
+  competing: string,
+): HeuristicPairKey {
+  return `${censoring}:${competing}` as HeuristicPairKey;
+}
+
+export function resolveNearestCompatiblePair(
+  targetCensoring: string,
+  targetCompeting: string,
+  available: HeuristicPairKey[],
+  initialActive?: HeuristicPairKey,
+): HeuristicPairKey {
+  const candidateKey = makeHeuristicPairKey(targetCensoring, targetCompeting);
+  if (available.includes(candidateKey)) {
+    return candidateKey;
+  }
+
+  // 1. Primary priority: Find a pair matching targetCensoring
+  const matchingCensoringPairs = available.filter(
+    (k) => parseHeuristicPairKey(k).censoring === targetCensoring,
+  );
+
+  if (matchingCensoringPairs.length > 0) {
+    // Prefer initial active competing option if present in matchingCensoringPairs
+    if (initialActive) {
+      const initComp = parseHeuristicPairKey(initialActive).competing;
+      const matchInitComp = matchingCensoringPairs.find(
+        (k) => parseHeuristicPairKey(k).competing === initComp,
+      );
+      if (matchInitComp) {
+        return matchInitComp;
+      }
+    }
+    // Otherwise return first option matching targetCensoring
+    return matchingCensoringPairs[0];
+  }
+
+  // 2. Secondary priority: Find a pair matching targetCompeting
+  const matchingCompetingPairs = available.filter(
+    (k) => parseHeuristicPairKey(k).competing === targetCompeting,
+  );
+
+  if (matchingCompetingPairs.length > 0) {
+    // Prefer initial active censoring option if present
+    if (initialActive) {
+      const initCens = parseHeuristicPairKey(initialActive).censoring;
+      const matchInitCens = matchingCompetingPairs.find(
+        (k) => parseHeuristicPairKey(k).censoring === initCens,
+      );
+      if (matchInitCens) {
+        return matchInitCens;
+      }
+    }
+    return matchingCompetingPairs[0];
+  }
+
+  // 3. Fallback to first available
+  return available[0];
+}
+
+export function renderUnavailablePlaceholder(
+  selectedPair: HeuristicPairKey,
+): HTMLElement {
+  const container = document.createElement("div");
+  container.className = "rtichoke-report__unavailable";
+
+  const icon = document.createElement("div");
+  icon.className = "rtichoke-report__unavailable-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "i";
+
+  const message = document.createElement("p");
+  message.className = "rtichoke-report__unavailable-message";
+  message.textContent =
+    "This visualization is unavailable for the selected censoring and competing-event heuristics.";
+
+  const detail = document.createElement("p");
+  detail.className = "rtichoke-report__unavailable-detail";
+  const parsed = parseHeuristicPairKey(selectedPair);
+  const censLabel = CENSORING_HEURISTIC_LABELS[parsed.censoring] ?? parsed.censoring;
+  const compLabel = COMPETING_HEURISTIC_LABELS[parsed.competing] ?? parsed.competing;
+  detail.textContent = `Selected heuristics: Censoring = ${censLabel}, Competing events = ${compLabel}`;
+
+  container.append(icon, message, detail);
+  return container;
+}
+
+function resolveActiveSpecForComponent(
+  spec: StandaloneCanonicalSpec,
+  activeHeuristic: HeuristicPairKey,
+  selectedHorizon?: number,
+): { resolvedSpec?: StandaloneCanonicalSpec; isUnavailable: boolean } {
+  const status = getComponentHeuristicStatus(spec);
+
+  if (status === "independent") {
+    return { resolvedSpec: spec, isUnavailable: false };
+  }
+
+  if (status === "aware" && spec.type === "outcome_distribution") {
+    const variant = spec.variants?.[activeHeuristic];
+    if (!variant || variant.status === "unsupported") {
+      return { isUnavailable: true };
+    }
+    if (variant.status === "available") {
+      const activeSpec: OutcomeDistributionSpec = {
+        ...spec,
+        stateDistributions: variant.stateDistributions,
+      };
+      return { resolvedSpec: activeSpec, isUnavailable: false };
+    }
+  }
+
+  return { isUnavailable: true };
+}
 
 function renderStandaloneComponentContent(
   spec: StandaloneCanonicalSpec,
@@ -157,8 +322,15 @@ function renderReportV1_1(
   }
   assertReportReferentialIntegrity(spec);
 
+  const instanceId = ++reportInstanceCounter;
   const hasTitle = Boolean(spec.title);
   const usedDomIds = new Set<string>();
+
+  let activeHeuristicPair: HeuristicPairKey | undefined =
+    spec.heuristics?.active;
+  const availableHeuristics: HeuristicPairKey[] =
+    spec.heuristics?.available ?? [];
+  const initialActiveHeuristic = spec.heuristics?.active;
 
   const root = document.createElement("article");
   root.className = "rtichoke-report";
@@ -259,6 +431,216 @@ function renderReportV1_1(
     root.append(nav);
   }
 
+  // Map of component DOM elements for scoped updates when heuristics change
+  const componentRegistry = new Map<
+    string,
+    {
+      spec: StandaloneCanonicalSpec;
+      contentEl: HTMLElement;
+    }
+  >();
+
+  // Function to render / re-render content for a component given current active heuristic
+  const updateComponentContent = (
+    spec: StandaloneCanonicalSpec,
+    contentEl: HTMLElement,
+  ) => {
+    // Audit existing rendered component DOM before replacing to preserve slider/horizon selection if present
+    let currentHorizonVal: number | undefined;
+    const existingSlider = contentEl.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    );
+    if (existingSlider) {
+      const parsedVal = Number(existingSlider.value);
+      if (Number.isFinite(parsedVal)) {
+        currentHorizonVal = parsedVal;
+      }
+    }
+
+    contentEl.replaceChildren();
+
+    if (!activeHeuristicPair) {
+      contentEl.append(renderStandaloneComponentContent(spec));
+      return;
+    }
+
+    const { resolvedSpec, isUnavailable } = resolveActiveSpecForComponent(
+      spec,
+      activeHeuristicPair,
+    );
+
+    if (isUnavailable || !resolvedSpec) {
+      contentEl.append(renderUnavailablePlaceholder(activeHeuristicPair));
+    } else {
+      const renderedNode = renderStandaloneComponentContent(resolvedSpec);
+      // If a horizon/step slider exists in the newly rendered node and we had a previous slider position, re-apply it
+      if (currentHorizonVal !== undefined) {
+        const newSlider = renderedNode.querySelector<HTMLInputElement>(
+          ".rtichoke-operating-point-slider",
+        );
+        if (newSlider) {
+          const maxVal = Number(newSlider.max) || 0;
+          const targetVal = Math.min(Math.max(0, currentHorizonVal), maxVal);
+          if (String(targetVal) !== newSlider.value) {
+            newSlider.value = String(targetVal);
+            newSlider.dispatchEvent(new Event("input"));
+          }
+        }
+      }
+      contentEl.append(renderedNode);
+    }
+  };
+
+  // Render Heuristic Radio Controls if heuristics are defined
+  let syncRadioControlsUI: (() => void) | undefined;
+
+  if (spec.heuristics && activeHeuristicPair) {
+    const controlsContainer = document.createElement("section");
+    controlsContainer.className = "rtichoke-report__heuristics-controls";
+    controlsContainer.setAttribute(
+      "aria-label",
+      "Analysis Heuristic Controls",
+    );
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "rtichoke-report__heuristics-title";
+    titleEl.textContent = "Analysis Heuristic Controls";
+
+    const groupsRow = document.createElement("div");
+    groupsRow.className = "rtichoke-report__heuristics-row";
+
+    // Censoring Fieldset
+    const censFieldset = document.createElement("fieldset");
+    censFieldset.className = "rtichoke-report__heuristics-fieldset";
+    const censLegend = document.createElement("legend");
+    censLegend.className = "rtichoke-report__heuristics-legend";
+    censLegend.textContent = "Censoring:";
+    censFieldset.append(censLegend);
+
+    const censOptionsDiv = document.createElement("div");
+    censOptionsDiv.className = "rtichoke-report__heuristics-options";
+    censFieldset.append(censOptionsDiv);
+
+    // Competing Events Fieldset
+    const compFieldset = document.createElement("fieldset");
+    compFieldset.className = "rtichoke-report__heuristics-fieldset";
+    const compLegend = document.createElement("legend");
+    compLegend.className = "rtichoke-report__heuristics-legend";
+    compLegend.textContent = "Competing events:";
+    compFieldset.append(compLegend);
+
+    const compOptionsDiv = document.createElement("div");
+    compOptionsDiv.className = "rtichoke-report__heuristics-options";
+    compFieldset.append(compOptionsDiv);
+
+    groupsRow.append(censFieldset, compFieldset);
+    controlsContainer.append(titleEl, groupsRow);
+    root.append(controlsContainer);
+
+    // Dynamic UI Synchronization function
+    syncRadioControlsUI = () => {
+      if (!activeHeuristicPair) return;
+      const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+
+      // 1. Build Censoring Radio Options
+      censOptionsDiv.replaceChildren();
+      for (const censVal of CENSORING_OPTIONS) {
+        // Check if censVal is compatible with AT LEAST ONE available competing option
+        const isCensAvailable = availableHeuristics.some(
+          (k) => parseHeuristicPairKey(k).censoring === censVal,
+        );
+
+        const label = document.createElement("label");
+        label.className = "rtichoke-report__heuristics-option";
+        if (!isCensAvailable) {
+          label.classList.add("rtichoke-report__heuristics-option--disabled");
+        }
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `rtichoke-report-${instanceId}-censoring`;
+        radio.value = censVal;
+        radio.checked = currentParsed.censoring === censVal;
+        radio.disabled = !isCensAvailable;
+
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            onHeuristicSelectionChange(censVal, currentParsed.competing);
+          }
+        });
+
+        const span = document.createElement("span");
+        span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+
+        label.append(radio, span);
+        censOptionsDiv.append(label);
+      }
+
+      // 2. Build Competing Events Radio Options
+      compOptionsDiv.replaceChildren();
+      for (const compVal of COMPETING_OPTIONS) {
+        // Check if compVal is compatible with CURRENT selected censoring
+        const candidateKey = makeHeuristicPairKey(
+          currentParsed.censoring,
+          compVal,
+        );
+        const isCompAvailable = availableHeuristics.includes(candidateKey);
+
+        const label = document.createElement("label");
+        label.className = "rtichoke-report__heuristics-option";
+        if (!isCompAvailable) {
+          label.classList.add("rtichoke-report__heuristics-option--disabled");
+        }
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `rtichoke-report-${instanceId}-competing`;
+        radio.value = compVal;
+        radio.checked = currentParsed.competing === compVal;
+        radio.disabled = !isCompAvailable;
+
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            onHeuristicSelectionChange(currentParsed.censoring, compVal);
+          }
+        });
+
+        const span = document.createElement("span");
+        span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+
+        label.append(radio, span);
+        compOptionsDiv.append(label);
+      }
+    };
+
+    const onHeuristicSelectionChange = (
+      targetCensoring: string,
+      targetCompeting: string,
+    ) => {
+      const resolvedPair = resolveNearestCompatiblePair(
+        targetCensoring,
+        targetCompeting,
+        availableHeuristics,
+        initialActiveHeuristic,
+      );
+
+      if (resolvedPair === activeHeuristicPair) {
+        syncRadioControlsUI?.();
+        return;
+      }
+
+      activeHeuristicPair = resolvedPair;
+      syncRadioControlsUI?.();
+
+      // Scoped component updates
+      for (const { spec: compSpec, contentEl } of componentRegistry.values()) {
+        updateComponentContent(compSpec, contentEl);
+      }
+    };
+
+    syncRadioControlsUI();
+  }
+
   // Heading depth resolution
   const sectionHeadingTag = hasTitle ? "h2" : "h1";
   const groupHeadingTag = hasTitle ? "h3" : "h2";
@@ -288,9 +670,10 @@ function renderReportV1_1(
 
     const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(comp.spec));
-    container.append(content);
+    componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+    updateComponentContent(comp.spec, content);
 
+    container.append(content);
     return container;
   };
 
@@ -362,7 +745,9 @@ function renderReportV1_1(
 
         const content = document.createElement("div");
         content.className = "rtichoke-report__component-content";
-        content.append(renderStandaloneComponentContent(comp.spec));
+        componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+        updateComponentContent(comp.spec, content);
+
         panel.append(content);
 
         tabs.push(tab);
@@ -468,7 +853,9 @@ function renderReportV1_1(
 
             const content = document.createElement("div");
             content.className = "rtichoke-report__component-content";
-            content.append(renderStandaloneComponentContent(comp.spec));
+            componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+            updateComponentContent(comp.spec, content);
+
             panel.append(content);
 
             tabs.push(tab);
