@@ -733,15 +733,28 @@ export function renderOutcomeDistribution(
     let hasIncompleteExclusionData = false;
 
     if (popExclusion) {
-      const totalExclusionsAcrossAllHorizons =
-        popExclusion.excludedCounts.reduce(
-          (sum, item) =>
-            sum + item.censoredExcludedCount + item.competingExcludedCount,
-          0,
-        );
+      // Validate complete horizon coverage: every required horizon in availableSteps must have an explicit record
+      const exclusionHorizons = new Set(
+        popExclusion.excludedCounts.map((e) => e.horizon),
+      );
+      const hasFullHorizonCoverage = availableSteps.every((step) =>
+        exclusionHorizons.has(step),
+      );
 
-      if (totalExclusionsAcrossAllHorizons > 0) {
+      if (!hasFullHorizonCoverage) {
         isPanelBVisible = true;
+        hasIncompleteExclusionData = true;
+      } else {
+        const totalExclusionsAcrossAllHorizons =
+          popExclusion.excludedCounts.reduce(
+            (sum, item) =>
+              sum + item.censoredExcludedCount + item.competingExcludedCount,
+            0,
+          );
+
+        if (totalExclusionsAcrossAllHorizons > 0) {
+          isPanelBVisible = true;
+        }
       }
     } else if (isHeuristicAware) {
       // Incomplete exclusion metadata for a heuristic-aware component
@@ -1234,8 +1247,16 @@ export function renderOutcomeDistribution(
               )
             : undefined;
 
-        const censCount = activeExclusionItem?.censoredExcludedCount ?? 0;
-        const compCount = activeExclusionItem?.competingExcludedCount ?? 0;
+        if (!activeExclusionItem) {
+          const incMsg = document.createElement("div");
+          incMsg.className = "rtichoke-outcome-distribution__incomplete";
+          incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
+          chartBDiv.append(incMsg);
+          return;
+        }
+
+        const censCount = activeExclusionItem.censoredExcludedCount;
+        const compCount = activeExclusionItem.competingExcludedCount;
         const totalCount = censCount + compCount;
 
         const censPct = sampleSize > 0 ? (censCount / sampleSize) * 100 : 0;

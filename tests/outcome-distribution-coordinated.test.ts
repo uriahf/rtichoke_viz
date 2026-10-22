@@ -281,8 +281,8 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     el.remove();
   });
 
-  it("14. Explicit handling of incomplete exclusion metadata", () => {
-    // Spec with variant containing censoringHeuristic/competingHeuristic but missing exclusions payload
+  it("14. Explicit handling of incomplete exclusion metadata (missing exclusions array vs partial horizon coverage)", () => {
+    // 14a. Spec with variant containing censoringHeuristic/competingHeuristic but missing exclusions payload
     const incompleteSpec: OutcomeDistributionSpec = {
       schemaVersion: "2.0",
       type: "outcome_distribution",
@@ -301,14 +301,59 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
       // exclusions missing!
     };
 
-    const el = renderOutcomeDistribution(incompleteSpec);
-    document.body.append(el);
+    const el1 = renderOutcomeDistribution(incompleteSpec);
+    document.body.append(el1);
 
-    const incompleteMsg = el.querySelector(".rtichoke-outcome-distribution__incomplete");
-    expect(incompleteMsg).not.toBeNull();
-    expect(incompleteMsg?.textContent).toContain("Exclusion metadata is incomplete or unavailable");
+    const incompleteMsg1 = el1.querySelector(".rtichoke-outcome-distribution__incomplete");
+    expect(incompleteMsg1).not.toBeNull();
+    expect(incompleteMsg1?.textContent).toContain("Exclusion metadata is incomplete or unavailable");
+    el1.remove();
 
-    el.remove();
+    // 14b. Spec with partial horizon coverage (horizon 5 state distribution exists, but exclusions array only contains horizon 10)
+    const partialHorizonSpec: OutcomeDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "outcome_distribution",
+      evaluations: [{ id: "e1", population: "Pop 1" }],
+      stateDistributions: [
+        {
+          evaluationId: "e1",
+          horizon: 5,
+          estimator: "raw",
+          estimateOrigin: "fixed_time_horizon",
+          states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+        },
+        {
+          evaluationId: "e1",
+          horizon: 10,
+          estimator: "raw",
+          estimateOrigin: "fixed_time_horizon",
+          states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+        },
+      ],
+      exclusions: [
+        {
+          evaluationId: "e1",
+          originalSampleSize: 100,
+          excludedCounts: [
+            // Horizon 5 record missing!
+            { horizon: 10, censoredExcludedCount: 0, competingExcludedCount: 0 },
+          ],
+        },
+      ],
+    };
+
+    const el2 = renderOutcomeDistribution(partialHorizonSpec);
+    document.body.append(el2);
+
+    // Panel B should be visible and show incomplete notice rather than 0
+    const panelB = el2.querySelector(".rtichoke-outcome-distribution__panel--b");
+    expect(panelB).not.toBeNull();
+    expect((panelB as HTMLElement).style.display).not.toBe("none");
+
+    const incompleteMsg2 = el2.querySelector(".rtichoke-outcome-distribution__incomplete");
+    expect(incompleteMsg2).not.toBeNull();
+    expect(incompleteMsg2?.textContent).toContain("Exclusion metadata is incomplete or unavailable");
+    el2.remove();
   });
 
   it("15. No duplicate sliders", () => {
