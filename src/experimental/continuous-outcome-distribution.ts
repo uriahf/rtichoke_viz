@@ -3,11 +3,9 @@ import { resolveV2RenderOptions, themedPlot, tooltip, type V2RenderOptions } fro
 import { generateSyntheticContinuousDataset, type SyntheticDataset } from "./synthetic-data.js";
 
 export type ContinuousScenario = "A" | "B";
-export type BinCount = 20 | 40;
 
 export interface ContinuousOutcomeDistributionOptions extends V2RenderOptions {
   initialScenario?: ContinuousScenario;
-  initialNumBins?: BinCount;
   dataset?: SyntheticDataset;
 }
 
@@ -21,7 +19,7 @@ export interface BinDefinition {
   label: string;
 }
 
-export function createBinDefinitions(numBins: BinCount): BinDefinition[] {
+export function createBinDefinitions(numBins: number = 20): BinDefinition[] {
   const binWidth = 1.0 / numBins;
   const bins: BinDefinition[] = [];
   for (let i = 0; i < numBins; i++) {
@@ -64,7 +62,7 @@ export interface ContinuousStepSummary {
 export function computeScenarioStats(
   dataset: SyntheticDataset,
   scenario: ContinuousScenario,
-  numBins: BinCount,
+  numBins: number = 20,
 ): ContinuousStepSummary[] {
   const bins = createBinDefinitions(numBins);
   const binWidth = 1.0 / numBins;
@@ -129,7 +127,7 @@ export function computeScenarioStats(
  */
 export function computeJointMaxProportion(
   dataset: SyntheticDataset,
-  numBins: BinCount,
+  numBins: number = 20,
 ): number {
   const statsA = computeScenarioStats(dataset, "A", numBins);
   const statsB = computeScenarioStats(dataset, "B", numBins);
@@ -164,7 +162,7 @@ export function renderContinuousOutcomeDistributionPOC(
 
   // State
   let activeScenario: ContinuousScenario = options.initialScenario ?? "A";
-  let activeNumBins: BinCount = options.initialNumBins ?? 20;
+  const activeNumBins = 20; // Default 20 equal-width bins
   let selectedStep = 35; // default to step 35
   let isHistogramOpen = true; // Always open / visible
   let isExcludedExpanded = true; // Expanded by default to clearly show censored subjects in Scenario B
@@ -190,7 +188,7 @@ export function renderContinuousOutcomeDistributionPOC(
     "Longitudinal empirical distribution heatmap of observed numerical outcomes across 36 steps (0–35), with side-by-side step histogram detail.";
   container.append(descEl);
 
-  // Controls bar (Scenario A/B radio, 20/40 Bins radio)
+  // Controls bar (Scenario A/B radio)
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "rtichoke-outcome-distribution__controls";
   controlsDiv.style.display = "flex";
@@ -325,49 +323,6 @@ export function renderContinuousOutcomeDistributionPOC(
     scenarioGroup.append(scenarioOptions);
     controlsDiv.append(scenarioGroup);
 
-    // Bin Width Control
-    const binGroup = document.createElement("div");
-    binGroup.className = "rtichoke-pd-radio-group";
-    binGroup.setAttribute("role", "radiogroup");
-    binGroup.setAttribute("aria-label", "Bin Resolution");
-
-    const binGroupLabel = document.createElement("span");
-    binGroupLabel.className = "rtichoke-pd-radio-group-label";
-    binGroupLabel.textContent = "Bin Resolution:";
-    binGroup.append(binGroupLabel);
-
-    const binOptions = document.createElement("div");
-    binOptions.className = "rtichoke-pd-radio-options";
-
-    const binItems: { num: BinCount; label: string }[] = [
-      { num: 20, label: "20 Bins (width 0.05)" },
-      { num: 40, label: "40 Bins (width 0.025)" },
-    ];
-
-    for (const item of binItems) {
-      const optLabel = document.createElement("label");
-      optLabel.className = "rtichoke-pd-radio-option";
-
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `cod-bins-${instanceId}`;
-      radio.value = String(item.num);
-      radio.checked = activeNumBins === item.num;
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          activeNumBins = item.num;
-          renderAll();
-        }
-      });
-
-      const span = document.createElement("span");
-      span.textContent = item.label;
-      optLabel.append(radio, span);
-      binOptions.append(optLabel);
-    }
-    binGroup.append(binOptions);
-    controlsDiv.append(binGroup);
-
     // 3. Render Main Heatmap
     heatmapWrapper.replaceChildren();
 
@@ -407,7 +362,7 @@ export function renderContinuousOutcomeDistributionPOC(
         fill: (d) => d.proportion,
         fillOpacity: (d) => d.opacity,
         stroke: "#ffffff",
-        strokeWidth: activeNumBins === 40 ? 0.2 : 0.4,
+        strokeWidth: 0.4,
         title: (d) => d.tooltipTitle,
       }),
     ];
@@ -614,7 +569,7 @@ export function renderContinuousOutcomeDistributionPOC(
     // 6. Update Slider Text & Listener
     sliderValueText.textContent = String(selectedStep);
 
-    // 7. Render Excluded Observations Summary & Panel
+    // 7. Render Excluded Observations Summary & Shared X-Axis Panel
     excludedSection.replaceChildren();
 
     const excludedHeader = document.createElement("div");
@@ -655,8 +610,8 @@ export function renderContinuousOutcomeDistributionPOC(
 
     if (isExcludedExpanded) {
       const excludedPanel = document.createElement("div");
-      excludedPanel.style.marginTop = "1rem";
-      excludedPanel.style.paddingTop = "0.75rem";
+      excludedPanel.style.marginTop = "0.75rem";
+      excludedPanel.style.paddingTop = "0.5rem";
       excludedPanel.style.borderTop = "1px dashed #d1d5db";
 
       if (activeScenario === "A") {
@@ -682,15 +637,18 @@ export function renderContinuousOutcomeDistributionPOC(
 
         const maxExclPct = Math.max(...scenarioStats.map((s) => s.excludedPercentage), 5);
 
+        // Censoring fill color matching rtichoke canonical color language (#E3F09B)
+        const CENSORING_COLOR = "#E3F09B";
+
         const exclMarks: Plot.Markish[] = [
           Plot.rectY(exclPlotData, {
             x1: (d) => d.step - 0.5,
             x2: (d) => d.step + 0.5,
             y: "excludedPercentage",
-            fill: "#e7298a",
+            fill: CENSORING_COLOR,
             fillOpacity: (d) => d.opacity,
-            stroke: "#ffffff",
-            strokeWidth: 0.5,
+            stroke: "#4a5568",
+            strokeWidth: 0.4,
             title: (d) => d.title,
           }),
           // Selected step column rectangular outline
@@ -715,11 +673,12 @@ export function renderContinuousOutcomeDistributionPOC(
           ),
         ];
 
+        // Match the exact shared x-axis width and margins as the main heatmap
         const exclPlot = themedPlot(
           {
-            width: theme.width - 40,
-            height: 160,
-            marginTop: 15,
+            width: heatmapWidth,
+            height: 140,
+            marginTop: 10,
             marginRight: theme.margins.right,
             marginBottom: theme.margins.bottom,
             marginLeft: theme.margins.left + 5,
@@ -733,7 +692,7 @@ export function renderContinuousOutcomeDistributionPOC(
               label: "Step",
               domain: [-0.5, 35.5],
               ticks: [0, 5, 10, 15, 20, 25, 30, 35],
-              tickFormat: (d: number) => String(d),
+              tickFormat: (d: number) => String(Math.round(d)),
               grid: false,
               line: true,
             },
@@ -749,6 +708,29 @@ export function renderContinuousOutcomeDistributionPOC(
           },
           theme,
         );
+
+        // Make excluded step columns interactive
+        const exclSvgEl = exclPlot as unknown as SVGSVGElement;
+        exclSvgEl.style.cursor = "pointer";
+        exclSvgEl.addEventListener("click", (evt) => {
+          let node: HTMLElement | null = evt.target as HTMLElement;
+          while (node && node !== (exclSvgEl as unknown as HTMLElement)) {
+            const titleEl = node.querySelector("title");
+            const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
+            if (titleText) {
+              const match = titleText.match(/Step:\s*(\d+)/);
+              if (match) {
+                const clickedStep = parseInt(match[1], 10);
+                selectedStep = clickedStep;
+                slider.value = String(selectedStep);
+                sliderValueText.textContent = String(selectedStep);
+                renderAll();
+                return;
+              }
+            }
+            node = node.parentElement;
+          }
+        });
 
         excludedPanel.append(exclPlot);
       }

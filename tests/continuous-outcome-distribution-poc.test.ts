@@ -51,18 +51,16 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
   it("3. Verifies every outcome is in [0, 1] and bin proportions sum to 1.0 (100%)", () => {
     const dataset = generateSyntheticContinuousDataset();
 
-    for (const binNum of [20, 40] as const) {
-      for (const scenario of ["A", "B"] as const) {
-        const stats = computeScenarioStats(dataset, scenario, binNum);
+    for (const scenario of ["A", "B"] as const) {
+      const stats = computeScenarioStats(dataset, scenario, 20);
 
-        for (const stepSum of stats) {
-          if (stepSum.includedCount > 0) {
-            const sumProp = stepSum.cells.reduce((acc, c) => acc + c.proportion, 0);
-            expect(sumProp).toBeCloseTo(1.0, 6);
+      for (const stepSum of stats) {
+        if (stepSum.includedCount > 0) {
+          const sumProp = stepSum.cells.reduce((acc, c) => acc + c.proportion, 0);
+          expect(sumProp).toBeCloseTo(1.0, 6);
 
-            const totalBinCounts = stepSum.cells.reduce((acc, c) => acc + c.count, 0);
-            expect(totalBinCounts).toBe(stepSum.includedCount);
-          }
+          const totalBinCounts = stepSum.cells.reduce((acc, c) => acc + c.count, 0);
+          expect(totalBinCounts).toBe(stepSum.includedCount);
         }
       }
     }
@@ -85,15 +83,9 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
   it("5. Computes joint maximum proportion across Scenario A and B consistently", () => {
     const dataset = generateSyntheticContinuousDataset();
     const jointProp20 = computeJointMaxProportion(dataset, 20);
-    const jointProp40 = computeJointMaxProportion(dataset, 40);
 
     expect(jointProp20).toBeGreaterThan(0);
     expect(jointProp20).toBeLessThanOrEqual(1.0);
-    expect(jointProp40).toBeGreaterThan(0);
-    expect(jointProp40).toBeLessThanOrEqual(1.0);
-
-    // 20 bins should have higher max cell proportion than 40 bins
-    expect(jointProp20).toBeGreaterThanOrEqual(jointProp40);
   });
 
   it("6. DOM & Interaction rendering check: mounts successfully and updates UI elements", () => {
@@ -110,6 +102,9 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
     // Histogram SVG permanently present side-by-side
     const histogramSvg = el.querySelector(".rtichoke-continuous-histogram-wrapper svg");
     expect(histogramSvg).not.toBeNull();
+
+    // Confirm bin resolution radio is no longer present
+    expect(el.querySelector('[aria-label="Bin Resolution"]')).toBeNull();
 
     // Excluded panel expanded by default
     expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
