@@ -52,17 +52,55 @@ export const COMPETING_OPTIONS = [
 
 export type ComponentHeuristicStatus = "aware" | "independent" | "unavailable";
 
+/**
+ * Resolves the heuristic interaction policy for a report component specification:
+ * - "aware": The component has precomputed `variants` matching heuristic pair keys (e.g. Outcome Distribution with variants).
+ * - "independent": The component is explicitly marked as heuristic-independent (e.g., via `heuristicPolicy: "independent"` or `heuristicIndependent: true`).
+ * - "unavailable": The component is statistically heuristic-dependent but lacks precomputed variants in PR 2 (e.g. ROC, PR, Calibration, Performance Table, Prediction Distribution, Decision Curve, Interventions Avoided). Displays an explicit neutral placeholder to avoid showing stale results.
+ */
 export function getComponentHeuristicStatus(
   spec: StandaloneCanonicalSpec,
 ): ComponentHeuristicStatus {
+  if (
+    (spec as Record<string, unknown>).heuristicPolicy === "independent" ||
+    (spec as Record<string, unknown>).heuristicIndependent === true
+  ) {
+    return "independent";
+  }
   if (spec.type === "outcome_distribution") {
     if (spec.variants) {
       return "aware";
     }
     return "unavailable";
   }
-  // Currently other components do not have precomputed variants in PR 2.
+  // Currently other statistical components do not have precomputed variants in PR 2.
   return "unavailable";
+}
+
+function getHorizonsForOutcomeDistributionSpec(
+  spec: OutcomeDistributionSpec,
+  evalId?: string,
+): number[] {
+  const currentEvalId = evalId ?? spec.evaluations[0]?.id;
+  const evalDists = spec.stateDistributions.filter(
+    (d) => d.evaluationId === currentEvalId,
+  );
+  const isObservedStep = evalDists.some(
+    (d) => d.estimateOrigin === "observed_step",
+  );
+  const originType = isObservedStep ? "observed_step" : "fixed_time_horizon";
+  const matchingDists = evalDists.filter(
+    (d) => d.estimateOrigin === originType,
+  );
+  const distsToScan =
+    matchingDists.length > 0
+      ? matchingDists
+      : evalDists.filter((d) => d.estimateOrigin === "event_table");
+
+  const horizons = Array.from(
+    new Set(distsToScan.map((d) => d.horizon ?? 0)),
+  ).sort((a, b) => a - b);
+  return horizons;
 }
 
 export function parseHeuristicPairKey(
@@ -432,62 +470,143 @@ function renderReportV1_1(
   }
 
   // Map of component DOM elements for scoped updates when heuristics change
-  const componentRegistry = new Map<
-    string,
-    {
-      spec: StandaloneCanonicalSpec;
-      contentEl: HTMLElement;
-    }
-  >();
+  interface ComponentRegistryEntry {
+    spec: StandaloneCanonicalSpec;
+    contentEl: HTMLElement;
+    lastRenderedVariantKey?: string;
+    lastIsUnavailable?: boolean;
+  }
+
+  const componentRegistry = new Map<string, ComponentRegistryEntry>();
 
   // Function to render / re-render content for a component given current active heuristic
   const updateComponentContent = (
-    spec: StandaloneCanonicalSpec,
+    compSpec: StandaloneCanonicalSpec,
     contentEl: HTMLElement,
+    force = false,
   ) => {
-    // Audit existing rendered component DOM before replacing to preserve slider/horizon selection if present
-    let currentHorizonVal: number | undefined;
-    const existingSlider = contentEl.querySelector<HTMLInputElement>(
-      ".rtichoke-operating-point-slider",
+    const status = getComponentHeuristicStatus(compSpec);
+    if (status === "independent") {
+      // Independent components render once and are never replaced when heuristics switch
+      if (contentEl.children.length === 0) {
+        contentEl.append(renderStandaloneComponentContent(compSpec));
+      }
+      return;
+    }
+
+    const { resolvedSpec, isUnavailable } = activeHeuristicPair
+      ? resolveActiveSpecForComponent(compSpec, activeHeuristicPair)
+      : { resolvedSpec: compSpec, isUnavailable: false };
+
+    const currentVariantKey = isUnavailable
+      ? `unavailable:${activeHeuristicPair}`
+      : activeHeuristicPair ?? "default";
+
+    const entry = Array.from(componentRegistry.values()).find(
+      (e) => e.contentEl === contentEl,
     );
-    if (existingSlider) {
-      const parsedVal = Number(existingSlider.value);
-      if (Number.isFinite(parsedVal)) {
-        currentHorizonVal = parsedVal;
+
+    if (
+      !force &&
+      entry &&
+      entry.lastRenderedVariantKey === currentVariantKey &&
+      entry.lastIsUnavailable === isUnavailable
+    ) {
+      // Content is already up-to-date, skip re-rendering to preserve existing DOM state
+      return;
+    }
+
+    // Audit existing rendered component DOM before replacing to preserve slider/horizon selection if present
+    let previousSelectedHorizon: number | undefined;
+    if (
+      compSpec.type === "outcome_distribution" &&
+      entry &&
+      entry.spec.type === "outcome_distribution"
+    ) {
+      const existingSlider = contentEl.querySelector<HTMLInputElement>(
+        ".rtichoke-operating-point-slider",
+      );
+      if (existingSlider) {
+        const parsedIdx = Number(existingSlider.value);
+        if (Number.isFinite(parsedIdx)) {
+          // Resolve the previous variant spec that was actually rendered
+          const prevVariantKey = entry.lastRenderedVariantKey;
+          let prevSpec: OutcomeDistributionSpec | undefined;
+          if (prevVariantKey && prevVariantKey.startsWith("unavailable")) {
+            prevSpec = undefined;
+          } else if (prevVariantKey && entry.spec.variants) {
+            const v = entry.spec.variants[prevVariantKey as HeuristicPairKey];
+            if (v && v.status === "available") {
+              prevSpec = {
+                ...entry.spec,
+                stateDistributions: v.stateDistributions,
+              };
+            }
+          } else {
+            prevSpec = entry.spec;
+          }
+
+          if (prevSpec) {
+            const prevHorizons =
+              getHorizonsForOutcomeDistributionSpec(prevSpec);
+            if (parsedIdx >= 0 && parsedIdx < prevHorizons.length) {
+              previousSelectedHorizon = prevHorizons[parsedIdx];
+            }
+          }
+        }
       }
     }
 
     contentEl.replaceChildren();
 
-    if (!activeHeuristicPair) {
-      contentEl.append(renderStandaloneComponentContent(spec));
-      return;
-    }
-
-    const { resolvedSpec, isUnavailable } = resolveActiveSpecForComponent(
-      spec,
-      activeHeuristicPair,
-    );
-
     if (isUnavailable || !resolvedSpec) {
-      contentEl.append(renderUnavailablePlaceholder(activeHeuristicPair));
+      const unavailPair =
+        activeHeuristicPair ?? ("default:default" as HeuristicPairKey);
+      contentEl.append(renderUnavailablePlaceholder(unavailPair));
     } else {
       const renderedNode = renderStandaloneComponentContent(resolvedSpec);
-      // If a horizon/step slider exists in the newly rendered node and we had a previous slider position, re-apply it
-      if (currentHorizonVal !== undefined) {
-        const newSlider = renderedNode.querySelector<HTMLInputElement>(
+      contentEl.append(renderedNode); // Attach to live DOM first!
+
+      // If a horizon/step slider exists in the newly rendered node and we had a previous selected numeric horizon, re-apply it
+      if (
+        previousSelectedHorizon !== undefined &&
+        resolvedSpec.type === "outcome_distribution"
+      ) {
+        const newSlider = contentEl.querySelector<HTMLInputElement>(
           ".rtichoke-operating-point-slider",
         );
         if (newSlider) {
-          const maxVal = Number(newSlider.max) || 0;
-          const targetVal = Math.min(Math.max(0, currentHorizonVal), maxVal);
-          if (String(targetVal) !== newSlider.value) {
-            newSlider.value = String(targetVal);
-            newSlider.dispatchEvent(new Event("input"));
+          const newHorizons =
+            getHorizonsForOutcomeDistributionSpec(resolvedSpec);
+          if (newHorizons.length > 0) {
+            let targetIdx = newHorizons.indexOf(previousSelectedHorizon);
+            if (targetIdx === -1) {
+              // Pick nearest available horizon in new variant
+              let minDiff = Infinity;
+              targetIdx = 0;
+              for (let i = 0; i < newHorizons.length; i++) {
+                const diff = Math.abs(
+                  newHorizons[i] - previousSelectedHorizon,
+                );
+                if (diff < minDiff) {
+                  minDiff = diff;
+                  targetIdx = i;
+                }
+              }
+            }
+
+            if (String(targetIdx) !== newSlider.value) {
+              newSlider.value = String(targetIdx);
+              newSlider.dispatchEvent(new Event("input", { bubbles: true }));
+            }
           }
         }
       }
-      contentEl.append(renderedNode);
+    }
+
+    if (entry) {
+      entry.lastRenderedVariantKey = currentVariantKey;
+      entry.lastIsUnavailable = isUnavailable;
     }
   };
 
@@ -533,83 +652,105 @@ function renderReportV1_1(
     compOptionsDiv.className = "rtichoke-report__heuristics-options";
     compFieldset.append(compOptionsDiv);
 
+    // Map of inputs & labels created ONCE to preserve DOM identity and keyboard focus
+    const censoringRadios = new Map<
+      string,
+      { input: HTMLInputElement; label: HTMLLabelElement }
+    >();
+    const competingRadios = new Map<
+      string,
+      { input: HTMLInputElement; label: HTMLLabelElement }
+    >();
+
+    for (const censVal of CENSORING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-censoring`;
+      radio.value = censVal;
+
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
+          onHeuristicSelectionChange(censVal, currentParsed.competing);
+        }
+      });
+
+      const span = document.createElement("span");
+      span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+
+      label.append(radio, span);
+      censOptionsDiv.append(label);
+      censoringRadios.set(censVal, { input: radio, label });
+    }
+
+    for (const compVal of COMPETING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-competing`;
+      radio.value = compVal;
+
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
+          onHeuristicSelectionChange(currentParsed.censoring, compVal);
+        }
+      });
+
+      const span = document.createElement("span");
+      span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+
+      label.append(radio, span);
+      compOptionsDiv.append(label);
+      competingRadios.set(compVal, { input: radio, label });
+    }
+
     groupsRow.append(censFieldset, compFieldset);
     controlsContainer.append(titleEl, groupsRow);
     root.append(controlsContainer);
 
-    // Dynamic UI Synchronization function
+    // Dynamic UI Synchronization function: updates attributes on existing DOM elements without re-creating them!
     syncRadioControlsUI = () => {
       if (!activeHeuristicPair) return;
       const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
 
-      // 1. Build Censoring Radio Options
-      censOptionsDiv.replaceChildren();
+      // 1. Update Censoring Radio Options
       for (const censVal of CENSORING_OPTIONS) {
-        // Check if censVal is compatible with AT LEAST ONE available competing option
+        const item = censoringRadios.get(censVal);
+        if (!item) continue;
         const isCensAvailable = availableHeuristics.some(
           (k) => parseHeuristicPairKey(k).censoring === censVal,
         );
 
-        const label = document.createElement("label");
-        label.className = "rtichoke-report__heuristics-option";
-        if (!isCensAvailable) {
-          label.classList.add("rtichoke-report__heuristics-option--disabled");
-        }
-
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = `rtichoke-report-${instanceId}-censoring`;
-        radio.value = censVal;
-        radio.checked = currentParsed.censoring === censVal;
-        radio.disabled = !isCensAvailable;
-
-        radio.addEventListener("change", () => {
-          if (radio.checked) {
-            onHeuristicSelectionChange(censVal, currentParsed.competing);
-          }
-        });
-
-        const span = document.createElement("span");
-        span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
-
-        label.append(radio, span);
-        censOptionsDiv.append(label);
+        item.input.checked = currentParsed.censoring === censVal;
+        item.input.disabled = !isCensAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCensAvailable,
+        );
       }
 
-      // 2. Build Competing Events Radio Options
-      compOptionsDiv.replaceChildren();
+      // 2. Update Competing Events Radio Options
       for (const compVal of COMPETING_OPTIONS) {
-        // Check if compVal is compatible with CURRENT selected censoring
+        const item = competingRadios.get(compVal);
+        if (!item) continue;
         const candidateKey = makeHeuristicPairKey(
           currentParsed.censoring,
           compVal,
         );
         const isCompAvailable = availableHeuristics.includes(candidateKey);
 
-        const label = document.createElement("label");
-        label.className = "rtichoke-report__heuristics-option";
-        if (!isCompAvailable) {
-          label.classList.add("rtichoke-report__heuristics-option--disabled");
-        }
-
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = `rtichoke-report-${instanceId}-competing`;
-        radio.value = compVal;
-        radio.checked = currentParsed.competing === compVal;
-        radio.disabled = !isCompAvailable;
-
-        radio.addEventListener("change", () => {
-          if (radio.checked) {
-            onHeuristicSelectionChange(currentParsed.censoring, compVal);
-          }
-        });
-
-        const span = document.createElement("span");
-        span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
-
-        label.append(radio, span);
-        compOptionsDiv.append(label);
+        item.input.checked = currentParsed.competing === compVal;
+        item.input.disabled = !isCompAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCompAvailable,
+        );
       }
     };
 

@@ -448,4 +448,264 @@ describe("PR 2 — Interactive Heuristic Controls & Coordinated Variant Switchin
     )?.textContent;
     expect(readoutText).toContain("37.5%");
   });
+
+  it("17. Review Feedback 1 — Radio inputs preserve DOM identity and keyboard focus after repeated switching", () => {
+    const el = renderReport(fixtureReport);
+    document.body.append(el);
+
+    const censRadioExcl = el.querySelector<HTMLInputElement>(
+      "input[name$='-censoring'][value='excluded']",
+    )!;
+    expect(censRadioExcl).not.toBeNull();
+
+    // Focus the radio button and activate it
+    censRadioExcl.focus();
+    expect(document.activeElement).toBe(censRadioExcl);
+
+    censRadioExcl.checked = true;
+    censRadioExcl.dispatchEvent(new Event("change"));
+
+    // Verify focus remains on censRadioExcl after heuristic selection update
+    expect(document.activeElement).toBe(censRadioExcl);
+
+    const compRadioExcl = el.querySelector<HTMLInputElement>(
+      "input[name$='-competing'][value='excluded']",
+    )!;
+    compRadioExcl.focus();
+    expect(document.activeElement).toBe(compRadioExcl);
+
+    compRadioExcl.checked = true;
+    compRadioExcl.dispatchEvent(new Event("change"));
+
+    expect(document.activeElement).toBe(compRadioExcl);
+    el.remove();
+  });
+
+  it("18. Review Feedback 2 — Preserves numeric horizon across variant switching with differing horizon grids", () => {
+    const multiGridReport: ReportSpecV1_1 = {
+      schemaVersion: "1.1",
+      type: "report",
+      heuristics: {
+        active: "adjusted:adjusted_as_censored",
+        available: [
+          "adjusted:adjusted_as_censored",
+          "excluded:excluded",
+          "adjusted:excluded",
+        ],
+      },
+      sections: [
+        {
+          id: "sec-1",
+          title: "Grid Section",
+          items: [
+            {
+              type: "component",
+              id: "comp-grid",
+              title: "Multi Grid Outcome Distribution",
+              spec: {
+                schemaVersion: "2.0",
+                type: "outcome_distribution",
+                evaluations: [{ id: "e1", population: "Pop" }],
+                stateDistributions: [
+                  {
+                    evaluationId: "e1",
+                    horizon: 5,
+                    estimator: "raw",
+                    estimateOrigin: "fixed_time_horizon",
+                    states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                  },
+                  {
+                    evaluationId: "e1",
+                    horizon: 10,
+                    estimator: "raw",
+                    estimateOrigin: "fixed_time_horizon",
+                    states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                  },
+                  {
+                    evaluationId: "e1",
+                    horizon: 20,
+                    estimator: "raw",
+                    estimateOrigin: "fixed_time_horizon",
+                    states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                  },
+                ],
+                variants: {
+                  "adjusted:adjusted_as_censored": {
+                    status: "available",
+                    stateDistributions: [
+                      {
+                        evaluationId: "e1",
+                        horizon: 5,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                      {
+                        evaluationId: "e1",
+                        horizon: 10,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                      {
+                        evaluationId: "e1",
+                        horizon: 20,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                    ],
+                    exclusions: [],
+                  },
+                  // Variant with horizons 10 and 30
+                  "excluded:excluded": {
+                    status: "available",
+                    stateDistributions: [
+                      {
+                        evaluationId: "e1",
+                        horizon: 10,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                      {
+                        evaluationId: "e1",
+                        horizon: 30,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                    ],
+                    exclusions: [],
+                  },
+                  // Variant with horizons 15 and 25 (does NOT contain 10, should pick nearest horizon = 15)
+                  "adjusted:excluded": {
+                    status: "available",
+                    stateDistributions: [
+                      {
+                        evaluationId: "e1",
+                        horizon: 15,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                      {
+                        evaluationId: "e1",
+                        horizon: 25,
+                        estimator: "raw",
+                        estimateOrigin: "fixed_time_horizon",
+                        states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                      },
+                    ],
+                    exclusions: [],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const el = renderReport(multiGridReport);
+    document.body.append(el);
+
+    // Initial slider in variant 1 has horizons [5, 10, 20], default active = 20 (index 2)
+    const slider = el.querySelector<HTMLInputElement>(
+      ".rtichoke-operating-point-slider",
+    )!;
+    // Set slider value to index 1 -> numeric horizon = 10
+    slider.value = "1";
+    slider.dispatchEvent(new Event("input"));
+
+    let readoutHeader = el.querySelector(
+      ".rtichoke-outcome-distribution__readout-header",
+    )?.textContent;
+    expect(readoutHeader).toContain("Time = 10.000");
+
+    // Switch to 'excluded:excluded' (horizons [10, 30])
+    const censRadioExcl = el.querySelector<HTMLInputElement>(
+      "input[name$='-censoring'][value='excluded']",
+    )!;
+    censRadioExcl.checked = true;
+    censRadioExcl.dispatchEvent(new Event("change"));
+
+    // Numeric horizon 10 should be preserved!
+    readoutHeader = el.querySelector(
+      ".rtichoke-outcome-distribution__readout-header",
+    )?.textContent;
+    expect(readoutHeader).toContain("Time = 10.000");
+
+    // Switch to 'adjusted:excluded' (horizons [15, 25]) - numeric 10 missing, nearest is 15
+    const censRadioAdj = el.querySelector<HTMLInputElement>(
+      "input[name$='-censoring'][value='adjusted']",
+    )!;
+    censRadioAdj.checked = true;
+    censRadioAdj.dispatchEvent(new Event("change"));
+
+    readoutHeader = el.querySelector(
+      ".rtichoke-outcome-distribution__readout-header",
+    )?.textContent;
+    expect(readoutHeader).toContain("Time = 15.000");
+    el.remove();
+  });
+
+  it("19. Review Feedback 3 & 4 — Unaffected and independent components are not re-rendered when heuristics switch", () => {
+    const reportWithIndependent: ReportSpecV1_1 = {
+      schemaVersion: "1.1",
+      type: "report",
+      heuristics: fixtureReport.heuristics,
+      sections: [
+        {
+          id: "sec-1",
+          title: "Section 1",
+          items: [
+            {
+              type: "component",
+              id: "aware-comp",
+              title: "Aware Outcome Distribution",
+              spec: (fixtureReport.sections[0].items[0] as any).spec,
+            },
+            {
+              type: "component",
+              id: "indep-comp",
+              title: "Independent Component",
+              spec: {
+                schemaVersion: "2.0",
+                type: "outcome_distribution",
+                heuristicPolicy: "independent",
+                evaluations: [{ id: "e1", population: "Pop" }],
+                stateDistributions: [
+                  {
+                    evaluationId: "e1",
+                    horizon: 5,
+                    estimator: "raw",
+                    states: [{ stateId: "s1", count: 10, estimate: 1.0 }],
+                  },
+                ],
+              } as any,
+            },
+          ],
+        },
+      ],
+    };
+
+    const el = renderReport(reportWithIndependent);
+    document.body.append(el);
+
+    const indepContainer = el.querySelector("[data-component-id='indep-comp'] .rtichoke-report__component-content")!;
+    expect(indepContainer).not.toBeNull();
+    const initialIndepChild = indepContainer.firstElementChild;
+
+    // Switch heuristic
+    const censRadioExcl = el.querySelector<HTMLInputElement>(
+      "input[name$='-censoring'][value='excluded']",
+    )!;
+    censRadioExcl.checked = true;
+    censRadioExcl.dispatchEvent(new Event("change"));
+
+    // Independent component DOM child must remain identical (not re-rendered)
+    expect(indepContainer.firstElementChild).toBe(initialIndepChild);
+    el.remove();
+  });
 });
