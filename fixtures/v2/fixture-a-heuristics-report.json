@@ -1,0 +1,403 @@
+{
+  "schemaVersion": "1.1",
+  "type": "report",
+  "title": "Fixture A Interactive Heuristics Report",
+  "heuristics": {
+    "active": "adjusted:adjusted_as_censored",
+    "available": [
+      "excluded:excluded",
+      "excluded:adjusted_as_censored",
+      "excluded:adjusted_as_negative",
+      "excluded:adjusted_as_composite",
+      "adjusted:excluded",
+      "adjusted:adjusted_as_censored",
+      "adjusted:adjusted_as_negative",
+      "adjusted:adjusted_as_composite"
+    ]
+  },
+  "sections": [
+    {
+      "id": "section-1",
+      "title": "Outcome Distribution",
+      "items": [
+        {
+          "type": "component",
+          "id": "fixture-a-outcome-distribution",
+          "title": "Fixture A Multi-State Outcome Distribution",
+          "spec": {
+            "schemaVersion": "2.0",
+            "type": "outcome_distribution",
+            "title": "Fixture A Outcome Trajectories",
+            "evaluations": [
+              {
+                "id": "fixture-a-eval",
+                "population": "Fixture A Cohort",
+                "label": "Fixture A Evaluation"
+              }
+            ],
+            "stateDistributions": [
+              {
+                "evaluationId": "fixture-a-eval",
+                "horizon": 5,
+                "estimator": "aalen_johansen",
+                "estimateOrigin": "fixed_time_horizon",
+                "censoringHeuristic": "adjusted",
+                "competingHeuristic": "adjusted_as_censored",
+                "states": [
+                  {
+                    "stateId": "primary",
+                    "label": "Primary Event",
+                    "estimate": 0.125
+                  },
+                  {
+                    "stateId": "event_free",
+                    "label": "Event Free",
+                    "estimate": 0.875
+                  }
+                ]
+              },
+              {
+                "evaluationId": "fixture-a-eval",
+                "horizon": 10,
+                "estimator": "aalen_johansen",
+                "estimateOrigin": "fixed_time_horizon",
+                "censoringHeuristic": "adjusted",
+                "competingHeuristic": "adjusted_as_censored",
+                "states": [
+                  {
+                    "stateId": "primary",
+                    "label": "Primary Event",
+                    "estimate": 0.34375
+                  },
+                  {
+                    "stateId": "event_free",
+                    "label": "Event Free",
+                    "estimate": 0.65625
+                  }
+                ]
+              }
+            ],
+            "variants": {
+              "excluded:excluded": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "excluded",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.14285714285714285 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.8571428571428571 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "excluded",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.5 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.5 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 1 },
+                      { "horizon": 10, "censoredExcludedCount": 2, "competingExcludedCount": 2 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_censored": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_censored",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.125 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.875 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_censored",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.375 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.625 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 2, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_negative": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "aalen_johansen",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_negative",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.125 },
+                      { "stateId": "competing", "label": "Competing Event", "estimate": 0.125 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.75 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "aalen_johansen",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_negative",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.3333333333333333 },
+                      { "stateId": "competing", "label": "Competing Event", "estimate": 0.3333333333333333 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.3333333333333333 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 2, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_composite": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_composite",
+                    "states": [
+                      { "stateId": "composite", "label": "Composite Event", "estimate": 0.25 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.75 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "excluded",
+                    "competingHeuristic": "adjusted_as_composite",
+                    "states": [
+                      { "stateId": "composite", "label": "Composite Event", "estimate": 0.6666666666666666 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.3333333333333333 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 2, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:excluded": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "excluded",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.14285714285714285 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.8571428571428571 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "excluded",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.4444444444444444 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.5555555555555556 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 1 },
+                      { "horizon": 10, "censoredExcludedCount": 0, "competingExcludedCount": 2 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_censored": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_censored",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.125 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.875 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_censored",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.34375 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.65625 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 0, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_negative": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "aalen_johansen",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_negative",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.125 },
+                      { "stateId": "competing", "label": "Competing Event", "estimate": 0.125 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.75 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "aalen_johansen",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_negative",
+                    "states": [
+                      { "stateId": "primary", "label": "Primary Event", "estimate": 0.3125 },
+                      { "stateId": "competing", "label": "Competing Event", "estimate": 0.3125 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.375 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 0, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_composite": {
+                "status": "available",
+                "stateDistributions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 5,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_composite",
+                    "states": [
+                      { "stateId": "composite", "label": "Composite Event", "estimate": 0.25 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.75 }
+                    ]
+                  },
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "horizon": 10,
+                    "estimator": "kaplan_meier",
+                    "estimateOrigin": "fixed_time_horizon",
+                    "censoringHeuristic": "adjusted",
+                    "competingHeuristic": "adjusted_as_composite",
+                    "states": [
+                      { "stateId": "composite", "label": "Composite Event", "estimate": 0.625 },
+                      { "stateId": "event_free", "label": "Event Free", "estimate": 0.375 }
+                    ]
+                  }
+                ],
+                "exclusions": [
+                  {
+                    "evaluationId": "fixture-a-eval",
+                    "originalSampleSize": 8,
+                    "excludedCounts": [
+                      { "horizon": 5, "censoredExcludedCount": 0, "competingExcludedCount": 0 },
+                      { "horizon": 10, "censoredExcludedCount": 0, "competingExcludedCount": 0 }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
