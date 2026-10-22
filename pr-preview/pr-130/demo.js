@@ -114897,7 +114897,7 @@ function generateSyntheticContinuousDataset(seed = 42) {
 // src/experimental/continuous-outcome-distribution.ts
 var continuousInstanceCounter = 0;
 var continuousSliderCounter = 0;
-function createBinDefinitions(numBins) {
+function createBinDefinitions(numBins = 20) {
   const binWidth = 1 / numBins;
   const bins = [];
   for (let i = 0; i < numBins; i++) {
@@ -114912,7 +114912,7 @@ function createBinDefinitions(numBins) {
   }
   return bins;
 }
-function computeScenarioStats(dataset, scenario, numBins) {
+function computeScenarioStats(dataset, scenario, numBins = 20) {
   const bins = createBinDefinitions(numBins);
   const binWidth = 1 / numBins;
   const totalN = dataset.nSubjects;
@@ -114960,7 +114960,7 @@ function computeScenarioStats(dataset, scenario, numBins) {
   }
   return summaries;
 }
-function computeJointMaxProportion(dataset, numBins) {
+function computeJointMaxProportion(dataset, numBins = 20) {
   const statsA = computeScenarioStats(dataset, "A", numBins);
   const statsB = computeScenarioStats(dataset, "B", numBins);
   let maxProp = 0;
@@ -114985,7 +114985,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   const digits = theme.tip.digits;
   const dataset = options.dataset ?? generateSyntheticContinuousDataset();
   let activeScenario = options.initialScenario ?? "A";
-  let activeNumBins = options.initialNumBins ?? 20;
+  const activeNumBins = 20;
   let selectedStep = 35;
   let isHistogramOpen = true;
   let isExcludedExpanded = true;
@@ -115108,41 +115108,6 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
     }
     scenarioGroup.append(scenarioOptions);
     controlsDiv.append(scenarioGroup);
-    const binGroup = document.createElement("div");
-    binGroup.className = "rtichoke-pd-radio-group";
-    binGroup.setAttribute("role", "radiogroup");
-    binGroup.setAttribute("aria-label", "Bin Resolution");
-    const binGroupLabel = document.createElement("span");
-    binGroupLabel.className = "rtichoke-pd-radio-group-label";
-    binGroupLabel.textContent = "Bin Resolution:";
-    binGroup.append(binGroupLabel);
-    const binOptions = document.createElement("div");
-    binOptions.className = "rtichoke-pd-radio-options";
-    const binItems = [
-      { num: 20, label: "20 Bins (width 0.05)" },
-      { num: 40, label: "40 Bins (width 0.025)" }
-    ];
-    for (const item of binItems) {
-      const optLabel = document.createElement("label");
-      optLabel.className = "rtichoke-pd-radio-option";
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `cod-bins-${instanceId}`;
-      radio.value = String(item.num);
-      radio.checked = activeNumBins === item.num;
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          activeNumBins = item.num;
-          renderAll();
-        }
-      });
-      const span = document.createElement("span");
-      span.textContent = item.label;
-      optLabel.append(radio, span);
-      binOptions.append(optLabel);
-    }
-    binGroup.append(binOptions);
-    controlsDiv.append(binGroup);
     heatmapWrapper.replaceChildren();
     const flatCells = [];
     for (const stepSum of scenarioStats) {
@@ -115173,7 +115138,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
         fill: (d) => d.proportion,
         fillOpacity: (d) => d.opacity,
         stroke: "#ffffff",
-        strokeWidth: activeNumBins === 40 ? 0.2 : 0.4,
+        strokeWidth: 0.4,
         title: (d) => d.tooltipTitle
       })
     ];
@@ -115386,8 +115351,8 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
     excludedSection.append(excludedHeader);
     if (isExcludedExpanded) {
       const excludedPanel = document.createElement("div");
-      excludedPanel.style.marginTop = "1rem";
-      excludedPanel.style.paddingTop = "0.75rem";
+      excludedPanel.style.marginTop = "0.75rem";
+      excludedPanel.style.paddingTop = "0.5rem";
       excludedPanel.style.borderTop = "1px dashed #d1d5db";
       if (activeScenario === "A") {
         const noExclMsg = document.createElement("p");
@@ -115410,15 +115375,16 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
           ])
         }));
         const maxExclPct = Math.max(...scenarioStats.map((s2) => s2.excludedPercentage), 5);
+        const CENSORING_COLOR = "#E3F09B";
         const exclMarks = [
           rectY(exclPlotData, {
             x1: (d) => d.step - 0.5,
             x2: (d) => d.step + 0.5,
             y: "excludedPercentage",
-            fill: "#e7298a",
+            fill: CENSORING_COLOR,
             fillOpacity: (d) => d.opacity,
-            stroke: "#ffffff",
-            strokeWidth: 0.5,
+            stroke: "#4a5568",
+            strokeWidth: 0.4,
             title: (d) => d.title
           }),
           // Selected step column rectangular outline
@@ -115444,9 +115410,9 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
         ];
         const exclPlot = themedPlot(
           {
-            width: theme.width - 40,
-            height: 160,
-            marginTop: 15,
+            width: heatmapWidth,
+            height: 140,
+            marginTop: 10,
             marginRight: theme.margins.right,
             marginBottom: theme.margins.bottom,
             marginLeft: theme.margins.left + 5,
@@ -115460,7 +115426,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
               label: "Step",
               domain: [-0.5, 35.5],
               ticks: [0, 5, 10, 15, 20, 25, 30, 35],
-              tickFormat: (d) => String(d),
+              tickFormat: (d) => String(Math.round(d)),
               grid: false,
               line: true
             },
@@ -115476,6 +115442,27 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
           },
           theme
         );
+        const exclSvgEl = exclPlot;
+        exclSvgEl.style.cursor = "pointer";
+        exclSvgEl.addEventListener("click", (evt) => {
+          let node = evt.target;
+          while (node && node !== exclSvgEl) {
+            const titleEl2 = node.querySelector("title");
+            const titleText = titleEl2 ? titleEl2.textContent : node.getAttribute("title");
+            if (titleText) {
+              const match = titleText.match(/Step:\s*(\d+)/);
+              if (match) {
+                const clickedStep = parseInt(match[1], 10);
+                selectedStep = clickedStep;
+                slider.value = String(selectedStep);
+                sliderValueText.textContent = String(selectedStep);
+                renderAll();
+                return;
+              }
+            }
+            node = node.parentElement;
+          }
+        });
         excludedPanel.append(exclPlot);
       }
       excludedSection.append(excludedPanel);
