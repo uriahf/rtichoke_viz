@@ -22698,12 +22698,23 @@ function renderOutcomeDistribution(spec, options = {}) {
     let isPanelBVisible = false;
     let hasIncompleteExclusionData = false;
     if (popExclusion) {
-      const totalExclusionsAcrossAllHorizons = popExclusion.excludedCounts.reduce(
-        (sum2, item) => sum2 + item.censoredExcludedCount + item.competingExcludedCount,
-        0
+      const exclusionHorizons = new Set(
+        popExclusion.excludedCounts.map((e) => e.horizon)
       );
-      if (totalExclusionsAcrossAllHorizons > 0) {
+      const hasFullHorizonCoverage = availableSteps.every(
+        (step) => exclusionHorizons.has(step)
+      );
+      if (!hasFullHorizonCoverage) {
         isPanelBVisible = true;
+        hasIncompleteExclusionData = true;
+      } else {
+        const totalExclusionsAcrossAllHorizons = popExclusion.excludedCounts.reduce(
+          (sum2, item) => sum2 + item.censoredExcludedCount + item.competingExcludedCount,
+          0
+        );
+        if (totalExclusionsAcrossAllHorizons > 0) {
+          isPanelBVisible = true;
+        }
       }
     } else if (isHeuristicAware) {
       isPanelBVisible = true;
@@ -23075,8 +23086,15 @@ function renderOutcomeDistribution(spec, options = {}) {
         const activeExclusionItem = currentActiveHorizon !== null ? popExclusion.excludedCounts.find(
           (e) => e.horizon === currentActiveHorizon
         ) : void 0;
-        const censCount = activeExclusionItem?.censoredExcludedCount ?? 0;
-        const compCount = activeExclusionItem?.competingExcludedCount ?? 0;
+        if (!activeExclusionItem) {
+          const incMsg = document.createElement("div");
+          incMsg.className = "rtichoke-outcome-distribution__incomplete";
+          incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
+          chartBDiv.append(incMsg);
+          return;
+        }
+        const censCount = activeExclusionItem.censoredExcludedCount;
+        const compCount = activeExclusionItem.competingExcludedCount;
         const totalCount = censCount + compCount;
         const censPct = sampleSize > 0 ? censCount / sampleSize * 100 : 0;
         const compPct = sampleSize > 0 ? compCount / sampleSize * 100 : 0;
