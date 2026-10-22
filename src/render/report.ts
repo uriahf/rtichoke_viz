@@ -221,6 +221,7 @@ function resolveActiveSpecForComponent(
       const activeSpec: OutcomeDistributionSpec = {
         ...spec,
         stateDistributions: variant.stateDistributions,
+        exclusions: variant.exclusions,
       };
       return { resolvedSpec: activeSpec, isUnavailable: false };
     }
