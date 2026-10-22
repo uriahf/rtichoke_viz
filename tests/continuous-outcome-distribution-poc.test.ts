@@ -106,15 +106,7 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
     // Confirm bin resolution radio is no longer present
     expect(el.querySelector('[aria-label="Bin Resolution"]')).toBeNull();
 
-    // Excluded panel expanded by default
-    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
-
-    // Toggle Excluded Panel button toggles visibility
-    const toggleExclBtn = el.querySelector<HTMLButtonElement>(".rtichoke-continuous-toggle-excluded");
-    expect(toggleExclBtn).not.toBeNull();
-    toggleExclBtn?.click(); // collapse
-    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).not.toContain("Scenario A has complete follow-up");
-    toggleExclBtn?.click(); // re-expand
+    // Excluded section permanently displayed
     expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
   });
 });

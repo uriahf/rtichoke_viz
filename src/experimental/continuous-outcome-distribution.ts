@@ -165,7 +165,6 @@ export function renderContinuousOutcomeDistributionPOC(
   const activeNumBins = 20; // Default 20 equal-width bins
   let selectedStep = 35; // default to step 35
   let isHistogramOpen = true; // Always open / visible
-  let isExcludedExpanded = true; // Expanded by default to clearly show censored subjects in Scenario B
 
   // Root container
   const container = document.createElement("div");
@@ -595,77 +594,64 @@ export function renderContinuousOutcomeDistributionPOC(
       excludedReadout.textContent = `Excluded at step ${selectedStep}: ${currentStepSummary.excludedCount} / ${dataset.nSubjects} (${currentStepSummary.excludedPercentage.toFixed(1)}%)`;
     }
 
-    const toggleExcludedBtn = document.createElement("button");
-    toggleExcludedBtn.type = "button";
-    toggleExcludedBtn.className = "rtichoke-continuous-toggle-excluded";
-    toggleExcludedBtn.style.background = "none";
-    toggleExcludedBtn.style.border = "1px solid #d1d5db";
-    toggleExcludedBtn.style.borderRadius = "4px";
-    toggleExcludedBtn.style.padding = "3px 10px";
-    toggleExcludedBtn.style.fontSize = "12px";
-    toggleExcludedBtn.style.cursor = "pointer";
-    toggleExcludedBtn.style.color = "#374151";
-    toggleExcludedBtn.textContent = isExcludedExpanded ? "▲ Hide Excluded Chart" : "▼ Show Excluded Chart";
-
-    toggleExcludedBtn.addEventListener("click", () => {
-      isExcludedExpanded = !isExcludedExpanded;
-      renderAll();
-    });
-
-    excludedHeader.append(excludedReadout, toggleExcludedBtn);
+    excludedHeader.append(excludedReadout);
     excludedSection.append(excludedHeader);
 
-    if (isExcludedExpanded) {
-      const excludedPanel = document.createElement("div");
-      excludedPanel.style.marginTop = "0.75rem";
-      excludedPanel.style.paddingTop = "0.5rem";
-      excludedPanel.style.borderTop = "1px dashed #d1d5db";
+    const excludedPanel = document.createElement("div");
+    excludedPanel.style.marginTop = "0.5rem";
+    excludedPanel.style.paddingTop = "0.5rem";
+    excludedPanel.style.borderTop = "1px dashed #d1d5db";
 
-      if (activeScenario === "A") {
-        const noExclMsg = document.createElement("p");
-        noExclMsg.style.margin = "0.5rem 0 0 0";
-        noExclMsg.style.fontSize = "13px";
-        noExclMsg.style.color = "#6b7280";
-        noExclMsg.style.fontStyle = "italic";
-        noExclMsg.textContent = "Scenario A has complete follow-up: zero excluded observations across all 36 steps.";
-        excludedPanel.append(noExclMsg);
-      } else {
-        const exclPlotData = scenarioStats.map((s) => ({
-          step: s.step,
-          excludedCount: s.excludedCount,
-          excludedPercentage: s.excludedPercentage,
-          opacity: s.step > selectedStep ? 0.28 : 0.88,
-          title: tooltip(digits, [
-            ["Step", s.step],
-            ["Excluded count", `${s.excludedCount} / ${dataset.nSubjects}`],
-            ["Excluded proportion", `${s.excludedPercentage.toFixed(1)}%`],
-          ]),
-        }));
+    if (activeScenario === "A") {
+      const noExclMsg = document.createElement("p");
+      noExclMsg.style.margin = "0.5rem 0 0 0";
+      noExclMsg.style.fontSize = "13px";
+      noExclMsg.style.color = "#6b7280";
+      noExclMsg.style.fontStyle = "italic";
+      noExclMsg.textContent = "Scenario A has complete follow-up: zero excluded observations across all 36 steps.";
+      excludedPanel.append(noExclMsg);
+    } else {
+      const exclPlotData = scenarioStats.map((s) => ({
+        step: s.step,
+        excludedCount: s.excludedCount,
+        excludedPercentage: s.excludedPercentage,
+        opacity: s.step > selectedStep ? 0.28 : 0.88,
+        title: tooltip(digits, [
+          ["Step", s.step],
+          ["Excluded count", `${s.excludedCount} / ${dataset.nSubjects}`],
+          ["Excluded proportion", `${s.excludedPercentage.toFixed(1)}%`],
+        ]),
+      }));
 
-        const maxExclPct = Math.max(...scenarioStats.map((s) => s.excludedPercentage), 5);
+      const maxExclPct = Math.max(...scenarioStats.map((s) => s.excludedPercentage), 5);
+      const selectedExcludedPct = currentStepSummary.excludedPercentage;
 
-        // Censoring fill color matching rtichoke canonical color language (#E3F09B)
-        const CENSORING_COLOR = "#E3F09B";
+      // Censoring fill color matching rtichoke canonical color language (#E3F09B)
+      const CENSORING_COLOR = "#E3F09B";
 
-        const exclMarks: Plot.Markish[] = [
-          Plot.rectY(exclPlotData, {
-            x1: (d) => d.step - 0.5,
-            x2: (d) => d.step + 0.5,
-            y: "excludedPercentage",
-            fill: CENSORING_COLOR,
-            fillOpacity: (d) => d.opacity,
-            stroke: "#4a5568",
-            strokeWidth: 0.4,
-            title: (d) => d.title,
-          }),
-          // Selected step column rectangular outline
+      const exclMarks: Plot.Markish[] = [
+        Plot.rectY(exclPlotData, {
+          x1: (d) => d.step - 0.5,
+          x2: (d) => d.step + 0.5,
+          y: "excludedPercentage",
+          fill: CENSORING_COLOR,
+          fillOpacity: (d) => d.opacity,
+          stroke: "#4a5568",
+          strokeWidth: 0.4,
+          title: (d) => d.title,
+        }),
+      ];
+
+      // Selected step column rectangular outline - wraps the censored bar perfectly (rectangle over rectangle)
+      if (selectedExcludedPct > 0) {
+        exclMarks.push(
           Plot.rect(
             [
               {
                 x1: selectedStep - 0.5,
                 x2: selectedStep + 0.5,
                 y1: 0,
-                y2: maxExclPct * 1.05,
+                y2: selectedExcludedPct,
               },
             ],
             {
@@ -678,72 +664,72 @@ export function renderContinuousOutcomeDistributionPOC(
               strokeWidth: 2.5,
             },
           ),
-        ];
-
-        // Match the exact shared x-axis width and margins as the main heatmap
-        const exclPlot = themedPlot(
-          {
-            width: heatmapWidth,
-            height: 140,
-            marginTop: 10,
-            marginRight: theme.margins.right,
-            marginBottom: theme.margins.bottom,
-            marginLeft: theme.margins.left + 5,
-            style: {
-              background: theme.background,
-              color: theme.axis.color,
-              fontFamily: theme.typography.fontFamily,
-              fontSize: `${theme.typography.fontSize}px`,
-            },
-            x: {
-              label: "Step",
-              domain: [-0.5, 35.5],
-              ticks: [0, 5, 10, 15, 20, 25, 30, 35],
-              tickFormat: (d: number) => String(Math.round(d)),
-              grid: false,
-              line: true,
-            },
-            y: {
-              label: "Excluded (%)",
-              domain: [0, maxExclPct * 1.05],
-              ticks: 4,
-              tickFormat: (d: number) => `${d.toFixed(0)}%`,
-              grid: true,
-              line: true,
-            },
-            marks: exclMarks,
-          },
-          theme,
         );
-
-        // Make excluded step columns interactive
-        const exclSvgEl = exclPlot as unknown as SVGSVGElement;
-        exclSvgEl.style.cursor = "pointer";
-        exclSvgEl.addEventListener("click", (evt) => {
-          let node: HTMLElement | null = evt.target as HTMLElement;
-          while (node && node !== (exclSvgEl as unknown as HTMLElement)) {
-            const titleEl = node.querySelector("title");
-            const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
-            if (titleText) {
-              const match = titleText.match(/Step:\s*(\d+)/);
-              if (match) {
-                const clickedStep = parseInt(match[1], 10);
-                selectedStep = clickedStep;
-                slider.value = String(selectedStep);
-                sliderValueText.textContent = String(selectedStep);
-                renderAll();
-                return;
-              }
-            }
-            node = node.parentElement;
-          }
-        });
-
-        excludedPanel.append(exclPlot);
       }
 
-      excludedSection.append(excludedPanel);
+      // Match the exact shared x-axis width and margins as the main heatmap
+      const exclPlot = themedPlot(
+        {
+          width: heatmapWidth,
+          height: 140,
+          marginTop: 10,
+          marginRight: theme.margins.right,
+          marginBottom: theme.margins.bottom,
+          marginLeft: theme.margins.left + 5,
+          style: {
+            background: theme.background,
+            color: theme.axis.color,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: `${theme.typography.fontSize}px`,
+          },
+          x: {
+            label: "Step",
+            domain: [-0.5, 35.5],
+            ticks: [0, 5, 10, 15, 20, 25, 30, 35],
+            tickFormat: (d: number) => String(Math.round(d)),
+            grid: false,
+            line: true,
+          },
+          y: {
+            label: "Excluded (%)",
+            domain: [0, maxExclPct * 1.05],
+            ticks: 4,
+            tickFormat: (d: number) => `${d.toFixed(0)}%`,
+            grid: true,
+            line: true,
+          },
+          marks: exclMarks,
+        },
+        theme,
+      );
+
+      // Make excluded step columns interactive
+      const exclSvgEl = exclPlot as unknown as SVGSVGElement;
+      exclSvgEl.style.cursor = "pointer";
+      exclSvgEl.addEventListener("click", (evt) => {
+        let node: HTMLElement | null = evt.target as HTMLElement;
+        while (node && node !== (exclSvgEl as unknown as HTMLElement)) {
+          const titleEl = node.querySelector("title");
+          const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
+          if (titleText) {
+            const match = titleText.match(/Step:\s*(\d+)/);
+            if (match) {
+              const clickedStep = parseInt(match[1], 10);
+              selectedStep = clickedStep;
+              slider.value = String(selectedStep);
+              sliderValueText.textContent = String(selectedStep);
+              renderAll();
+              return;
+            }
+          }
+          node = node.parentElement;
+        }
+      });
+
+      excludedPanel.append(exclPlot);
     }
+
+    excludedSection.append(excludedPanel);
   };
 
   // Slider change listener: updates step and updates histogram IF already open
