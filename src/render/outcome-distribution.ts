@@ -80,9 +80,9 @@ export const NOMINAL_COLORFUL_MINIMAL_PALETTE = [
 ];
 
 const EXCLUSION_COLORS = {
-  censored: "#D95F02",
-  competing: "#7570B3",
-  total: "#334155",
+  censored: "#E3F09B",
+  competing: "#C880B7",
+  total: "#475569",
 };
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -630,13 +630,17 @@ export function renderOutcomeDistribution(
     const isObservedStepMode = observedStepRows.length > 0;
 
     // Extract available step/horizon points
-    const availableSteps = isObservedStepMode
-      ? Array.from(new Set(observedStepRows.map((r) => r.horizon))).sort(
-          (a, b) => a - b,
-        )
-      : Array.from(new Set(fixedHorizonRows.map((r) => r.horizon))).sort(
-          (a, b) => a - b,
-        );
+    // For fixed-time horizon, the time axis and slider begin at time 0
+    let availableSteps: number[];
+    if (isObservedStepMode) {
+      availableSteps = Array.from(
+        new Set(observedStepRows.map((r) => r.horizon)),
+      ).sort((a, b) => a - b);
+    } else {
+      availableSteps = Array.from(
+        new Set(fixedHorizonRows.map((r) => r.horizon)),
+      ).sort((a, b) => a - b);
+    }
 
     if (
       eventTableRows.length === 0 &&
@@ -733,11 +737,12 @@ export function renderOutcomeDistribution(
     let hasIncompleteExclusionData = false;
 
     if (popExclusion) {
-      // Validate complete horizon coverage: every required horizon in availableSteps must have an explicit record
+      // Validate complete horizon coverage: every supplied non-zero prediction horizon in availableSteps must have an explicit record
+      const requiredExclusionHorizons = availableSteps.filter((step) => step > 0);
       const exclusionHorizons = new Set(
         popExclusion.excludedCounts.map((e) => e.horizon),
       );
-      const hasFullHorizonCoverage = availableSteps.every((step) =>
+      const hasFullHorizonCoverage = requiredExclusionHorizons.every((step) =>
         exclusionHorizons.has(step),
       );
 
@@ -1247,16 +1252,23 @@ export function renderOutcomeDistribution(
               )
             : undefined;
 
-        if (!activeExclusionItem) {
+        // At time 0 (prior to any follow-up time), empirical exclusions equal 0
+        const censCount =
+          currentActiveHorizon === 0
+            ? 0
+            : (activeExclusionItem?.censoredExcludedCount ?? 0);
+        const compCount =
+          currentActiveHorizon === 0
+            ? 0
+            : (activeExclusionItem?.competingExcludedCount ?? 0);
+
+        if (currentActiveHorizon !== 0 && !activeExclusionItem) {
           const incMsg = document.createElement("div");
           incMsg.className = "rtichoke-outcome-distribution__incomplete";
           incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
           chartBDiv.append(incMsg);
           return;
         }
-
-        const censCount = activeExclusionItem.censoredExcludedCount;
-        const compCount = activeExclusionItem.competingExcludedCount;
         const totalCount = censCount + compCount;
 
         const censPct = sampleSize > 0 ? (censCount / sampleSize) * 100 : 0;
