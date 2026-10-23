@@ -22265,9 +22265,9 @@ var NOMINAL_COLORFUL_MINIMAL_PALETTE = [
   "#B9B1CC"
 ];
 var EXCLUSION_COLORS = {
-  censored: "#D95F02",
-  competing: "#7570B3",
-  total: "#334155"
+  censored: "#E3F09B",
+  competing: "#C880B7",
+  total: "#475569"
 };
 function hexToRgb(hex2) {
   const clean = hex2.replace("#", "");
@@ -22629,11 +22629,16 @@ function renderOutcomeDistribution(spec, options = {}) {
     const fixedHorizonRows = evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon").map(processStateDistribution).sort((a2, b) => a2.horizon - b.horizon);
     const observedStepRows = evalDists.filter((d) => d.estimateOrigin === "observed_step").map(processStateDistribution).sort((a2, b) => a2.horizon - b.horizon);
     const isObservedStepMode = observedStepRows.length > 0;
-    const availableSteps = isObservedStepMode ? Array.from(new Set(observedStepRows.map((r) => r.horizon))).sort(
-      (a2, b) => a2 - b
-    ) : Array.from(new Set(fixedHorizonRows.map((r) => r.horizon))).sort(
-      (a2, b) => a2 - b
-    );
+    let availableSteps;
+    if (isObservedStepMode) {
+      availableSteps = Array.from(
+        new Set(observedStepRows.map((r) => r.horizon))
+      ).sort((a2, b) => a2 - b);
+    } else {
+      availableSteps = Array.from(
+        new Set(fixedHorizonRows.map((r) => r.horizon))
+      ).sort((a2, b) => a2 - b);
+    }
     if (eventTableRows.length === 0 && fixedHorizonRows.length === 0 && observedStepRows.length === 0) {
       sliderControl.style.display = "none";
       readoutADiv.replaceChildren();
@@ -22698,10 +22703,11 @@ function renderOutcomeDistribution(spec, options = {}) {
     let isPanelBVisible = false;
     let hasIncompleteExclusionData = false;
     if (popExclusion) {
+      const requiredExclusionHorizons = availableSteps.filter((step) => step > 0);
       const exclusionHorizons = new Set(
         popExclusion.excludedCounts.map((e) => e.horizon)
       );
-      const hasFullHorizonCoverage = availableSteps.every(
+      const hasFullHorizonCoverage = requiredExclusionHorizons.every(
         (step) => exclusionHorizons.has(step)
       );
       if (!hasFullHorizonCoverage) {
@@ -23086,15 +23092,15 @@ function renderOutcomeDistribution(spec, options = {}) {
         const activeExclusionItem = currentActiveHorizon !== null ? popExclusion.excludedCounts.find(
           (e) => e.horizon === currentActiveHorizon
         ) : void 0;
-        if (!activeExclusionItem) {
+        const censCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.censoredExcludedCount ?? 0;
+        const compCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.competingExcludedCount ?? 0;
+        if (currentActiveHorizon !== 0 && !activeExclusionItem) {
           const incMsg = document.createElement("div");
           incMsg.className = "rtichoke-outcome-distribution__incomplete";
           incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
           chartBDiv.append(incMsg);
           return;
         }
-        const censCount = activeExclusionItem.censoredExcludedCount;
-        const compCount = activeExclusionItem.competingExcludedCount;
         const totalCount = censCount + compCount;
         const censPct = sampleSize > 0 ? censCount / sampleSize * 100 : 0;
         const compPct = sampleSize > 0 ? compCount / sampleSize * 100 : 0;
