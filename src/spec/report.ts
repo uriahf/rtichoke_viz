@@ -1,5 +1,6 @@
 import { Type, type Static } from "@sinclair/typebox";
 import { OutcomeDistributionSpecSchema } from "./v2/outcome-distribution.js";
+import { ReportHeuristicsSchema } from "./v2/heuristics.js";
 import { PredictionDistributionSpecSchema } from "./v2/prediction-distribution.js";
 import { RtichokeChartSpecV2Schema } from "./v2/chart.js";
 import { PerformanceTableSpecSchema } from "./v2/performance-table.js";
@@ -63,6 +64,7 @@ export const ReportSpecV1_1Schema = Type.Object({
   schemaVersion: Type.Literal("1.1"),
   type: Type.Literal("report"),
   title: Type.Optional(Type.String()),
+  heuristics: Type.Optional(ReportHeuristicsSchema),
   sections: Type.Array(ReportSectionSchema, { minItems: 1 }),
 });
 

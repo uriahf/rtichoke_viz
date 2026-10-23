@@ -44,6 +44,7 @@ import predDistVisualData from "../fixtures/v2/prediction-distribution-visual.js
 import outcomeDistributionData from "../fixtures/v2/outcome-distribution.json" with { type: "json" };
 import outcomeDistributionLargeData from "../fixtures/v2/outcome-distribution-large.json" with { type: "json" };
 import outcomeDistributionPopulationsData from "../fixtures/v2/outcome-distribution-populations.json" with { type: "json" };
+import fixtureAHeuristicsReportData from "../fixtures/v2/fixture-a-heuristics-report.json" with { type: "json" };
 
 // Standalone proofs for contract tests
 import decisionCurveData from "../fixtures/v2/decision-curve-single.json" with { type: "json" };
@@ -71,6 +72,7 @@ const liftTimeFixture = liftTimeData as LiftV2Spec;
 const reportHost1 = document.querySelector<HTMLElement>("#report-demo-1");
 const reportHost2 = document.querySelector<HTMLElement>("#report-demo-2");
 const reportHost3 = document.querySelector<HTMLElement>("#report-demo-3");
+const reportHost4 = document.querySelector<HTMLElement>("#report-demo-4");
 
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
 const rocOpHost = document.querySelector<HTMLElement>("#roc-op-chart");
@@ -100,6 +102,7 @@ if (
   !reportHost1 ||
   !reportHost2 ||
   !reportHost3 ||
+  !reportHost4 ||
   !rocHost ||
   !rocOpHost ||
   !rocPpcrHost ||
@@ -141,12 +144,35 @@ reportHost3.append(
   }),
 );
 
+// Construct Demo Report 4 based on Fixture A plus a section demonstrating an explicit unavailable component
+const demoReport4 = JSON.parse(JSON.stringify(fixtureAHeuristicsReportData));
+demoReport4.sections.push({
+  id: "section-2",
+  title: "Statistically Heuristic-Dependent Visualizations (Without Precomputed Variants)",
+  items: [
+    {
+      type: "component",
+      id: "fixture-a-roc",
+      title: "Receiver Operating Characteristic (ROC)",
+      spec: JSON.parse(JSON.stringify(rocModelsABTestData)),
+    },
+  ],
+});
+
+reportHost4.append(
+  renderReport(demoReport4 as any, {
+    sectionGroupPresentation: "tabs",
+    groupPresentation: "tabs",
+  }),
+);
+
 // Tab switching logic for demo page
 export const setupDemoTabs = () => {
   const tabs = [
     { btnId: "#tab-btn-report-1", wrapperId: "#report-demo-1-wrapper" },
     { btnId: "#tab-btn-report-2", wrapperId: "#report-demo-2-wrapper" },
     { btnId: "#tab-btn-report-3", wrapperId: "#report-demo-3-wrapper" },
+    { btnId: "#tab-btn-report-4", wrapperId: "#report-demo-4-wrapper" },
   ];
 
   const buttons = tabs.map((t) => document.querySelector<HTMLButtonElement>(t.btnId));

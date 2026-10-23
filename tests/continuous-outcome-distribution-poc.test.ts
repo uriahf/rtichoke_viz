@@ -99,14 +99,42 @@ describe("Continuous Outcome Distribution POC — Statistical & Interaction Test
     const heatmapSvg = el.querySelector(".rtichoke-continuous-heatmap-wrapper svg");
     expect(heatmapSvg).not.toBeNull();
 
-    // Histogram SVG permanently present side-by-side in right column
-    const histogramSvg = el.querySelector(".rtichoke-continuous-right-column svg");
-    expect(histogramSvg).not.toBeNull();
+    // Histogram SVG is closed by default
+    expect(el.querySelector(".rtichoke-continuous-right-column svg")).toBeNull();
 
-    // Confirm bin resolution radio is no longer present
-    expect(el.querySelector('[aria-label="Bin Resolution"]')).toBeNull();
+    // Bin resolution radio is present (20 vs 40 bins)
+    expect(el.querySelector('[aria-label="Bin Resolution"]')).not.toBeNull();
 
-    // Excluded section permanently displayed
-    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
+    // Heatmap column click opens histogram
+    const heatmapColumnRect = heatmapSvg?.querySelector("rect");
+    expect(heatmapColumnRect).not.toBeNull();
+    heatmapColumnRect?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    // Histogram is now visible
+    expect(el.querySelector(".rtichoke-continuous-right-column svg")).not.toBeNull();
+
+    // Close button dismisses histogram
+    const closeHistBtn = el.querySelector<HTMLButtonElement>(".rtichoke-continuous-close-hist");
+    expect(closeHistBtn).not.toBeNull();
+    closeHistBtn?.click();
+    expect(el.querySelector(".rtichoke-continuous-right-column svg")).toBeNull();
+
+    // Slider change updates step, but does NOT re-open closed histogram
+    const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider");
+    expect(slider).not.toBeNull();
+    if (slider) {
+      slider.value = "10";
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(el.querySelector(".rtichoke-operating-point-value")?.textContent).toBe("10");
+      expect(el.querySelector(".rtichoke-continuous-right-column svg")).toBeNull(); // remains closed
+    }
+
+    // Excluded section readout is displayed, collapsed chart by default
+    expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Excluded at step 10: 0 / 600");
+    const toggleExclBtn = el.querySelector<HTMLButtonElement>(".rtichoke-continuous-toggle-excluded");
+    if (toggleExclBtn) {
+      toggleExclBtn.click(); // expand if present
+      expect(el.querySelector(".rtichoke-continuous-excluded-section")?.textContent).toContain("Scenario A has complete follow-up");
+    }
   });
 });
