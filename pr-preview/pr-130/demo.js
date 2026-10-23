@@ -3406,7 +3406,48 @@ var SummaryMetricsSpecSchema = Type.Union(
   }
 );
 
+// src/spec/v2/heuristics.ts
+var HeuristicPairKeySchema = Type.Union([
+  Type.Literal("excluded:excluded"),
+  Type.Literal("excluded:adjusted_as_censored"),
+  Type.Literal("excluded:adjusted_as_negative"),
+  Type.Literal("excluded:adjusted_as_composite"),
+  Type.Literal("adjusted:excluded"),
+  Type.Literal("adjusted:adjusted_as_censored"),
+  Type.Literal("adjusted:adjusted_as_negative"),
+  Type.Literal("adjusted:adjusted_as_composite")
+]);
+var ReportHeuristicsSchema = Type.Object({
+  active: HeuristicPairKeySchema,
+  available: Type.Array(HeuristicPairKeySchema, { minItems: 1 })
+});
+
 // src/spec/v2/outcome-distribution.ts
+var HorizonExclusionCountsSchema = Type.Object({
+  horizon: Type.Number(),
+  censoredExcludedCount: Type.Integer({ minimum: 0 }),
+  competingExcludedCount: Type.Integer({ minimum: 0 })
+});
+var PopulationExclusionSchema = Type.Object({
+  evaluationId: Type.String(),
+  originalSampleSize: Type.Integer({ minimum: 1 }),
+  excludedCounts: Type.Array(HorizonExclusionCountsSchema)
+});
+var OutcomeDistributionAvailableVariantSchema = Type.Object({
+  status: Type.Literal("available"),
+  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
+  exclusions: Type.Array(PopulationExclusionSchema)
+});
+var OutcomeDistributionUnsupportedVariantSchema = Type.Object({
+  status: Type.Literal("unsupported")
+});
+var OutcomeDistributionVariantSchema = Type.Union([
+  OutcomeDistributionAvailableVariantSchema,
+  OutcomeDistributionUnsupportedVariantSchema
+]);
+var OutcomeDistributionVariantsRecordSchema = Type.Partial(
+  Type.Record(HeuristicPairKeySchema, OutcomeDistributionVariantSchema)
+);
 var OutcomeDistributionSpecSchema = Type.Object({
   schemaVersion: Type.Literal("2.0"),
   type: Type.Literal("outcome_distribution"),
@@ -3415,7 +3456,8 @@ var OutcomeDistributionSpecSchema = Type.Object({
     Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
   ),
   evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
-  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 })
+  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
+  variants: Type.Optional(OutcomeDistributionVariantsRecordSchema)
 });
 
 // src/spec/report.ts
@@ -3461,6 +3503,7 @@ var ReportSpecV1_1Schema = Type.Object({
   schemaVersion: Type.Literal("1.1"),
   type: Type.Literal("report"),
   title: Type.Optional(Type.String()),
+  heuristics: Type.Optional(ReportHeuristicsSchema),
   sections: Type.Array(ReportSectionSchema, { minItems: 1 })
 });
 var ReportSpecSchema = Type.Union(
@@ -3472,6 +3515,16 @@ var ReportSpecSchema = Type.Union(
 );
 
 // src/spec/validate-report.ts
+var VALID_HEURISTIC_PAIR_KEYS = /* @__PURE__ */ new Set([
+  "excluded:excluded",
+  "excluded:adjusted_as_censored",
+  "excluded:adjusted_as_negative",
+  "excluded:adjusted_as_composite",
+  "adjusted:excluded",
+  "adjusted:adjusted_as_censored",
+  "adjusted:adjusted_as_negative",
+  "adjusted:adjusted_as_composite"
+]);
 function assertReportReferentialIntegrity(spec) {
   const componentIds = /* @__PURE__ */ new Set();
   const assertUniqueComponent = (component) => {
@@ -3484,6 +3537,44 @@ function assertReportReferentialIntegrity(spec) {
     for (const component of spec.components) assertUniqueComponent(component);
     return;
   }
+  let reportAvailableHeuristics;
+  if (spec.heuristics) {
+    const { active, available } = spec.heuristics;
+    if (!available || available.length === 0) {
+      throw new Error("heuristics.available must be non-empty");
+    }
+    const availableSet = /* @__PURE__ */ new Set();
+    for (const key of available) {
+      if (!VALID_HEURISTIC_PAIR_KEYS.has(key)) {
+        throw new Error(`invalid heuristic pair key: '${key}'`);
+      }
+      if (availableSet.has(key)) {
+        throw new Error(`duplicate heuristic pair key in available: '${key}'`);
+      }
+      availableSet.add(key);
+    }
+    if (!VALID_HEURISTIC_PAIR_KEYS.has(active)) {
+      throw new Error(`invalid active heuristic pair key: '${active}'`);
+    }
+    if (!availableSet.has(active)) {
+      throw new Error(
+        `active heuristic '${active}' must be present in available heuristics`
+      );
+    }
+    reportAvailableHeuristics = availableSet;
+  }
+  const validateComponentVariants = (component) => {
+    assertUniqueComponent(component);
+    if (reportAvailableHeuristics && component.spec.type === "outcome_distribution" && component.spec.variants) {
+      for (const variantKey of Object.keys(component.spec.variants)) {
+        if (!reportAvailableHeuristics.has(variantKey)) {
+          throw new Error(
+            `component '${component.id}' variant '${variantKey}' is not declared in report heuristics.available`
+          );
+        }
+      }
+    }
+  };
   const sectionIds = /* @__PURE__ */ new Set();
   const groupIds = /* @__PURE__ */ new Set();
   for (const section of spec.sections) {
@@ -3493,7 +3584,7 @@ function assertReportReferentialIntegrity(spec) {
     sectionIds.add(section.id);
     for (const item of section.items) {
       if (item.type === "component") {
-        assertUniqueComponent(item);
+        validateComponentVariants(item);
         continue;
       }
       if (groupIds.has(item.id)) {
@@ -3501,7 +3592,7 @@ function assertReportReferentialIntegrity(spec) {
       }
       groupIds.add(item.id);
       for (const component of item.components) {
-        assertUniqueComponent(component);
+        validateComponentVariants(component);
       }
     }
   }
@@ -3536,6 +3627,56 @@ function assertPerformanceTableReferentialIntegrity(spec) {
 }
 
 // src/spec/v2/validate-outcome-distribution.ts
+var VALID_HEURISTIC_PAIR_KEYS2 = /* @__PURE__ */ new Set([
+  "excluded:excluded",
+  "excluded:adjusted_as_censored",
+  "excluded:adjusted_as_negative",
+  "excluded:adjusted_as_composite",
+  "adjusted:excluded",
+  "adjusted:adjusted_as_censored",
+  "adjusted:adjusted_as_negative",
+  "adjusted:adjusted_as_composite"
+]);
+function assertPopulationExclusionValid(exclusion, validEvaluationIds) {
+  if (validEvaluationIds && !validEvaluationIds.has(exclusion.evaluationId)) {
+    throw new Error(`unknown evaluation id: ${exclusion.evaluationId}`);
+  }
+  if (!Number.isInteger(exclusion.originalSampleSize) || exclusion.originalSampleSize <= 0) {
+    throw new Error(
+      `originalSampleSize must be a positive integer for evaluation ${exclusion.evaluationId}`
+    );
+  }
+  const seenHorizons = /* @__PURE__ */ new Set();
+  for (const counts of exclusion.excludedCounts) {
+    if (!Number.isFinite(counts.horizon) || counts.horizon < 0) {
+      throw new Error(
+        `horizon must be non-negative in excludedCounts for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    if (seenHorizons.has(counts.horizon)) {
+      throw new Error(
+        `duplicate horizon ${counts.horizon} in excludedCounts for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    seenHorizons.add(counts.horizon);
+    if (!Number.isInteger(counts.censoredExcludedCount) || counts.censoredExcludedCount < 0) {
+      throw new Error(
+        `censoredExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    if (!Number.isInteger(counts.competingExcludedCount) || counts.competingExcludedCount < 0) {
+      throw new Error(
+        `competingExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    const totalExcluded = counts.censoredExcludedCount + counts.competingExcludedCount;
+    if (totalExcluded > exclusion.originalSampleSize) {
+      throw new Error(
+        `total excluded count (${totalExcluded}) exceeds original sample size (${exclusion.originalSampleSize}) for evaluation ${exclusion.evaluationId} at horizon ${counts.horizon}`
+      );
+    }
+  }
+}
 function assertStateDistributionValid(dist, validEvaluationIds) {
   if (validEvaluationIds && !validEvaluationIds.has(dist.evaluationId)) {
     throw new Error(`unknown evaluation id: ${dist.evaluationId}`);
@@ -3712,6 +3853,43 @@ function assertOutcomeDistributionReferentialIntegrity(spec) {
           throw new Error(
             `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`
           );
+        }
+      }
+    }
+  }
+  if (spec.variants) {
+    for (const [key, variant] of Object.entries(spec.variants)) {
+      if (!VALID_HEURISTIC_PAIR_KEYS2.has(key)) {
+        throw new Error(`invalid variant heuristic pair key: '${key}'`);
+      }
+      if (!variant) continue;
+      if (variant.status === "available") {
+        if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
+          throw new Error(`variant '${key}' stateDistributions must be non-empty`);
+        }
+        const variantOriginHorizonKeys = /* @__PURE__ */ new Set();
+        for (const dist of variant.stateDistributions) {
+          assertStateDistributionValid(dist, evaluationIds);
+          const originKey = dist.estimateOrigin ?? "unspecified";
+          const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+          if (variantOriginHorizonKeys.has(horizonKey)) {
+            throw new Error(
+              `variant '${key}' has multiple state distributions for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
+            );
+          }
+          variantOriginHorizonKeys.add(horizonKey);
+        }
+        if (variant.exclusions) {
+          const exclusionEvalIds = /* @__PURE__ */ new Set();
+          for (const exclusion of variant.exclusions) {
+            if (exclusionEvalIds.has(exclusion.evaluationId)) {
+              throw new Error(
+                `variant '${key}' has duplicate exclusion entry for evaluation ${exclusion.evaluationId}`
+              );
+            }
+            exclusionEvalIds.add(exclusion.evaluationId);
+            assertPopulationExclusionValid(exclusion, evaluationIds);
+          }
         }
       }
     }
@@ -27992,6 +28170,140 @@ __export(value_exports2, {
 });
 
 // src/render/report.ts
+var reportInstanceCounter = 0;
+var CENSORING_HEURISTIC_LABELS = {
+  excluded: "Excluded",
+  adjusted: "Adjusted"
+};
+var COMPETING_HEURISTIC_LABELS = {
+  excluded: "Excluded",
+  adjusted_as_censored: "Adjusted as censored",
+  adjusted_as_negative: "Adjusted as negative",
+  adjusted_as_composite: "Adjusted as composite"
+};
+var CENSORING_OPTIONS = ["excluded", "adjusted"];
+var COMPETING_OPTIONS = [
+  "excluded",
+  "adjusted_as_censored",
+  "adjusted_as_negative",
+  "adjusted_as_composite"
+];
+function getComponentHeuristicStatus(spec) {
+  if (spec.heuristicPolicy === "independent" || spec.heuristicIndependent === true) {
+    return "independent";
+  }
+  if (spec.type === "outcome_distribution") {
+    if (spec.variants) {
+      return "aware";
+    }
+    return "unavailable";
+  }
+  return "unavailable";
+}
+function getHorizonsForOutcomeDistributionSpec(spec, evalId) {
+  const currentEvalId = evalId ?? spec.evaluations[0]?.id;
+  const evalDists = spec.stateDistributions.filter(
+    (d) => d.evaluationId === currentEvalId
+  );
+  const isObservedStep = evalDists.some(
+    (d) => d.estimateOrigin === "observed_step"
+  );
+  const originType = isObservedStep ? "observed_step" : "fixed_time_horizon";
+  const matchingDists = evalDists.filter(
+    (d) => d.estimateOrigin === originType
+  );
+  const distsToScan = matchingDists.length > 0 ? matchingDists : evalDists.filter((d) => d.estimateOrigin === "event_table");
+  const horizons2 = Array.from(
+    new Set(distsToScan.map((d) => d.horizon ?? 0))
+  ).sort((a2, b) => a2 - b);
+  return horizons2;
+}
+function parseHeuristicPairKey(key) {
+  const parts = key.split(":");
+  return {
+    censoring: parts[0],
+    competing: parts[1]
+  };
+}
+function makeHeuristicPairKey(censoring, competing) {
+  return `${censoring}:${competing}`;
+}
+function resolveNearestCompatiblePair(targetCensoring, targetCompeting, available, initialActive) {
+  const candidateKey = makeHeuristicPairKey(targetCensoring, targetCompeting);
+  if (available.includes(candidateKey)) {
+    return candidateKey;
+  }
+  const matchingCensoringPairs = available.filter(
+    (k2) => parseHeuristicPairKey(k2).censoring === targetCensoring
+  );
+  if (matchingCensoringPairs.length > 0) {
+    if (initialActive) {
+      const initComp = parseHeuristicPairKey(initialActive).competing;
+      const matchInitComp = matchingCensoringPairs.find(
+        (k2) => parseHeuristicPairKey(k2).competing === initComp
+      );
+      if (matchInitComp) {
+        return matchInitComp;
+      }
+    }
+    return matchingCensoringPairs[0];
+  }
+  const matchingCompetingPairs = available.filter(
+    (k2) => parseHeuristicPairKey(k2).competing === targetCompeting
+  );
+  if (matchingCompetingPairs.length > 0) {
+    if (initialActive) {
+      const initCens = parseHeuristicPairKey(initialActive).censoring;
+      const matchInitCens = matchingCompetingPairs.find(
+        (k2) => parseHeuristicPairKey(k2).censoring === initCens
+      );
+      if (matchInitCens) {
+        return matchInitCens;
+      }
+    }
+    return matchingCompetingPairs[0];
+  }
+  return available[0];
+}
+function renderUnavailablePlaceholder(selectedPair) {
+  const container = document.createElement("div");
+  container.className = "rtichoke-report__unavailable";
+  const icon = document.createElement("div");
+  icon.className = "rtichoke-report__unavailable-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "i";
+  const message = document.createElement("p");
+  message.className = "rtichoke-report__unavailable-message";
+  message.textContent = "This visualization is unavailable for the selected censoring and competing-event heuristics.";
+  const detail = document.createElement("p");
+  detail.className = "rtichoke-report__unavailable-detail";
+  const parsed = parseHeuristicPairKey(selectedPair);
+  const censLabel = CENSORING_HEURISTIC_LABELS[parsed.censoring] ?? parsed.censoring;
+  const compLabel = COMPETING_HEURISTIC_LABELS[parsed.competing] ?? parsed.competing;
+  detail.textContent = `Selected heuristics: Censoring = ${censLabel}, Competing events = ${compLabel}`;
+  container.append(icon, message, detail);
+  return container;
+}
+function resolveActiveSpecForComponent(spec, activeHeuristic, selectedHorizon) {
+  const status = getComponentHeuristicStatus(spec);
+  if (status === "independent") {
+    return { resolvedSpec: spec, isUnavailable: false };
+  }
+  if (status === "aware" && spec.type === "outcome_distribution") {
+    const variant = spec.variants?.[activeHeuristic];
+    if (!variant || variant.status === "unsupported") {
+      return { isUnavailable: true };
+    }
+    if (variant.status === "available") {
+      const activeSpec = {
+        ...spec,
+        stateDistributions: variant.stateDistributions
+      };
+      return { resolvedSpec: activeSpec, isUnavailable: false };
+    }
+  }
+  return { isUnavailable: true };
+}
 function renderStandaloneComponentContent(spec) {
   switch (spec.type) {
     case "summary_metrics":
@@ -28102,8 +28414,12 @@ function renderReportV1_1(spec, options) {
     throw new Error("Invalid ReportSpec");
   }
   assertReportReferentialIntegrity(spec);
+  const instanceId = ++reportInstanceCounter;
   const hasTitle = Boolean(spec.title);
   const usedDomIds = /* @__PURE__ */ new Set();
+  let activeHeuristicPair = spec.heuristics?.active;
+  const availableHeuristics = spec.heuristics?.available ?? [];
+  const initialActiveHeuristic = spec.heuristics?.active;
   const root2 = document.createElement("article");
   root2.className = "rtichoke-report";
   if (spec.title) {
@@ -28173,6 +28489,221 @@ function renderReportV1_1(spec, options) {
     nav.append(navList);
     root2.append(nav);
   }
+  const componentRegistry = /* @__PURE__ */ new Map();
+  const updateComponentContent = (compSpec, contentEl, force = false) => {
+    const status = getComponentHeuristicStatus(compSpec);
+    if (status === "independent") {
+      if (contentEl.children.length === 0) {
+        contentEl.append(renderStandaloneComponentContent(compSpec));
+      }
+      return;
+    }
+    const { resolvedSpec, isUnavailable } = activeHeuristicPair ? resolveActiveSpecForComponent(compSpec, activeHeuristicPair) : { resolvedSpec: compSpec, isUnavailable: false };
+    const currentVariantKey = isUnavailable ? `unavailable:${activeHeuristicPair}` : activeHeuristicPair ?? "default";
+    const entry = Array.from(componentRegistry.values()).find(
+      (e) => e.contentEl === contentEl
+    );
+    if (!force && entry && entry.lastRenderedVariantKey === currentVariantKey && entry.lastIsUnavailable === isUnavailable) {
+      return;
+    }
+    let previousSelectedHorizon;
+    if (compSpec.type === "outcome_distribution" && entry && entry.spec.type === "outcome_distribution") {
+      const existingSlider = contentEl.querySelector(
+        ".rtichoke-operating-point-slider"
+      );
+      if (existingSlider) {
+        const parsedIdx = Number(existingSlider.value);
+        if (Number.isFinite(parsedIdx)) {
+          const prevVariantKey = entry.lastRenderedVariantKey;
+          let prevSpec;
+          if (prevVariantKey && prevVariantKey.startsWith("unavailable")) {
+            prevSpec = void 0;
+          } else if (prevVariantKey && entry.spec.variants) {
+            const v = entry.spec.variants[prevVariantKey];
+            if (v && v.status === "available") {
+              prevSpec = {
+                ...entry.spec,
+                stateDistributions: v.stateDistributions
+              };
+            }
+          } else {
+            prevSpec = entry.spec;
+          }
+          if (prevSpec) {
+            const prevHorizons = getHorizonsForOutcomeDistributionSpec(prevSpec);
+            if (parsedIdx >= 0 && parsedIdx < prevHorizons.length) {
+              previousSelectedHorizon = prevHorizons[parsedIdx];
+            }
+          }
+        }
+      }
+    }
+    contentEl.replaceChildren();
+    if (isUnavailable || !resolvedSpec) {
+      const unavailPair = activeHeuristicPair ?? "default:default";
+      contentEl.append(renderUnavailablePlaceholder(unavailPair));
+    } else {
+      const renderedNode = renderStandaloneComponentContent(resolvedSpec);
+      contentEl.append(renderedNode);
+      if (previousSelectedHorizon !== void 0 && resolvedSpec.type === "outcome_distribution") {
+        const newSlider = contentEl.querySelector(
+          ".rtichoke-operating-point-slider"
+        );
+        if (newSlider) {
+          const newHorizons = getHorizonsForOutcomeDistributionSpec(resolvedSpec);
+          if (newHorizons.length > 0) {
+            let targetIdx = newHorizons.indexOf(previousSelectedHorizon);
+            if (targetIdx === -1) {
+              let minDiff = Infinity;
+              targetIdx = 0;
+              for (let i = 0; i < newHorizons.length; i++) {
+                const diff = Math.abs(
+                  newHorizons[i] - previousSelectedHorizon
+                );
+                if (diff < minDiff) {
+                  minDiff = diff;
+                  targetIdx = i;
+                }
+              }
+            }
+            if (String(targetIdx) !== newSlider.value) {
+              newSlider.value = String(targetIdx);
+              newSlider.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          }
+        }
+      }
+    }
+    if (entry) {
+      entry.lastRenderedVariantKey = currentVariantKey;
+      entry.lastIsUnavailable = isUnavailable;
+    }
+  };
+  let syncRadioControlsUI;
+  if (spec.heuristics && activeHeuristicPair) {
+    const controlsContainer = document.createElement("section");
+    controlsContainer.className = "rtichoke-report__heuristics-controls";
+    controlsContainer.setAttribute(
+      "aria-label",
+      "Analysis Heuristic Controls"
+    );
+    const titleEl = document.createElement("div");
+    titleEl.className = "rtichoke-report__heuristics-title";
+    titleEl.textContent = "Analysis Heuristic Controls";
+    const groupsRow = document.createElement("div");
+    groupsRow.className = "rtichoke-report__heuristics-row";
+    const censFieldset = document.createElement("fieldset");
+    censFieldset.className = "rtichoke-report__heuristics-fieldset";
+    const censLegend = document.createElement("legend");
+    censLegend.className = "rtichoke-report__heuristics-legend";
+    censLegend.textContent = "Censoring:";
+    censFieldset.append(censLegend);
+    const censOptionsDiv = document.createElement("div");
+    censOptionsDiv.className = "rtichoke-report__heuristics-options";
+    censFieldset.append(censOptionsDiv);
+    const compFieldset = document.createElement("fieldset");
+    compFieldset.className = "rtichoke-report__heuristics-fieldset";
+    const compLegend = document.createElement("legend");
+    compLegend.className = "rtichoke-report__heuristics-legend";
+    compLegend.textContent = "Competing events:";
+    compFieldset.append(compLegend);
+    const compOptionsDiv = document.createElement("div");
+    compOptionsDiv.className = "rtichoke-report__heuristics-options";
+    compFieldset.append(compOptionsDiv);
+    const censoringRadios = /* @__PURE__ */ new Map();
+    const competingRadios = /* @__PURE__ */ new Map();
+    for (const censVal of CENSORING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-censoring`;
+      radio.value = censVal;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+          onHeuristicSelectionChange(censVal, currentParsed.competing);
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+      label.append(radio, span);
+      censOptionsDiv.append(label);
+      censoringRadios.set(censVal, { input: radio, label });
+    }
+    for (const compVal of COMPETING_OPTIONS) {
+      const label = document.createElement("label");
+      label.className = "rtichoke-report__heuristics-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `rtichoke-report-${instanceId}-competing`;
+      radio.value = compVal;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+          onHeuristicSelectionChange(currentParsed.censoring, compVal);
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+      label.append(radio, span);
+      compOptionsDiv.append(label);
+      competingRadios.set(compVal, { input: radio, label });
+    }
+    groupsRow.append(censFieldset, compFieldset);
+    controlsContainer.append(titleEl, groupsRow);
+    root2.append(controlsContainer);
+    syncRadioControlsUI = () => {
+      if (!activeHeuristicPair) return;
+      const currentParsed = parseHeuristicPairKey(activeHeuristicPair);
+      for (const censVal of CENSORING_OPTIONS) {
+        const item = censoringRadios.get(censVal);
+        if (!item) continue;
+        const isCensAvailable = availableHeuristics.some(
+          (k2) => parseHeuristicPairKey(k2).censoring === censVal
+        );
+        item.input.checked = currentParsed.censoring === censVal;
+        item.input.disabled = !isCensAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCensAvailable
+        );
+      }
+      for (const compVal of COMPETING_OPTIONS) {
+        const item = competingRadios.get(compVal);
+        if (!item) continue;
+        const candidateKey = makeHeuristicPairKey(
+          currentParsed.censoring,
+          compVal
+        );
+        const isCompAvailable = availableHeuristics.includes(candidateKey);
+        item.input.checked = currentParsed.competing === compVal;
+        item.input.disabled = !isCompAvailable;
+        item.label.classList.toggle(
+          "rtichoke-report__heuristics-option--disabled",
+          !isCompAvailable
+        );
+      }
+    };
+    const onHeuristicSelectionChange = (targetCensoring, targetCompeting) => {
+      const resolvedPair = resolveNearestCompatiblePair(
+        targetCensoring,
+        targetCompeting,
+        availableHeuristics,
+        initialActiveHeuristic
+      );
+      if (resolvedPair === activeHeuristicPair) {
+        syncRadioControlsUI?.();
+        return;
+      }
+      activeHeuristicPair = resolvedPair;
+      syncRadioControlsUI?.();
+      for (const { spec: compSpec, contentEl } of componentRegistry.values()) {
+        updateComponentContent(compSpec, contentEl);
+      }
+    };
+    syncRadioControlsUI();
+  }
   const sectionHeadingTag = hasTitle ? "h2" : "h1";
   const groupHeadingTag = hasTitle ? "h3" : "h2";
   const directCompHeadingTag = hasTitle ? "h3" : "h2";
@@ -28195,7 +28726,8 @@ function renderReportV1_1(spec, options) {
     }
     const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    content.append(renderStandaloneComponentContent(comp.spec));
+    componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+    updateComponentContent(comp.spec, content);
     container.append(content);
     return container;
   };
@@ -28255,7 +28787,8 @@ function renderReportV1_1(spec, options) {
         panel.hidden = compIdx !== 0;
         const content = document.createElement("div");
         content.className = "rtichoke-report__component-content";
-        content.append(renderStandaloneComponentContent(comp.spec));
+        componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+        updateComponentContent(comp.spec, content);
         panel.append(content);
         tabs.push(tab);
         panels.push(panel);
@@ -28341,7 +28874,8 @@ function renderReportV1_1(spec, options) {
             panel.hidden = compIdx !== 0;
             const content = document.createElement("div");
             content.className = "rtichoke-report__component-content";
-            content.append(renderStandaloneComponentContent(comp.spec));
+            componentRegistry.set(comp.id, { spec: comp.spec, contentEl: content });
+            updateComponentContent(comp.spec, content);
             panel.append(content);
             tabs.push(tab);
             panels.push(panel);
@@ -114985,9 +115519,10 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   const digits = theme.tip.digits;
   const dataset = options.dataset ?? generateSyntheticContinuousDataset();
   let activeScenario = options.initialScenario ?? "A";
-  const activeNumBins = 20;
+  let activeNumBins = 20;
   let selectedStep = 35;
-  let isHistogramOpen = true;
+  let isHistogramOpen = false;
+  let isExcludedExpanded = false;
   const container = document.createElement("div");
   container.className = "rtichoke-outcome-distribution rtichoke-continuous-poc";
   container.style.width = `${theme.width}px`;
@@ -115000,12 +115535,13 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   descEl.style.margin = "0 0 1rem 0";
   descEl.style.fontSize = "13px";
   descEl.style.color = "#4b5563";
-  descEl.textContent = "Longitudinal empirical distribution heatmap of observed numerical outcomes across 36 steps (0\u201335), with side-by-side step histogram detail.";
+  descEl.textContent = "Longitudinal empirical distribution heatmap of observed numerical outcomes across 36 steps (0\u201335), with click-to-open step histogram detail.";
   container.append(descEl);
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "rtichoke-outcome-distribution__controls";
   controlsDiv.style.display = "flex";
   controlsDiv.style.flexWrap = "wrap";
+  controlsDiv.style.alignItems = "center";
   controlsDiv.style.gap = "1.5rem";
   controlsDiv.style.marginBottom = "1rem";
   container.append(controlsDiv);
@@ -115019,12 +115555,12 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   container.append(mainLayoutDiv);
   const leftColumn = document.createElement("div");
   leftColumn.className = "rtichoke-continuous-left-column";
-  leftColumn.style.flex = "0 0 58%";
   leftColumn.style.display = "flex";
   leftColumn.style.flexDirection = "column";
+  leftColumn.style.transition = "flex 0.2s ease-in-out";
   const rightColumn = document.createElement("div");
   rightColumn.className = "rtichoke-continuous-right-column";
-  rightColumn.style.flex = "0 0 38%";
+  rightColumn.style.transition = "flex 0.2s ease-in-out";
   mainLayoutDiv.append(leftColumn, rightColumn);
   const heatmapWrapper = document.createElement("div");
   heatmapWrapper.className = "rtichoke-continuous-heatmap-wrapper";
@@ -115070,6 +115606,15 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   leftColumn.append(heatmapWrapper, legendDiv, sliderControl, excludedSection);
   const histogramWrapper = rightColumn;
   const renderAll = () => {
+    if (isHistogramOpen) {
+      leftColumn.style.flex = "0 0 58%";
+      rightColumn.style.flex = "0 0 38%";
+      rightColumn.style.display = "block";
+    } else {
+      leftColumn.style.flex = "1 1 100%";
+      rightColumn.style.flex = "0 0 0%";
+      rightColumn.style.display = "none";
+    }
     const scenarioStats = computeScenarioStats(dataset, activeScenario, activeNumBins);
     const jointUpperProp = computeJointMaxProportion(dataset, activeNumBins);
     const currentStepSummary = scenarioStats.find((s2) => s2.step === selectedStep) ?? scenarioStats[35];
@@ -115108,7 +115653,41 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
       scenarioOptions.append(optLabel);
     }
     scenarioGroup.append(scenarioOptions);
-    controlsDiv.append(scenarioGroup);
+    const binsGroup = document.createElement("div");
+    binsGroup.className = "rtichoke-pd-radio-group";
+    binsGroup.setAttribute("role", "radiogroup");
+    binsGroup.setAttribute("aria-label", "Bin Resolution");
+    const binsGroupLabel = document.createElement("span");
+    binsGroupLabel.className = "rtichoke-pd-radio-group-label";
+    binsGroupLabel.textContent = "Bins:";
+    binsGroup.append(binsGroupLabel);
+    const binsOptions = document.createElement("div");
+    binsOptions.className = "rtichoke-pd-radio-options";
+    const binItems = [
+      { id: 20, label: "20 bins (width 0.05)" },
+      { id: 40, label: "40 bins (width 0.025)" }
+    ];
+    for (const item of binItems) {
+      const optLabel = document.createElement("label");
+      optLabel.className = "rtichoke-pd-radio-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `cod-bins-${instanceId}`;
+      radio.value = String(item.id);
+      radio.checked = activeNumBins === item.id;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          activeNumBins = item.id;
+          renderAll();
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = item.label;
+      optLabel.append(radio, span);
+      binsOptions.append(optLabel);
+    }
+    binsGroup.append(binsOptions);
+    controlsDiv.append(scenarioGroup, binsGroup);
     heatmapWrapper.replaceChildren();
     const flatCells = [];
     for (const stepSum of scenarioStats) {
@@ -115129,7 +115708,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
         });
       }
     }
-    const heatmapWidth = Math.round((theme.width - 20) * 0.58);
+    const heatmapWidth = isHistogramOpen ? Math.round((theme.width - 20) * 0.58) : theme.width - theme.margins.left - theme.margins.right;
     const heatmapMarks = [
       rect(flatCells, {
         x1: (d) => d.step - 0.5,
@@ -115206,7 +115785,9 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
     );
     const svgEl = heatmapPlot;
     svgEl.style.cursor = "pointer";
-    svgEl.addEventListener("click", (evt) => {
+    svgEl.tabIndex = 0;
+    svgEl.setAttribute("aria-label", "Heatmap. Press Enter or click a step column to view detail histogram.");
+    const handleStepSelection = (evt) => {
       let node = evt.target;
       while (node && node !== svgEl) {
         const titleEl2 = node.querySelector("title");
@@ -115216,6 +115797,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
           if (match) {
             const clickedStep = parseInt(match[1], 10);
             selectedStep = clickedStep;
+            isHistogramOpen = true;
             slider.value = String(selectedStep);
             sliderValueText.textContent = String(selectedStep);
             renderAll();
@@ -115224,79 +115806,102 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
         }
         node = node.parentElement;
       }
+    };
+    svgEl.addEventListener("click", handleStepSelection);
+    svgEl.addEventListener("keydown", (evt) => {
+      if (evt.key === "Enter" || evt.key === " ") {
+        handleStepSelection(evt);
+      }
     });
     heatmapWrapper.append(heatmapPlot);
     histogramWrapper.replaceChildren();
-    histogramWrapper.style.display = "block";
-    const histHeader = document.createElement("div");
-    histHeader.style.display = "flex";
-    histHeader.style.justifyContent = "space-between";
-    histHeader.style.alignItems = "center";
-    histHeader.style.marginBottom = "0.5rem";
-    histHeader.style.paddingBottom = "0.25rem";
-    histHeader.style.borderBottom = "1px solid #e5e7eb";
-    const histTitle = document.createElement("div");
-    histTitle.style.fontWeight = "600";
-    histTitle.style.fontSize = "13px";
-    histTitle.style.color = "#1f2937";
-    histTitle.textContent = `Step ${selectedStep} Detail (n = ${currentStepSummary.includedCount})`;
-    histHeader.append(histTitle);
-    const histData = currentStepSummary.cells.map((c4) => ({
-      ...c4,
-      title: tooltip(digits, [
-        ["Step", c4.step],
-        ["Reals", c4.binLabel],
-        ["Count", `${c4.count} / ${c4.includedCount}`],
-        ["Proportion", `${c4.percentage.toFixed(1)}%`]
-      ])
-    }));
-    const histWidth = Math.round((theme.width - 20) * 0.38);
-    const histPlot = themedPlot(
-      {
-        width: histWidth,
-        height: Math.round(theme.height * 0.65) - 25,
-        marginTop: theme.margins.top + 10,
-        marginRight: 15,
-        marginBottom: theme.margins.bottom,
-        marginLeft: 45,
-        style: {
-          background: theme.background,
-          color: theme.axis.color,
-          fontFamily: theme.typography.fontFamily,
-          fontSize: `${theme.typography.fontSize}px`
+    if (isHistogramOpen) {
+      const histHeader = document.createElement("div");
+      histHeader.style.display = "flex";
+      histHeader.style.justifyContent = "space-between";
+      histHeader.style.alignItems = "center";
+      histHeader.style.marginBottom = "0.5rem";
+      histHeader.style.paddingBottom = "0.25rem";
+      histHeader.style.borderBottom = "1px solid #e5e7eb";
+      const histTitle = document.createElement("div");
+      histTitle.style.fontWeight = "600";
+      histTitle.style.fontSize = "13px";
+      histTitle.style.color = "#1f2937";
+      histTitle.textContent = `Step ${selectedStep} Detail (n = ${currentStepSummary.includedCount})`;
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "rtichoke-continuous-close-hist";
+      closeBtn.style.background = "none";
+      closeBtn.style.border = "none";
+      closeBtn.style.fontSize = "14px";
+      closeBtn.style.fontWeight = "bold";
+      closeBtn.style.color = "#6b7280";
+      closeBtn.style.cursor = "pointer";
+      closeBtn.style.padding = "2px 6px";
+      closeBtn.setAttribute("aria-label", "Close histogram detail view");
+      closeBtn.textContent = "\u2715";
+      closeBtn.addEventListener("click", () => {
+        isHistogramOpen = false;
+        renderAll();
+      });
+      histHeader.append(histTitle, closeBtn);
+      const histData = currentStepSummary.cells.map((c4) => ({
+        ...c4,
+        title: tooltip(digits, [
+          ["Step", c4.step],
+          ["Reals", c4.binLabel],
+          ["Count", `${c4.count} / ${c4.includedCount}`],
+          ["Proportion", `${c4.percentage.toFixed(1)}%`]
+        ])
+      }));
+      const histWidth = Math.round((theme.width - 20) * 0.38);
+      const histPlot = themedPlot(
+        {
+          width: histWidth,
+          height: Math.round(theme.height * 0.65) - 25,
+          marginTop: theme.margins.top + 10,
+          marginRight: 15,
+          marginBottom: theme.margins.bottom,
+          marginLeft: 45,
+          style: {
+            background: theme.background,
+            color: theme.axis.color,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: `${theme.typography.fontSize}px`
+          },
+          x: {
+            label: "Reals (Outcome Value)",
+            domain: [0, 1],
+            ticks: 5,
+            tickFormat: (d) => d.toFixed(2),
+            grid: false,
+            line: true
+          },
+          y: {
+            label: "Proportion (%)",
+            domain: [0, jointUpperProp * 100],
+            ticks: 5,
+            tickFormat: (d) => `${d}%`,
+            grid: true,
+            line: true
+          },
+          marks: [
+            rectY(histData, {
+              x1: "binLower",
+              x2: "binUpper",
+              y: "percentage",
+              fill: "#2477BB",
+              fillOpacity: 0.85,
+              stroke: "#ffffff",
+              strokeWidth: 0.5,
+              title: (d) => d.title
+            })
+          ]
         },
-        x: {
-          label: "Reals (Outcome Value)",
-          domain: [0, 1],
-          ticks: 5,
-          tickFormat: (d) => d.toFixed(2),
-          grid: false,
-          line: true
-        },
-        y: {
-          label: "Proportion (%)",
-          domain: [0, jointUpperProp * 100],
-          ticks: 5,
-          tickFormat: (d) => `${d}%`,
-          grid: true,
-          line: true
-        },
-        marks: [
-          rectY(histData, {
-            x1: "binLower",
-            x2: "binUpper",
-            y: "percentage",
-            fill: "#2477BB",
-            fillOpacity: 0.85,
-            stroke: "#ffffff",
-            strokeWidth: 0.5,
-            title: (d) => d.title
-          })
-        ]
-      },
-      theme
-    );
-    histogramWrapper.append(histHeader, histPlot);
+        theme
+      );
+      histogramWrapper.append(histHeader, histPlot);
+    }
     legendDiv.replaceChildren();
     const legendLabel = document.createElement("span");
     legendLabel.style.fontSize = "12px";
@@ -157275,6 +157880,411 @@ var outcome_distribution_populations_default = {
   ]
 };
 
+// fixtures/v2/fixture-a-heuristics-report.json
+var fixture_a_heuristics_report_default = {
+  schemaVersion: "1.1",
+  type: "report",
+  title: "Fixture A Interactive Heuristics Report",
+  heuristics: {
+    active: "adjusted:adjusted_as_censored",
+    available: [
+      "excluded:excluded",
+      "excluded:adjusted_as_censored",
+      "excluded:adjusted_as_negative",
+      "excluded:adjusted_as_composite",
+      "adjusted:excluded",
+      "adjusted:adjusted_as_censored",
+      "adjusted:adjusted_as_negative",
+      "adjusted:adjusted_as_composite"
+    ]
+  },
+  sections: [
+    {
+      id: "section-1",
+      title: "Outcome Distribution",
+      items: [
+        {
+          type: "component",
+          id: "fixture-a-outcome-distribution",
+          title: "Fixture A Multi-State Outcome Distribution",
+          spec: {
+            schemaVersion: "2.0",
+            type: "outcome_distribution",
+            title: "Fixture A Outcome Trajectories",
+            evaluations: [
+              {
+                id: "fixture-a-eval",
+                population: "Fixture A Cohort",
+                label: "Fixture A Evaluation"
+              }
+            ],
+            stateDistributions: [
+              {
+                evaluationId: "fixture-a-eval",
+                horizon: 5,
+                estimator: "aalen_johansen",
+                estimateOrigin: "fixed_time_horizon",
+                censoringHeuristic: "adjusted",
+                competingHeuristic: "adjusted_as_censored",
+                states: [
+                  {
+                    stateId: "primary",
+                    label: "Primary Event",
+                    estimate: 0.125
+                  },
+                  {
+                    stateId: "event_free",
+                    label: "Event Free",
+                    estimate: 0.875
+                  }
+                ]
+              },
+              {
+                evaluationId: "fixture-a-eval",
+                horizon: 10,
+                estimator: "aalen_johansen",
+                estimateOrigin: "fixed_time_horizon",
+                censoringHeuristic: "adjusted",
+                competingHeuristic: "adjusted_as_censored",
+                states: [
+                  {
+                    stateId: "primary",
+                    label: "Primary Event",
+                    estimate: 0.34375
+                  },
+                  {
+                    stateId: "event_free",
+                    label: "Event Free",
+                    estimate: 0.65625
+                  }
+                ]
+              }
+            ],
+            variants: {
+              "excluded:excluded": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "excluded",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.14285714285714285 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.8571428571428571 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "excluded",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.5 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.5 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 1 },
+                      { horizon: 10, censoredExcludedCount: 2, competingExcludedCount: 2 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_censored": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_censored",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.125 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.875 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_censored",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.375 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.625 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 2, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_negative": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "aalen_johansen",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_negative",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.125 },
+                      { stateId: "competing", label: "Competing Event", estimate: 0.125 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.75 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "aalen_johansen",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_negative",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.3333333333333333 },
+                      { stateId: "competing", label: "Competing Event", estimate: 0.3333333333333333 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.3333333333333333 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 2, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              },
+              "excluded:adjusted_as_composite": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_composite",
+                    states: [
+                      { stateId: "composite", label: "Composite Event", estimate: 0.25 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.75 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "excluded",
+                    competingHeuristic: "adjusted_as_composite",
+                    states: [
+                      { stateId: "composite", label: "Composite Event", estimate: 0.6666666666666666 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.3333333333333333 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 2, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:excluded": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "excluded",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.14285714285714285 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.8571428571428571 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "excluded",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.4444444444444444 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.5555555555555556 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 1 },
+                      { horizon: 10, censoredExcludedCount: 0, competingExcludedCount: 2 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_censored": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_censored",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.125 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.875 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_censored",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.34375 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.65625 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 0, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_negative": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "aalen_johansen",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_negative",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.125 },
+                      { stateId: "competing", label: "Competing Event", estimate: 0.125 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.75 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "aalen_johansen",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_negative",
+                    states: [
+                      { stateId: "primary", label: "Primary Event", estimate: 0.3125 },
+                      { stateId: "competing", label: "Competing Event", estimate: 0.3125 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.375 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 0, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              },
+              "adjusted:adjusted_as_composite": {
+                status: "available",
+                stateDistributions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 5,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_composite",
+                    states: [
+                      { stateId: "composite", label: "Composite Event", estimate: 0.25 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.75 }
+                    ]
+                  },
+                  {
+                    evaluationId: "fixture-a-eval",
+                    horizon: 10,
+                    estimator: "kaplan_meier",
+                    estimateOrigin: "fixed_time_horizon",
+                    censoringHeuristic: "adjusted",
+                    competingHeuristic: "adjusted_as_composite",
+                    states: [
+                      { stateId: "composite", label: "Composite Event", estimate: 0.625 },
+                      { stateId: "event_free", label: "Event Free", estimate: 0.375 }
+                    ]
+                  }
+                ],
+                exclusions: [
+                  {
+                    evaluationId: "fixture-a-eval",
+                    originalSampleSize: 8,
+                    excludedCounts: [
+                      { horizon: 5, censoredExcludedCount: 0, competingExcludedCount: 0 },
+                      { horizon: 10, censoredExcludedCount: 0, competingExcludedCount: 0 }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+};
+
 // fixtures/v2/decision-curve-single.json
 var decision_curve_single_default = { schemaVersion: "2.0", type: "decision_curve", evaluations: [{ id: "evaluation-1", population: "Population A", model: "Model A" }], series: [{ id: "series-1", evaluationId: "evaluation-1", display: { label: "Model A", group: "Model A", role: "model" } }], data: [{ seriesId: "series-1", threshold: 0.05, netBenefit: 0.22 }, { seriesId: "series-1", threshold: 0.1, netBenefit: 0.18 }, { seriesId: "series-1", threshold: 0.15, netBenefit: 0.15 }, { seriesId: "series-1", threshold: 0.2, netBenefit: 0.12 }, { seriesId: "series-1", threshold: 0.25, netBenefit: 0.09 }, { seriesId: "series-1", threshold: 0.3, netBenefit: 0.06 }, { seriesId: "series-1", threshold: 0.35, netBenefit: 0.02 }, { seriesId: "series-1", threshold: 0.4, netBenefit: -0.02 }, { seriesId: "series-1", threshold: 0.45, netBenefit: -0.06 }, { seriesId: "series-1", threshold: 0.5, netBenefit: -0.1 }], x: "threshold", y: "netBenefit", xAxis: { label: "Probability threshold", domain: [0, 0.5] }, yAxis: { label: "Net benefit" }, references: [{ type: "horizontal", value: 0, label: "Treat None", scope: "global", benchmark: "treat_none" }, { type: "path", points: [{ x: 0.05, y: 0.236842 }, { x: 0.1, y: 0.222222 }, { x: 0.15, y: 0.205882 }, { x: 0.2, y: 0.125 }, { x: 0.25, y: 0.066667 }, { x: 0.3, y: 0 }, { x: 0.35, y: -0.076923 }, { x: 0.4, y: -0.166667 }, { x: 0.45, y: -0.272727 }, { x: 0.5, y: -0.4 }], label: "Treat All \u2014 Population A", scope: "population", population: "Population A", benchmark: "treat_all" }] };
 
@@ -157384,6 +158394,7 @@ var liftTimeFixture = lift_time_default;
 var reportHost1 = document.querySelector("#report-demo-1");
 var reportHost2 = document.querySelector("#report-demo-2");
 var reportHost3 = document.querySelector("#report-demo-3");
+var reportHost4 = document.querySelector("#report-demo-4");
 var rocHost = document.querySelector("#roc-chart");
 var rocOpHost = document.querySelector("#roc-op-chart");
 var rocPpcrHost = document.querySelector("#roc-ppcr-chart");
@@ -157406,7 +158417,7 @@ var observedStepAjHost = document.querySelector("#observed-step-aj-chart");
 var observedStepOrdinalHost = document.querySelector("#observed-step-ordinal-chart");
 var observedStepNominalHost = document.querySelector("#observed-step-nominal-chart");
 var continuousPocHost = document.querySelector("#continuous-outcome-distribution-poc-chart");
-if (!reportHost1 || !reportHost2 || !reportHost3 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
+if (!reportHost1 || !reportHost2 || !reportHost3 || !reportHost4 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
   throw new Error("Demo chart containers are missing");
 }
 reportHost1.append(
@@ -157427,11 +158438,31 @@ reportHost3.append(
     groupPresentation: "tabs"
   })
 );
+var demoReport4 = JSON.parse(JSON.stringify(fixture_a_heuristics_report_default));
+demoReport4.sections.push({
+  id: "section-2",
+  title: "Statistically Heuristic-Dependent Visualizations (Without Precomputed Variants)",
+  items: [
+    {
+      type: "component",
+      id: "fixture-a-roc",
+      title: "Receiver Operating Characteristic (ROC)",
+      spec: JSON.parse(JSON.stringify(models_a_b_test_roc_default2))
+    }
+  ]
+});
+reportHost4.append(
+  renderReport(demoReport4, {
+    sectionGroupPresentation: "tabs",
+    groupPresentation: "tabs"
+  })
+);
 var setupDemoTabs = () => {
   const tabs = [
     { btnId: "#tab-btn-report-1", wrapperId: "#report-demo-1-wrapper" },
     { btnId: "#tab-btn-report-2", wrapperId: "#report-demo-2-wrapper" },
-    { btnId: "#tab-btn-report-3", wrapperId: "#report-demo-3-wrapper" }
+    { btnId: "#tab-btn-report-3", wrapperId: "#report-demo-3-wrapper" },
+    { btnId: "#tab-btn-report-4", wrapperId: "#report-demo-4-wrapper" }
   ];
   const buttons = tabs.map((t) => document.querySelector(t.btnId));
   const selectTab = (index2) => {
