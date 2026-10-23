@@ -22635,9 +22635,14 @@ function renderOutcomeDistribution(spec, options = {}) {
         new Set(observedStepRows.map((r) => r.horizon))
       ).sort((a2, b) => a2 - b);
     } else {
-      availableSteps = Array.from(
-        new Set(fixedHorizonRows.map((r) => r.horizon))
+      const suppliedHorizons = Array.from(
+        new Set(
+          (fixedHorizonRows.length > 0 ? fixedHorizonRows : eventTableRows).map(
+            (r) => r.horizon
+          )
+        )
       ).sort((a2, b) => a2 - b);
+      availableSteps = suppliedHorizons.includes(0) ? suppliedHorizons : [0, ...suppliedHorizons];
     }
     if (eventTableRows.length === 0 && fixedHorizonRows.length === 0 && observedStepRows.length === 0) {
       sliderControl.style.display = "none";
@@ -22798,6 +22803,18 @@ function renderOutcomeDistribution(spec, options = {}) {
       }
       readoutTable.append(rBody);
       readoutCard.append(readoutTable);
+      readoutADiv.append(readoutCard);
+    } else if (currentActiveHorizon === 0 && !isObservedStepMode) {
+      const readoutCard = document.createElement("div");
+      readoutCard.className = "rtichoke-outcome-distribution__readout-card";
+      const readoutHeader = document.createElement("div");
+      readoutHeader.className = "rtichoke-outcome-distribution__readout-header";
+      readoutHeader.textContent = "Active Horizon: Time = 0.000";
+      const unestMsg = document.createElement("div");
+      unestMsg.className = "rtichoke-outcome-distribution__incomplete";
+      unestMsg.style.marginTop = "0.25rem";
+      unestMsg.textContent = "Baseline origin (Time = 0). No outcome probability estimates are calculated at baseline.";
+      readoutCard.append(readoutHeader, unestMsg);
       readoutADiv.append(readoutCard);
     }
     legendADiv.replaceChildren();
@@ -23315,15 +23332,21 @@ function renderOutcomeDistribution(spec, options = {}) {
     const isObservedStep = evalDists.some(
       (d) => d.estimateOrigin === "observed_step"
     );
-    const steps = isObservedStep ? Array.from(
-      new Set(
-        evalDists.filter((d) => d.estimateOrigin === "observed_step").map((d) => d.horizon ?? 0)
-      )
-    ).sort((a2, b) => a2 - b) : Array.from(
-      new Set(
-        evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon").map((d) => d.horizon ?? 0)
-      )
-    ).sort((a2, b) => a2 - b);
+    let steps;
+    if (isObservedStep) {
+      steps = Array.from(
+        new Set(
+          evalDists.filter((d) => d.estimateOrigin === "observed_step").map((d) => d.horizon ?? 0)
+        )
+      ).sort((a2, b) => a2 - b);
+    } else {
+      const supplied = Array.from(
+        new Set(
+          evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon" || d.estimateOrigin === "event_table").map((d) => d.horizon ?? 0)
+        )
+      ).sort((a2, b) => a2 - b);
+      steps = supplied.includes(0) ? supplied : [0, ...supplied];
+    }
     const idx = Number(slider.value);
     if (idx >= 0 && idx < steps.length) {
       currentActiveHorizon = steps[idx];
@@ -28528,10 +28551,13 @@ function getHorizonsForOutcomeDistributionSpec(spec, evalId) {
     (d) => d.estimateOrigin === originType
   );
   const distsToScan = matchingDists.length > 0 ? matchingDists : evalDists.filter((d) => d.estimateOrigin === "event_table");
-  const horizons2 = Array.from(
+  const supplied = Array.from(
     new Set(distsToScan.map((d) => d.horizon ?? 0))
   ).sort((a2, b) => a2 - b);
-  return horizons2;
+  if (isObservedStep) {
+    return supplied;
+  }
+  return supplied.includes(0) ? supplied : [0, ...supplied];
 }
 function parseHeuristicPairKey(key) {
   const parts = key.split(":");
