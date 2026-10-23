@@ -97,10 +97,13 @@ function getHorizonsForOutcomeDistributionSpec(
       ? matchingDists
       : evalDists.filter((d) => d.estimateOrigin === "event_table");
 
-  const horizons = Array.from(
+  const supplied = Array.from(
     new Set(distsToScan.map((d) => d.horizon ?? 0)),
   ).sort((a, b) => a - b);
-  return horizons;
+  if (isObservedStep) {
+    return supplied;
+  }
+  return supplied.includes(0) ? supplied : [0, ...supplied];
 }
 
 export function parseHeuristicPairKey(

@@ -112,9 +112,9 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     expect(readoutBText).toContain("Total excluded");
     expect(readoutBText).toContain("4 / 8 (50.0%)");
 
-    // Check slider to horizon 5 (index 0)
+    // Check slider to horizon 5 (index 1 in [0, 5, 10])
     const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
-    slider.value = "0";
+    slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
     // Horizon 5 under excluded:excluded:
@@ -153,9 +153,9 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     const el = renderReport(report);
     document.body.append(el);
 
-    // Set slider to horizon 5 (index 0)
+    // Set slider to horizon 5 (index 1 in [0, 5, 10])
     const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
-    slider.value = "0";
+    slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
     const panelB = el.querySelector(".rtichoke-outcome-distribution__panel--b");
@@ -192,9 +192,9 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     let panelB = el.querySelector(".rtichoke-outcome-distribution__panel--b") as HTMLElement;
     expect(panelB.style.display).toBe("none");
 
-    // Move horizon slider to horizon 5 (index 0)
+    // Move horizon slider to horizon 5 (index 1 in [0, 5, 10])
     const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
-    slider.value = "0";
+    slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
     // Switch to excluded:excluded by setting both radio buttons
@@ -356,7 +356,30 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     el2.remove();
   });
 
-  it("15. No duplicate sliders", () => {
+  it("15. Fixed-time horizon baseline Time = 0 readout and empirical zero exclusions", () => {
+    const report = JSON.parse(JSON.stringify(fixtureReport));
+    report.heuristics.active = "excluded:excluded";
+
+    const el = renderReport(report);
+    document.body.append(el);
+
+    const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
+
+    // Horizon 0 (Index 0 in [0, 5, 10])
+    slider.value = "0";
+    slider.dispatchEvent(new Event("input"));
+
+    const readoutAText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    const readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
+
+    expect(readoutAText).toContain("Time = 0.000");
+    expect(readoutAText).toContain("No outcome probability estimates are calculated at baseline");
+    expect(readoutBText).toContain("0 / 8 (0.0%)");
+
+    el.remove();
+  });
+
+  it("16. No duplicate sliders", () => {
     const el = renderReport(fixtureReport);
     document.body.append(el);
 
@@ -378,8 +401,8 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
 
     const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
 
-    // Horizon 5 (Index 0)
-    slider.value = "0";
+    // Horizon 5 (Index 1 in [0, 5, 10])
+    slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
     let readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
@@ -388,8 +411,8 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     expect(readoutBText).toContain("Competing events excluded");
     expect(readoutBText).toContain("1 / 8 (12.5%)"); // B (Time 4) is excluded
 
-    // Horizon 10 (Index 1)
-    slider.value = "1";
+    // Horizon 10 (Index 2 in [0, 5, 10])
+    slider.value = "2";
     slider.dispatchEvent(new Event("input"));
 
     readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;

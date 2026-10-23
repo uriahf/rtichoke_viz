@@ -637,9 +637,16 @@ export function renderOutcomeDistribution(
         new Set(observedStepRows.map((r) => r.horizon)),
       ).sort((a, b) => a - b);
     } else {
-      availableSteps = Array.from(
-        new Set(fixedHorizonRows.map((r) => r.horizon)),
+      const suppliedHorizons = Array.from(
+        new Set(
+          (fixedHorizonRows.length > 0 ? fixedHorizonRows : eventTableRows).map(
+            (r) => r.horizon,
+          ),
+        ),
       ).sort((a, b) => a - b);
+      availableSteps = suppliedHorizons.includes(0)
+        ? suppliedHorizons
+        : [0, ...suppliedHorizons];
     }
 
     if (
@@ -879,6 +886,24 @@ export function renderOutcomeDistribution(
 
       readoutTable.append(rBody);
       readoutCard.append(readoutTable);
+      readoutADiv.append(readoutCard);
+    } else if (currentActiveHorizon === 0 && !isObservedStepMode) {
+      // Unestimated baseline at Time = 0
+      const readoutCard = document.createElement("div");
+      readoutCard.className = "rtichoke-outcome-distribution__readout-card";
+
+      const readoutHeader = document.createElement("div");
+      readoutHeader.className =
+        "rtichoke-outcome-distribution__readout-header";
+      readoutHeader.textContent = "Active Horizon: Time = 0.000";
+
+      const unestMsg = document.createElement("div");
+      unestMsg.className = "rtichoke-outcome-distribution__incomplete";
+      unestMsg.style.marginTop = "0.25rem";
+      unestMsg.textContent =
+        "Baseline origin (Time = 0). No outcome probability estimates are calculated at baseline.";
+
+      readoutCard.append(readoutHeader, unestMsg);
       readoutADiv.append(readoutCard);
     }
 
@@ -1542,21 +1567,25 @@ export function renderOutcomeDistribution(
       (d) => d.estimateOrigin === "observed_step",
     );
 
-    const steps = isObservedStep
-      ? Array.from(
+      let steps: number[];
+      if (isObservedStep) {
+        steps = Array.from(
           new Set(
             evalDists
               .filter((d) => d.estimateOrigin === "observed_step")
               .map((d) => d.horizon ?? 0),
           ),
-        ).sort((a, b) => a - b)
-      : Array.from(
+        ).sort((a, b) => a - b);
+      } else {
+        const supplied = Array.from(
           new Set(
             evalDists
-              .filter((d) => d.estimateOrigin === "fixed_time_horizon")
+              .filter((d) => d.estimateOrigin === "fixed_time_horizon" || d.estimateOrigin === "event_table")
               .map((d) => d.horizon ?? 0),
           ),
         ).sort((a, b) => a - b);
+        steps = supplied.includes(0) ? supplied : [0, ...supplied];
+      }
 
     const idx = Number(slider.value);
     if (idx >= 0 && idx < steps.length) {
