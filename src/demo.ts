@@ -30,6 +30,7 @@ import {
   observedStepOrdinalSpec,
   observedStepNominalSpec,
 } from "./demo-observed-step-specs.js";
+import { renderContinuousOutcomeDistributionPOC } from "./experimental/continuous-outcome-distribution.js";
 
 // Standalone realistic demo specs
 import rocModelATestData from "../fixtures/v2/demo/model-a-test-roc.json" with { type: "json" };
@@ -95,6 +96,7 @@ const observedStepRawHost = document.querySelector<HTMLElement>("#observed-step-
 const observedStepAjHost = document.querySelector<HTMLElement>("#observed-step-aj-chart");
 const observedStepOrdinalHost = document.querySelector<HTMLElement>("#observed-step-ordinal-chart");
 const observedStepNominalHost = document.querySelector<HTMLElement>("#observed-step-nominal-chart");
+const continuousPocHost = document.querySelector<HTMLElement>("#continuous-outcome-distribution-poc-chart");
 
 if (
   !reportHost1 ||
@@ -308,4 +310,7 @@ if (observedStepOrdinalHost) {
 }
 if (observedStepNominalHost) {
   observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
+}
+if (continuousPocHost) {
+  continuousPocHost.append(renderContinuousOutcomeDistributionPOC());
 }

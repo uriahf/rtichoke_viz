@@ -6,6 +6,7 @@ await build({
   entryPoints: ["src/demo.ts"],
   bundle: true,
   format: "esm",
+  loader: { ".css": "css" },
   outfile: "site/demo.js",
 });
 await copyFile("demo/index.html", "site/index.html");
