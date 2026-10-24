@@ -28543,10 +28543,7 @@ function getComponentHeuristicStatus(spec) {
     return "independent";
   }
   if (spec.type === "outcome_distribution") {
-    if (spec.variants) {
-      return "aware";
-    }
-    return "unavailable";
+    return "aware";
   }
   return "unavailable";
 }
@@ -28643,17 +28640,27 @@ function resolveActiveSpecForComponent(spec, activeHeuristic, selectedHorizon) {
     return { resolvedSpec: spec, isUnavailable: false };
   }
   if (status === "aware" && spec.type === "outcome_distribution") {
-    const variant = spec.variants?.[activeHeuristic];
-    if (!variant || variant.status === "unsupported") {
-      return { isUnavailable: true };
-    }
-    if (variant.status === "available") {
-      const activeSpec = {
-        ...spec,
-        stateDistributions: variant.stateDistributions,
-        exclusions: variant.exclusions
-      };
-      return { resolvedSpec: activeSpec, isUnavailable: false };
+    if (spec.variants) {
+      const variant = spec.variants[activeHeuristic];
+      if (!variant || variant.status === "unsupported") {
+        return { isUnavailable: true };
+      }
+      if (variant.status === "available") {
+        const activeSpec = {
+          ...spec,
+          stateDistributions: variant.stateDistributions,
+          exclusions: variant.exclusions
+        };
+        return { resolvedSpec: activeSpec, isUnavailable: false };
+      }
+    } else {
+      const firstDist = spec.stateDistributions[0];
+      const baseCens = firstDist?.censoringHeuristic ?? "adjusted";
+      const baseComp = firstDist?.competingHeuristic ?? "adjusted_as_censored";
+      const basePair = `${baseCens}:${baseComp}`;
+      if (activeHeuristic === basePair) {
+        return { resolvedSpec: spec, isUnavailable: false };
+      }
     }
   }
   return { isUnavailable: true };
@@ -158198,26 +158205,63 @@ liftTimeHost.append(renderLiftV2(liftTimeFixture));
 dcOpHost.append(renderDecisionCurveV2(dcOpSpec));
 iaOpHost.append(renderInterventionsAvoidedV2(iaOpSpec));
 predDistVisualHost.append(renderPredictionDistribution(predDistVisualFixture));
+var wrapOutcomeDistInReport = (id2, title, spec) => {
+  const firstDist = spec.stateDistributions[0];
+  const cens = firstDist?.censoringHeuristic ?? "adjusted";
+  const comp = firstDist?.competingHeuristic ?? "adjusted_as_censored";
+  const activePair = `${cens}:${comp}`;
+  return renderReport({
+    schemaVersion: "1.1",
+    type: "report",
+    heuristics: {
+      active: activePair,
+      available: [
+        "excluded:excluded",
+        "excluded:adjusted_as_censored",
+        "excluded:adjusted_as_negative",
+        "excluded:adjusted_as_composite",
+        "adjusted:excluded",
+        "adjusted:adjusted_as_censored",
+        "adjusted:adjusted_as_negative",
+        "adjusted:adjusted_as_composite"
+      ]
+    },
+    sections: [
+      {
+        id: `sec-${id2}`,
+        title,
+        items: [
+          {
+            type: "component",
+            id: `comp-${id2}`,
+            title,
+            spec
+          }
+        ]
+      }
+    ]
+  });
+};
 if (outcomeDistHost) {
-  outcomeDistHost.append(renderOutcomeDistribution(outcomeDistributionFixture));
+  outcomeDistHost.append(wrapOutcomeDistInReport("od-canonical", "Outcome Distribution (Canonical Time Horizons)", outcomeDistributionFixture));
 }
 if (outcomeDistLargeHost) {
-  outcomeDistLargeHost.append(renderOutcomeDistribution(outcomeDistributionLargeFixture));
+  outcomeDistLargeHost.append(wrapOutcomeDistInReport("od-large", "Outcome Distribution (Large Sample)", outcomeDistributionLargeFixture));
 }
 if (outcomeDistPopulationsHost) {
-  outcomeDistPopulationsHost.append(renderOutcomeDistribution(outcomeDistributionPopulationsFixture));
+  outcomeDistPopulationsHost.append(wrapOutcomeDistInReport("od-pops", "Outcome Distribution (Multiple Populations)", outcomeDistributionPopulationsFixture));
 }
 if (observedStepRawHost) {
-  observedStepRawHost.append(renderOutcomeDistribution(observedStepRawSpec));
+  observedStepRawHost.append(wrapOutcomeDistInReport("step-raw", "Raw / Excluded Counts", observedStepRawSpec));
 }
 if (observedStepAjHost) {
-  observedStepAjHost.append(renderOutcomeDistribution(observedStepAjSpec));
+  observedStepAjHost.append(wrapOutcomeDistInReport("step-aj", "AJ-Adjusted State Occupancy Probabilities", observedStepAjSpec));
 }
 if (observedStepOrdinalHost) {
-  observedStepOrdinalHost.append(renderOutcomeDistribution(observedStepOrdinalSpec));
+  observedStepOrdinalHost.append(wrapOutcomeDistInReport("step-ordinal", "Ordinal States (5 Levels)", observedStepOrdinalSpec));
 }
 if (observedStepNominalHost) {
-  observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
+  observedStepNominalHost.append(wrapOutcomeDistInReport("step-nominal", "Nominal States (6 Levels)", observedStepNominalSpec));
 }
 export {
   setupDemoTabs
