@@ -43,6 +43,7 @@ export const OutcomeDistributionSpecSchema = Type.Object({
   ),
   evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
   stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
+  exclusions: Type.Optional(Type.Array(PopulationExclusionSchema)),
   variants: Type.Optional(OutcomeDistributionVariantsRecordSchema),
 });
 

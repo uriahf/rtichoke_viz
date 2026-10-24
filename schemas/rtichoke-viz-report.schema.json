@@ -7259,6 +7259,50 @@
                           }
                         }
                       },
+                      "exclusions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "evaluationId",
+                            "originalSampleSize",
+                            "excludedCounts"
+                          ],
+                          "properties": {
+                            "evaluationId": {
+                              "type": "string"
+                            },
+                            "originalSampleSize": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "excludedCounts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "horizon",
+                                  "censoredExcludedCount",
+                                  "competingExcludedCount"
+                                ],
+                                "properties": {
+                                  "horizon": {
+                                    "type": "number"
+                                  },
+                                  "censoredExcludedCount": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "competingExcludedCount": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
                       "variants": {
                         "type": "object",
                         "properties": {
@@ -17031,6 +17075,50 @@
                                     }
                                   }
                                 },
+                                "exclusions": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "required": [
+                                      "evaluationId",
+                                      "originalSampleSize",
+                                      "excludedCounts"
+                                    ],
+                                    "properties": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "originalSampleSize": {
+                                        "minimum": 1,
+                                        "type": "integer"
+                                      },
+                                      "excludedCounts": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "required": [
+                                            "horizon",
+                                            "censoredExcludedCount",
+                                            "competingExcludedCount"
+                                          ],
+                                          "properties": {
+                                            "horizon": {
+                                              "type": "number"
+                                            },
+                                            "censoredExcludedCount": {
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            },
+                                            "competingExcludedCount": {
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
                                 "variants": {
                                   "type": "object",
                                   "properties": {
@@ -26692,6 +26780,50 @@
                                             },
                                             "contrastId": {
                                               "type": "string"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "exclusions": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "required": [
+                                            "evaluationId",
+                                            "originalSampleSize",
+                                            "excludedCounts"
+                                          ],
+                                          "properties": {
+                                            "evaluationId": {
+                                              "type": "string"
+                                            },
+                                            "originalSampleSize": {
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            "excludedCounts": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "required": [
+                                                  "horizon",
+                                                  "censoredExcludedCount",
+                                                  "competingExcludedCount"
+                                                ],
+                                                "properties": {
+                                                  "horizon": {
+                                                    "type": "number"
+                                                  },
+                                                  "censoredExcludedCount": {
+                                                    "minimum": 0,
+                                                    "type": "integer"
+                                                  },
+                                                  "competingExcludedCount": {
+                                                    "minimum": 0,
+                                                    "type": "integer"
+                                                  }
+                                                }
+                                              }
                                             }
                                           }
                                         }

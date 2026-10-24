@@ -68,10 +68,7 @@ export function getComponentHeuristicStatus(
     return "independent";
   }
   if (spec.type === "outcome_distribution") {
-    if (spec.variants) {
-      return "aware";
-    }
-    return "unavailable";
+    return "aware";
   }
   // Currently other statistical components do not have precomputed variants in PR 2.
   return "unavailable";
@@ -97,10 +94,13 @@ function getHorizonsForOutcomeDistributionSpec(
       ? matchingDists
       : evalDists.filter((d) => d.estimateOrigin === "event_table");
 
-  const horizons = Array.from(
+  const supplied = Array.from(
     new Set(distsToScan.map((d) => d.horizon ?? 0)),
   ).sort((a, b) => a - b);
-  return horizons;
+  if (isObservedStep) {
+    return supplied;
+  }
+  return supplied.includes(0) ? supplied : [0, ...supplied];
 }
 
 export function parseHeuristicPairKey(
@@ -213,16 +213,27 @@ function resolveActiveSpecForComponent(
   }
 
   if (status === "aware" && spec.type === "outcome_distribution") {
-    const variant = spec.variants?.[activeHeuristic];
-    if (!variant || variant.status === "unsupported") {
-      return { isUnavailable: true };
-    }
-    if (variant.status === "available") {
-      const activeSpec: OutcomeDistributionSpec = {
-        ...spec,
-        stateDistributions: variant.stateDistributions,
-      };
-      return { resolvedSpec: activeSpec, isUnavailable: false };
+    if (spec.variants) {
+      const variant = spec.variants[activeHeuristic];
+      if (!variant || variant.status === "unsupported") {
+        return { isUnavailable: true };
+      }
+      if (variant.status === "available") {
+        const activeSpec: OutcomeDistributionSpec = {
+          ...spec,
+          stateDistributions: variant.stateDistributions,
+          exclusions: variant.exclusions,
+        };
+        return { resolvedSpec: activeSpec, isUnavailable: false };
+      }
+    } else {
+      const firstDist = spec.stateDistributions[0];
+      const baseCens = firstDist?.censoringHeuristic ?? "adjusted";
+      const baseComp = firstDist?.competingHeuristic ?? "adjusted_as_censored";
+      const basePair = `${baseCens}:${baseComp}`;
+      if (activeHeuristic === basePair) {
+        return { resolvedSpec: spec, isUnavailable: false };
+      }
     }
   }
 

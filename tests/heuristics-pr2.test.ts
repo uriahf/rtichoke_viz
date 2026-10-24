@@ -160,9 +160,9 @@ describe("PR 2 — Interactive Heuristic Controls & Coordinated Variant Switchin
     )!;
     expect(slider).not.toBeNull();
 
-    // Default slider min="0", max="1", step="1", value="1" (horizon 10, index 1)
-    // Changing value to "0" select horizon 5 (index 0)
-    slider.value = "0";
+    // Available steps: [0, 5, 10]. Index 0 = Time 0, Index 1 = Time 5, Index 2 = Time 10.
+    // Changing value to "1" selects horizon 5 (Time 5)
+    slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
     // Verify horizon 5 active readout text
@@ -610,12 +610,12 @@ describe("PR 2 — Interactive Heuristic Controls & Coordinated Variant Switchin
     const el = renderReport(multiGridReport);
     document.body.append(el);
 
-    // Initial slider in variant 1 has horizons [5, 10, 20], default active = 20 (index 2)
+    // Initial slider in variant 1 has availableSteps [0, 5, 10, 20]
     const slider = el.querySelector<HTMLInputElement>(
       ".rtichoke-operating-point-slider",
     )!;
-    // Set slider value to index 1 -> numeric horizon = 10
-    slider.value = "1";
+    // Set slider value to index 2 -> numeric horizon = 10
+    slider.value = "2";
     slider.dispatchEvent(new Event("input"));
 
     let readoutHeader = el.querySelector(
