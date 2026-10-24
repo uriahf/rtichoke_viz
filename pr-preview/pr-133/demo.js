@@ -22221,15 +22221,19 @@ var CANONICAL_STATE_LABELS = {
   unknown: "Censored"
 };
 var PREFERRED_STATE_COLORS = {
+  primary: "#4C5454",
   real_positive: "#4C5454",
   real_positives_est: "#4C5454",
   target_event: "#4C5454",
-  real_competing: "#C880B7",
-  real_competing_est: "#C880B7",
-  competing_outcome: "#C880B7",
+  event_free: "#E0E0E0",
   real_negative: "#E0E0E0",
   real_negatives_est: "#E0E0E0",
   no_target_event: "#E0E0E0",
+  competing: "#C880B7",
+  real_competing: "#C880B7",
+  real_competing_est: "#C880B7",
+  competing_outcome: "#C880B7",
+  censored: "#E3F09B",
   real_censored: "#E3F09B",
   real_censored_est: "#E3F09B",
   unknown: "#E3F09B"
@@ -22493,13 +22497,11 @@ function renderOutcomeDistribution(spec, options = {}) {
   const panelBTitle = document.createElement("h4");
   panelBTitle.className = "rtichoke-outcome-distribution__panel-title";
   panelBTitle.textContent = "Excluded Observations";
-  const readoutBDiv = document.createElement("div");
-  readoutBDiv.className = "rtichoke-outcome-distribution__readout";
   const legendBDiv = document.createElement("div");
   legendBDiv.className = "rtichoke-legend";
   const chartBDiv = document.createElement("div");
   chartBDiv.className = "rtichoke-outcome-distribution__chart";
-  panelB.append(panelBTitle, readoutBDiv, legendBDiv, chartBDiv);
+  panelB.append(panelBTitle, legendBDiv, chartBDiv);
   panelsGrid.append(panelA, panelB);
   container.append(controlsDiv, sliderControl, panelsGrid);
   const effectiveStateScale = spec.stateScale ?? "nominal";
@@ -22801,6 +22803,89 @@ function renderOutcomeDistribution(spec, options = {}) {
         tr.append(tdLabel, tdShare);
         rBody.append(tr);
       }
+      if (popExclusion && !isObservedStepMode) {
+        const sampleSize = popExclusion.originalSampleSize;
+        const activeExclusionItem = currentActiveHorizon !== null ? popExclusion.excludedCounts.find(
+          (e) => e.horizon === currentActiveHorizon
+        ) : void 0;
+        const censCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.censoredExcludedCount ?? 0;
+        const compCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.competingExcludedCount ?? 0;
+        const activeDist = evalDists.find(
+          (d) => d.horizon === currentActiveHorizon
+        ) ?? evalDists[0];
+        const censHeuristic = activeDist?.censoringHeuristic;
+        const compHeuristic = activeDist?.competingHeuristic;
+        const showCensoredRow = censHeuristic === "excluded";
+        const showCompetingRow = compHeuristic === "excluded";
+        if (showCensoredRow || showCompetingRow) {
+          const exHeaderRow = document.createElement("tr");
+          const exHeaderCell = document.createElement("td");
+          exHeaderCell.colSpan = 2;
+          exHeaderCell.style.fontWeight = "600";
+          exHeaderCell.style.paddingTop = "0.75rem";
+          exHeaderCell.style.paddingBottom = "0.25rem";
+          exHeaderCell.style.borderTop = "1px solid #e5e7eb";
+          exHeaderCell.textContent = "Excluded Observations";
+          exHeaderRow.append(exHeaderCell);
+          rBody.append(exHeaderRow);
+          if (showCensoredRow) {
+            const trCens = document.createElement("tr");
+            const tdLabelCens = document.createElement("td");
+            const badgeCens = document.createElement("span");
+            badgeCens.className = "rtichoke-performance-table__badge";
+            badgeCens.style.backgroundColor = EXCLUSION_COLORS.censored;
+            tdLabelCens.append(
+              badgeCens,
+              document.createTextNode("Censored excluded")
+            );
+            const tdShareCens = document.createElement("td");
+            tdShareCens.className = "rtichoke-outcome-distribution__readout-cell";
+            const barContainerCens = document.createElement("div");
+            barContainerCens.className = "rtichoke-performance-table__bar";
+            const barFillCens = document.createElement("div");
+            barFillCens.className = "rtichoke-performance-table__bar-fill";
+            barFillCens.style.backgroundColor = EXCLUSION_COLORS.censored;
+            barFillCens.style.opacity = "0.45";
+            const censPct = sampleSize > 0 ? censCount / sampleSize * 100 : 0;
+            barFillCens.style.width = `${Math.min(Math.max(censPct, 0), 100)}%`;
+            barContainerCens.append(barFillCens);
+            const contentCens = document.createElement("span");
+            contentCens.className = "rtichoke-performance-table__cell-text";
+            contentCens.textContent = `${censCount.toLocaleString()} / ${sampleSize.toLocaleString()} (${censPct.toFixed(1)}%)`;
+            tdShareCens.append(barContainerCens, contentCens);
+            trCens.append(tdLabelCens, tdShareCens);
+            rBody.append(trCens);
+          }
+          if (showCompetingRow) {
+            const trComp = document.createElement("tr");
+            const tdLabelComp = document.createElement("td");
+            const badgeComp = document.createElement("span");
+            badgeComp.className = "rtichoke-performance-table__badge";
+            badgeComp.style.backgroundColor = EXCLUSION_COLORS.competing;
+            tdLabelComp.append(
+              badgeComp,
+              document.createTextNode("Competing excluded")
+            );
+            const tdShareComp = document.createElement("td");
+            tdShareComp.className = "rtichoke-outcome-distribution__readout-cell";
+            const barContainerComp = document.createElement("div");
+            barContainerComp.className = "rtichoke-performance-table__bar";
+            const barFillComp = document.createElement("div");
+            barFillComp.className = "rtichoke-performance-table__bar-fill";
+            barFillComp.style.backgroundColor = EXCLUSION_COLORS.competing;
+            barFillComp.style.opacity = "0.45";
+            const compPct = sampleSize > 0 ? compCount / sampleSize * 100 : 0;
+            barFillComp.style.width = `${Math.min(Math.max(compPct, 0), 100)}%`;
+            barContainerComp.append(barFillComp);
+            const contentComp = document.createElement("span");
+            contentComp.className = "rtichoke-performance-table__cell-text";
+            contentComp.textContent = `${compCount.toLocaleString()} / ${sampleSize.toLocaleString()} (${compPct.toFixed(1)}%)`;
+            tdShareComp.append(barContainerComp, contentComp);
+            trComp.append(tdLabelComp, tdShareComp);
+            rBody.append(trComp);
+          }
+        }
+      }
       readoutTable.append(rBody);
       readoutCard.append(readoutTable);
       readoutADiv.append(readoutCard);
@@ -23096,7 +23181,6 @@ function renderOutcomeDistribution(spec, options = {}) {
     const chartSvgA = themedPlot(plotSpecA, theme);
     chartADiv.replaceChildren(chartSvgA);
     if (isPanelBVisible) {
-      readoutBDiv.replaceChildren();
       legendBDiv.replaceChildren();
       chartBDiv.replaceChildren();
       if (hasIncompleteExclusionData) {
@@ -23109,8 +23193,6 @@ function renderOutcomeDistribution(spec, options = {}) {
         const activeExclusionItem = currentActiveHorizon !== null ? popExclusion.excludedCounts.find(
           (e) => e.horizon === currentActiveHorizon
         ) : void 0;
-        const censCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.censoredExcludedCount ?? 0;
-        const compCount = currentActiveHorizon === 0 ? 0 : activeExclusionItem?.competingExcludedCount ?? 0;
         if (currentActiveHorizon !== 0 && !activeExclusionItem) {
           const incMsg = document.createElement("div");
           incMsg.className = "rtichoke-outcome-distribution__incomplete";
@@ -23118,76 +23200,6 @@ function renderOutcomeDistribution(spec, options = {}) {
           chartBDiv.append(incMsg);
           return;
         }
-        const totalCount = censCount + compCount;
-        const censPct = sampleSize > 0 ? censCount / sampleSize * 100 : 0;
-        const compPct = sampleSize > 0 ? compCount / sampleSize * 100 : 0;
-        const totalPct = sampleSize > 0 ? totalCount / sampleSize * 100 : 0;
-        const readoutCardB = document.createElement("div");
-        readoutCardB.className = "rtichoke-outcome-distribution__readout-card";
-        const readoutHeaderB = document.createElement("div");
-        readoutHeaderB.className = "rtichoke-outcome-distribution__readout-header";
-        readoutHeaderB.textContent = currentActiveHorizon !== null ? `Active Horizon: Time = ${currentActiveHorizon} (N = ${sampleSize})` : `Original Sample Size: N = ${sampleSize}`;
-        readoutCardB.append(readoutHeaderB);
-        const readoutTableB = document.createElement("table");
-        readoutTableB.className = "rtichoke-outcome-distribution__readout-table";
-        const rHeadB = document.createElement("thead");
-        const rHeadRowB = document.createElement("tr");
-        const thCat = document.createElement("th");
-        thCat.textContent = "Exclusion Category";
-        const thShareB = document.createElement("th");
-        thShareB.textContent = "Count / Total (%)";
-        rHeadRowB.append(thCat, thShareB);
-        rHeadB.append(rHeadRowB);
-        readoutTableB.append(rHeadB);
-        const rBodyB = document.createElement("tbody");
-        const exclusionRows = [
-          {
-            label: "Censored excluded",
-            count: censCount,
-            pct: censPct,
-            color: EXCLUSION_COLORS.censored
-          },
-          {
-            label: "Competing events excluded",
-            count: compCount,
-            pct: compPct,
-            color: EXCLUSION_COLORS.competing
-          },
-          {
-            label: "Total excluded",
-            count: totalCount,
-            pct: totalPct,
-            color: EXCLUSION_COLORS.total
-          }
-        ];
-        for (const er of exclusionRows) {
-          const tr = document.createElement("tr");
-          const tdLabel = document.createElement("td");
-          const badge = document.createElement("span");
-          badge.className = "rtichoke-performance-table__badge";
-          badge.style.backgroundColor = er.color;
-          tdLabel.append(badge, document.createTextNode(er.label));
-          const tdShare = document.createElement("td");
-          tdShare.className = "rtichoke-outcome-distribution__readout-cell";
-          const barContainer = document.createElement("div");
-          barContainer.className = "rtichoke-performance-table__bar";
-          const barFill = document.createElement("div");
-          barFill.className = "rtichoke-performance-table__bar-fill";
-          barFill.style.backgroundColor = er.color;
-          barFill.style.opacity = "0.45";
-          const widthPct = Math.min(Math.max(er.pct, 0), 100);
-          barFill.style.width = `${widthPct}%`;
-          barContainer.append(barFill);
-          const contentSpan = document.createElement("span");
-          contentSpan.className = "rtichoke-performance-table__cell-text";
-          contentSpan.textContent = `${er.count.toLocaleString()} / ${sampleSize.toLocaleString()} (${er.pct.toFixed(1)}%)`;
-          tdShare.append(barContainer, contentSpan);
-          tr.append(tdLabel, tdShare);
-          rBodyB.append(tr);
-        }
-        readoutTableB.append(rBodyB);
-        readoutCardB.append(readoutTableB);
-        readoutBDiv.append(readoutCardB);
         legendBDiv.style.display = "flex";
         const legendTitleB = document.createElement("span");
         legendTitleB.style.fontWeight = "600";
@@ -158017,6 +158029,7 @@ var reportHost1 = document.querySelector("#report-demo-1");
 var reportHost2 = document.querySelector("#report-demo-2");
 var reportHost3 = document.querySelector("#report-demo-3");
 var reportHost4 = document.querySelector("#report-demo-4");
+var reportHost4Steps = document.querySelector("#report-demo-4-steps");
 var rocHost = document.querySelector("#roc-chart");
 var rocOpHost = document.querySelector("#roc-op-chart");
 var rocPpcrHost = document.querySelector("#roc-ppcr-chart");
@@ -158047,6 +158060,9 @@ reportHost1.append(
     groupPresentation: "tabs"
   })
 );
+if (reportHost4Steps) {
+  reportHost4Steps.append(renderOutcomeDistribution(observedStepOrdinalSpec));
+}
 reportHost2.append(
   renderReport(demoReport2, {
     sectionGroupPresentation: "tabs",
