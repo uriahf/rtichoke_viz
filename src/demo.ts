@@ -72,6 +72,7 @@ const reportHost1 = document.querySelector<HTMLElement>("#report-demo-1");
 const reportHost2 = document.querySelector<HTMLElement>("#report-demo-2");
 const reportHost3 = document.querySelector<HTMLElement>("#report-demo-3");
 const reportHost4 = document.querySelector<HTMLElement>("#report-demo-4");
+const reportHost4Steps = document.querySelector<HTMLElement>("#report-demo-4-steps");
 
 const rocHost = document.querySelector<HTMLElement>("#roc-chart");
 const rocOpHost = document.querySelector<HTMLElement>("#roc-op-chart");
@@ -127,6 +128,10 @@ reportHost1.append(
     groupPresentation: "tabs",
   }),
 );
+
+if (reportHost4Steps) {
+  reportHost4Steps.append(renderOutcomeDistribution(observedStepOrdinalSpec));
+}
 
 reportHost2.append(
   renderReport(demoReport2, {

@@ -102,15 +102,14 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     // Censored excluded: 2 / 8 (25.0%)
     // Competing excluded: 2 / 8 (25.0%)
     // Total excluded: 4 / 8 (50.0%)
-    const readoutBText = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout",
+    const readoutTableText = el.querySelector(
+      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
     )?.textContent;
 
-    expect(readoutBText).toContain("Censored excluded");
-    expect(readoutBText).toContain("2 / 8 (25.0%)");
-    expect(readoutBText).toContain("Competing events excluded");
-    expect(readoutBText).toContain("Total excluded");
-    expect(readoutBText).toContain("4 / 8 (50.0%)");
+    expect(readoutTableText).toContain("Censored excluded");
+    expect(readoutTableText).toContain("2 / 8 (25.0%)");
+    expect(readoutTableText).toContain("Competing excluded");
+    expect(readoutTableText).toContain("2 / 8 (25.0%)");
 
     // Check slider to horizon 5 (index 1 in [0, 5, 10])
     const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider")!;
@@ -120,13 +119,12 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     // Horizon 5 under excluded:excluded:
     // Censored: 0 / 8 (0.0%)
     // Competing: 1 / 8 (12.5%)
-    // Total: 1 / 8 (12.5%)
-    const readoutBTextH5 = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout",
+    const readoutTableTextH5 = el.querySelector(
+      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
     )?.textContent;
 
-    expect(readoutBTextH5).toContain("0 / 8 (0.0%)");
-    expect(readoutBTextH5).toContain("1 / 8 (12.5%)");
+    expect(readoutTableTextH5).toContain("0 / 8 (0.0%)");
+    expect(readoutTableTextH5).toContain("1 / 8 (12.5%)");
 
     el.remove();
   });
@@ -163,10 +161,10 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     expect((panelB as HTMLElement).style.display).not.toBe("none");
 
     // Readout for horizon 5 shows 0 / 8 (0.0%)
-    const readoutBText = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout",
+    const readoutText = el.querySelector(
+      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
     )?.textContent;
-    expect(readoutBText).toContain("0 / 8 (0.0%)");
+    expect(readoutText).toContain("0 / 8 (0.0%)");
 
     el.remove();
   });
@@ -209,12 +207,11 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     panelB = el.querySelector(".rtichoke-outcome-distribution__panel--b") as HTMLElement;
     expect(panelB.style.display).not.toBe("none");
 
-    // Check shared horizon 5 readout in both panels
+    // Check unified readout in Panel A
     const readoutAText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
-    const readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
 
     expect(readoutAText).toContain("Time = 5.000");
-    expect(readoutBText).toContain("1 / 8 (12.5%)");
+    expect(readoutAText).toContain("1 / 8 (12.5%)");
 
     el.remove();
   });
@@ -233,6 +230,8 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
           horizon: 10,
           estimator: "raw",
           estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
           states: [{ stateId: "s1", count: 80, estimate: 0.8 }],
         },
         {
@@ -240,6 +239,8 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
           horizon: 10,
           estimator: "raw",
           estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
           states: [{ stateId: "s1", count: 400, estimate: 0.8 }],
         },
       ],
@@ -265,18 +266,16 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     document.body.append(el);
 
     // Initial eval-1 selected: N=100, 10 / 100 (10.0%)
-    let readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
-    expect(readoutBText).toContain("10 / 100 (10.0%)");
-    expect(readoutBText).toContain("20 / 100 (20.0%)");
+    let readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    expect(readoutText).toContain("10 / 100 (10.0%)");
 
     // Switch to eval-2
     const radioEval2 = el.querySelector<HTMLInputElement>("input[name^='od-eval-'][value='eval-2']")!;
     radioEval2.checked = true;
     radioEval2.dispatchEvent(new Event("change"));
 
-    readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
-    expect(readoutBText).toContain("50 / 500 (10.0%)");
-    expect(readoutBText).toContain("100 / 500 (20.0%)");
+    readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    expect(readoutText).toContain("50 / 500 (10.0%)");
 
     el.remove();
   });
@@ -370,11 +369,9 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     slider.dispatchEvent(new Event("input"));
 
     const readoutAText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
-    const readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
 
     expect(readoutAText).toContain("Time = 0.000");
     expect(readoutAText).toContain("No outcome probability estimates are calculated at baseline");
-    expect(readoutBText).toContain("0 / 8 (0.0%)");
 
     el.remove();
   });
@@ -405,21 +402,21 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
-    let readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
-    expect(readoutBText).toContain("Censored excluded");
-    expect(readoutBText).toContain("0 / 8 (0.0%)"); // C is not excluded at Horizon 5!
-    expect(readoutBText).toContain("Competing events excluded");
-    expect(readoutBText).toContain("1 / 8 (12.5%)"); // B (Time 4) is excluded
+    let readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    expect(readoutText).toContain("Censored excluded");
+    expect(readoutText).toContain("0 / 8 (0.0%)"); // C is not excluded at Horizon 5!
+    expect(readoutText).toContain("Competing excluded");
+    expect(readoutText).toContain("1 / 8 (12.5%)"); // B (Time 4) is excluded
 
     // Horizon 10 (Index 2 in [0, 5, 10])
     slider.value = "2";
     slider.dispatchEvent(new Event("input"));
 
-    readoutBText = el.querySelector(".rtichoke-outcome-distribution__panel--b .rtichoke-outcome-distribution__readout")?.textContent;
-    expect(readoutBText).toContain("Censored excluded");
-    expect(readoutBText).toContain("2 / 8 (25.0%)"); // C (Time 5) & D (Time 7) excluded at Horizon 10
-    expect(readoutBText).toContain("Competing events excluded");
-    expect(readoutBText).toContain("2 / 8 (25.0%)"); // B (Time 4) & E (Time 10) excluded at Horizon 10
+    readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    expect(readoutText).toContain("Censored excluded");
+    expect(readoutText).toContain("2 / 8 (25.0%)"); // C (Time 5) & D (Time 7) excluded at Horizon 10
+    expect(readoutText).toContain("Competing excluded");
+    expect(readoutText).toContain("2 / 8 (25.0%)"); // B (Time 4) & E (Time 10) excluded at Horizon 10
 
     el.remove();
   });
