@@ -24,7 +24,8 @@ export function assertStateDistributionValid(
     dist.estimateOrigin !== undefined &&
     dist.estimateOrigin !== null &&
     dist.estimateOrigin !== "event_table" &&
-    dist.estimateOrigin !== "fixed_time_horizon"
+    dist.estimateOrigin !== "fixed_time_horizon" &&
+    dist.estimateOrigin !== "observed_step"
   ) {
     throw new Error(
       `invalid estimateOrigin '${dist.estimateOrigin}' for evaluation ${dist.evaluationId}`,
@@ -140,7 +141,101 @@ export function assertOutcomeDistributionReferentialIntegrity(
     throw new Error("stateDistributions must be non-empty");
   }
 
+  const observedStep = spec.xAxisKind === "step";
+  const order = spec.stateOrder;
+  if (order && new Set(order).size !== order.length) {
+    throw new Error("duplicate canonical state IDs in stateOrder");
+  }
+  if (observedStep && (!order || order.length === 0)) {
+    throw new Error("observed steps require nonempty stateOrder");
+  }
+
+  const seenDistributionKeys = new Set<string>();
+  const explicitLabelsMap = new Map<string, string>();
+
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
+
+    const isDistObservedStep = dist.estimateOrigin === "observed_step";
+    if (observedStep !== isDistObservedStep) {
+      throw new Error("incompatible mixing of time and step origins");
+    }
+
+    if (observedStep) {
+      if (dist.estimator !== "raw") {
+        throw new Error("observed_step estimator must be raw");
+      }
+      if (
+        dist.horizon === undefined ||
+        dist.horizon === null ||
+        !Number.isInteger(dist.horizon) ||
+        dist.horizon < 0
+      ) {
+        throw new Error("observed_step horizon must be a nonnegative integer");
+      }
+
+      const evalStepKey = `${dist.evaluationId}:${dist.horizon}`;
+      if (seenDistributionKeys.has(evalStepKey)) {
+        throw new Error("duplicate observed-step distributions for evaluation");
+      }
+      seenDistributionKeys.add(evalStepKey);
+
+      const stateIdsInDist = new Set<string>();
+      let totalCount = 0;
+
+      for (const st of dist.states) {
+        if (stateIdsInDist.has(st.stateId)) {
+          throw new Error("duplicate state IDs within distribution");
+        }
+        stateIdsInDist.add(st.stateId);
+
+        if (!order!.includes(st.stateId)) {
+          throw new Error("state outside declared stateOrder: " + st.stateId);
+        }
+
+        if (
+          st.count === undefined ||
+          st.count === null ||
+          !Number.isInteger(st.count) ||
+          st.count < 0
+        ) {
+          throw new Error("observed_step requires nonnegative integer counts");
+        }
+        totalCount += st.count;
+      }
+
+      if (totalCount <= 0) {
+        throw new Error("observed_step denominator must be positive");
+      }
+
+      for (const st of dist.states) {
+        if (
+          st.estimate !== undefined &&
+          st.estimate !== null &&
+          Math.abs(st.estimate - st.count! / totalCount) > 1e-8
+        ) {
+          throw new Error("observed_step estimate inconsistent with authoritative count");
+        }
+      }
+
+      const sumProportions = dist.states.reduce(
+        (acc, st) => acc + (st.estimate ?? st.count! / totalCount),
+        0,
+      );
+      if (Math.abs(sumProportions - 1) > 1e-8) {
+        throw new Error("observed_step proportions must sum to one");
+      }
+    }
+
+    // Check label consistency across all distributions
+    for (const st of dist.states) {
+      if (st.label !== undefined && st.label !== null && st.label.trim() !== "") {
+        const existingLabel = explicitLabelsMap.get(st.stateId);
+        if (existingLabel !== undefined && existingLabel !== st.label) {
+          throw new Error(`inconsistent state label across steps: ${st.stateId}`);
+        }
+        explicitLabelsMap.set(st.stateId, st.label);
+      }
+    }
   }
 }

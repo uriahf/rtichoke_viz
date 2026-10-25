@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "xAxisKind": "step",
+  "stateOrder": [
+    "low",
+    "moderate",
+    "high",
+    "severe"
+  ],
+  "evaluations": [
+    {
+      "id": "cohort",
+      "model": "Ordinal longitudinal illustrative",
+      "population": "Observed cohort"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "cohort",
+      "horizon": 0,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        {
+          "stateId": "low",
+          "label": "Low",
+          "count": 50
+        },
+        {
+          "stateId": "moderate",
+          "label": "Moderate",
+          "count": 30
+        },
+        {
+          "stateId": "high",
+          "label": "High",
+          "count": 15
+        },
+        {
+          "stateId": "severe",
+          "label": "Severe",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "evaluationId": "cohort",
+      "horizon": 2,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        {
+          "stateId": "low",
+          "label": "Low",
+          "count": 30
+        },
+        {
+          "stateId": "moderate",
+          "label": "Moderate",
+          "count": 32
+        },
+        {
+          "stateId": "high",
+          "label": "High",
+          "count": 18
+        },
+        {
+          "stateId": "severe",
+          "label": "Severe",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "evaluationId": "cohort",
+      "horizon": 5,
+      "estimator": "raw",
+      "estimateOrigin": "observed_step",
+      "states": [
+        {
+          "stateId": "low",
+          "label": "Low",
+          "count": 15
+        },
+        {
+          "stateId": "moderate",
+          "label": "Moderate",
+          "count": 20
+        },
+        {
+          "stateId": "high",
+          "label": "High",
+          "count": 25
+        },
+        {
+          "stateId": "severe",
+          "label": "Severe",
+          "count": 10
+        }
+      ]
+    }
+  ]
+}

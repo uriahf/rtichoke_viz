@@ -278,7 +278,12 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       horizon: 10,
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
-      states: [{ stateId: "real_positive", label: "Event", count: 100 }],
+      states: [
+        { stateId: "real_positive", count: 100 },
+        { stateId: "real_competing", count: 0 },
+        { stateId: "real_negative", count: 0 },
+        { stateId: "real_censored", count: 0 },
+      ],
     });
 
     const rootMulti = renderOutcomeDistribution(specMulti);
