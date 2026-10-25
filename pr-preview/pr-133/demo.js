@@ -28661,6 +28661,7 @@ function resolveActiveSpecForComponent(spec, activeHeuristic, selectedHorizon) {
       if (activeHeuristic === basePair) {
         return { resolvedSpec: spec, isUnavailable: false };
       }
+      return { isUnavailable: true };
     }
   }
   return { isUnavailable: true };
@@ -157023,10 +157024,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 0 },
-        { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 10 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 10
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157035,10 +157052,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 1 },
-        { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 9 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 1
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 9
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157047,10 +157080,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 2 },
-        { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 8 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 2
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 8
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157059,10 +157108,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 2 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 7 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 2
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 7
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157071,10 +157136,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 3 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 6 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 3
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 6
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157083,10 +157164,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 4 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 4
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 5
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157095,10 +157192,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 4 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 4 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 1 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 4
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 4
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 1
+        }
       ]
     },
     {
@@ -157107,10 +157220,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 4 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 3 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 4
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 3
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     },
     {
@@ -157119,10 +157248,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 5 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 2 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 5
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 2
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     },
     {
@@ -157131,10 +157276,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 5 },
-        { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 1 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 5
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 2
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 1
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     },
     {
@@ -157143,10 +157304,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 6 },
-        { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 0 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 6
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 2
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 0
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     },
     {
@@ -157155,10 +157332,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 0 },
-        { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 10 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 10
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157167,10 +157360,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 2 },
-        { stateId: "real_competing", label: "Competing outcome", count: 0 },
-        { stateId: "real_negative", label: "No target event", count: 8 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 2
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 8
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157179,10 +157388,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 3 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 6 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 3
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 6
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157191,10 +157416,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 4 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 5 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 0 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 4
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 5
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 0
+        }
       ]
     },
     {
@@ -157203,10 +157444,26 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 5 },
-        { stateId: "real_competing", label: "Competing outcome", count: 1 },
-        { stateId: "real_negative", label: "No target event", count: 2 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 5
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 1
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 2
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     },
     {
@@ -157215,13 +157472,1395 @@ var outcome_distribution_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", label: "Target event", count: 6 },
-        { stateId: "real_competing", label: "Competing outcome", count: 2 },
-        { stateId: "real_negative", label: "No target event", count: 0 },
-        { stateId: "real_censored", label: "Unknown / excluded", count: 2 }
+        {
+          stateId: "real_positive",
+          label: "Target event",
+          count: 6
+        },
+        {
+          stateId: "real_competing",
+          label: "Competing outcome",
+          count: 2
+        },
+        {
+          stateId: "real_negative",
+          label: "No target event",
+          count: 0
+        },
+        {
+          stateId: "real_censored",
+          label: "Unknown / excluded",
+          count: 2
+        }
       ]
     }
-  ]
+  ],
+  variants: {
+    "excluded:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.333333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.666667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.444444
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.555556
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.714286
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.285714
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 2
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.7
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.625
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.375
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.75
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.25
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.625
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.125
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.25
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.75
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.25
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.4
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.5
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.75
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.25
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 2,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.333333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.666667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.444444
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.555556
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.555556
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.444444
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.75
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.25
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 1
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 2
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.7
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.5
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.6
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.4
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.2
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.5
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.4
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.6
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.2
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-canonical",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.2
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.8
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.4
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.6
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.5
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.6
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.4
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-canonical",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.8
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.2
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-canonical",
+          originalSampleSize: 10,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    }
+  }
 };
 
 // fixtures/v2/outcome-distribution-large.json
@@ -157243,10 +158882,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 0 },
-        { stateId: "real_competing", count: 0 },
-        { stateId: "real_negative", count: 3e3 },
-        { stateId: "real_censored", count: 0 }
+        {
+          stateId: "real_positive",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          count: 3e3
+        },
+        {
+          stateId: "real_censored",
+          count: 0
+        }
       ]
     },
     {
@@ -157255,10 +158906,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 320 },
-        { stateId: "real_competing", count: 80 },
-        { stateId: "real_negative", count: 2550 },
-        { stateId: "real_censored", count: 50 }
+        {
+          stateId: "real_positive",
+          count: 320
+        },
+        {
+          stateId: "real_competing",
+          count: 80
+        },
+        {
+          stateId: "real_negative",
+          count: 2550
+        },
+        {
+          stateId: "real_censored",
+          count: 50
+        }
       ]
     },
     {
@@ -157267,10 +158930,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 650 },
-        { stateId: "real_competing", count: 160 },
-        { stateId: "real_negative", count: 2090 },
-        { stateId: "real_censored", count: 100 }
+        {
+          stateId: "real_positive",
+          count: 650
+        },
+        {
+          stateId: "real_competing",
+          count: 160
+        },
+        {
+          stateId: "real_negative",
+          count: 2090
+        },
+        {
+          stateId: "real_censored",
+          count: 100
+        }
       ]
     },
     {
@@ -157279,10 +158954,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 920 },
-        { stateId: "real_competing", count: 240 },
-        { stateId: "real_negative", count: 1690 },
-        { stateId: "real_censored", count: 150 }
+        {
+          stateId: "real_positive",
+          count: 920
+        },
+        {
+          stateId: "real_competing",
+          count: 240
+        },
+        {
+          stateId: "real_negative",
+          count: 1690
+        },
+        {
+          stateId: "real_censored",
+          count: 150
+        }
       ]
     },
     {
@@ -157291,10 +158978,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 1120 },
-        { stateId: "real_competing", count: 300 },
-        { stateId: "real_negative", count: 1400 },
-        { stateId: "real_censored", count: 180 }
+        {
+          stateId: "real_positive",
+          count: 1120
+        },
+        {
+          stateId: "real_competing",
+          count: 300
+        },
+        {
+          stateId: "real_negative",
+          count: 1400
+        },
+        {
+          stateId: "real_censored",
+          count: 180
+        }
       ]
     },
     {
@@ -157303,10 +159002,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "event_table",
       states: [
-        { stateId: "real_positive", count: 1257 },
-        { stateId: "real_competing", count: 342 },
-        { stateId: "real_negative", count: 1201 },
-        { stateId: "real_censored", count: 200 }
+        {
+          stateId: "real_positive",
+          count: 1257
+        },
+        {
+          stateId: "real_competing",
+          count: 342
+        },
+        {
+          stateId: "real_negative",
+          count: 1201
+        },
+        {
+          stateId: "real_censored",
+          count: 200
+        }
       ]
     },
     {
@@ -157315,10 +159026,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 0 },
-        { stateId: "real_competing", count: 0 },
-        { stateId: "real_negative", count: 3e3 },
-        { stateId: "real_censored", count: 0 }
+        {
+          stateId: "real_positive",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          count: 3e3
+        },
+        {
+          stateId: "real_censored",
+          count: 0
+        }
       ]
     },
     {
@@ -157327,10 +159050,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 320 },
-        { stateId: "real_competing", count: 80 },
-        { stateId: "real_negative", count: 2550 },
-        { stateId: "real_censored", count: 50 }
+        {
+          stateId: "real_positive",
+          count: 320
+        },
+        {
+          stateId: "real_competing",
+          count: 80
+        },
+        {
+          stateId: "real_negative",
+          count: 2550
+        },
+        {
+          stateId: "real_censored",
+          count: 50
+        }
       ]
     },
     {
@@ -157339,10 +159074,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 650 },
-        { stateId: "real_competing", count: 160 },
-        { stateId: "real_negative", count: 2090 },
-        { stateId: "real_censored", count: 100 }
+        {
+          stateId: "real_positive",
+          count: 650
+        },
+        {
+          stateId: "real_competing",
+          count: 160
+        },
+        {
+          stateId: "real_negative",
+          count: 2090
+        },
+        {
+          stateId: "real_censored",
+          count: 100
+        }
       ]
     },
     {
@@ -157351,10 +159098,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 920 },
-        { stateId: "real_competing", count: 240 },
-        { stateId: "real_negative", count: 1690 },
-        { stateId: "real_censored", count: 150 }
+        {
+          stateId: "real_positive",
+          count: 920
+        },
+        {
+          stateId: "real_competing",
+          count: 240
+        },
+        {
+          stateId: "real_negative",
+          count: 1690
+        },
+        {
+          stateId: "real_censored",
+          count: 150
+        }
       ]
     },
     {
@@ -157363,10 +159122,22 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 1120 },
-        { stateId: "real_competing", count: 300 },
-        { stateId: "real_negative", count: 1400 },
-        { stateId: "real_censored", count: 180 }
+        {
+          stateId: "real_positive",
+          count: 1120
+        },
+        {
+          stateId: "real_competing",
+          count: 300
+        },
+        {
+          stateId: "real_negative",
+          count: 1400
+        },
+        {
+          stateId: "real_censored",
+          count: 180
+        }
       ]
     },
     {
@@ -157375,13 +159146,1391 @@ var outcome_distribution_large_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 1257 },
-        { stateId: "real_competing", count: 342 },
-        { stateId: "real_negative", count: 1201 },
-        { stateId: "real_censored", count: 200 }
+        {
+          stateId: "real_positive",
+          count: 1257
+        },
+        {
+          stateId: "real_competing",
+          count: 342
+        },
+        {
+          stateId: "real_negative",
+          count: 1201
+        },
+        {
+          stateId: "real_censored",
+          count: 200
+        }
       ]
     }
-  ]
+  ],
+  variants: {
+    "excluded:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.111498
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.888502
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.237226
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.762774
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.35249
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.64751
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.444444
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.555556
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.511391
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.488609
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 50,
+              competingExcludedCount: 80
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 160
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 240
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 180,
+              competingExcludedCount: 300
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 342
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.108475
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.891525
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.224138
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.775862
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.322807
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.677193
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.397163
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.602837
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.448929
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.551071
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 50,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 180,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.108475
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.027119
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.864407
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.224138
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.055172
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.72069
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.322807
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.084211
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.592982
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.397163
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.106383
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.496454
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.448929
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.122143
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.428929
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 50,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 180,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.135593
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.864407
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.27931
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.72069
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.407018
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.592982
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.503546
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.496454
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.571071
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.428929
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 50,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 180,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.109589
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.890411
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.228873
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.771127
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.333333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.666667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.414815
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.585185
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.472912
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.527088
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 80
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 160
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 240
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 300
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 342
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.106667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.893333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.216667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.783333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.306667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.693333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.373333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.626667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.419
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.581
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.106667
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.026667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.866667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.216667
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.053333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.73
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.306667
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.08
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.613333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.373333
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.526667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.419
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.114
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.467
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 10,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.133333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.866667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 20,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.27
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.73
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.386667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.613333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 40,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.473333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.526667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test-cohort",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.533
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.467
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-test-cohort",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 10,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 20,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 40,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    }
+  }
 };
 
 // fixtures/v2/outcome-distribution-populations.json
@@ -157416,10 +160565,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 0 },
-        { stateId: "real_competing", count: 0 },
-        { stateId: "real_negative", count: 5e3 },
-        { stateId: "real_censored", count: 0 }
+        {
+          stateId: "real_positive",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          count: 5e3
+        },
+        {
+          stateId: "real_censored",
+          count: 0
+        }
       ]
     },
     {
@@ -157428,10 +160589,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 1500 },
-        { stateId: "real_competing", count: 400 },
-        { stateId: "real_negative", count: 2800 },
-        { stateId: "real_censored", count: 300 }
+        {
+          stateId: "real_positive",
+          count: 1500
+        },
+        {
+          stateId: "real_competing",
+          count: 400
+        },
+        {
+          stateId: "real_negative",
+          count: 2800
+        },
+        {
+          stateId: "real_censored",
+          count: 300
+        }
       ]
     },
     {
@@ -157440,10 +160613,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 2076 },
-        { stateId: "real_competing", count: 524 },
-        { stateId: "real_negative", count: 2e3 },
-        { stateId: "real_censored", count: 400 }
+        {
+          stateId: "real_positive",
+          count: 2076
+        },
+        {
+          stateId: "real_competing",
+          count: 524
+        },
+        {
+          stateId: "real_negative",
+          count: 2e3
+        },
+        {
+          stateId: "real_censored",
+          count: 400
+        }
       ]
     },
     {
@@ -157452,10 +160637,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 0 },
-        { stateId: "real_competing", count: 0 },
-        { stateId: "real_negative", count: 3e3 },
-        { stateId: "real_censored", count: 0 }
+        {
+          stateId: "real_positive",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          count: 3e3
+        },
+        {
+          stateId: "real_censored",
+          count: 0
+        }
       ]
     },
     {
@@ -157464,10 +160661,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 920 },
-        { stateId: "real_competing", count: 240 },
-        { stateId: "real_negative", count: 1690 },
-        { stateId: "real_censored", count: 150 }
+        {
+          stateId: "real_positive",
+          count: 920
+        },
+        {
+          stateId: "real_competing",
+          count: 240
+        },
+        {
+          stateId: "real_negative",
+          count: 1690
+        },
+        {
+          stateId: "real_censored",
+          count: 150
+        }
       ]
     },
     {
@@ -157476,10 +160685,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 1257 },
-        { stateId: "real_competing", count: 342 },
-        { stateId: "real_negative", count: 1201 },
-        { stateId: "real_censored", count: 200 }
+        {
+          stateId: "real_positive",
+          count: 1257
+        },
+        {
+          stateId: "real_competing",
+          count: 342
+        },
+        {
+          stateId: "real_negative",
+          count: 1201
+        },
+        {
+          stateId: "real_censored",
+          count: 200
+        }
       ]
     },
     {
@@ -157488,10 +160709,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 0 },
-        { stateId: "real_competing", count: 0 },
-        { stateId: "real_negative", count: 2e3 },
-        { stateId: "real_censored", count: 0 }
+        {
+          stateId: "real_positive",
+          count: 0
+        },
+        {
+          stateId: "real_competing",
+          count: 0
+        },
+        {
+          stateId: "real_negative",
+          count: 2e3
+        },
+        {
+          stateId: "real_censored",
+          count: 0
+        }
       ]
     },
     {
@@ -157500,10 +160733,22 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 680 },
-        { stateId: "real_competing", count: 180 },
-        { stateId: "real_negative", count: 1040 },
-        { stateId: "real_censored", count: 100 }
+        {
+          stateId: "real_positive",
+          count: 680
+        },
+        {
+          stateId: "real_competing",
+          count: 180
+        },
+        {
+          stateId: "real_negative",
+          count: 1040
+        },
+        {
+          stateId: "real_censored",
+          count: 100
+        }
       ]
     },
     {
@@ -157512,13 +160757,2117 @@ var outcome_distribution_populations_default = {
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
       states: [
-        { stateId: "real_positive", count: 924 },
-        { stateId: "real_competing", count: 256 },
-        { stateId: "real_negative", count: 670 },
-        { stateId: "real_censored", count: 150 }
+        {
+          stateId: "real_positive",
+          count: 924
+        },
+        {
+          stateId: "real_competing",
+          count: 256
+        },
+        {
+          stateId: "real_negative",
+          count: 670
+        },
+        {
+          stateId: "real_censored",
+          count: 150
+        }
       ]
     }
-  ]
+  ],
+  variants: {
+    "excluded:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.348837
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.651163
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.509323
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.490677
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.35249
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.64751
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.511391
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.488609
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.395349
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.604651
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.579674
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.420326
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 300,
+              competingExcludedCount: 400
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 400,
+              competingExcludedCount: 524
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 240
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 342
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 180
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 256
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.319149
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.680851
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.451304
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.548696
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.322807
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.677193
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.448929
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.551071
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.357895
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.642105
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.499459
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.500541
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 300,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 400,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.319149
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.085106
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.595745
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.451304
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.113913
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.434783
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.322807
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.084211
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.592982
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.448929
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.122143
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.428929
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.357895
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.094737
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.547368
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.499459
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.138378
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.362162
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 300,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 400,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.404255
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.595745
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.565217
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.434783
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.407018
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.592982
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.571071
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.428929
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.452632
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.547368
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "excluded",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.637838
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.362162
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 300,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 400,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 200,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 100,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 150,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:excluded": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.326087
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.673913
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.463807
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.536193
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.333333
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.666667
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.472912
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.527088
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.373626
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.626374
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "kaplan_meier",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "excluded",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.529817
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.470183
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 400
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 524
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 240
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 342
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 180
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 256
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_censored": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.7
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4152
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.5848
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.306667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.693333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.419
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.581
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.34
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.66
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_censored",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.462
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.538
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_negative": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.3
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.08
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.62
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.4152
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.1048
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.48
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.306667
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.08
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.613333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.419
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.114
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.467
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.34
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.09
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.57
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_negative",
+          states: [
+            {
+              stateId: "primary",
+              label: "Target event",
+              estimate: 0.462
+            },
+            {
+              stateId: "competing",
+              label: "Competing outcome",
+              estimate: 0.128
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.41
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_composite": {
+      status: "available",
+      stateDistributions: [
+        {
+          evaluationId: "eval-train",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.38
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.62
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-train",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.52
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.48
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.386667
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.613333
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.533
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.467
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 0,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 1
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 30,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.43
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.57
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          horizon: 50,
+          estimator: "aalen_johansen",
+          estimateOrigin: "fixed_time_horizon",
+          censoringHeuristic: "adjusted",
+          competingHeuristic: "adjusted_as_composite",
+          states: [
+            {
+              stateId: "composite",
+              label: "Composite Event",
+              estimate: 0.59
+            },
+            {
+              stateId: "event_free",
+              label: "No target event",
+              estimate: 0.41
+            }
+          ]
+        }
+      ],
+      exclusions: [
+        {
+          evaluationId: "eval-train",
+          originalSampleSize: 5e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-test",
+          originalSampleSize: 3e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        },
+        {
+          evaluationId: "eval-val",
+          originalSampleSize: 2e3,
+          excludedCounts: [
+            {
+              horizon: 0,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 30,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            },
+            {
+              horizon: 50,
+              censoredExcludedCount: 0,
+              competingExcludedCount: 0
+            }
+          ]
+        }
+      ]
+    }
+  }
 };
 
 // fixtures/v2/fixture-a-heuristics-report.json
