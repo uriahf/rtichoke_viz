@@ -1164,6 +1164,33 @@
 .rtichoke-outcome-distribution__chart {
   overflow-x: auto;
 }
+.rtichoke-outcome-distribution__panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+.rtichoke-outcome-distribution__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.rtichoke-outcome-distribution__panel-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.15rem 0;
+}
+.rtichoke-outcome-distribution__incomplete {
+  font-size: 13px;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+}
 .rtichoke-outcome-distribution__empty {
   font-size: 14px;
   color: #64748b;
