@@ -234,6 +234,7 @@ function resolveActiveSpecForComponent(
       if (activeHeuristic === basePair) {
         return { resolvedSpec: spec, isUnavailable: false };
       }
+      return { isUnavailable: true };
     }
   }
 

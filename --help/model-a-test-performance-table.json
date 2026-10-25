@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "2.0",
+  "type": "performance_table",
+  "title": "Performance Summary Table",
+  "evaluations": [
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test",
+      "label": "Model A \u2014 Test"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "sensitivity",
+      "label": "Sensitivity"
+    },
+    {
+      "id": "specificity",
+      "label": "Specificity"
+    },
+    {
+      "id": "ppv",
+      "label": "PPV"
+    },
+    {
+      "id": "npv",
+      "label": "NPV"
+    },
+    {
+      "id": "lift",
+      "label": "Lift"
+    }
+  ],
+  "rows": [
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.2,
+        "cutoff": 0.2
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.973
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.1928
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.465
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.9081
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.1098
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.5,
+        "cutoff": 0.5
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.7176
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.6913
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.6264
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.7724
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.495
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.8,
+        "cutoff": 0.8
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.2411
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.9633
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.8256
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.6377
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.9704
+        }
+      ]
+    }
+  ]
+}

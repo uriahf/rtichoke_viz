@@ -1,0 +1,319 @@
+{
+  "schemaVersion": "2.0",
+  "type": "performance_table",
+  "title": "Performance Summary Table",
+  "evaluations": [
+    {
+      "id": "Model A - Train",
+      "model": "Model A",
+      "population": "Train",
+      "label": "Model A \u2014 Train"
+    },
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test",
+      "label": "Model A \u2014 Test"
+    },
+    {
+      "id": "Model A - Validation",
+      "model": "Model A",
+      "population": "Validation",
+      "label": "Model A \u2014 Validation"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "sensitivity",
+      "label": "Sensitivity"
+    },
+    {
+      "id": "specificity",
+      "label": "Specificity"
+    },
+    {
+      "id": "ppv",
+      "label": "PPV"
+    },
+    {
+      "id": "npv",
+      "label": "NPV"
+    },
+    {
+      "id": "lift",
+      "label": "Lift"
+    }
+  ],
+  "rows": [
+    {
+      "evaluationId": "Model A - Train",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.2,
+        "cutoff": 0.2
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.9735
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.1929
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.4613
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.9111
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.1111
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Train",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.5,
+        "cutoff": 0.5
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.7254
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.6662
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.6068
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.7736
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.4614
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Train",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.8,
+        "cutoff": 0.8
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.2293
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.9668
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.8307
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.6386
+        },
+        {
+          "metricId": "lift",
+          "estimate": 2.0008
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.2,
+        "cutoff": 0.2
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.973
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.1928
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.465
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.9081
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.1098
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.5,
+        "cutoff": 0.5
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.7176
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.6913
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.6264
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.7724
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.495
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Test",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.8,
+        "cutoff": 0.8
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.2411
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.9633
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.8256
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.6377
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.9704
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Validation",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.2,
+        "cutoff": 0.2
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.9762
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.1599
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.4994
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.8866
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.0811
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Validation",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.5,
+        "cutoff": 0.5
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.7359
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.6134
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.6204
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.7301
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.3429
+        }
+      ]
+    },
+    {
+      "evaluationId": "Model A - Validation",
+      "operatingPoint": {
+        "type": "probability_threshold",
+        "value": 0.8,
+        "cutoff": 0.8
+      },
+      "values": [
+        {
+          "metricId": "sensitivity",
+          "estimate": 0.2327
+        },
+        {
+          "metricId": "specificity",
+          "estimate": 0.9452
+        },
+        {
+          "metricId": "ppv",
+          "estimate": 0.7847
+        },
+        {
+          "metricId": "npv",
+          "estimate": 0.5892
+        },
+        {
+          "metricId": "lift",
+          "estimate": 1.6984
+        }
+      ]
+    }
+  ]
+}

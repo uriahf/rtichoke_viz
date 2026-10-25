@@ -1,0 +1,2138 @@
+{
+  "schemaVersion": "2.0",
+  "type": "calibration",
+  "evaluations": [
+    {
+      "id": "Model A - Train",
+      "model": "Model A",
+      "population": "Train",
+      "label": "Model A \u2014 Train"
+    },
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test",
+      "label": "Model A \u2014 Test"
+    },
+    {
+      "id": "Model A - Validation",
+      "model": "Model A",
+      "population": "Validation",
+      "label": "Model A \u2014 Validation"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-Model A - Train",
+      "evaluationId": "Model A - Train",
+      "display": {
+        "label": "Train",
+        "group": "Train",
+        "role": "population"
+      }
+    },
+    {
+      "id": "series-Model A - Test",
+      "evaluationId": "Model A - Test",
+      "display": {
+        "label": "Test",
+        "group": "Test",
+        "role": "population"
+      }
+    },
+    {
+      "id": "series-Model A - Validation",
+      "evaluationId": "Model A - Validation",
+      "display": {
+        "label": "Validation",
+        "group": "Validation",
+        "role": "population"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.114,
+      "observed": 0.074,
+      "method": "discrete",
+      "events": 37,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.2233,
+      "observed": 0.19,
+      "method": "discrete",
+      "events": 95,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.3086,
+      "observed": 0.218,
+      "method": "discrete",
+      "events": 109,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.3833,
+      "observed": 0.27,
+      "method": "discrete",
+      "events": 135,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.4577,
+      "observed": 0.376,
+      "method": "discrete",
+      "events": 188,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.5339,
+      "observed": 0.432,
+      "method": "discrete",
+      "events": 216,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.6069,
+      "observed": 0.466,
+      "method": "discrete",
+      "events": 233,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.6821,
+      "observed": 0.57,
+      "method": "discrete",
+      "events": 285,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.7665,
+      "observed": 0.714,
+      "method": "discrete",
+      "events": 357,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "predicted": 0.8732,
+      "observed": 0.842,
+      "method": "discrete",
+      "events": 421,
+      "total": 500
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.1111,
+      "observed": 0.0833,
+      "method": "discrete",
+      "events": 25,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.2217,
+      "observed": 0.16,
+      "method": "discrete",
+      "events": 48,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.3035,
+      "observed": 0.16,
+      "method": "discrete",
+      "events": 48,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.3805,
+      "observed": 0.2967,
+      "method": "discrete",
+      "events": 89,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.4497,
+      "observed": 0.4,
+      "method": "discrete",
+      "events": 120,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.521,
+      "observed": 0.4333,
+      "method": "discrete",
+      "events": 130,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.6041,
+      "observed": 0.5033,
+      "method": "discrete",
+      "events": 151,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.6905,
+      "observed": 0.6167,
+      "method": "discrete",
+      "events": 185,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.7772,
+      "observed": 0.6933,
+      "method": "discrete",
+      "events": 208,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "predicted": 0.879,
+      "observed": 0.8433,
+      "method": "discrete",
+      "events": 253,
+      "total": 300
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.1335,
+      "observed": 0.115,
+      "method": "discrete",
+      "events": 23,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.2579,
+      "observed": 0.235,
+      "method": "discrete",
+      "events": 47,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.3444,
+      "observed": 0.29,
+      "method": "discrete",
+      "events": 58,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.4219,
+      "observed": 0.39,
+      "method": "discrete",
+      "events": 78,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.4959,
+      "observed": 0.4,
+      "method": "discrete",
+      "events": 80,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.5656,
+      "observed": 0.56,
+      "method": "discrete",
+      "events": 112,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.6369,
+      "observed": 0.53,
+      "method": "discrete",
+      "events": 106,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.7146,
+      "observed": 0.615,
+      "method": "discrete",
+      "events": 123,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.7884,
+      "observed": 0.675,
+      "method": "discrete",
+      "events": 135,
+      "total": 200
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "predicted": 0.8883,
+      "observed": 0.81,
+      "method": "discrete",
+      "events": 162,
+      "total": 200
+    }
+  ],
+  "distribution": [
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.0,
+      "count": 15,
+      "binWidth": 0.005
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.005,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.015,
+      "count": 3,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.025,
+      "count": 5,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.035,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.045,
+      "count": 9,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.055,
+      "count": 21,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.065,
+      "count": 22,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.075,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.085,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.095,
+      "count": 34,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.105,
+      "count": 34,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.115,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.125,
+      "count": 41,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.135,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.145,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.155,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.165,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.175,
+      "count": 48,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.185,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.195,
+      "count": 54,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.205,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.215,
+      "count": 71,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.225,
+      "count": 61,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.235,
+      "count": 68,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.245,
+      "count": 54,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.255,
+      "count": 53,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.265,
+      "count": 48,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.275,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.285,
+      "count": 54,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.295,
+      "count": 69,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.305,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.315,
+      "count": 83,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.325,
+      "count": 60,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.335,
+      "count": 60,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.345,
+      "count": 65,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.355,
+      "count": 75,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.365,
+      "count": 55,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.375,
+      "count": 84,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.385,
+      "count": 74,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.395,
+      "count": 52,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.405,
+      "count": 75,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.415,
+      "count": 61,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.425,
+      "count": 78,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.435,
+      "count": 75,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.445,
+      "count": 57,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.455,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.465,
+      "count": 70,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.475,
+      "count": 63,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.485,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.495,
+      "count": 69,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.505,
+      "count": 68,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.515,
+      "count": 60,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.525,
+      "count": 84,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.535,
+      "count": 78,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.545,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.555,
+      "count": 65,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.565,
+      "count": 45,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.575,
+      "count": 78,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.585,
+      "count": 72,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.595,
+      "count": 78,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.605,
+      "count": 77,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.615,
+      "count": 70,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.625,
+      "count": 64,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.635,
+      "count": 57,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.645,
+      "count": 69,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.655,
+      "count": 69,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.665,
+      "count": 60,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.675,
+      "count": 64,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.685,
+      "count": 62,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.695,
+      "count": 78,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.705,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.715,
+      "count": 71,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.725,
+      "count": 60,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.735,
+      "count": 44,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.745,
+      "count": 55,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.755,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.765,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.775,
+      "count": 47,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.785,
+      "count": 57,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.795,
+      "count": 49,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.805,
+      "count": 51,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.815,
+      "count": 48,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.825,
+      "count": 49,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.835,
+      "count": 54,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.845,
+      "count": 58,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.855,
+      "count": 38,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.865,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.875,
+      "count": 47,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.885,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.895,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.905,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.915,
+      "count": 25,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.925,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.935,
+      "count": 14,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.945,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.955,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.965,
+      "count": 9,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.975,
+      "count": 5,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.985,
+      "count": 1,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Train",
+      "midpoint": 0.995,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.0,
+      "count": 15,
+      "binWidth": 0.005
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.005,
+      "count": 1,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.015,
+      "count": 2,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.025,
+      "count": 6,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.035,
+      "count": 5,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.045,
+      "count": 10,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.055,
+      "count": 12,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.065,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.075,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.085,
+      "count": 9,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.095,
+      "count": 13,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.105,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.115,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.125,
+      "count": 18,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.135,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.145,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.155,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.165,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.175,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.185,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.195,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.205,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.215,
+      "count": 45,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.225,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.235,
+      "count": 43,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.245,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.255,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.265,
+      "count": 52,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.275,
+      "count": 36,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.285,
+      "count": 36,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.295,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.305,
+      "count": 36,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.315,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.325,
+      "count": 39,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.335,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.345,
+      "count": 43,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.355,
+      "count": 45,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.365,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.375,
+      "count": 41,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.385,
+      "count": 35,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.395,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.405,
+      "count": 51,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.415,
+      "count": 39,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.425,
+      "count": 52,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.435,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.445,
+      "count": 41,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.455,
+      "count": 48,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.465,
+      "count": 39,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.475,
+      "count": 47,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.485,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.495,
+      "count": 45,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.505,
+      "count": 56,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.515,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.525,
+      "count": 44,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.535,
+      "count": 35,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.545,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.555,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.565,
+      "count": 35,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.575,
+      "count": 35,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.585,
+      "count": 38,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.595,
+      "count": 39,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.605,
+      "count": 36,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.615,
+      "count": 40,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.625,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.635,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.645,
+      "count": 41,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.655,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.665,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.675,
+      "count": 32,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.685,
+      "count": 32,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.695,
+      "count": 32,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.705,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.715,
+      "count": 44,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.725,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.735,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.745,
+      "count": 37,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.755,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.765,
+      "count": 32,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.775,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.785,
+      "count": 39,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.795,
+      "count": 42,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.805,
+      "count": 40,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.815,
+      "count": 34,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.825,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.835,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.845,
+      "count": 40,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.855,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.865,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.875,
+      "count": 23,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.885,
+      "count": 14,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.895,
+      "count": 12,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.905,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.915,
+      "count": 13,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.925,
+      "count": 15,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.935,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.945,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.955,
+      "count": 9,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.965,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.975,
+      "count": 3,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.985,
+      "count": 1,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "midpoint": 0.995,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.0,
+      "count": 12,
+      "binWidth": 0.005
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.005,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.015,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.025,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.035,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.045,
+      "count": 3,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.055,
+      "count": 5,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.065,
+      "count": 7,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.075,
+      "count": 7,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.085,
+      "count": 7,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.095,
+      "count": 6,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.105,
+      "count": 12,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.115,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.125,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.135,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.145,
+      "count": 15,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.155,
+      "count": 10,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.165,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.175,
+      "count": 15,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.185,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.195,
+      "count": 23,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.205,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.215,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.225,
+      "count": 10,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.235,
+      "count": 23,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.245,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.255,
+      "count": 21,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.265,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.275,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.285,
+      "count": 35,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.295,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.305,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.315,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.325,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.335,
+      "count": 32,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.345,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.355,
+      "count": 22,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.365,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.375,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.385,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.395,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.405,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.415,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.425,
+      "count": 27,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.435,
+      "count": 25,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.445,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.455,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.465,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.475,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.485,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.495,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.505,
+      "count": 40,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.515,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.525,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.535,
+      "count": 18,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.545,
+      "count": 33,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.555,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.565,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.575,
+      "count": 34,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.585,
+      "count": 23,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.595,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.605,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.615,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.625,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.635,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.645,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.655,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.665,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.675,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.685,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.695,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.705,
+      "count": 26,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.715,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.725,
+      "count": 31,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.735,
+      "count": 34,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.745,
+      "count": 29,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.755,
+      "count": 28,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.765,
+      "count": 30,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.775,
+      "count": 25,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.785,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.795,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.805,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.815,
+      "count": 22,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.825,
+      "count": 20,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.835,
+      "count": 21,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.845,
+      "count": 15,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.855,
+      "count": 25,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.865,
+      "count": 19,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.875,
+      "count": 24,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.885,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.895,
+      "count": 16,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.905,
+      "count": 17,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.915,
+      "count": 12,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.925,
+      "count": 15,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.935,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.945,
+      "count": 8,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.955,
+      "count": 6,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.965,
+      "count": 5,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.975,
+      "count": 1,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.985,
+      "count": 0,
+      "binWidth": 0.01
+    },
+    {
+      "seriesId": "series-Model A - Validation",
+      "midpoint": 0.995,
+      "count": 0,
+      "binWidth": 0.01
+    }
+  ],
+  "x": "predicted",
+  "y": "observed",
+  "xAxis": {
+    "label": "Predicted Probability",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Observed Proportion",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "references": [
+    {
+      "type": "identity",
+      "scope": "global",
+      "label": "Perfectly Calibrated"
+    }
+  ]
+}

@@ -1,0 +1,1275 @@
+{
+  "schemaVersion": "2.0",
+  "type": "lift",
+  "evaluations": [
+    {
+      "id": "Model A - Test",
+      "model": "Model A",
+      "population": "Test",
+      "label": "Model A \u2014 Test"
+    },
+    {
+      "id": "Model B - Test",
+      "model": "Model B",
+      "population": "Test",
+      "label": "Model B \u2014 Test"
+    }
+  ],
+  "series": [
+    {
+      "id": "series-Model A - Test",
+      "evaluationId": "Model A - Test",
+      "display": {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model"
+      }
+    },
+    {
+      "id": "series-Model B - Test",
+      "evaluationId": "Model B - Test",
+      "display": {
+        "label": "Model B",
+        "group": "Model B",
+        "role": "model"
+      }
+    }
+  ],
+  "data": [
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.0,
+      "ppcr": 1.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.01,
+      "ppcr": 0.9947,
+      "lift": 1.003
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.02,
+      "ppcr": 0.994,
+      "lift": 1.0036
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.03,
+      "ppcr": 0.992,
+      "lift": 1.0057
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.04,
+      "ppcr": 0.9903,
+      "lift": 1.0065
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.05,
+      "ppcr": 0.987,
+      "lift": 1.0091
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.06,
+      "ppcr": 0.983,
+      "lift": 1.0132
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.07,
+      "ppcr": 0.9777,
+      "lift": 1.0188
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.08,
+      "ppcr": 0.9713,
+      "lift": 1.0254
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.09,
+      "ppcr": 0.9683,
+      "lift": 1.0286
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.1,
+      "ppcr": 0.964,
+      "lift": 1.0324
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.11,
+      "ppcr": 0.9583,
+      "lift": 1.0385
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.12,
+      "ppcr": 0.953,
+      "lift": 1.0443
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.13,
+      "ppcr": 0.947,
+      "lift": 1.0509
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.14,
+      "ppcr": 0.9367,
+      "lift": 1.0617
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.15,
+      "ppcr": 0.9257,
+      "lift": 1.0717
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.16,
+      "ppcr": 0.916,
+      "lift": 1.0813
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.17,
+      "ppcr": 0.9057,
+      "lift": 1.084
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.18,
+      "ppcr": 0.896,
+      "lift": 1.0921
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.19,
+      "ppcr": 0.887,
+      "lift": 1.0987
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.2,
+      "ppcr": 0.8767,
+      "lift": 1.1098
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.21,
+      "ppcr": 0.867,
+      "lift": 1.1195
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.22,
+      "ppcr": 0.852,
+      "lift": 1.128
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.23,
+      "ppcr": 0.8397,
+      "lift": 1.1407
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.24,
+      "ppcr": 0.8253,
+      "lift": 1.1528
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.25,
+      "ppcr": 0.8167,
+      "lift": 1.1621
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.26,
+      "ppcr": 0.808,
+      "lift": 1.1687
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.27,
+      "ppcr": 0.7907,
+      "lift": 1.1893
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.28,
+      "ppcr": 0.7787,
+      "lift": 1.2005
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.29,
+      "ppcr": 0.7667,
+      "lift": 1.2141
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.3,
+      "ppcr": 0.7543,
+      "lift": 1.2276
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.31,
+      "ppcr": 0.7423,
+      "lift": 1.2421
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.32,
+      "ppcr": 0.73,
+      "lift": 1.2533
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.33,
+      "ppcr": 0.717,
+      "lift": 1.2682
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.34,
+      "ppcr": 0.706,
+      "lift": 1.2835
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.35,
+      "ppcr": 0.6917,
+      "lift": 1.2986
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.36,
+      "ppcr": 0.6767,
+      "lift": 1.3109
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.37,
+      "ppcr": 0.6643,
+      "lift": 1.3268
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.38,
+      "ppcr": 0.6507,
+      "lift": 1.3376
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.39,
+      "ppcr": 0.639,
+      "lift": 1.3496
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.4,
+      "ppcr": 0.625,
+      "lift": 1.3645
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.41,
+      "ppcr": 0.608,
+      "lift": 1.3765
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.42,
+      "ppcr": 0.595,
+      "lift": 1.3905
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.43,
+      "ppcr": 0.5777,
+      "lift": 1.4061
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.44,
+      "ppcr": 0.5637,
+      "lift": 1.4241
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.45,
+      "ppcr": 0.55,
+      "lift": 1.4363
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.46,
+      "ppcr": 0.534,
+      "lift": 1.4511
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.47,
+      "ppcr": 0.521,
+      "lift": 1.4582
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.48,
+      "ppcr": 0.5053,
+      "lift": 1.4672
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.49,
+      "ppcr": 0.495,
+      "lift": 1.4834
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.5,
+      "ppcr": 0.48,
+      "lift": 1.495
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.51,
+      "ppcr": 0.4613,
+      "lift": 1.5244
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.52,
+      "ppcr": 0.449,
+      "lift": 1.5397
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.53,
+      "ppcr": 0.4343,
+      "lift": 1.5569
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.54,
+      "ppcr": 0.4227,
+      "lift": 1.5754
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.55,
+      "ppcr": 0.414,
+      "lift": 1.5796
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.56,
+      "ppcr": 0.4037,
+      "lift": 1.5825
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.57,
+      "ppcr": 0.392,
+      "lift": 1.5891
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.58,
+      "ppcr": 0.3803,
+      "lift": 1.6043
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.59,
+      "ppcr": 0.3677,
+      "lift": 1.6185
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.6,
+      "ppcr": 0.3547,
+      "lift": 1.633
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.61,
+      "ppcr": 0.3427,
+      "lift": 1.6484
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.62,
+      "ppcr": 0.3293,
+      "lift": 1.6668
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.63,
+      "ppcr": 0.317,
+      "lift": 1.6915
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.64,
+      "ppcr": 0.3047,
+      "lift": 1.7077
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.65,
+      "ppcr": 0.291,
+      "lift": 1.7196
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.66,
+      "ppcr": 0.282,
+      "lift": 1.7209
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.67,
+      "ppcr": 0.273,
+      "lift": 1.7339
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.68,
+      "ppcr": 0.2623,
+      "lift": 1.7316
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.69,
+      "ppcr": 0.2517,
+      "lift": 1.7481
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.7,
+      "ppcr": 0.241,
+      "lift": 1.766
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.71,
+      "ppcr": 0.2313,
+      "lift": 1.7745
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.72,
+      "ppcr": 0.2167,
+      "lift": 1.7881
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.73,
+      "ppcr": 0.2027,
+      "lift": 1.8214
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.74,
+      "ppcr": 0.193,
+      "lift": 1.8343
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.75,
+      "ppcr": 0.1807,
+      "lift": 1.8538
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.76,
+      "ppcr": 0.171,
+      "lift": 1.8702
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.77,
+      "ppcr": 0.1603,
+      "lift": 1.8756
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.78,
+      "ppcr": 0.1493,
+      "lift": 1.8965
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.79,
+      "ppcr": 0.1363,
+      "lift": 1.9256
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.8,
+      "ppcr": 0.1223,
+      "lift": 1.9704
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.81,
+      "ppcr": 0.109,
+      "lift": 2.0071
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.82,
+      "ppcr": 0.0977,
+      "lift": 2.0038
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.83,
+      "ppcr": 0.0877,
+      "lift": 2.0236
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.84,
+      "ppcr": 0.0783,
+      "lift": 2.0515
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.85,
+      "ppcr": 0.065,
+      "lift": 2.0439
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.86,
+      "ppcr": 0.056,
+      "lift": 2.0457
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.87,
+      "ppcr": 0.0497,
+      "lift": 2.0503
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.88,
+      "ppcr": 0.042,
+      "lift": 2.0646
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.89,
+      "ppcr": 0.0373,
+      "lift": 2.067
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.9,
+      "ppcr": 0.0333,
+      "lift": 2.1002
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.91,
+      "ppcr": 0.027,
+      "lift": 2.1509
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.92,
+      "ppcr": 0.0227,
+      "lift": 2.176
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.93,
+      "ppcr": 0.0177,
+      "lift": 2.1164
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.94,
+      "ppcr": 0.0123,
+      "lift": 2.2576
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.95,
+      "ppcr": 0.007,
+      "lift": 2.273
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.96,
+      "ppcr": 0.004,
+      "lift": 2.1877
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.97,
+      "ppcr": 0.0013,
+      "lift": 2.3866
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.98,
+      "ppcr": 0.0003,
+      "lift": 2.3866
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 0.99,
+      "ppcr": 0.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model A - Test",
+      "cutoff": 1.0,
+      "ppcr": 0.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.0,
+      "ppcr": 1.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.01,
+      "ppcr": 0.995,
+      "lift": 1.0026
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.02,
+      "ppcr": 0.9943,
+      "lift": 1.0033
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.03,
+      "ppcr": 0.993,
+      "lift": 1.0046
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.04,
+      "ppcr": 0.9887,
+      "lift": 1.009
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.05,
+      "ppcr": 0.9853,
+      "lift": 1.0108
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.06,
+      "ppcr": 0.9803,
+      "lift": 1.016
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.07,
+      "ppcr": 0.975,
+      "lift": 1.0207
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.08,
+      "ppcr": 0.9697,
+      "lift": 1.0255
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.09,
+      "ppcr": 0.963,
+      "lift": 1.0293
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.1,
+      "ppcr": 0.9573,
+      "lift": 1.0329
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.11,
+      "ppcr": 0.9477,
+      "lift": 1.041
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.12,
+      "ppcr": 0.9383,
+      "lift": 1.0471
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.13,
+      "ppcr": 0.9297,
+      "lift": 1.0551
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.14,
+      "ppcr": 0.9183,
+      "lift": 1.0621
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.15,
+      "ppcr": 0.908,
+      "lift": 1.0724
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.16,
+      "ppcr": 0.8977,
+      "lift": 1.0812
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.17,
+      "ppcr": 0.884,
+      "lift": 1.0961
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.18,
+      "ppcr": 0.8733,
+      "lift": 1.104
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.19,
+      "ppcr": 0.8633,
+      "lift": 1.1076
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.2,
+      "ppcr": 0.8523,
+      "lift": 1.1154
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.21,
+      "ppcr": 0.844,
+      "lift": 1.1189
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.22,
+      "ppcr": 0.8337,
+      "lift": 1.1289
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.23,
+      "ppcr": 0.824,
+      "lift": 1.1393
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.24,
+      "ppcr": 0.8107,
+      "lift": 1.1482
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.25,
+      "ppcr": 0.7957,
+      "lift": 1.1558
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.26,
+      "ppcr": 0.782,
+      "lift": 1.1648
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.27,
+      "ppcr": 0.7713,
+      "lift": 1.1727
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.28,
+      "ppcr": 0.756,
+      "lift": 1.1807
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.29,
+      "ppcr": 0.7427,
+      "lift": 1.1869
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.3,
+      "ppcr": 0.733,
+      "lift": 1.1982
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.31,
+      "ppcr": 0.7187,
+      "lift": 1.2077
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.32,
+      "ppcr": 0.707,
+      "lift": 1.2153
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.33,
+      "ppcr": 0.696,
+      "lift": 1.2253
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.34,
+      "ppcr": 0.6857,
+      "lift": 1.2299
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.35,
+      "ppcr": 0.6713,
+      "lift": 1.2348
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.36,
+      "ppcr": 0.6533,
+      "lift": 1.2505
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.37,
+      "ppcr": 0.6397,
+      "lift": 1.2673
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.38,
+      "ppcr": 0.628,
+      "lift": 1.2807
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.39,
+      "ppcr": 0.6147,
+      "lift": 1.2969
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.4,
+      "ppcr": 0.5997,
+      "lift": 1.3081
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.41,
+      "ppcr": 0.588,
+      "lift": 1.3232
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.42,
+      "ppcr": 0.5747,
+      "lift": 1.3428
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.43,
+      "ppcr": 0.5613,
+      "lift": 1.3535
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.44,
+      "ppcr": 0.5477,
+      "lift": 1.3727
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.45,
+      "ppcr": 0.533,
+      "lift": 1.3821
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.46,
+      "ppcr": 0.5203,
+      "lift": 1.3959
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.47,
+      "ppcr": 0.5097,
+      "lift": 1.3986
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.48,
+      "ppcr": 0.4943,
+      "lift": 1.4066
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.49,
+      "ppcr": 0.484,
+      "lift": 1.4136
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.5,
+      "ppcr": 0.4697,
+      "lift": 1.4262
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.51,
+      "ppcr": 0.4567,
+      "lift": 1.4459
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.52,
+      "ppcr": 0.4413,
+      "lift": 1.4583
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.53,
+      "ppcr": 0.428,
+      "lift": 1.4758
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.54,
+      "ppcr": 0.417,
+      "lift": 1.4862
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.55,
+      "ppcr": 0.4023,
+      "lift": 1.4949
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.56,
+      "ppcr": 0.391,
+      "lift": 1.5056
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.57,
+      "ppcr": 0.3743,
+      "lift": 1.5068
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.58,
+      "ppcr": 0.3627,
+      "lift": 1.5224
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.59,
+      "ppcr": 0.35,
+      "lift": 1.5388
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.6,
+      "ppcr": 0.3413,
+      "lift": 1.5499
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.61,
+      "ppcr": 0.3277,
+      "lift": 1.5611
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.62,
+      "ppcr": 0.3127,
+      "lift": 1.5673
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.63,
+      "ppcr": 0.301,
+      "lift": 1.5779
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.64,
+      "ppcr": 0.2883,
+      "lift": 1.5727
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.65,
+      "ppcr": 0.2763,
+      "lift": 1.5949
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.66,
+      "ppcr": 0.2667,
+      "lift": 1.6169
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.67,
+      "ppcr": 0.257,
+      "lift": 1.6344
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.68,
+      "ppcr": 0.2473,
+      "lift": 1.6372
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.69,
+      "ppcr": 0.2333,
+      "lift": 1.6434
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.7,
+      "ppcr": 0.222,
+      "lift": 1.6699
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.71,
+      "ppcr": 0.2123,
+      "lift": 1.6635
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.72,
+      "ppcr": 0.2,
+      "lift": 1.6786
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.73,
+      "ppcr": 0.1897,
+      "lift": 1.6904
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.74,
+      "ppcr": 0.1783,
+      "lift": 1.7086
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.75,
+      "ppcr": 0.169,
+      "lift": 1.7323
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.76,
+      "ppcr": 0.1623,
+      "lift": 1.725
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.77,
+      "ppcr": 0.151,
+      "lift": 1.7281
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.78,
+      "ppcr": 0.1393,
+      "lift": 1.7586
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.79,
+      "ppcr": 0.1307,
+      "lift": 1.7534
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.8,
+      "ppcr": 0.119,
+      "lift": 1.7716
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.81,
+      "ppcr": 0.1093,
+      "lift": 1.7827
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.82,
+      "ppcr": 0.1,
+      "lift": 1.8138
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.83,
+      "ppcr": 0.0923,
+      "lift": 1.8438
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.84,
+      "ppcr": 0.0807,
+      "lift": 1.8639
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.85,
+      "ppcr": 0.0713,
+      "lift": 1.8848
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.86,
+      "ppcr": 0.062,
+      "lift": 1.9375
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.87,
+      "ppcr": 0.0537,
+      "lift": 1.9271
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.88,
+      "ppcr": 0.044,
+      "lift": 1.9527
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.89,
+      "ppcr": 0.0387,
+      "lift": 2.0163
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.9,
+      "ppcr": 0.0317,
+      "lift": 1.9847
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.91,
+      "ppcr": 0.0243,
+      "lift": 1.9289
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.92,
+      "ppcr": 0.0183,
+      "lift": 1.9527
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.93,
+      "ppcr": 0.0117,
+      "lift": 1.9775
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.94,
+      "ppcr": 0.0073,
+      "lift": 1.9527
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.95,
+      "ppcr": 0.005,
+      "lift": 2.0684
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.96,
+      "ppcr": 0.003,
+      "lift": 2.3866
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.97,
+      "ppcr": 0.001,
+      "lift": 2.3866
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.98,
+      "ppcr": 0.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 0.99,
+      "ppcr": 0.0,
+      "lift": 1.0
+    },
+    {
+      "seriesId": "series-Model B - Test",
+      "cutoff": 1.0,
+      "ppcr": 0.0,
+      "lift": 1.0
+    }
+  ],
+  "x": "ppcr",
+  "y": "lift",
+  "xAxis": {
+    "label": "Positive Rate (PPCR)",
+    "domain": [
+      0,
+      1
+    ]
+  },
+  "yAxis": {
+    "label": "Lift"
+  },
+  "references": [
+    {
+      "type": "horizontal",
+      "value": 1.0,
+      "scope": "global",
+      "label": "Baseline Lift (1.0)"
+    }
+  ],
+  "operatingPoint": {
+    "dimension": "probability_threshold"
+  }
+}

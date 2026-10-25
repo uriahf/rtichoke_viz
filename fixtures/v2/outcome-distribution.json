@@ -16,10 +16,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 0 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
-        { "stateId": "real_negative", "label": "No target event", "count": 10 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 0
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 0
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 10
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -28,10 +44,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 1 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
-        { "stateId": "real_negative", "label": "No target event", "count": 9 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 1
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 0
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 9
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -40,10 +72,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 2 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
-        { "stateId": "real_negative", "label": "No target event", "count": 8 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 2
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 0
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 8
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -52,10 +100,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 2 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 7 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 2
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 7
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -64,10 +128,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 3 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 6 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 3
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 6
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -76,10 +156,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 4 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 5 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 4
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 5
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -88,10 +184,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 4 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 4 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 1 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 4
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 4
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 1
+        }
       ]
     },
     {
@@ -100,10 +212,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 4 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 3 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 4
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 3
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     },
     {
@@ -112,10 +240,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 5 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 2 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 5
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 2
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     },
     {
@@ -124,10 +268,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 5 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 2 },
-        { "stateId": "real_negative", "label": "No target event", "count": 1 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 5
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 2
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 1
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     },
     {
@@ -136,10 +296,26 @@
       "estimator": "raw",
       "estimateOrigin": "event_table",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 6 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 2 },
-        { "stateId": "real_negative", "label": "No target event", "count": 0 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 6
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 2
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 0
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     },
     {
@@ -148,10 +324,26 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 0 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
-        { "stateId": "real_negative", "label": "No target event", "count": 10 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 0
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 0
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 10
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -160,10 +352,26 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 2 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 0 },
-        { "stateId": "real_negative", "label": "No target event", "count": 8 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 2
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 0
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 8
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -172,10 +380,26 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 3 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 6 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 3
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 6
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -184,10 +408,26 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 4 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 5 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 0 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 4
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 5
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 0
+        }
       ]
     },
     {
@@ -196,10 +436,26 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 5 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 1 },
-        { "stateId": "real_negative", "label": "No target event", "count": 2 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 5
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 1
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 2
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     },
     {
@@ -208,11 +464,1393 @@
       "estimator": "raw",
       "estimateOrigin": "fixed_time_horizon",
       "states": [
-        { "stateId": "real_positive", "label": "Target event", "count": 6 },
-        { "stateId": "real_competing", "label": "Competing outcome", "count": 2 },
-        { "stateId": "real_negative", "label": "No target event", "count": 0 },
-        { "stateId": "real_censored", "label": "Unknown / excluded", "count": 2 }
+        {
+          "stateId": "real_positive",
+          "label": "Target event",
+          "count": 6
+        },
+        {
+          "stateId": "real_competing",
+          "label": "Competing outcome",
+          "count": 2
+        },
+        {
+          "stateId": "real_negative",
+          "label": "No target event",
+          "count": 0
+        },
+        {
+          "stateId": "real_censored",
+          "label": "Unknown / excluded",
+          "count": 2
+        }
       ]
     }
-  ]
+  ],
+  "variants": {
+    "excluded:excluded": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.333333
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.666667
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.444444
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.555556
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.714286
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.285714
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 1.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 2
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_censored": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.3
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.7
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.625
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.375
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.75
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.25
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_negative": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.3
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.1
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.1
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.5
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.625
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.125
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.25
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.75
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.25
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_composite": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.5
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.5
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.75
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.25
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 1.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:excluded": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.333333
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.666667
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.444444
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.555556
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.555556
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.444444
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.75
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.25
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 1
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 2
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_censored": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.3
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.7
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.5
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.5
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.6
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.4
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_negative": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.3
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.1
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.1
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.5
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.5
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.1
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.4
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Target event",
+              "estimate": 0.6
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing outcome",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.2
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_composite": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.0
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 1.0
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 10,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.2
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.8
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 20,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.4
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.6
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 30,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.5
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.5
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 40,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.6
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.4
+            }
+          ]
+        },
+        {
+          "evaluationId": "eval-canonical",
+          "horizon": 50,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite Event",
+              "estimate": 0.8
+            },
+            {
+              "stateId": "event_free",
+              "label": "No target event",
+              "estimate": 0.2
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "eval-canonical",
+          "originalSampleSize": 10,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 10,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 20,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 30,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 40,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 50,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
 }
