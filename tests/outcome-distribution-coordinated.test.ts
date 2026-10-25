@@ -103,7 +103,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     // Competing excluded: 2 / 8 (25.0%)
     // Total excluded: 4 / 8 (50.0%)
     const readoutTableText = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
+      ".rtichoke-outcome-distribution__readout",
     )?.textContent;
 
     expect(readoutTableText).toContain("Censored excluded");
@@ -120,7 +120,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     // Censored: 0 / 8 (0.0%)
     // Competing: 1 / 8 (12.5%)
     const readoutTableTextH5 = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
+      ".rtichoke-outcome-distribution__readout",
     )?.textContent;
 
     expect(readoutTableTextH5).toContain("0 / 8 (0.0%)");
@@ -162,7 +162,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
 
     // Readout for horizon 5 shows 0 / 8 (0.0%)
     const readoutText = el.querySelector(
-      ".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout",
+      ".rtichoke-outcome-distribution__readout",
     )?.textContent;
     expect(readoutText).toContain("0 / 8 (0.0%)");
 
@@ -208,7 +208,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     expect(panelB.style.display).not.toBe("none");
 
     // Check unified readout in Panel A
-    const readoutAText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    const readoutAText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
 
     expect(readoutAText).toContain("Time = 5.000");
     expect(readoutAText).toContain("1 / 8 (12.5%)");
@@ -266,7 +266,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     document.body.append(el);
 
     // Initial eval-1 selected: N=100, 10 / 100 (10.0%)
-    let readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    let readoutText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
     expect(readoutText).toContain("10 / 100 (10.0%)");
 
     // Switch to eval-2
@@ -274,7 +274,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     radioEval2.checked = true;
     radioEval2.dispatchEvent(new Event("change"));
 
-    readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    readoutText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
     expect(readoutText).toContain("50 / 500 (10.0%)");
 
     el.remove();
@@ -368,7 +368,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     slider.value = "0";
     slider.dispatchEvent(new Event("input"));
 
-    const readoutAText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    const readoutAText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
 
     expect(readoutAText).toContain("Time = 0.000");
     expect(readoutAText).toContain("No outcome probability estimates are calculated at baseline");
@@ -402,7 +402,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     slider.value = "1";
     slider.dispatchEvent(new Event("input"));
 
-    let readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    let readoutText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
     expect(readoutText).toContain("Censored excluded");
     expect(readoutText).toContain("0 / 8 (0.0%)"); // C is not excluded at Horizon 5!
     expect(readoutText).toContain("Competing excluded");
@@ -412,7 +412,7 @@ describe("PR 3 — Coordinated Outcome Distribution & Excluded Observations Test
     slider.value = "2";
     slider.dispatchEvent(new Event("input"));
 
-    readoutText = el.querySelector(".rtichoke-outcome-distribution__panel--a .rtichoke-outcome-distribution__readout")?.textContent;
+    readoutText = el.querySelector(".rtichoke-outcome-distribution__readout")?.textContent;
     expect(readoutText).toContain("Censored excluded");
     expect(readoutText).toContain("2 / 8 (25.0%)"); // C (Time 5) & D (Time 7) excluded at Horizon 10
     expect(readoutText).toContain("Competing excluded");

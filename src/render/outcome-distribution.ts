@@ -433,27 +433,20 @@ export function renderOutcomeDistribution(
   const chartADiv = document.createElement("div");
   chartADiv.className = "rtichoke-outcome-distribution__chart";
 
-  panelA.append(panelATitle, readoutADiv, legendADiv, chartADiv);
+  panelA.append(panelATitle, legendADiv, chartADiv);
 
-  // Panel B Container
+  // Panel B Container (Secondary Compact Plot directly below Panel A)
   const panelB = document.createElement("section");
   panelB.className = "rtichoke-outcome-distribution__panel rtichoke-outcome-distribution__panel--b";
   panelB.setAttribute("aria-label", "Excluded Observations");
 
-  const panelBTitle = document.createElement("h4");
-  panelBTitle.className = "rtichoke-outcome-distribution__panel-title";
-  panelBTitle.textContent = "Excluded Observations";
-
-  const legendBDiv = document.createElement("div");
-  legendBDiv.className = "rtichoke-legend";
-
   const chartBDiv = document.createElement("div");
   chartBDiv.className = "rtichoke-outcome-distribution__chart";
 
-  panelB.append(panelBTitle, legendBDiv, chartBDiv);
+  panelB.append(chartBDiv);
 
   panelsGrid.append(panelA, panelB);
-  container.append(controlsDiv, sliderControl, panelsGrid);
+  container.append(controlsDiv, sliderControl, panelsGrid, readoutADiv);
 
   // Determine authoritative state scale from component spec
   const effectiveStateScale = spec.stateScale ?? "nominal";
@@ -776,20 +769,15 @@ export function renderOutcomeDistribution(
     }
 
     if (isPanelBVisible) {
-      panelsGrid.className =
-        "rtichoke-outcome-distribution__panels rtichoke-outcome-distribution__panels--two-col";
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
       panelB.style.display = "flex";
     } else {
       panelsGrid.className = "rtichoke-outcome-distribution__panels";
       panelB.style.display = "none";
     }
 
-    const panelAWidth = isPanelBVisible
-      ? Math.round(theme.width * 0.61)
-      : theme.width;
-    const panelBWidth = isPanelBVisible
-      ? Math.round(theme.width * 0.36)
-      : theme.width;
+    const panelAWidth = theme.width;
+    const panelBWidth = theme.width;
 
     // --- PANEL A RENDERING ---
     readoutADiv.replaceChildren();
@@ -1373,7 +1361,6 @@ export function renderOutcomeDistribution(
 
     // --- PANEL B RENDERING ---
     if (isPanelBVisible) {
-      legendBDiv.replaceChildren();
       chartBDiv.replaceChildren();
 
       if (hasIncompleteExclusionData) {
@@ -1398,44 +1385,6 @@ export function renderOutcomeDistribution(
           incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
           chartBDiv.append(incMsg);
           return;
-        }
-
-        // Panel B Legend
-        legendBDiv.style.display = "flex";
-        const legendTitleB = document.createElement("span");
-        legendTitleB.style.fontWeight = "600";
-        legendTitleB.style.marginRight = "0.5rem";
-        legendTitleB.textContent = "Exclusions:";
-        legendBDiv.append(legendTitleB);
-
-        const legendItemsB = [
-          { label: "Censored excluded", color: EXCLUSION_COLORS.censored },
-          {
-            label: "Competing events excluded",
-            color: EXCLUSION_COLORS.competing,
-          },
-        ];
-
-        for (const itemB of legendItemsB) {
-          const item = document.createElement("div");
-          item.className = "rtichoke-legend-item";
-
-          const swatch = document.createElement("span");
-          swatch.className = "rtichoke-legend-swatch";
-
-          const lineSpan = document.createElement("span");
-          lineSpan.className = "rtichoke-legend-line";
-          lineSpan.style.backgroundColor = itemB.color;
-          lineSpan.style.height = "10px";
-          lineSpan.style.borderRadius = "2px";
-          swatch.append(lineSpan);
-
-          const labelSpan = document.createElement("span");
-          labelSpan.className = "rtichoke-legend-label";
-          labelSpan.textContent = itemB.label;
-
-          item.append(swatch, labelSpan);
-          legendBDiv.append(item);
         }
 
         // Panel B Plot Chart Data
@@ -1530,8 +1479,8 @@ export function renderOutcomeDistribution(
 
         const plotSpecB = {
           width: panelBWidth,
-          height: Math.round(theme.height * 0.65),
-          marginTop: theme.margins.top + 10,
+          height: 120,
+          marginTop: 10,
           marginRight: theme.margins.right,
           marginBottom: theme.margins.bottom,
           marginLeft: theme.margins.left,

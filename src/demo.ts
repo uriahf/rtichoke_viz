@@ -348,8 +348,8 @@ if (observedStepAjHost) {
   observedStepAjHost.append(wrapOutcomeDistInReport("step-aj", "AJ-Adjusted State Occupancy Probabilities", observedStepAjSpec));
 }
 if (observedStepOrdinalHost) {
-  observedStepOrdinalHost.append(wrapOutcomeDistInReport("step-ordinal", "Ordinal States (5 Levels)", observedStepOrdinalSpec));
+  observedStepOrdinalHost.append(renderOutcomeDistribution(observedStepOrdinalSpec));
 }
 if (observedStepNominalHost) {
-  observedStepNominalHost.append(wrapOutcomeDistInReport("step-nominal", "Nominal States (6 Levels)", observedStepNominalSpec));
+  observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
 }

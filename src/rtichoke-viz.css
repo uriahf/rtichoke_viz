@@ -1343,15 +1343,6 @@
   width: 100%;
 }
 
-@media (min-width: 768px) {
-  .rtichoke-outcome-distribution__panels--two-col {
-    display: grid;
-    grid-template-columns: 62% 35%;
-    gap: 3%;
-    align-items: start;
-  }
-}
-
 .rtichoke-outcome-distribution__panel {
   display: flex;
   flex-direction: column;

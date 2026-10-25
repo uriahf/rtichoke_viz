@@ -640,29 +640,15 @@ function renderReportV1_1(
     const groupsRow = document.createElement("div");
     groupsRow.className = "rtichoke-report__heuristics-row";
 
-    // Censoring Fieldset
-    const censFieldset = document.createElement("fieldset");
-    censFieldset.className = "rtichoke-report__heuristics-fieldset";
-    const censLegend = document.createElement("legend");
-    censLegend.className = "rtichoke-report__heuristics-legend";
-    censLegend.textContent = "Censoring:";
-    censFieldset.append(censLegend);
+    const uniqueCens = new Set(
+      availableHeuristics.map((k) => parseHeuristicPairKey(k).censoring),
+    );
+    const uniqueComp = new Set(
+      availableHeuristics.map((k) => parseHeuristicPairKey(k).competing),
+    );
 
-    const censOptionsDiv = document.createElement("div");
-    censOptionsDiv.className = "rtichoke-report__heuristics-options";
-    censFieldset.append(censOptionsDiv);
-
-    // Competing Events Fieldset
-    const compFieldset = document.createElement("fieldset");
-    compFieldset.className = "rtichoke-report__heuristics-fieldset";
-    const compLegend = document.createElement("legend");
-    compLegend.className = "rtichoke-report__heuristics-legend";
-    compLegend.textContent = "Competing events:";
-    compFieldset.append(compLegend);
-
-    const compOptionsDiv = document.createElement("div");
-    compOptionsDiv.className = "rtichoke-report__heuristics-options";
-    compFieldset.append(compOptionsDiv);
+    const showCensoringControls = uniqueCens.size > 1;
+    const showCompetingControls = uniqueComp.size > 1;
 
     // Map of inputs & labels created ONCE to preserve DOM identity and keyboard focus
     const censoringRadios = new Map<
@@ -674,55 +660,87 @@ function renderReportV1_1(
       { input: HTMLInputElement; label: HTMLLabelElement }
     >();
 
-    for (const censVal of CENSORING_OPTIONS) {
-      const label = document.createElement("label");
-      label.className = "rtichoke-report__heuristics-option";
+    if (showCensoringControls) {
+      const censFieldset = document.createElement("fieldset");
+      censFieldset.className = "rtichoke-report__heuristics-fieldset";
+      const censLegend = document.createElement("legend");
+      censLegend.className = "rtichoke-report__heuristics-legend";
+      censLegend.textContent = "Censoring:";
+      censFieldset.append(censLegend);
 
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `rtichoke-report-${instanceId}-censoring`;
-      radio.value = censVal;
+      const censOptionsDiv = document.createElement("div");
+      censOptionsDiv.className = "rtichoke-report__heuristics-options";
+      censFieldset.append(censOptionsDiv);
 
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
-          onHeuristicSelectionChange(censVal, currentParsed.competing);
-        }
-      });
+      for (const censVal of CENSORING_OPTIONS) {
+        const label = document.createElement("label");
+        label.className = "rtichoke-report__heuristics-option";
 
-      const span = document.createElement("span");
-      span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `rtichoke-report-${instanceId}-censoring`;
+        radio.value = censVal;
 
-      label.append(radio, span);
-      censOptionsDiv.append(label);
-      censoringRadios.set(censVal, { input: radio, label });
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
+            onHeuristicSelectionChange(censVal, currentParsed.competing);
+          }
+        });
+
+        const span = document.createElement("span");
+        span.textContent = CENSORING_HEURISTIC_LABELS[censVal] ?? censVal;
+
+        label.append(radio, span);
+        censOptionsDiv.append(label);
+        censoringRadios.set(censVal, { input: radio, label });
+      }
+
+      groupsRow.append(censFieldset);
     }
 
-    for (const compVal of COMPETING_OPTIONS) {
-      const label = document.createElement("label");
-      label.className = "rtichoke-report__heuristics-option";
+    if (showCompetingControls) {
+      const compFieldset = document.createElement("fieldset");
+      compFieldset.className = "rtichoke-report__heuristics-fieldset";
+      const compLegend = document.createElement("legend");
+      compLegend.className = "rtichoke-report__heuristics-legend";
+      compLegend.textContent = "Competing events:";
+      compFieldset.append(compLegend);
 
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `rtichoke-report-${instanceId}-competing`;
-      radio.value = compVal;
+      const compOptionsDiv = document.createElement("div");
+      compOptionsDiv.className = "rtichoke-report__heuristics-options";
+      compFieldset.append(compOptionsDiv);
 
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
-          onHeuristicSelectionChange(currentParsed.censoring, compVal);
-        }
-      });
+      for (const compVal of COMPETING_OPTIONS) {
+        const label = document.createElement("label");
+        label.className = "rtichoke-report__heuristics-option";
 
-      const span = document.createElement("span");
-      span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `rtichoke-report-${instanceId}-competing`;
+        radio.value = compVal;
 
-      label.append(radio, span);
-      compOptionsDiv.append(label);
-      competingRadios.set(compVal, { input: radio, label });
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            const currentParsed = parseHeuristicPairKey(activeHeuristicPair!);
+            onHeuristicSelectionChange(currentParsed.censoring, compVal);
+          }
+        });
+
+        const span = document.createElement("span");
+        span.textContent = COMPETING_HEURISTIC_LABELS[compVal] ?? compVal;
+
+        label.append(radio, span);
+        compOptionsDiv.append(label);
+        competingRadios.set(compVal, { input: radio, label });
+      }
+
+      groupsRow.append(compFieldset);
     }
 
-    groupsRow.append(censFieldset, compFieldset);
+    if (!showCensoringControls && !showCompetingControls) {
+      controlsContainer.style.display = "none";
+    }
     controlsContainer.append(titleEl, groupsRow);
     root.append(controlsContainer);
 
