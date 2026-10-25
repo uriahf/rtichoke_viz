@@ -115867,7 +115867,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   const digits = theme.tip.digits;
   const dataset = options.dataset ?? generateSyntheticContinuousDataset();
   let activeScenario = options.initialScenario ?? "A";
-  let activeNumBins = 20;
+  const numBins = 20;
   let selectedStep = 35;
   let isHistogramOpen = false;
   let isExcludedExpanded = false;
@@ -115946,8 +115946,8 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
   excludedSection.style.backgroundColor = "transparent";
   mainLayoutDiv.append(heatmapWrapper, legendDiv, histogramWrapper, sliderControl, excludedSection);
   const renderAll = () => {
-    const scenarioStats = computeScenarioStats(dataset, activeScenario, activeNumBins);
-    const jointUpperProp = computeJointMaxProportion(dataset, activeNumBins);
+    const scenarioStats = computeScenarioStats(dataset, activeScenario, numBins);
+    const jointUpperProp = computeJointMaxProportion(dataset, numBins);
     const currentStepSummary = scenarioStats.find((s2) => s2.step === selectedStep) ?? scenarioStats[35];
     controlsDiv.replaceChildren();
     const scenarioGroup = document.createElement("div");
@@ -115984,41 +115984,7 @@ function renderContinuousOutcomeDistributionPOC(options = {}) {
       scenarioOptions.append(optLabel);
     }
     scenarioGroup.append(scenarioOptions);
-    const binsGroup = document.createElement("div");
-    binsGroup.className = "rtichoke-pd-radio-group";
-    binsGroup.setAttribute("role", "radiogroup");
-    binsGroup.setAttribute("aria-label", "Bin Resolution");
-    const binsGroupLabel = document.createElement("span");
-    binsGroupLabel.className = "rtichoke-pd-radio-group-label";
-    binsGroupLabel.textContent = "Bins:";
-    binsGroup.append(binsGroupLabel);
-    const binsOptions = document.createElement("div");
-    binsOptions.className = "rtichoke-pd-radio-options";
-    const binItems = [
-      { id: 20, label: "20 bins (width 0.05)" },
-      { id: 40, label: "40 bins (width 0.025)" }
-    ];
-    for (const item of binItems) {
-      const optLabel = document.createElement("label");
-      optLabel.className = "rtichoke-pd-radio-option";
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `cod-bins-${instanceId}`;
-      radio.value = String(item.id);
-      radio.checked = activeNumBins === item.id;
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          activeNumBins = item.id;
-          renderAll();
-        }
-      });
-      const span = document.createElement("span");
-      span.textContent = item.label;
-      optLabel.append(radio, span);
-      binsOptions.append(optLabel);
-    }
-    binsGroup.append(binsOptions);
-    controlsDiv.append(scenarioGroup, binsGroup);
+    controlsDiv.append(scenarioGroup);
     heatmapWrapper.replaceChildren();
     const flatCells = [];
     for (const stepSum of scenarioStats) {
