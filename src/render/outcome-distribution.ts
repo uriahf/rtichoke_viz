@@ -1,5 +1,9 @@
 import * as Plot from "@observablehq/plot";
-import type { OutcomeDistributionSpec } from "../spec/v2/outcome-distribution.js";
+import type {
+  HorizonExclusionCounts,
+  OutcomeDistributionSpec,
+  PopulationExclusion,
+} from "../spec/v2/outcome-distribution.js";
 import type { StateDistribution } from "../spec/v2/state-distribution.js";
 import { assertOutcomeDistributionReferentialIntegrity } from "../spec/v2/validate-outcome-distribution.js";
 import {
@@ -26,15 +30,19 @@ const CANONICAL_STATE_LABELS: Record<string, string> = {
 
 /** Palette for outcome states matching prevalence/outcome-accounting style */
 const PREFERRED_STATE_COLORS: Record<string, string> = {
+  primary: "#4C5454",
   real_positive: "#4C5454",
   real_positives_est: "#4C5454",
   target_event: "#4C5454",
-  real_competing: "#C880B7",
-  real_competing_est: "#C880B7",
-  competing_outcome: "#C880B7",
+  event_free: "#E0E0E0",
   real_negative: "#E0E0E0",
   real_negatives_est: "#E0E0E0",
   no_target_event: "#E0E0E0",
+  competing: "#C880B7",
+  real_competing: "#C880B7",
+  real_competing_est: "#C880B7",
+  competing_outcome: "#C880B7",
+  censored: "#E3F09B",
   real_censored: "#E3F09B",
   real_censored_est: "#E3F09B",
   unknown: "#E3F09B",
@@ -75,6 +83,12 @@ export const NOMINAL_COLORFUL_MINIMAL_PALETTE = [
   "#B9B1CC",
 ];
 
+const EXCLUSION_COLORS = {
+  censored: "#E3F09B",
+  competing: "#C880B7",
+  total: "#475569",
+};
+
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace("#", "");
   const num = parseInt(clean, 16);
@@ -87,7 +101,11 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
-function interpolateHex(color1: string, color2: string, factor: number): string {
+function interpolateHex(
+  color1: string,
+  color2: string,
+  factor: number,
+): string {
   const [r1, g1, b1] = hexToRgb(color1);
   const [r2, g2, b2] = hexToRgb(color2);
   return rgbToHex(
@@ -100,7 +118,8 @@ function interpolateHex(color1: string, color2: string, factor: number): string 
 /** Resolve sequential True Blue colors for N ordered levels (supporting arbitrary N >= 1) */
 export function getOrdinalTrueBluePalette(n: number): string[] {
   if (n <= 0) return [];
-  if (n === 1) return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
+  if (n === 1)
+    return [TRUE_BLUE_PALETTE_STOPS[TRUE_BLUE_PALETTE_STOPS.length - 1]];
 
   const maxIdx = TRUE_BLUE_PALETTE_STOPS.length - 1;
   const colors: string[] = [];
@@ -190,7 +209,8 @@ function processStateDistribution(
 
   if (hasCount) {
     totalCount = states.reduce(
-      (acc, s) => acc + (s.count !== undefined && s.count !== null ? s.count : 0),
+      (acc, s) =>
+        acc + (s.count !== undefined && s.count !== null ? s.count : 0),
       0,
     );
   }
@@ -199,15 +219,37 @@ function processStateDistribution(
     const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
     let proportion = 0;
 
-    if (dist.estimator === "aalen_johansen" && s.estimate !== undefined && s.estimate !== null) {
+    if (
+      dist.estimator === "aalen_johansen" &&
+      s.estimate !== undefined &&
+      s.estimate !== null
+    ) {
       proportion = s.estimate;
-    } else if (dist.estimator === "raw" && s.count !== undefined && s.count !== null && totalCount && totalCount > 0) {
+    } else if (
+      dist.estimator === "raw" &&
+      s.count !== undefined &&
+      s.count !== null &&
+      totalCount &&
+      totalCount > 0
+    ) {
       proportion = s.count / totalCount;
     } else if (hasEstimate && s.estimate !== undefined && s.estimate !== null) {
       proportion = s.estimate;
-    } else if (hasMass && s.mass !== undefined && s.mass !== null && totalMass && totalMass > 0) {
+    } else if (
+      hasMass &&
+      s.mass !== undefined &&
+      s.mass !== null &&
+      totalMass &&
+      totalMass > 0
+    ) {
       proportion = s.mass / totalMass;
-    } else if (hasCount && s.count !== undefined && s.count !== null && totalCount && totalCount > 0) {
+    } else if (
+      hasCount &&
+      s.count !== undefined &&
+      s.count !== null &&
+      totalCount &&
+      totalCount > 0
+    ) {
       proportion = s.count / totalCount;
     }
 
@@ -281,7 +323,10 @@ function buildOutcomeTooltip(
     }
     fields.push(["Accounting", "Raw observed status"]);
 
-    if (st.stateId === "real_censored" || st.label.toLowerCase().includes("censored")) {
+    if (
+      st.stateId === "real_censored" ||
+      st.label.toLowerCase().includes("censored")
+    ) {
       fields.push([
         "Note",
         "Censored before horizon; no censoring adjustment is applied.",
@@ -289,6 +334,24 @@ function buildOutcomeTooltip(
     }
   }
 
+  return tooltip(digits, fields);
+}
+
+function buildExclusionTooltip(
+  horizon: number,
+  categoryLabel: string,
+  count: number,
+  sampleSize: number,
+  digits: number,
+): string {
+  const pct = sampleSize > 0 ? (count / sampleSize) * 100 : 0;
+  const fields: Array<[string, unknown]> = [
+    ["Horizon", horizon],
+    ["Exclusion category", categoryLabel],
+    ["Excluded count", count],
+    ["Original sample size N", sampleSize],
+    ["Excluded percentage", `${pct.toFixed(1)}%`],
+  ];
   return tooltip(digits, fields);
 }
 
@@ -312,23 +375,19 @@ export function renderOutcomeDistribution(
   container.style.maxWidth = "100%";
 
   // Title
-  const titleText = spec.title ?? "Outcome Distribution";
-  const titleEl = document.createElement("h3");
-  titleEl.className = "rtichoke-outcome-distribution__title";
-  titleEl.textContent = titleText;
-  container.append(titleEl);
+  if (spec.title) {
+    const titleEl = document.createElement("h3");
+    titleEl.className = "rtichoke-outcome-distribution__title";
+    titleEl.textContent = spec.title;
+    container.append(titleEl);
+  }
 
   // Controls Container
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "rtichoke-outcome-distribution__controls";
   container.append(controlsDiv);
 
-  // Summary / Active Horizon Readout Container
-  const readoutDiv = document.createElement("div");
-  readoutDiv.className = "rtichoke-outcome-distribution__readout";
-  container.append(readoutDiv);
-
-  // Slider Control Container
+  // Slider Control Container (Single Shared Interaction)
   const sliderControl = document.createElement("div");
   sliderControl.className = "rtichoke-operating-point-control";
   sliderControl.style.marginLeft = `${theme.margins.left}px`;
@@ -352,16 +411,42 @@ export function renderOutcomeDistribution(
 
   sliderControl.append(sliderLabel, slider);
 
-  // Legend Area
-  const legendDiv = document.createElement("div");
-  legendDiv.className = "rtichoke-legend";
-  legendDiv.style.paddingLeft = `${theme.margins.left}px`;
+  // Panels Grid Layout Container
+  const panelsGrid = document.createElement("div");
+  panelsGrid.className = "rtichoke-outcome-distribution__panels";
 
-  // Chart Container
-  const chartDiv = document.createElement("div");
-  chartDiv.className = "rtichoke-outcome-distribution__chart";
+  // Panel A Container
+  const panelA = document.createElement("section");
+  panelA.className = "rtichoke-outcome-distribution__panel rtichoke-outcome-distribution__panel--a";
+  panelA.setAttribute("aria-label", "Outcome Distribution");
 
-  container.append(sliderControl, legendDiv, chartDiv);
+  const panelATitle = document.createElement("h4");
+  panelATitle.className = "rtichoke-outcome-distribution__panel-title";
+  panelATitle.textContent = "Outcome Distribution";
+
+  const readoutADiv = document.createElement("div");
+  readoutADiv.className = "rtichoke-outcome-distribution__readout";
+
+  const legendADiv = document.createElement("div");
+  legendADiv.className = "rtichoke-legend";
+
+  const chartADiv = document.createElement("div");
+  chartADiv.className = "rtichoke-outcome-distribution__chart";
+
+  panelA.append(panelATitle, legendADiv, chartADiv);
+
+  // Panel B Container (Secondary Compact Plot directly below Panel A)
+  const panelB = document.createElement("section");
+  panelB.className = "rtichoke-outcome-distribution__panel rtichoke-outcome-distribution__panel--b";
+  panelB.setAttribute("aria-label", "Excluded Observations");
+
+  const chartBDiv = document.createElement("div");
+  chartBDiv.className = "rtichoke-outcome-distribution__chart";
+
+  panelB.append(chartBDiv);
+
+  panelsGrid.append(panelA, panelB);
+  container.append(controlsDiv, sliderControl, panelsGrid, readoutADiv);
 
   // Determine authoritative state scale from component spec
   const effectiveStateScale = spec.stateScale ?? "nominal";
@@ -480,13 +565,15 @@ export function renderOutcomeDistribution(
 
     if (evalDists.length === 0) {
       sliderControl.style.display = "none";
-      legendDiv.style.display = "none";
-      readoutDiv.replaceChildren();
-      chartDiv.replaceChildren();
+      readoutADiv.replaceChildren();
+      legendADiv.style.display = "none";
+      chartADiv.replaceChildren();
+      panelB.style.display = "none";
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
       const emptyMsg = document.createElement("p");
       emptyMsg.className = "rtichoke-outcome-distribution__empty";
       emptyMsg.textContent = "No state distribution data available.";
-      chartDiv.append(emptyMsg);
+      chartADiv.append(emptyMsg);
       return;
     }
 
@@ -506,14 +593,16 @@ export function renderOutcomeDistribution(
 
     if (hasMultipleHeuristicVariants) {
       sliderControl.style.display = "none";
-      legendDiv.style.display = "none";
-      readoutDiv.replaceChildren();
-      chartDiv.replaceChildren();
+      readoutADiv.replaceChildren();
+      legendADiv.style.display = "none";
+      chartADiv.replaceChildren();
+      panelB.style.display = "none";
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
       const msg = document.createElement("p");
       msg.className = "rtichoke-outcome-distribution__empty";
       msg.textContent =
         "Multiple heuristic/method variants detected for evaluation; unsupported data state.";
-      chartDiv.append(msg);
+      chartADiv.append(msg);
       return;
     }
 
@@ -535,9 +624,24 @@ export function renderOutcomeDistribution(
     const isObservedStepMode = observedStepRows.length > 0;
 
     // Extract available step/horizon points
-    const availableSteps = isObservedStepMode
-      ? Array.from(new Set(observedStepRows.map((r) => r.horizon))).sort((a, b) => a - b)
-      : Array.from(new Set(fixedHorizonRows.map((r) => r.horizon))).sort((a, b) => a - b);
+    // For fixed-time horizon, the time axis and slider begin at time 0
+    let availableSteps: number[];
+    if (isObservedStepMode) {
+      availableSteps = Array.from(
+        new Set(observedStepRows.map((r) => r.horizon)),
+      ).sort((a, b) => a - b);
+    } else {
+      const suppliedHorizons = Array.from(
+        new Set(
+          (fixedHorizonRows.length > 0 ? fixedHorizonRows : eventTableRows).map(
+            (r) => r.horizon,
+          ),
+        ),
+      ).sort((a, b) => a - b);
+      availableSteps = suppliedHorizons.includes(0)
+        ? suppliedHorizons
+        : [0, ...suppliedHorizons];
+    }
 
     if (
       eventTableRows.length === 0 &&
@@ -545,19 +649,22 @@ export function renderOutcomeDistribution(
       observedStepRows.length === 0
     ) {
       sliderControl.style.display = "none";
-      legendDiv.style.display = "none";
-      readoutDiv.replaceChildren();
-      chartDiv.replaceChildren();
+      readoutADiv.replaceChildren();
+      legendADiv.style.display = "none";
+      chartADiv.replaceChildren();
+      panelB.style.display = "none";
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
       const emptyMsg = document.createElement("p");
       emptyMsg.className = "rtichoke-outcome-distribution__empty";
       emptyMsg.textContent =
         "No outcome distribution data found for current selection.";
-      chartDiv.append(emptyMsg);
+      chartADiv.append(emptyMsg);
       return;
     }
 
-    const isTrajectoryMode = eventTableRows.length > 0 || (isObservedStepMode && observedStepRows.length > 1);
-    const isSingleStepMode = isObservedStepMode && observedStepRows.length === 1;
+    const isTrajectoryMode =
+      eventTableRows.length > 0 ||
+      (isObservedStepMode && observedStepRows.length > 1);
 
     // Slider setup
     if (isObservedStepMode) {
@@ -614,19 +721,78 @@ export function renderOutcomeDistribution(
       sliderControl.style.display = "none";
     }
 
-    // Active horizon breakdown readout
-    readoutDiv.replaceChildren();
+    // Evaluate Panel B Visibility & Incomplete Metadata
+    const popExclusion = spec.exclusions?.find(
+      (e) => e.evaluationId === currentEvalId,
+    );
+
+    const isHeuristicAware =
+      spec.variants !== undefined ||
+      spec.stateDistributions.some(
+        (d) =>
+          d.censoringHeuristic !== undefined ||
+          d.competingHeuristic !== undefined,
+      );
+
+    let isPanelBVisible = false;
+    let hasIncompleteExclusionData = false;
+
+    if (popExclusion) {
+      // Validate complete horizon coverage: every supplied non-zero prediction horizon in availableSteps must have an explicit record
+      const requiredExclusionHorizons = availableSteps.filter((step) => step > 0);
+      const exclusionHorizons = new Set(
+        popExclusion.excludedCounts.map((e) => e.horizon),
+      );
+      const hasFullHorizonCoverage = requiredExclusionHorizons.every((step) =>
+        exclusionHorizons.has(step),
+      );
+
+      if (!hasFullHorizonCoverage) {
+        isPanelBVisible = true;
+        hasIncompleteExclusionData = true;
+      } else {
+        const totalExclusionsAcrossAllHorizons =
+          popExclusion.excludedCounts.reduce(
+            (sum, item) =>
+              sum + item.censoredExcludedCount + item.competingExcludedCount,
+            0,
+          );
+
+        if (totalExclusionsAcrossAllHorizons > 0) {
+          isPanelBVisible = true;
+        }
+      }
+    } else if (isHeuristicAware) {
+      // Incomplete exclusion metadata for a heuristic-aware component
+      isPanelBVisible = true;
+      hasIncompleteExclusionData = true;
+    }
+
+    if (isPanelBVisible) {
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
+      panelB.style.display = "flex";
+    } else {
+      panelsGrid.className = "rtichoke-outcome-distribution__panels";
+      panelB.style.display = "none";
+    }
+
+    const panelAWidth = theme.width;
+    const panelBWidth = theme.width;
+
+    // --- PANEL A RENDERING ---
+    readoutADiv.replaceChildren();
     const activeDataRow = isObservedStepMode
       ? observedStepRows.find((r) => r.horizon === currentActiveHorizon)
       : (fixedHorizonRows.find((r) => r.horizon === currentActiveHorizon) ??
-         eventTableRows.find((r) => r.horizon === currentActiveHorizon));
+        eventTableRows.find((r) => r.horizon === currentActiveHorizon));
 
     if (activeDataRow) {
       const readoutCard = document.createElement("div");
       readoutCard.className = "rtichoke-outcome-distribution__readout-card";
 
       const readoutHeader = document.createElement("div");
-      readoutHeader.className = "rtichoke-outcome-distribution__readout-header";
+      readoutHeader.className =
+        "rtichoke-outcome-distribution__readout-header";
       readoutHeader.textContent = isObservedStepMode
         ? `Active Step: Step = ${activeDataRow.horizon}`
         : `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
@@ -669,7 +835,6 @@ export function renderOutcomeDistribution(
         const tdShare = document.createElement("td");
         tdShare.className = "rtichoke-outcome-distribution__readout-cell";
 
-        // Dynamic in-cell bar representing percentage/share (0% to 100%) using row state color (opacity 0.45)
         const barContainer = document.createElement("div");
         barContainer.className = "rtichoke-performance-table__bar";
 
@@ -684,7 +849,10 @@ export function renderOutcomeDistribution(
         const contentSpan = document.createElement("span");
         contentSpan.className = "rtichoke-performance-table__cell-text";
 
-        if (isObservedStepMode && activeDataRow.estimator === "aalen_johansen") {
+        if (
+          isObservedStepMode &&
+          activeDataRow.estimator === "aalen_johansen"
+        ) {
           contentSpan.textContent = `${st.percentage.toFixed(1)}%`;
         } else {
           const countVal = st.count ?? st.mass;
@@ -705,22 +873,154 @@ export function renderOutcomeDistribution(
         rBody.append(tr);
       }
 
+      // Unified Summary Table: Append Excluded Observations section iff active heuristic excludes subjects
+      if (popExclusion && !isObservedStepMode) {
+        const sampleSize = popExclusion.originalSampleSize;
+        const activeExclusionItem =
+          currentActiveHorizon !== null
+            ? popExclusion.excludedCounts.find(
+                (e) => e.horizon === currentActiveHorizon,
+              )
+            : undefined;
+
+        const censCount =
+          currentActiveHorizon === 0
+            ? 0
+            : (activeExclusionItem?.censoredExcludedCount ?? 0);
+        const compCount =
+          currentActiveHorizon === 0
+            ? 0
+            : (activeExclusionItem?.competingExcludedCount ?? 0);
+
+        const activeDist = evalDists.find(
+          (d) => d.horizon === currentActiveHorizon,
+        ) ?? evalDists[0];
+
+        const censHeuristic = activeDist?.censoringHeuristic;
+        const compHeuristic = activeDist?.competingHeuristic;
+
+        const showCensoredRow = censHeuristic === "excluded";
+        const showCompetingRow = compHeuristic === "excluded";
+
+        if (showCensoredRow || showCompetingRow) {
+          const exHeaderRow = document.createElement("tr");
+          const exHeaderCell = document.createElement("td");
+          exHeaderCell.colSpan = 2;
+          exHeaderCell.style.fontWeight = "600";
+          exHeaderCell.style.paddingTop = "0.75rem";
+          exHeaderCell.style.paddingBottom = "0.25rem";
+          exHeaderCell.style.borderTop = "1px solid #e5e7eb";
+          exHeaderCell.textContent = "Excluded Observations";
+          exHeaderRow.append(exHeaderCell);
+          rBody.append(exHeaderRow);
+
+          if (showCensoredRow) {
+            const trCens = document.createElement("tr");
+            const tdLabelCens = document.createElement("td");
+            const badgeCens = document.createElement("span");
+            badgeCens.className = "rtichoke-performance-table__badge";
+            badgeCens.style.backgroundColor = EXCLUSION_COLORS.censored;
+            tdLabelCens.append(
+              badgeCens,
+              document.createTextNode("Censored excluded"),
+            );
+
+            const tdShareCens = document.createElement("td");
+            tdShareCens.className =
+              "rtichoke-outcome-distribution__readout-cell";
+
+            const barContainerCens = document.createElement("div");
+            barContainerCens.className = "rtichoke-performance-table__bar";
+
+            const barFillCens = document.createElement("div");
+            barFillCens.className = "rtichoke-performance-table__bar-fill";
+            barFillCens.style.backgroundColor = EXCLUSION_COLORS.censored;
+            barFillCens.style.opacity = "0.45";
+            const censPct =
+              sampleSize > 0 ? (censCount / sampleSize) * 100 : 0;
+            barFillCens.style.width = `${Math.min(Math.max(censPct, 0), 100)}%`;
+            barContainerCens.append(barFillCens);
+
+            const contentCens = document.createElement("span");
+            contentCens.className = "rtichoke-performance-table__cell-text";
+            contentCens.textContent = `${censCount.toLocaleString()} / ${sampleSize.toLocaleString()} (${censPct.toFixed(1)}%)`;
+
+            tdShareCens.append(barContainerCens, contentCens);
+            trCens.append(tdLabelCens, tdShareCens);
+            rBody.append(trCens);
+          }
+
+          if (showCompetingRow) {
+            const trComp = document.createElement("tr");
+            const tdLabelComp = document.createElement("td");
+            const badgeComp = document.createElement("span");
+            badgeComp.className = "rtichoke-performance-table__badge";
+            badgeComp.style.backgroundColor = EXCLUSION_COLORS.competing;
+            tdLabelComp.append(
+              badgeComp,
+              document.createTextNode("Competing excluded"),
+            );
+
+            const tdShareComp = document.createElement("td");
+            tdShareComp.className =
+              "rtichoke-outcome-distribution__readout-cell";
+
+            const barContainerComp = document.createElement("div");
+            barContainerComp.className = "rtichoke-performance-table__bar";
+
+            const barFillComp = document.createElement("div");
+            barFillComp.className = "rtichoke-performance-table__bar-fill";
+            barFillComp.style.backgroundColor = EXCLUSION_COLORS.competing;
+            barFillComp.style.opacity = "0.45";
+            const compPct =
+              sampleSize > 0 ? (compCount / sampleSize) * 100 : 0;
+            barFillComp.style.width = `${Math.min(Math.max(compPct, 0), 100)}%`;
+            barContainerComp.append(barFillComp);
+
+            const contentComp = document.createElement("span");
+            contentComp.className = "rtichoke-performance-table__cell-text";
+            contentComp.textContent = `${compCount.toLocaleString()} / ${sampleSize.toLocaleString()} (${compPct.toFixed(1)}%)`;
+
+            tdShareComp.append(barContainerComp, contentComp);
+            trComp.append(tdLabelComp, tdShareComp);
+            rBody.append(trComp);
+          }
+        }
+      }
+
       readoutTable.append(rBody);
       readoutCard.append(readoutTable);
-      readoutDiv.append(readoutCard);
+      readoutADiv.append(readoutCard);
+    } else if (currentActiveHorizon === 0 && !isObservedStepMode) {
+      // Unestimated baseline at Time = 0
+      const readoutCard = document.createElement("div");
+      readoutCard.className = "rtichoke-outcome-distribution__readout-card";
+
+      const readoutHeader = document.createElement("div");
+      readoutHeader.className =
+        "rtichoke-outcome-distribution__readout-header";
+      readoutHeader.textContent = "Active Horizon: Time = 0.000";
+
+      const unestMsg = document.createElement("div");
+      unestMsg.className = "rtichoke-outcome-distribution__incomplete";
+      unestMsg.style.marginTop = "0.25rem";
+      unestMsg.textContent =
+        "Baseline origin (Time = 0). No outcome probability estimates are calculated at baseline.";
+
+      readoutCard.append(readoutHeader, unestMsg);
+      readoutADiv.append(readoutCard);
     }
 
-    // Build Legend
-    legendDiv.replaceChildren();
-    legendDiv.style.display = "flex";
+    // Panel A Legend
+    legendADiv.replaceChildren();
+    legendADiv.style.display = "flex";
 
     const legendTitle = document.createElement("span");
     legendTitle.style.fontWeight = "600";
     legendTitle.style.marginRight = "0.5rem";
     legendTitle.textContent = "Outcome:";
-    legendDiv.append(legendTitle);
+    legendADiv.append(legendTitle);
 
-    // Get all unique state labels present across active rows
     const allStatesMap = new Map<string, { stateId: string; label: string }>();
     const rowsToScan = isObservedStepMode
       ? observedStepRows
@@ -744,7 +1044,7 @@ export function renderOutcomeDistribution(
 
       const lineSpan = document.createElement("span");
       lineSpan.className = "rtichoke-legend-line";
-        lineSpan.style.backgroundColor = getStateColor(st.stateId);
+      lineSpan.style.backgroundColor = getStateColor(st.stateId);
       lineSpan.style.height = "10px";
       lineSpan.style.borderRadius = "2px";
       swatch.append(lineSpan);
@@ -754,14 +1054,13 @@ export function renderOutcomeDistribution(
       labelSpan.textContent = st.label;
 
       item.append(swatch, labelSpan);
-      legendDiv.append(item);
+      legendADiv.append(item);
     }
 
-    // Chart Marks
-    const marks: Plot.Markish[] = [];
+    // Panel A Marks
+    const marksA: Plot.Markish[] = [];
 
     if (isObservedStepMode) {
-      // Discrete/ordinal 100% stacked bar chart for ALL observed_step distributions
       const plotData: Array<{
         step: number;
         stepLabel: string;
@@ -798,8 +1097,7 @@ export function renderOutcomeDistribution(
         }
       }
 
-      // Render 100% stacked bars with cumulative opacity (full opacity for steps <= selected horizon, faded for step > selected horizon)
-      marks.push(
+      marksA.push(
         Plot.barY(
           plotData,
           Plot.stackY({
@@ -818,23 +1116,18 @@ export function renderOutcomeDistribution(
         ),
       );
 
-      // Selected horizon bar bold outline (no vertical line)
       if (currentActiveHorizon !== null) {
-        marks.push(
-          Plot.barY(
-            [{ step: currentActiveHorizon, percentage: 100 }],
-            {
-              x: "step",
-              y: "percentage",
-              fill: "none",
-              stroke: theme.axis.color,
-              strokeWidth: 2.5,
-            },
-          ),
+        marksA.push(
+          Plot.barY([{ step: currentActiveHorizon, percentage: 100 }], {
+            x: "step",
+            y: "percentage",
+            fill: "none",
+            stroke: theme.axis.color,
+            strokeWidth: 2.5,
+          }),
         );
       }
     } else if (eventTableRows.length > 0) {
-      // Existing time-dependent continuous event_table stacked step-area trajectory
       const plotData: Array<{
         horizon: number;
         stateId: string;
@@ -869,7 +1162,7 @@ export function renderOutcomeDistribution(
         }
       }
 
-      marks.push(
+      marksA.push(
         Plot.areaY(
           plotData,
           Plot.stackY({
@@ -883,7 +1176,6 @@ export function renderOutcomeDistribution(
         ),
       );
 
-      // Internal boundary lines
       const firstRowStates = eventTableRows[0]?.states ?? [];
       const numInternalBoundaries = firstRowStates.length - 1;
 
@@ -909,7 +1201,7 @@ export function renderOutcomeDistribution(
           }
         }
 
-        marks.push(
+        marksA.push(
           Plot.lineY(boundaryData, {
             x: "horizon",
             y: "cumulativePercentage",
@@ -922,10 +1214,9 @@ export function renderOutcomeDistribution(
         );
       }
 
-      // Vertical marker lines at fixed horizons
       for (const fh of availableSteps) {
         const isSelected = fh === currentActiveHorizon;
-        marks.push(
+        marksA.push(
           Plot.ruleX([fh], {
             stroke: theme.axis.color,
             strokeWidth: isSelected ? 2.5 : 1,
@@ -934,7 +1225,7 @@ export function renderOutcomeDistribution(
         );
 
         if (isSelected) {
-          marks.push(
+          marksA.push(
             Plot.text(
               [
                 {
@@ -956,7 +1247,6 @@ export function renderOutcomeDistribution(
         }
       }
     } else {
-      // Fallback Stacked Bar Chart for fixed_time_horizon
       const plotData: Array<{
         horizonLabel: string;
         horizon: number;
@@ -993,7 +1283,7 @@ export function renderOutcomeDistribution(
         }
       }
 
-      marks.push(
+      marksA.push(
         Plot.barY(
           plotData,
           Plot.stackY({
@@ -1010,8 +1300,8 @@ export function renderOutcomeDistribution(
       );
     }
 
-    const plotSpec = {
-      width: theme.width,
+    const plotSpecA = {
+      width: panelAWidth,
       height: Math.round(theme.height * 0.65),
       marginTop: theme.margins.top + 10,
       marginRight: theme.margins.right,
@@ -1063,12 +1353,169 @@ export function renderOutcomeDistribution(
         tickPadding: theme.axis.tickPadding,
         tickFormat: (d: number) => `${d}%`,
       },
-      marks,
+      marks: marksA,
     };
 
-    const chartSvg = themedPlot(plotSpec, theme);
+    const chartSvgA = themedPlot(plotSpecA, theme);
+    chartADiv.replaceChildren(chartSvgA);
 
-    chartDiv.replaceChildren(chartSvg);
+    // --- PANEL B RENDERING ---
+    if (isPanelBVisible) {
+      chartBDiv.replaceChildren();
+
+      if (hasIncompleteExclusionData) {
+        const incMsg = document.createElement("div");
+        incMsg.className = "rtichoke-outcome-distribution__incomplete";
+        incMsg.textContent =
+          "Exclusion metadata is incomplete or unavailable for the active evaluation selection.";
+        chartBDiv.append(incMsg);
+      } else if (popExclusion) {
+        const sampleSize = popExclusion.originalSampleSize;
+
+        const activeExclusionItem =
+          currentActiveHorizon !== null
+            ? popExclusion.excludedCounts.find(
+                (e) => e.horizon === currentActiveHorizon,
+              )
+            : undefined;
+
+        if (currentActiveHorizon !== 0 && !activeExclusionItem) {
+          const incMsg = document.createElement("div");
+          incMsg.className = "rtichoke-outcome-distribution__incomplete";
+          incMsg.textContent = `Exclusion metadata is missing for horizon ${currentActiveHorizon}.`;
+          chartBDiv.append(incMsg);
+          return;
+        }
+
+        // Panel B Plot Chart Data
+        const sortedExclusions = [...popExclusion.excludedCounts].sort(
+          (a, b) => a.horizon - b.horizon,
+        );
+
+        const panelBPlotData: Array<{
+          horizon: number;
+          horizonLabel: string;
+          category: string;
+          count: number;
+          percentage: number;
+          color: string;
+          title: string;
+        }> = [];
+
+        for (const ex of sortedExclusions) {
+          const cPct = (ex.censoredExcludedCount / sampleSize) * 100;
+          const compPctVal = (ex.competingExcludedCount / sampleSize) * 100;
+
+          panelBPlotData.push({
+            horizon: ex.horizon,
+            horizonLabel: `Time: ${ex.horizon}`,
+            category: "censored",
+            count: ex.censoredExcludedCount,
+            percentage: cPct,
+            color: EXCLUSION_COLORS.censored,
+            title: buildExclusionTooltip(
+              ex.horizon,
+              "Censored excluded",
+              ex.censoredExcludedCount,
+              sampleSize,
+              digits,
+            ),
+          });
+
+          panelBPlotData.push({
+            horizon: ex.horizon,
+            horizonLabel: `Time: ${ex.horizon}`,
+            category: "competing",
+            count: ex.competingExcludedCount,
+            percentage: compPctVal,
+            color: EXCLUSION_COLORS.competing,
+            title: buildExclusionTooltip(
+              ex.horizon,
+              "Competing events excluded",
+              ex.competingExcludedCount,
+              sampleSize,
+              digits,
+            ),
+          });
+        }
+
+        const marksB: Plot.Markish[] = [
+          Plot.barY(
+            panelBPlotData,
+            Plot.stackY({
+              x: "horizon",
+              y: "percentage",
+              z: "category",
+              fill: (d) => d.color,
+              fillOpacity: (d) =>
+                currentActiveHorizon === null || d.horizon <= currentActiveHorizon
+                  ? 0.88
+                  : 0.28,
+              stroke: theme.axis.color,
+              strokeWidth: 0.75,
+              title: (d) => d.title,
+            }),
+          ),
+        ];
+
+        for (const ex of sortedExclusions) {
+          const isSelected = ex.horizon === currentActiveHorizon;
+          if (isSelected) {
+            const totPct =
+              ((ex.censoredExcludedCount + ex.competingExcludedCount) /
+                sampleSize) *
+              100;
+            marksB.push(
+              Plot.barY([{ horizon: ex.horizon, percentage: totPct }], {
+                x: "horizon",
+                y: "percentage",
+                fill: "none",
+                stroke: theme.axis.color,
+                strokeWidth: 2.5,
+              }),
+            );
+          }
+        }
+
+        const plotSpecB = {
+          width: panelBWidth,
+          height: 120,
+          marginTop: 10,
+          marginRight: theme.margins.right,
+          marginBottom: theme.margins.bottom,
+          marginLeft: theme.margins.left,
+          style: {
+            background: theme.background,
+            color: theme.axis.color,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: `${theme.typography.fontSize}px`,
+          },
+          x: {
+            label: "Time",
+            grid: false,
+            line: true,
+            ticks: availableSteps,
+            tickFormat: (d: number) => String(d),
+            tickSize: theme.axis.tickSize,
+            tickPadding: theme.axis.tickPadding,
+          },
+          y: {
+            label: "Excluded observations (%)",
+            domain: [0, 100],
+            grid: false,
+            line: true,
+            ticks: 5,
+            tickSize: theme.axis.tickSize,
+            tickPadding: theme.axis.tickPadding,
+            tickFormat: (d: number) => `${d}%`,
+          },
+          marks: marksB,
+        };
+
+        const chartSvgB = themedPlot(plotSpecB, theme);
+        chartBDiv.replaceChildren(chartSvgB);
+      }
+    }
   };
 
   slider.addEventListener("input", () => {
@@ -1080,21 +1527,25 @@ export function renderOutcomeDistribution(
       (d) => d.estimateOrigin === "observed_step",
     );
 
-    const steps = isObservedStep
-      ? Array.from(
+      let steps: number[];
+      if (isObservedStep) {
+        steps = Array.from(
           new Set(
             evalDists
               .filter((d) => d.estimateOrigin === "observed_step")
               .map((d) => d.horizon ?? 0),
           ),
-        ).sort((a, b) => a - b)
-      : Array.from(
+        ).sort((a, b) => a - b);
+      } else {
+        const supplied = Array.from(
           new Set(
             evalDists
-              .filter((d) => d.estimateOrigin === "fixed_time_horizon")
+              .filter((d) => d.estimateOrigin === "fixed_time_horizon" || d.estimateOrigin === "event_table")
               .map((d) => d.horizon ?? 0),
           ),
         ).sort((a, b) => a - b);
+        steps = supplied.includes(0) ? supplied : [0, ...supplied];
+      }
 
     const idx = Number(slider.value);
     if (idx >= 0 && idx < steps.length) {
