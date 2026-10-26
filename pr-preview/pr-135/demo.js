@@ -3922,7 +3922,7 @@ function assertOutcomeDistributionReferentialIntegrity(spec) {
       }
       orders.push(dist.states.map((s2) => s2.stateId));
     } else {
-      const strictKey = `${dist.evaluationId}|${dist.estimateOrigin ?? "unspecified"}`;
+      const strictKey = `${dist.evaluationId}|${dist.estimator}`;
       const stateOrder = dist.states.map((s2) => s2.stateId);
       const existingStrictOrder = nonObservedStateOrders.get(strictKey);
       if (!existingStrictOrder) {
