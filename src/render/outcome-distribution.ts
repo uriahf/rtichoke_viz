@@ -144,18 +144,81 @@ export function getOrdinalTrueBluePalette(n: number): string[] {
   return colors;
 }
 
+export function resolveCanonicalStateLabels(
+  spec: OutcomeDistributionSpec,
+): Map<string, string> {
+  const canonicalMap = new Map<string, string>();
+
+  const processDistributions = (dists: StateDistribution[]) => {
+    for (const dist of dists) {
+      for (const s of dist.states) {
+        if (s.label !== undefined && s.label !== null) {
+          const trimmed = s.label.trim();
+          if (trimmed !== "") {
+            canonicalMap.set(s.stateId, trimmed);
+          }
+        }
+      }
+    }
+  };
+
+  if (spec.stateDistributions) {
+    processDistributions(spec.stateDistributions);
+  }
+
+  if (spec.variants) {
+    for (const variant of Object.values(spec.variants)) {
+      if (
+        variant &&
+        variant.status === "available" &&
+        variant.stateDistributions
+      ) {
+        processDistributions(variant.stateDistributions);
+      }
+    }
+  }
+
+  return canonicalMap;
+}
+
 function resolveStateLabel(
   stateId: string,
   customLabel?: string | null,
-  isObservedStep?: boolean,
+  canonicalMap?: Map<string, string>,
 ): string {
   if (customLabel && customLabel.trim() !== "") {
-    return customLabel;
+    return customLabel.trim();
   }
-  if (!isObservedStep && CANONICAL_STATE_LABELS[stateId]) {
+  if (canonicalMap && canonicalMap.has(stateId)) {
+    return canonicalMap.get(stateId)!;
+  }
+  if (CANONICAL_STATE_LABELS[stateId]) {
     return CANONICAL_STATE_LABELS[stateId];
   }
   return stateId;
+}
+
+function selectNearestStep(
+  currentStep: number,
+  availableSteps: number[],
+): number {
+  if (availableSteps.length === 0) return currentStep;
+  if (availableSteps.includes(currentStep)) return currentStep;
+
+  let bestStep = availableSteps[0];
+  let minDiff = Math.abs(availableSteps[0] - currentStep);
+
+  for (let i = 1; i < availableSteps.length; i++) {
+    const step = availableSteps[i];
+    const diff = Math.abs(step - currentStep);
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestStep = step;
+    } else if (diff === minDiff && step < bestStep) {
+      bestStep = step;
+    }
+  }
+  return bestStep;
 }
 
 interface ProcessedStateRow {
@@ -182,17 +245,16 @@ interface ProcessedHorizonData {
 
 function processStateDistribution(
   dist: StateDistribution,
+  canonicalMap?: Map<string, string>,
+  masterStateOrder?: string[],
 ): ProcessedHorizonData {
   const horizon = dist.horizon ?? 0;
-  const states = dist.states;
   const isObservedStep = dist.estimateOrigin === "observed_step";
 
-  let hasEstimate = false;
   let hasMass = false;
   let hasCount = false;
 
-  for (const s of states) {
-    if (s.estimate !== undefined && s.estimate !== null) hasEstimate = true;
+  for (const s of dist.states) {
     if (s.mass !== undefined && s.mass !== null) hasMass = true;
     if (s.count !== undefined && s.count !== null) hasCount = true;
   }
@@ -201,68 +263,99 @@ function processStateDistribution(
   let totalCount: number | null = null;
 
   if (hasMass) {
-    totalMass = states.reduce(
+    totalMass = dist.states.reduce(
       (acc, s) => acc + (s.mass !== undefined && s.mass !== null ? s.mass : 0),
       0,
     );
   }
 
   if (hasCount) {
-    totalCount = states.reduce(
+    totalCount = dist.states.reduce(
       (acc, s) =>
         acc + (s.count !== undefined && s.count !== null ? s.count : 0),
       0,
     );
   }
 
-  const processedStates: ProcessedStateRow[] = states.map((s) => {
-    const label = resolveStateLabel(s.stateId, s.label, isObservedStep);
-    let proportion = 0;
+  let effectiveStateIds: string[];
+  if (isObservedStep && masterStateOrder && masterStateOrder.length > 0) {
+    effectiveStateIds = masterStateOrder;
+  } else {
+    effectiveStateIds = dist.states.map((s) => s.stateId);
+  }
 
-    if (
-      dist.estimator === "aalen_johansen" &&
-      s.estimate !== undefined &&
-      s.estimate !== null
-    ) {
-      proportion = s.estimate;
-    } else if (
-      dist.estimator === "raw" &&
-      s.count !== undefined &&
-      s.count !== null &&
-      totalCount &&
-      totalCount > 0
-    ) {
-      proportion = s.count / totalCount;
-    } else if (hasEstimate && s.estimate !== undefined && s.estimate !== null) {
-      proportion = s.estimate;
-    } else if (
-      hasMass &&
-      s.mass !== undefined &&
-      s.mass !== null &&
-      totalMass &&
-      totalMass > 0
-    ) {
-      proportion = s.mass / totalMass;
-    } else if (
-      hasCount &&
-      s.count !== undefined &&
-      s.count !== null &&
-      totalCount &&
-      totalCount > 0
-    ) {
-      proportion = s.count / totalCount;
-    }
+  const stateMap = new Map<string, (typeof dist.states)[0]>();
+  for (const s of dist.states) {
+    stateMap.set(s.stateId, s);
+  }
 
-    return {
-      stateId: s.stateId,
-      label,
-      proportion,
-      percentage: proportion * 100,
-      estimate: s.estimate ?? null,
-      mass: s.mass ?? null,
-      count: s.count ?? null,
-    };
-  });
+  const processedStates: ProcessedStateRow[] = effectiveStateIds.map(
+    (stateId) => {
+      const s = stateMap.get(stateId);
+      if (s) {
+        const label = resolveStateLabel(s.stateId, s.label, canonicalMap);
+        let proportion = 0;
+
+        if (
+          dist.estimator === "aalen_johansen" &&
+          s.estimate !== undefined &&
+          s.estimate !== null
+        ) {
+          proportion = s.estimate;
+        } else if (
+          dist.estimator === "raw" &&
+          s.count !== undefined &&
+          s.count !== null &&
+          totalCount &&
+          totalCount > 0
+        ) {
+          proportion = s.count / totalCount;
+        } else if (
+          s.estimate !== undefined &&
+          s.estimate !== null
+        ) {
+          proportion = s.estimate;
+        } else if (
+          hasMass &&
+          s.mass !== undefined &&
+          s.mass !== null &&
+          totalMass &&
+          totalMass > 0
+        ) {
+          proportion = s.mass / totalMass;
+        } else if (
+          hasCount &&
+          s.count !== undefined &&
+          s.count !== null &&
+          totalCount &&
+          totalCount > 0
+        ) {
+          proportion = s.count / totalCount;
+        }
+
+        return {
+          stateId: s.stateId,
+          label,
+          proportion,
+          percentage: proportion * 100,
+          estimate: s.estimate ?? null,
+          mass: s.mass ?? null,
+          count: s.count ?? null,
+        };
+      } else {
+        const label = resolveStateLabel(stateId, null, canonicalMap);
+        return {
+          stateId,
+          label,
+          proportion: 0,
+          percentage: 0,
+          estimate: dist.estimator === "aalen_johansen" ? 0 : null,
+          mass: null,
+          count: dist.estimator === "raw" ? 0 : null,
+        };
+      }
+    },
+  );
 
   return {
     evaluationId: dist.evaluationId,
@@ -365,6 +458,8 @@ export function renderOutcomeDistribution(
   const resolved = resolveV2RenderOptions(2, options);
   const { theme } = resolved;
   const digits = theme.tip.digits;
+
+  const canonicalMap = resolveCanonicalStateLabels(spec);
 
   let currentEvalId = spec.evaluations[0].id;
 
@@ -542,7 +637,6 @@ export function renderOutcomeDistribution(
         radio.addEventListener("change", () => {
           if (radio.checked) {
             currentEvalId = ev.id;
-            currentActiveHorizon = null;
             updateChart();
           }
         });
@@ -606,19 +700,34 @@ export function renderOutcomeDistribution(
       return;
     }
 
+    const observedStepDists = evalDists.filter(
+      (d) => d.estimateOrigin === "observed_step",
+    );
+
+    let masterStateOrder: string[] = [];
+    if (observedStepDists.length > 0) {
+      for (const d of observedStepDists) {
+        for (const s of d.states) {
+          if (!masterStateOrder.includes(s.stateId)) {
+            masterStateOrder.push(s.stateId);
+          }
+        }
+      }
+    }
+
     const eventTableRows = evalDists
       .filter((d) => d.estimateOrigin === "event_table")
-      .map(processStateDistribution)
+      .map((d) => processStateDistribution(d, canonicalMap))
       .sort((a, b) => a.horizon - b.horizon);
 
     const fixedHorizonRows = evalDists
       .filter((d) => d.estimateOrigin === "fixed_time_horizon")
-      .map(processStateDistribution)
+      .map((d) => processStateDistribution(d, canonicalMap))
       .sort((a, b) => a.horizon - b.horizon);
 
     const observedStepRows = evalDists
       .filter((d) => d.estimateOrigin === "observed_step")
-      .map(processStateDistribution)
+      .map((d) => processStateDistribution(d, canonicalMap, masterStateOrder))
       .sort((a, b) => a.horizon - b.horizon);
 
     const isObservedStepMode = observedStepRows.length > 0;
@@ -670,11 +779,13 @@ export function renderOutcomeDistribution(
     if (isObservedStepMode) {
       if (observedStepRows.length > 1) {
         sliderControl.style.display = "flex";
-        if (
-          currentActiveHorizon === null ||
-          !availableSteps.includes(currentActiveHorizon)
-        ) {
+        if (currentActiveHorizon === null) {
           currentActiveHorizon = availableSteps[availableSteps.length - 1];
+        } else {
+          currentActiveHorizon = selectNearestStep(
+            currentActiveHorizon,
+            availableSteps,
+          );
         }
 
         const hIdx = availableSteps.indexOf(currentActiveHorizon);
@@ -695,11 +806,13 @@ export function renderOutcomeDistribution(
       }
     } else if (availableSteps.length > 0) {
       sliderControl.style.display = "flex";
-      if (
-        currentActiveHorizon === null ||
-        !availableSteps.includes(currentActiveHorizon)
-      ) {
+      if (currentActiveHorizon === null) {
         currentActiveHorizon = availableSteps[availableSteps.length - 1];
+      } else {
+        currentActiveHorizon = selectNearestStep(
+          currentActiveHorizon,
+          availableSteps,
+        );
       }
 
       const hIdx = availableSteps.indexOf(currentActiveHorizon);

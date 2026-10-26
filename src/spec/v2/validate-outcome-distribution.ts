@@ -283,6 +283,28 @@ export function assertOutcomeDistributionReferentialIntegrity(
   const seenKeys = new Set<string>();
   const originHorizonKeys = new Set<string>();
   const evalStateOrders = new Map<string, string[]>();
+  const explicitLabels = new Map<string, string>();
+
+  const checkAndRegisterStateLabels = (dists: StateDistribution[]) => {
+    for (const dist of dists) {
+      for (const state of dist.states) {
+        if (state.label !== undefined && state.label !== null) {
+          const trimmed = state.label.trim();
+          if (trimmed !== "") {
+            const existing = explicitLabels.get(state.stateId);
+            if (existing !== undefined && existing !== trimmed) {
+              throw new Error(
+                `conflicting explicit labels for state '${state.stateId}': '${existing}' vs '${trimmed}'`,
+              );
+            }
+            explicitLabels.set(state.stateId, trimmed);
+          }
+        }
+      }
+    }
+  };
+
+  checkAndRegisterStateLabels(spec.stateDistributions);
 
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
@@ -305,16 +327,27 @@ export function assertOutcomeDistributionReferentialIntegrity(
       }
       seenKeys.add(key);
 
-      const stateOrder = dist.states.map((s) => s.stateId);
       const groupKey = `${dist.evaluationId}|${dist.estimator}`;
-      const existingOrder = evalStateOrders.get(groupKey);
-      if (!existingOrder) {
-        evalStateOrders.set(groupKey, stateOrder);
-      } else {
-        if (
-          stateOrder.length !== existingOrder.length ||
-          !stateOrder.every((id, idx) => id === existingOrder[idx])
-        ) {
+      let masterOrder = evalStateOrders.get(groupKey);
+      if (!masterOrder) {
+        masterOrder = [];
+        evalStateOrders.set(groupKey, masterOrder);
+      }
+
+      const currentStepOrder = dist.states.map((s) => s.stateId);
+      for (let i = 0; i < currentStepOrder.length; i++) {
+        const id = currentStepOrder[i];
+        if (!masterOrder.includes(id)) {
+          masterOrder.push(id);
+        }
+      }
+
+      for (let i = 0; i < currentStepOrder.length - 1; i++) {
+        const idA = currentStepOrder[i];
+        const idB = currentStepOrder[i + 1];
+        const idxA = masterOrder.indexOf(idA);
+        const idxB = masterOrder.indexOf(idB);
+        if (idxA > idxB) {
           throw new Error(
             `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`,
           );
@@ -335,6 +368,8 @@ export function assertOutcomeDistributionReferentialIntegrity(
         if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
           throw new Error(`variant '${key}' stateDistributions must be non-empty`);
         }
+
+          checkAndRegisterStateLabels(variant.stateDistributions);
 
         const variantOriginHorizonKeys = new Set<string>();
         for (const dist of variant.stateDistributions) {

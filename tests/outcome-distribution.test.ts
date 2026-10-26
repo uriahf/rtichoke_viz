@@ -6,6 +6,7 @@ import type { PredictionDistributionSpec } from "../src/spec/v2/prediction-distr
 import { PredictionDistributionSpecSchema } from "../src/spec/v2/prediction-distribution.js";
 import { assertOutcomeDistributionReferentialIntegrity } from "../src/spec/v2/validate-outcome-distribution.js";
 import { assertPredictionDistributionReferentialIntegrity } from "../src/spec/v2/validate-prediction-distribution.js";
+import { resolveCanonicalStateLabels } from "../src/render/outcome-distribution.js";
 
 describe("OutcomeDistributionSpec", () => {
   const validSpec: OutcomeDistributionSpec = {
@@ -576,6 +577,109 @@ describe("OutcomeDistributionSpec", () => {
       expect(() =>
         assertOutcomeDistributionReferentialIntegrity(spec),
       ).toThrow("inconsistent state ordering across steps");
+    });
+
+    it("rejects conflicting explicit labels for the same stateId across steps", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "Remission", count: 10 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "Full Remission", count: 15 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("conflicting explicit labels for state 'state_a': 'Remission' vs 'Full Remission'");
+    });
+
+    it("rejects conflicting explicit labels between stateDistributions and variants", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "fixed_time_horizon",
+            states: [{ stateId: "state_a", label: "Primary Event", count: 10 }],
+          },
+        ],
+        variants: {
+          "adjusted:adjusted_as_censored": {
+            status: "available",
+            exclusions: [],
+            stateDistributions: [
+              {
+                evaluationId: "eval-1",
+                horizon: 1,
+                estimator: "raw",
+                estimateOrigin: "fixed_time_horizon",
+                states: [{ stateId: "state_a", label: "Secondary Event", count: 10 }],
+              },
+            ],
+          },
+        },
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("conflicting explicit labels for state 'state_a': 'Primary Event' vs 'Secondary Event'");
+    });
+
+    it("accepts identical explicit labels and omitted labels across steps and variants", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "Remission", count: 10 },
+              { stateId: "state_b", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "Remission", count: 15 },
+              { stateId: "state_b", label: "Relapse", count: 25 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).not.toThrow();
+
+      const canonicalMap = resolveCanonicalStateLabels(spec);
+      expect(canonicalMap.get("state_a")).toBe("Remission");
+      expect(canonicalMap.get("state_b")).toBe("Relapse");
     });
   });
 });

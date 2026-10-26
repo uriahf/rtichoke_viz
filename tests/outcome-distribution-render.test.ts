@@ -274,7 +274,7 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
       horizon: 10,
       estimator: "raw",
       estimateOrigin: "fixed_time_horizon",
-      states: [{ stateId: "real_positive", label: "Event", count: 100 }],
+      states: [{ stateId: "real_positive", label: "Target event", count: 100 }],
     });
 
     const rootMulti = renderOutcomeDistribution(specMulti);
@@ -848,6 +848,152 @@ describe("Outcome Distribution Renderer DOM and UX Polish", () => {
 
       // Colors mapped by stateId remain identical despite label change
       expect(color1).toBe(color2);
+    });
+
+    it("synthesizes zero-count display states for absent states and preserves state ordering and denominators", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "cohort-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "State A", count: 30 },
+              { stateId: "state_b", label: "State B", count: 70 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", label: "State A", count: 50 },
+              { stateId: "state_c", label: "State C", count: 50 },
+            ],
+          },
+        ],
+      };
+
+      const specClone = structuredClone(spec);
+      const root = renderOutcomeDistribution(spec);
+
+      // Active step is step 2
+      expect(root.textContent).toContain("Active Step: Step = 2");
+
+      // Verify readout contains synthesized State B with 0 / 100 (0.0%)
+      const text = root.textContent ?? "";
+      expect(text).toContain("State A");
+      expect(text).toContain("State B");
+      expect(text).toContain("State C");
+      expect(text).toContain("50 / 100 (50.0%)");
+      expect(text).toContain("0 / 100 (0.0%)");
+
+      // Verify input spec was not mutated
+      expect(spec).toEqual(specClone);
+    });
+
+    it("handles multi-evaluation navigation with nearest-step fallback and lower-step tie breaking", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [
+          { id: "eval-1", model: "Eval 1", population: "Cohort 1" },
+          { id: "eval-2", model: "Eval 2", population: "Cohort 2" },
+        ],
+        stateDistributions: [
+          // Eval 1 steps: 0, 2, 4, 6
+          {
+            evaluationId: "eval-1",
+            horizon: 0,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 100 }],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 100 }],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 4,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 100 }],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 6,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 100 }],
+          },
+          // Eval 2 steps: 1, 3, 5
+          {
+            evaluationId: "eval-2",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 50 }],
+          },
+          {
+            evaluationId: "eval-2",
+            horizon: 3,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 50 }],
+          },
+          {
+            evaluationId: "eval-2",
+            horizon: 5,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [{ stateId: "s1", count: 50 }],
+          },
+        ],
+      };
+
+      const root = renderOutcomeDistribution(spec);
+
+      // 1. Initial load on Eval 1 -> selects step 6 (last step)
+      expect(root.textContent).toContain("Active Step: Step = 6");
+
+      // 2. Set slider to step 4 on Eval 1
+      const slider = root.querySelector(
+        ".rtichoke-operating-point-slider",
+      ) as HTMLInputElement;
+      slider.value = "2"; // Index 2 -> step 4
+      slider.dispatchEvent(new Event("input"));
+      expect(root.textContent).toContain("Active Step: Step = 4");
+
+      // 3. Switch to Eval 2 -> available steps [1, 3, 5].
+      // Distance from 4 to 3 is 1; distance from 4 to 5 is 1. Tie broken toward smaller step 3.
+      const eval2Radio = root.querySelector<HTMLInputElement>(
+        'input[type="radio"][value="eval-2"]',
+      )!;
+      eval2Radio.checked = true;
+      eval2Radio.dispatchEvent(new Event("change"));
+
+      expect(root.textContent).toContain("Active Step: Step = 3");
+      expect(root.textContent).toContain("50 / 50 (100.0%)");
+
+      // 4. Switch back to Eval 1 -> available steps [0, 2, 4, 6]. Active step was 3.
+      // Distance from 3 to 2 is 1; distance from 3 to 4 is 1. Tie broken toward smaller step 2.
+      const eval1Radio = root.querySelector<HTMLInputElement>(
+        'input[type="radio"][value="eval-1"]',
+      )!;
+      eval1Radio.checked = true;
+      eval1Radio.dispatchEvent(new Event("change"));
+
+      expect(root.textContent).toContain("Active Step: Step = 2");
+      expect(root.textContent).toContain("100 / 100 (100.0%)");
     });
   });
 });
