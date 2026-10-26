@@ -3638,6 +3638,55 @@ var VALID_HEURISTIC_PAIR_KEYS2 = /* @__PURE__ */ new Set([
   "adjusted:adjusted_as_negative",
   "adjusted:adjusted_as_composite"
 ]);
+function inferTopologicalStateOrder(stepOrders) {
+  const nodes = /* @__PURE__ */ new Set();
+  const inDegree = /* @__PURE__ */ new Map();
+  const adj = /* @__PURE__ */ new Map();
+  const firstSeenOrder = [];
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      const node = step[i];
+      if (!nodes.has(node)) {
+        nodes.add(node);
+        firstSeenOrder.push(node);
+        inDegree.set(node, 0);
+        adj.set(node, /* @__PURE__ */ new Set());
+      }
+    }
+  }
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      for (let j = i + 1; j < step.length; j++) {
+        const u = step[i];
+        const v = step[j];
+        const neighbors = adj.get(u);
+        if (!neighbors.has(v)) {
+          neighbors.add(v);
+          inDegree.set(v, (inDegree.get(v) ?? 0) + 1);
+        }
+      }
+    }
+  }
+  const queue = firstSeenOrder.filter((n) => inDegree.get(n) === 0);
+  const result = [];
+  while (queue.length > 0) {
+    queue.sort((a2, b) => firstSeenOrder.indexOf(a2) - firstSeenOrder.indexOf(b));
+    const u = queue.shift();
+    result.push(u);
+    const neighbors = adj.get(u) ?? /* @__PURE__ */ new Set();
+    for (const v of neighbors) {
+      const newDeg = (inDegree.get(v) ?? 1) - 1;
+      inDegree.set(v, newDeg);
+      if (newDeg === 0) {
+        queue.push(v);
+      }
+    }
+  }
+  if (result.length !== nodes.size) {
+    return null;
+  }
+  return result;
+}
 function assertPopulationExclusionValid(exclusion, validEvaluationIds) {
   if (validEvaluationIds && !validEvaluationIds.has(exclusion.evaluationId)) {
     throw new Error(`unknown evaluation id: ${exclusion.evaluationId}`);
@@ -3825,7 +3874,8 @@ function assertOutcomeDistributionReferentialIntegrity(spec) {
   }
   const seenKeys = /* @__PURE__ */ new Set();
   const originHorizonKeys = /* @__PURE__ */ new Set();
-  const evalStateOrders = /* @__PURE__ */ new Map();
+  const nonObservedStateOrders = /* @__PURE__ */ new Map();
+  const observedStepOrders = /* @__PURE__ */ new Map();
   const explicitLabels = /* @__PURE__ */ new Map();
   const checkAndRegisterStateLabels = (dists) => {
     for (const dist of dists) {
@@ -3865,29 +3915,34 @@ function assertOutcomeDistributionReferentialIntegrity(spec) {
       }
       seenKeys.add(key);
       const groupKey = `${dist.evaluationId}|${dist.estimator}`;
-      let masterOrder = evalStateOrders.get(groupKey);
-      if (!masterOrder) {
-        masterOrder = [];
-        evalStateOrders.set(groupKey, masterOrder);
+      let orders = observedStepOrders.get(groupKey);
+      if (!orders) {
+        orders = [];
+        observedStepOrders.set(groupKey, orders);
       }
-      const currentStepOrder = dist.states.map((s2) => s2.stateId);
-      for (let i = 0; i < currentStepOrder.length; i++) {
-        const id2 = currentStepOrder[i];
-        if (!masterOrder.includes(id2)) {
-          masterOrder.push(id2);
-        }
-      }
-      for (let i = 0; i < currentStepOrder.length - 1; i++) {
-        const idA = currentStepOrder[i];
-        const idB = currentStepOrder[i + 1];
-        const idxA = masterOrder.indexOf(idA);
-        const idxB = masterOrder.indexOf(idB);
-        if (idxA > idxB) {
+      orders.push(dist.states.map((s2) => s2.stateId));
+    } else {
+      const strictKey = `${dist.evaluationId}|${dist.estimateOrigin ?? "unspecified"}`;
+      const stateOrder = dist.states.map((s2) => s2.stateId);
+      const existingStrictOrder = nonObservedStateOrders.get(strictKey);
+      if (!existingStrictOrder) {
+        nonObservedStateOrders.set(strictKey, stateOrder);
+      } else {
+        if (stateOrder.length !== existingStrictOrder.length || !stateOrder.every((id2, idx) => id2 === existingStrictOrder[idx])) {
           throw new Error(
-            `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`
+            `inconsistent state ordering across horizons for evaluation ${dist.evaluationId}`
           );
         }
       }
+    }
+  }
+  for (const [groupKey, orders] of observedStepOrders.entries()) {
+    const evalId = groupKey.split("|")[0];
+    const inferred = inferTopologicalStateOrder(orders);
+    if (!inferred) {
+      throw new Error(
+        `inconsistent state ordering across steps for evaluation ${evalId}`
+      );
     }
   }
   if (spec.variants) {
@@ -22729,13 +22784,10 @@ function renderOutcomeDistribution(spec, options = {}) {
     );
     let masterStateOrder = [];
     if (observedStepDists.length > 0) {
-      for (const d of observedStepDists) {
-        for (const s2 of d.states) {
-          if (!masterStateOrder.includes(s2.stateId)) {
-            masterStateOrder.push(s2.stateId);
-          }
-        }
-      }
+      const stepOrders = observedStepDists.map(
+        (d) => d.states.map((s2) => s2.stateId)
+      );
+      masterStateOrder = inferTopologicalStateOrder(stepOrders) ?? [];
     }
     const eventTableRows = evalDists.filter((d) => d.estimateOrigin === "event_table").map((d) => processStateDistribution(d, canonicalMap)).sort((a2, b) => a2.horizon - b.horizon);
     const fixedHorizonRows = evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon").map((d) => processStateDistribution(d, canonicalMap)).sort((a2, b) => a2.horizon - b.horizon);
