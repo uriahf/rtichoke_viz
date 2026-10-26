@@ -5,7 +5,10 @@ import type {
   PopulationExclusion,
 } from "../spec/v2/outcome-distribution.js";
 import type { StateDistribution } from "../spec/v2/state-distribution.js";
-import { assertOutcomeDistributionReferentialIntegrity } from "../spec/v2/validate-outcome-distribution.js";
+import {
+  assertOutcomeDistributionReferentialIntegrity,
+  inferTopologicalStateOrder,
+} from "../spec/v2/validate-outcome-distribution.js";
 import {
   resolveV2RenderOptions,
   themedPlot,
@@ -706,13 +709,10 @@ export function renderOutcomeDistribution(
 
     let masterStateOrder: string[] = [];
     if (observedStepDists.length > 0) {
-      for (const d of observedStepDists) {
-        for (const s of d.states) {
-          if (!masterStateOrder.includes(s.stateId)) {
-            masterStateOrder.push(s.stateId);
-          }
-        }
-      }
+      const stepOrders = observedStepDists.map((d) =>
+        d.states.map((s) => s.stateId),
+      );
+      masterStateOrder = inferTopologicalStateOrder(stepOrders) ?? [];
     }
 
     const eventTableRows = evalDists

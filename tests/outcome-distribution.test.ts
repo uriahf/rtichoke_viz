@@ -546,7 +546,73 @@ describe("OutcomeDistributionSpec", () => {
       ).toThrow("multiple state distributions defined for evaluation eval-1 at step/horizon 1");
     });
 
-    it("rejects inconsistent state ordering across steps", () => {
+    it("validates compatible partial orders supplied in either step sequence", () => {
+      // Step 1: [B, C], Step 2: [A, B] -> topological order [A, B, C]
+      const spec1: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_b", count: 20 },
+              { stateId: "state_c", count: 30 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 10 },
+              { stateId: "state_b", count: 25 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec1),
+      ).not.toThrow();
+
+      // Step 1: [A, B], Step 2: [B, C] -> topological order [A, B, C]
+      const spec2: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 1,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_a", count: 10 },
+              { stateId: "state_b", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 2,
+            estimator: "raw",
+            estimateOrigin: "observed_step",
+            states: [
+              { stateId: "state_b", count: 25 },
+              { stateId: "state_c", count: 35 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec2),
+      ).not.toThrow();
+    });
+
+    it("rejects contradictory orders in observed_step", () => {
       const spec: OutcomeDistributionSpec = {
         schemaVersion: "2.0",
         type: "outcome_distribution",
@@ -577,6 +643,39 @@ describe("OutcomeDistributionSpec", () => {
       expect(() =>
         assertOutcomeDistributionReferentialIntegrity(spec),
       ).toThrow("inconsistent state ordering across steps");
+    });
+
+    it("enforces strict state order in non-observed_step distributions", () => {
+      const spec: OutcomeDistributionSpec = {
+        schemaVersion: "2.0",
+        type: "outcome_distribution",
+        evaluations: [{ id: "eval-1", population: "pop-1" }],
+        stateDistributions: [
+          {
+            evaluationId: "eval-1",
+            horizon: 10,
+            estimator: "raw",
+            estimateOrigin: "fixed_time_horizon",
+            states: [
+              { stateId: "real_positive", count: 10 },
+              { stateId: "real_negative", count: 20 },
+            ],
+          },
+          {
+            evaluationId: "eval-1",
+            horizon: 20,
+            estimator: "raw",
+            estimateOrigin: "fixed_time_horizon",
+            states: [
+              { stateId: "real_negative", count: 25 },
+              { stateId: "real_positive", count: 15 },
+            ],
+          },
+        ],
+      };
+      expect(() =>
+        assertOutcomeDistributionReferentialIntegrity(spec),
+      ).toThrow("inconsistent state ordering across horizons");
     });
 
     it("rejects conflicting explicit labels for the same stateId across steps", () => {
