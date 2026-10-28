@@ -30,6 +30,8 @@ export { OutcomeStateSchema, StateDistributionSchema, StateStratumSchema } from 
 export type { OutcomeState, StateDistribution, StateStratum } from "./spec/v2/state-distribution.js";
 export { OutcomeDistributionSpecSchema } from "./spec/v2/outcome-distribution.js";
 export type { OutcomeDistributionSpec } from "./spec/v2/outcome-distribution.js";
+export { ContinuousDistributionItemSchema, ContinuousOutcomeDistributionSpecSchema } from "./spec/v2/continuous-outcome-distribution.js";
+export type { ContinuousDistributionItem, ContinuousOutcomeDistributionSpec } from "./spec/v2/continuous-outcome-distribution.js";
 export { PredictionDistributionBinSchema, PredictionDistributionOperatingPointSchema, PredictionDistributionSpecSchema } from "./spec/v2/prediction-distribution.js";
 export type { PredictionDistributionBin, PredictionDistributionOperatingPoint, PredictionDistributionSpec } from "./spec/v2/prediction-distribution.js";
 export { ReportComponentSchema, ReportComponentV1_1Schema, ReportGroupSchema, ReportSectionSchema, ReportSpecSchema, ReportSpecV1_0Schema, ReportSpecV1_1Schema, StandaloneCanonicalSpecSchema } from "./spec/report.js";
@@ -37,6 +39,7 @@ export type { ReportComponent, ReportComponentV1_1, ReportGroup, ReportSection, 
 export { assertReportReferentialIntegrity } from "./spec/validate-report.js";
 export { assertPerformanceTableReferentialIntegrity } from "./spec/v2/validate-performance-table.js";
 export { assertOutcomeDistributionReferentialIntegrity, assertStateDistributionValid } from "./spec/v2/validate-outcome-distribution.js";
+export { assertContinuousOutcomeDistributionReferentialIntegrity } from "./spec/v2/validate-continuous-outcome-distribution.js";
 export { assertPredictionDistributionReferentialIntegrity } from "./spec/v2/validate-prediction-distribution.js";
 export { assertSummaryMetricsReferentialIntegrity } from "./spec/v2/validate-summary-metrics.js";
 export { assertV2ReferentialIntegrity } from "./spec/v2/validate.js";
@@ -50,6 +53,8 @@ export { renderCalibration } from "./render/calibration.js";
 export { renderDecisionCurveV2 } from "./render/decision-curve.js";
 export { renderInterventionsAvoidedV2 } from "./render/interventions-avoided.js";
 export { renderOutcomeDistribution } from "./render/outcome-distribution.js";
+export { renderContinuousOutcomeDistribution } from "./render/continuous-outcome-distribution.js";
+export type { ContinuousOutcomeDistributionOptions } from "./render/continuous-outcome-distribution.js";
 export { renderPerformanceTable } from "./render/performance-table.js";
 export { preparePredictionDistributionPlotData, renderPredictionDistribution } from "./render/prediction-distribution.js";
 export type { PredictionDistributionPreparedData } from "./render/prediction-distribution.js";

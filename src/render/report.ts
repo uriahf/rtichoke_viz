@@ -17,6 +17,7 @@ import type { OutcomeDistributionSpec } from "../spec/v2/outcome-distribution.js
 import { renderDecisionCurveV2 } from "./decision-curve.js";
 import { renderInterventionsAvoidedV2 } from "./interventions-avoided.js";
 import { renderOutcomeDistribution } from "./outcome-distribution.js";
+import { renderContinuousOutcomeDistribution } from "./continuous-outcome-distribution.js";
 import { renderPerformanceTable } from "./performance-table.js";
 import { renderPredictionDistribution } from "./prediction-distribution.js";
 import { renderSummaryMetrics } from "./summary-metrics.js";
@@ -63,7 +64,8 @@ export function getComponentHeuristicStatus(
 ): ComponentHeuristicStatus {
   if (
     (spec as Record<string, unknown>).heuristicPolicy === "independent" ||
-    (spec as Record<string, unknown>).heuristicIndependent === true
+    (spec as Record<string, unknown>).heuristicIndependent === true ||
+    spec.type === "continuous_outcome_distribution"
   ) {
     return "independent";
   }
@@ -253,6 +255,8 @@ function renderStandaloneComponentContent(
       return renderPredictionDistribution(spec);
     case "outcome_distribution":
       return renderOutcomeDistribution(spec);
+    case "continuous_outcome_distribution":
+      return renderContinuousOutcomeDistribution(spec);
     case "roc":
       return renderRocV2(spec);
     case "calibration":

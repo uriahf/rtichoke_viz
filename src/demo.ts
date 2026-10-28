@@ -1,6 +1,7 @@
 import { renderContinuousOutcomeDistributionPOC } from "./experimental/continuous-outcome-distribution.js";
 import {
   renderCalibrationV2,
+  renderContinuousOutcomeDistribution,
   renderDecisionCurveV2,
   renderGainsV2,
   renderInterventionsAvoidedV2,
@@ -14,6 +15,7 @@ import {
 import "./rtichoke-viz.css";
 import type {
   CalibrationV2Spec,
+  ContinuousOutcomeDistributionSpec,
   DecisionCurveV2Spec,
   GainsV2Spec,
   InterventionsAvoidedV2Spec,
@@ -44,6 +46,7 @@ import predDistVisualData from "../fixtures/v2/prediction-distribution-visual.js
 import outcomeDistributionData from "../fixtures/v2/outcome-distribution.json" with { type: "json" };
 import outcomeDistributionLargeData from "../fixtures/v2/outcome-distribution-large.json" with { type: "json" };
 import outcomeDistributionPopulationsData from "../fixtures/v2/outcome-distribution-populations.json" with { type: "json" };
+import continuousOutcomeDistributionData from "../fixtures/v2/continuous-outcome-distribution.json" with { type: "json" };
 import fixtureAHeuristicsReportData from "../fixtures/v2/fixture-a-heuristics-report.json" with { type: "json" };
 
 // Standalone proofs for contract tests
@@ -63,6 +66,7 @@ const predDistVisualFixture = predDistVisualData as PredictionDistributionSpec;
 const outcomeDistributionFixture = outcomeDistributionData as OutcomeDistributionSpec;
 const outcomeDistributionLargeFixture = outcomeDistributionLargeData as OutcomeDistributionSpec;
 const outcomeDistributionPopulationsFixture = outcomeDistributionPopulationsData as OutcomeDistributionSpec;
+const continuousOutcomeDistributionFixture = continuousOutcomeDistributionData as ContinuousOutcomeDistributionSpec;
 
 const decisionCurveFixture = decisionCurveData as DecisionCurveV2Spec;
 const interventionsAvoidedFixture = interventionsAvoidedData as InterventionsAvoidedV2Spec;
@@ -92,6 +96,7 @@ const predDistVisualHost = document.querySelector<HTMLElement>("#pred-dist-visua
 const outcomeDistHost = document.querySelector<HTMLElement>("#outcome-distribution-chart");
 const outcomeDistLargeHost = document.querySelector<HTMLElement>("#outcome-distribution-large-chart");
 const outcomeDistPopulationsHost = document.querySelector<HTMLElement>("#outcome-distribution-populations-chart");
+const continuousOutcomeDistHost = document.querySelector<HTMLElement>("#continuous-outcome-distribution-chart");
 
 const observedStepRawHost = document.querySelector<HTMLElement>("#observed-step-raw-chart");
 const observedStepAjHost = document.querySelector<HTMLElement>("#observed-step-aj-chart");
@@ -353,6 +358,10 @@ if (observedStepOrdinalHost) {
 }
 if (observedStepNominalHost) {
   observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
+}
+
+if (continuousOutcomeDistHost) {
+  continuousOutcomeDistHost.append(renderContinuousOutcomeDistribution(continuousOutcomeDistributionFixture));
 }
 
 const continuousPocHost = document.querySelector<HTMLElement>("#continuous-outcome-distribution-poc-chart");
