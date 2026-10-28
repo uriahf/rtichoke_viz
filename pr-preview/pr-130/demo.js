@@ -4,4275 +4,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// node_modules/@sinclair/typebox/build/esm/type/guard/value.mjs
-var value_exports = {};
-__export(value_exports, {
-  HasPropertyKey: () => HasPropertyKey,
-  IsArray: () => IsArray,
-  IsAsyncIterator: () => IsAsyncIterator,
-  IsBigInt: () => IsBigInt,
-  IsBoolean: () => IsBoolean,
-  IsDate: () => IsDate,
-  IsFunction: () => IsFunction,
-  IsIterator: () => IsIterator,
-  IsNull: () => IsNull,
-  IsNumber: () => IsNumber,
-  IsObject: () => IsObject,
-  IsRegExp: () => IsRegExp,
-  IsString: () => IsString,
-  IsSymbol: () => IsSymbol,
-  IsUint8Array: () => IsUint8Array,
-  IsUndefined: () => IsUndefined
-});
-function HasPropertyKey(value, key) {
-  return key in value;
-}
-function IsAsyncIterator(value) {
-  return IsObject(value) && !IsArray(value) && !IsUint8Array(value) && Symbol.asyncIterator in value;
-}
-function IsArray(value) {
-  return Array.isArray(value);
-}
-function IsBigInt(value) {
-  return typeof value === "bigint";
-}
-function IsBoolean(value) {
-  return typeof value === "boolean";
-}
-function IsDate(value) {
-  return value instanceof globalThis.Date;
-}
-function IsFunction(value) {
-  return typeof value === "function";
-}
-function IsIterator(value) {
-  return IsObject(value) && !IsArray(value) && !IsUint8Array(value) && Symbol.iterator in value;
-}
-function IsNull(value) {
-  return value === null;
-}
-function IsNumber(value) {
-  return typeof value === "number";
-}
-function IsObject(value) {
-  return typeof value === "object" && value !== null;
-}
-function IsRegExp(value) {
-  return value instanceof globalThis.RegExp;
-}
-function IsString(value) {
-  return typeof value === "string";
-}
-function IsSymbol(value) {
-  return typeof value === "symbol";
-}
-function IsUint8Array(value) {
-  return value instanceof globalThis.Uint8Array;
-}
-function IsUndefined(value) {
-  return value === void 0;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/clone/value.mjs
-function ArrayType(value) {
-  return value.map((value2) => Visit(value2));
-}
-function DateType(value) {
-  return new Date(value.getTime());
-}
-function Uint8ArrayType(value) {
-  return new Uint8Array(value);
-}
-function RegExpType(value) {
-  return new RegExp(value.source, value.flags);
-}
-function ObjectType(value) {
-  const result = {};
-  for (const key of Object.getOwnPropertyNames(value)) {
-    result[key] = Visit(value[key]);
-  }
-  for (const key of Object.getOwnPropertySymbols(value)) {
-    result[key] = Visit(value[key]);
-  }
-  return result;
-}
-function Visit(value) {
-  return IsArray(value) ? ArrayType(value) : IsDate(value) ? DateType(value) : IsUint8Array(value) ? Uint8ArrayType(value) : IsRegExp(value) ? RegExpType(value) : IsObject(value) ? ObjectType(value) : value;
-}
-function Clone(value) {
-  return Visit(value);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/clone/type.mjs
-function CloneType(schema, options) {
-  return options === void 0 ? Clone(schema) : Clone({ ...options, ...schema });
-}
-
-// node_modules/@sinclair/typebox/build/esm/value/guard/guard.mjs
-function IsAsyncIterator2(value) {
-  return IsObject2(value) && globalThis.Symbol.asyncIterator in value;
-}
-function IsIterator2(value) {
-  return IsObject2(value) && globalThis.Symbol.iterator in value;
-}
-function IsStandardObject(value) {
-  return IsObject2(value) && (globalThis.Object.getPrototypeOf(value) === Object.prototype || globalThis.Object.getPrototypeOf(value) === null);
-}
-function IsPromise(value) {
-  return value instanceof globalThis.Promise;
-}
-function IsDate2(value) {
-  return value instanceof Date && globalThis.Number.isFinite(value.getTime());
-}
-function IsMap(value) {
-  return value instanceof globalThis.Map;
-}
-function IsSet(value) {
-  return value instanceof globalThis.Set;
-}
-function IsTypedArray(value) {
-  return globalThis.ArrayBuffer.isView(value);
-}
-function IsUint8Array2(value) {
-  return value instanceof globalThis.Uint8Array;
-}
-function HasPropertyKey2(value, key) {
-  return key in value;
-}
-function IsObject2(value) {
-  return value !== null && typeof value === "object";
-}
-function IsArray2(value) {
-  return globalThis.Array.isArray(value) && !globalThis.ArrayBuffer.isView(value);
-}
-function IsUndefined2(value) {
-  return value === void 0;
-}
-function IsNull2(value) {
-  return value === null;
-}
-function IsBoolean2(value) {
-  return typeof value === "boolean";
-}
-function IsNumber2(value) {
-  return typeof value === "number";
-}
-function IsInteger(value) {
-  return globalThis.Number.isInteger(value);
-}
-function IsBigInt2(value) {
-  return typeof value === "bigint";
-}
-function IsString2(value) {
-  return typeof value === "string";
-}
-function IsFunction2(value) {
-  return typeof value === "function";
-}
-function IsSymbol2(value) {
-  return typeof value === "symbol";
-}
-function IsValueType(value) {
-  return IsBigInt2(value) || IsBoolean2(value) || IsNull2(value) || IsNumber2(value) || IsString2(value) || IsSymbol2(value) || IsUndefined2(value);
-}
-
-// node_modules/@sinclair/typebox/build/esm/system/policy.mjs
-var TypeSystemPolicy;
-(function(TypeSystemPolicy2) {
-  TypeSystemPolicy2.InstanceMode = "default";
-  TypeSystemPolicy2.ExactOptionalPropertyTypes = false;
-  TypeSystemPolicy2.AllowArrayObject = false;
-  TypeSystemPolicy2.AllowNaN = false;
-  TypeSystemPolicy2.AllowNullVoid = false;
-  function IsExactOptionalProperty(value, key) {
-    return TypeSystemPolicy2.ExactOptionalPropertyTypes ? key in value : value[key] !== void 0;
-  }
-  TypeSystemPolicy2.IsExactOptionalProperty = IsExactOptionalProperty;
-  function IsObjectLike(value) {
-    const isObject2 = IsObject2(value);
-    return TypeSystemPolicy2.AllowArrayObject ? isObject2 : isObject2 && !IsArray2(value);
-  }
-  TypeSystemPolicy2.IsObjectLike = IsObjectLike;
-  function IsRecordLike(value) {
-    return IsObjectLike(value) && !(value instanceof Date) && !(value instanceof Uint8Array);
-  }
-  TypeSystemPolicy2.IsRecordLike = IsRecordLike;
-  function IsNumberLike(value) {
-    return TypeSystemPolicy2.AllowNaN ? IsNumber2(value) : Number.isFinite(value);
-  }
-  TypeSystemPolicy2.IsNumberLike = IsNumberLike;
-  function IsVoidLike(value) {
-    const isUndefined = IsUndefined2(value);
-    return TypeSystemPolicy2.AllowNullVoid ? isUndefined || value === null : isUndefined;
-  }
-  TypeSystemPolicy2.IsVoidLike = IsVoidLike;
-})(TypeSystemPolicy || (TypeSystemPolicy = {}));
-
-// node_modules/@sinclair/typebox/build/esm/type/create/immutable.mjs
-function ImmutableArray(value) {
-  return globalThis.Object.freeze(value).map((value2) => Immutable(value2));
-}
-function ImmutableDate(value) {
-  return value;
-}
-function ImmutableUint8Array(value) {
-  return value;
-}
-function ImmutableRegExp(value) {
-  return value;
-}
-function ImmutableObject(value) {
-  const result = {};
-  for (const key of Object.getOwnPropertyNames(value)) {
-    result[key] = Immutable(value[key]);
-  }
-  for (const key of Object.getOwnPropertySymbols(value)) {
-    result[key] = Immutable(value[key]);
-  }
-  return globalThis.Object.freeze(result);
-}
-function Immutable(value) {
-  return IsArray(value) ? ImmutableArray(value) : IsDate(value) ? ImmutableDate(value) : IsUint8Array(value) ? ImmutableUint8Array(value) : IsRegExp(value) ? ImmutableRegExp(value) : IsObject(value) ? ImmutableObject(value) : value;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/create/type.mjs
-function CreateType(schema, options) {
-  const result = options !== void 0 ? { ...options, ...schema } : schema;
-  switch (TypeSystemPolicy.InstanceMode) {
-    case "freeze":
-      return Immutable(result);
-    case "clone":
-      return Clone(result);
-    default:
-      return result;
-  }
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/error/error.mjs
-var TypeBoxError = class extends Error {
-  constructor(message) {
-    super(message);
-  }
-};
-
-// node_modules/@sinclair/typebox/build/esm/type/symbols/symbols.mjs
-var TransformKind = Symbol.for("TypeBox.Transform");
-var ReadonlyKind = Symbol.for("TypeBox.Readonly");
-var OptionalKind = Symbol.for("TypeBox.Optional");
-var Hint = Symbol.for("TypeBox.Hint");
-var Kind = Symbol.for("TypeBox.Kind");
-
-// node_modules/@sinclair/typebox/build/esm/type/guard/kind.mjs
-function IsReadonly(value) {
-  return IsObject(value) && value[ReadonlyKind] === "Readonly";
-}
-function IsOptional(value) {
-  return IsObject(value) && value[OptionalKind] === "Optional";
-}
-function IsAny(value) {
-  return IsKindOf(value, "Any");
-}
-function IsArgument(value) {
-  return IsKindOf(value, "Argument");
-}
-function IsArray3(value) {
-  return IsKindOf(value, "Array");
-}
-function IsAsyncIterator3(value) {
-  return IsKindOf(value, "AsyncIterator");
-}
-function IsBigInt3(value) {
-  return IsKindOf(value, "BigInt");
-}
-function IsBoolean3(value) {
-  return IsKindOf(value, "Boolean");
-}
-function IsComputed(value) {
-  return IsKindOf(value, "Computed");
-}
-function IsConstructor(value) {
-  return IsKindOf(value, "Constructor");
-}
-function IsDate3(value) {
-  return IsKindOf(value, "Date");
-}
-function IsFunction3(value) {
-  return IsKindOf(value, "Function");
-}
-function IsInteger2(value) {
-  return IsKindOf(value, "Integer");
-}
-function IsIntersect(value) {
-  return IsKindOf(value, "Intersect");
-}
-function IsIterator3(value) {
-  return IsKindOf(value, "Iterator");
-}
-function IsKindOf(value, kind) {
-  return IsObject(value) && Kind in value && value[Kind] === kind;
-}
-function IsLiteralValue(value) {
-  return IsBoolean(value) || IsNumber(value) || IsString(value);
-}
-function IsLiteral(value) {
-  return IsKindOf(value, "Literal");
-}
-function IsMappedKey(value) {
-  return IsKindOf(value, "MappedKey");
-}
-function IsMappedResult(value) {
-  return IsKindOf(value, "MappedResult");
-}
-function IsNever(value) {
-  return IsKindOf(value, "Never");
-}
-function IsNot(value) {
-  return IsKindOf(value, "Not");
-}
-function IsNull3(value) {
-  return IsKindOf(value, "Null");
-}
-function IsNumber3(value) {
-  return IsKindOf(value, "Number");
-}
-function IsObject3(value) {
-  return IsKindOf(value, "Object");
-}
-function IsPromise2(value) {
-  return IsKindOf(value, "Promise");
-}
-function IsRecord(value) {
-  return IsKindOf(value, "Record");
-}
-function IsRef(value) {
-  return IsKindOf(value, "Ref");
-}
-function IsRegExp2(value) {
-  return IsKindOf(value, "RegExp");
-}
-function IsString3(value) {
-  return IsKindOf(value, "String");
-}
-function IsSymbol3(value) {
-  return IsKindOf(value, "Symbol");
-}
-function IsTemplateLiteral(value) {
-  return IsKindOf(value, "TemplateLiteral");
-}
-function IsThis(value) {
-  return IsKindOf(value, "This");
-}
-function IsTransform(value) {
-  return IsObject(value) && TransformKind in value;
-}
-function IsTuple(value) {
-  return IsKindOf(value, "Tuple");
-}
-function IsUndefined3(value) {
-  return IsKindOf(value, "Undefined");
-}
-function IsUnion(value) {
-  return IsKindOf(value, "Union");
-}
-function IsUint8Array3(value) {
-  return IsKindOf(value, "Uint8Array");
-}
-function IsUnknown(value) {
-  return IsKindOf(value, "Unknown");
-}
-function IsUnsafe(value) {
-  return IsKindOf(value, "Unsafe");
-}
-function IsVoid(value) {
-  return IsKindOf(value, "Void");
-}
-function IsKind(value) {
-  return IsObject(value) && Kind in value && IsString(value[Kind]);
-}
-function IsSchema(value) {
-  return IsAny(value) || IsArgument(value) || IsArray3(value) || IsBoolean3(value) || IsBigInt3(value) || IsAsyncIterator3(value) || IsComputed(value) || IsConstructor(value) || IsDate3(value) || IsFunction3(value) || IsInteger2(value) || IsIntersect(value) || IsIterator3(value) || IsLiteral(value) || IsMappedKey(value) || IsMappedResult(value) || IsNever(value) || IsNot(value) || IsNull3(value) || IsNumber3(value) || IsObject3(value) || IsPromise2(value) || IsRecord(value) || IsRef(value) || IsRegExp2(value) || IsString3(value) || IsSymbol3(value) || IsTemplateLiteral(value) || IsThis(value) || IsTuple(value) || IsUndefined3(value) || IsUnion(value) || IsUint8Array3(value) || IsUnknown(value) || IsUnsafe(value) || IsVoid(value) || IsKind(value);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/guard/type.mjs
-var type_exports = {};
-__export(type_exports, {
-  IsAny: () => IsAny2,
-  IsArgument: () => IsArgument2,
-  IsArray: () => IsArray4,
-  IsAsyncIterator: () => IsAsyncIterator4,
-  IsBigInt: () => IsBigInt4,
-  IsBoolean: () => IsBoolean4,
-  IsComputed: () => IsComputed2,
-  IsConstructor: () => IsConstructor2,
-  IsDate: () => IsDate4,
-  IsFunction: () => IsFunction4,
-  IsImport: () => IsImport,
-  IsInteger: () => IsInteger3,
-  IsIntersect: () => IsIntersect2,
-  IsIterator: () => IsIterator4,
-  IsKind: () => IsKind2,
-  IsKindOf: () => IsKindOf2,
-  IsLiteral: () => IsLiteral2,
-  IsLiteralBoolean: () => IsLiteralBoolean,
-  IsLiteralNumber: () => IsLiteralNumber,
-  IsLiteralString: () => IsLiteralString,
-  IsLiteralValue: () => IsLiteralValue2,
-  IsMappedKey: () => IsMappedKey2,
-  IsMappedResult: () => IsMappedResult2,
-  IsNever: () => IsNever2,
-  IsNot: () => IsNot2,
-  IsNull: () => IsNull4,
-  IsNumber: () => IsNumber4,
-  IsObject: () => IsObject4,
-  IsOptional: () => IsOptional2,
-  IsPromise: () => IsPromise3,
-  IsProperties: () => IsProperties,
-  IsReadonly: () => IsReadonly2,
-  IsRecord: () => IsRecord2,
-  IsRecursive: () => IsRecursive,
-  IsRef: () => IsRef2,
-  IsRegExp: () => IsRegExp3,
-  IsSchema: () => IsSchema2,
-  IsString: () => IsString4,
-  IsSymbol: () => IsSymbol4,
-  IsTemplateLiteral: () => IsTemplateLiteral2,
-  IsThis: () => IsThis2,
-  IsTransform: () => IsTransform2,
-  IsTuple: () => IsTuple2,
-  IsUint8Array: () => IsUint8Array4,
-  IsUndefined: () => IsUndefined4,
-  IsUnion: () => IsUnion2,
-  IsUnionLiteral: () => IsUnionLiteral,
-  IsUnknown: () => IsUnknown2,
-  IsUnsafe: () => IsUnsafe2,
-  IsVoid: () => IsVoid2,
-  TypeGuardUnknownTypeError: () => TypeGuardUnknownTypeError
-});
-var TypeGuardUnknownTypeError = class extends TypeBoxError {
-};
-var KnownTypes = [
-  "Argument",
-  "Any",
-  "Array",
-  "AsyncIterator",
-  "BigInt",
-  "Boolean",
-  "Computed",
-  "Constructor",
-  "Date",
-  "Enum",
-  "Function",
-  "Integer",
-  "Intersect",
-  "Iterator",
-  "Literal",
-  "MappedKey",
-  "MappedResult",
-  "Not",
-  "Null",
-  "Number",
-  "Object",
-  "Promise",
-  "Record",
-  "Ref",
-  "RegExp",
-  "String",
-  "Symbol",
-  "TemplateLiteral",
-  "This",
-  "Tuple",
-  "Undefined",
-  "Union",
-  "Uint8Array",
-  "Unknown",
-  "Void"
-];
-function IsPattern(value) {
-  try {
-    new RegExp(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-function IsControlCharacterFree(value) {
-  if (!IsString(value))
-    return false;
-  for (let i = 0; i < value.length; i++) {
-    const code = value.charCodeAt(i);
-    if (code >= 7 && code <= 13 || code === 27 || code === 127) {
-      return false;
-    }
-  }
-  return true;
-}
-function IsAdditionalProperties(value) {
-  return IsOptionalBoolean(value) || IsSchema2(value);
-}
-function IsOptionalBigInt(value) {
-  return IsUndefined(value) || IsBigInt(value);
-}
-function IsOptionalNumber(value) {
-  return IsUndefined(value) || IsNumber(value);
-}
-function IsOptionalBoolean(value) {
-  return IsUndefined(value) || IsBoolean(value);
-}
-function IsOptionalString(value) {
-  return IsUndefined(value) || IsString(value);
-}
-function IsOptionalPattern(value) {
-  return IsUndefined(value) || IsString(value) && IsControlCharacterFree(value) && IsPattern(value);
-}
-function IsOptionalFormat(value) {
-  return IsUndefined(value) || IsString(value) && IsControlCharacterFree(value);
-}
-function IsOptionalSchema(value) {
-  return IsUndefined(value) || IsSchema2(value);
-}
-function IsReadonly2(value) {
-  return IsObject(value) && value[ReadonlyKind] === "Readonly";
-}
-function IsOptional2(value) {
-  return IsObject(value) && value[OptionalKind] === "Optional";
-}
-function IsAny2(value) {
-  return IsKindOf2(value, "Any") && IsOptionalString(value.$id);
-}
-function IsArgument2(value) {
-  return IsKindOf2(value, "Argument") && IsNumber(value.index);
-}
-function IsArray4(value) {
-  return IsKindOf2(value, "Array") && value.type === "array" && IsOptionalString(value.$id) && IsSchema2(value.items) && IsOptionalNumber(value.minItems) && IsOptionalNumber(value.maxItems) && IsOptionalBoolean(value.uniqueItems) && IsOptionalSchema(value.contains) && IsOptionalNumber(value.minContains) && IsOptionalNumber(value.maxContains);
-}
-function IsAsyncIterator4(value) {
-  return IsKindOf2(value, "AsyncIterator") && value.type === "AsyncIterator" && IsOptionalString(value.$id) && IsSchema2(value.items);
-}
-function IsBigInt4(value) {
-  return IsKindOf2(value, "BigInt") && value.type === "bigint" && IsOptionalString(value.$id) && IsOptionalBigInt(value.exclusiveMaximum) && IsOptionalBigInt(value.exclusiveMinimum) && IsOptionalBigInt(value.maximum) && IsOptionalBigInt(value.minimum) && IsOptionalBigInt(value.multipleOf);
-}
-function IsBoolean4(value) {
-  return IsKindOf2(value, "Boolean") && value.type === "boolean" && IsOptionalString(value.$id);
-}
-function IsComputed2(value) {
-  return IsKindOf2(value, "Computed") && IsString(value.target) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema));
-}
-function IsConstructor2(value) {
-  return IsKindOf2(value, "Constructor") && value.type === "Constructor" && IsOptionalString(value.$id) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema)) && IsSchema2(value.returns);
-}
-function IsDate4(value) {
-  return IsKindOf2(value, "Date") && value.type === "Date" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximumTimestamp) && IsOptionalNumber(value.exclusiveMinimumTimestamp) && IsOptionalNumber(value.maximumTimestamp) && IsOptionalNumber(value.minimumTimestamp) && IsOptionalNumber(value.multipleOfTimestamp);
-}
-function IsFunction4(value) {
-  return IsKindOf2(value, "Function") && value.type === "Function" && IsOptionalString(value.$id) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema)) && IsSchema2(value.returns);
-}
-function IsImport(value) {
-  return IsKindOf2(value, "Import") && HasPropertyKey(value, "$defs") && IsObject(value.$defs) && IsProperties(value.$defs) && HasPropertyKey(value, "$ref") && IsString(value.$ref) && value.$ref in value.$defs;
-}
-function IsInteger3(value) {
-  return IsKindOf2(value, "Integer") && value.type === "integer" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximum) && IsOptionalNumber(value.exclusiveMinimum) && IsOptionalNumber(value.maximum) && IsOptionalNumber(value.minimum) && IsOptionalNumber(value.multipleOf);
-}
-function IsProperties(value) {
-  return IsObject(value) && Object.entries(value).every(([key, schema]) => IsControlCharacterFree(key) && IsSchema2(schema));
-}
-function IsIntersect2(value) {
-  return IsKindOf2(value, "Intersect") && (IsString(value.type) && value.type !== "object" ? false : true) && IsArray(value.allOf) && value.allOf.every((schema) => IsSchema2(schema) && !IsTransform2(schema)) && IsOptionalString(value.type) && (IsOptionalBoolean(value.unevaluatedProperties) || IsOptionalSchema(value.unevaluatedProperties)) && IsOptionalString(value.$id);
-}
-function IsIterator4(value) {
-  return IsKindOf2(value, "Iterator") && value.type === "Iterator" && IsOptionalString(value.$id) && IsSchema2(value.items);
-}
-function IsKindOf2(value, kind) {
-  return IsObject(value) && Kind in value && value[Kind] === kind;
-}
-function IsLiteralString(value) {
-  return IsLiteral2(value) && IsString(value.const);
-}
-function IsLiteralNumber(value) {
-  return IsLiteral2(value) && IsNumber(value.const);
-}
-function IsLiteralBoolean(value) {
-  return IsLiteral2(value) && IsBoolean(value.const);
-}
-function IsLiteral2(value) {
-  return IsKindOf2(value, "Literal") && IsOptionalString(value.$id) && IsLiteralValue2(value.const);
-}
-function IsLiteralValue2(value) {
-  return IsBoolean(value) || IsNumber(value) || IsString(value);
-}
-function IsMappedKey2(value) {
-  return IsKindOf2(value, "MappedKey") && IsArray(value.keys) && value.keys.every((key) => IsNumber(key) || IsString(key));
-}
-function IsMappedResult2(value) {
-  return IsKindOf2(value, "MappedResult") && IsProperties(value.properties);
-}
-function IsNever2(value) {
-  return IsKindOf2(value, "Never") && IsObject(value.not) && Object.getOwnPropertyNames(value.not).length === 0;
-}
-function IsNot2(value) {
-  return IsKindOf2(value, "Not") && IsSchema2(value.not);
-}
-function IsNull4(value) {
-  return IsKindOf2(value, "Null") && value.type === "null" && IsOptionalString(value.$id);
-}
-function IsNumber4(value) {
-  return IsKindOf2(value, "Number") && value.type === "number" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximum) && IsOptionalNumber(value.exclusiveMinimum) && IsOptionalNumber(value.maximum) && IsOptionalNumber(value.minimum) && IsOptionalNumber(value.multipleOf);
-}
-function IsObject4(value) {
-  return IsKindOf2(value, "Object") && value.type === "object" && IsOptionalString(value.$id) && IsProperties(value.properties) && IsAdditionalProperties(value.additionalProperties) && IsOptionalNumber(value.minProperties) && IsOptionalNumber(value.maxProperties);
-}
-function IsPromise3(value) {
-  return IsKindOf2(value, "Promise") && value.type === "Promise" && IsOptionalString(value.$id) && IsSchema2(value.item);
-}
-function IsRecord2(value) {
-  return IsKindOf2(value, "Record") && value.type === "object" && IsOptionalString(value.$id) && IsAdditionalProperties(value.additionalProperties) && IsObject(value.patternProperties) && ((schema) => {
-    const keys = Object.getOwnPropertyNames(schema.patternProperties);
-    return keys.length === 1 && IsPattern(keys[0]) && IsObject(schema.patternProperties) && IsSchema2(schema.patternProperties[keys[0]]);
-  })(value);
-}
-function IsRecursive(value) {
-  return IsObject(value) && Hint in value && value[Hint] === "Recursive";
-}
-function IsRef2(value) {
-  return IsKindOf2(value, "Ref") && IsOptionalString(value.$id) && IsString(value.$ref);
-}
-function IsRegExp3(value) {
-  return IsKindOf2(value, "RegExp") && IsOptionalString(value.$id) && IsString(value.source) && IsString(value.flags) && IsOptionalNumber(value.maxLength) && IsOptionalNumber(value.minLength);
-}
-function IsString4(value) {
-  return IsKindOf2(value, "String") && value.type === "string" && IsOptionalString(value.$id) && IsOptionalNumber(value.minLength) && IsOptionalNumber(value.maxLength) && IsOptionalPattern(value.pattern) && IsOptionalFormat(value.format);
-}
-function IsSymbol4(value) {
-  return IsKindOf2(value, "Symbol") && value.type === "symbol" && IsOptionalString(value.$id);
-}
-function IsTemplateLiteral2(value) {
-  return IsKindOf2(value, "TemplateLiteral") && value.type === "string" && IsString(value.pattern) && value.pattern[0] === "^" && value.pattern[value.pattern.length - 1] === "$";
-}
-function IsThis2(value) {
-  return IsKindOf2(value, "This") && IsOptionalString(value.$id) && IsString(value.$ref);
-}
-function IsTransform2(value) {
-  return IsObject(value) && TransformKind in value;
-}
-function IsTuple2(value) {
-  return IsKindOf2(value, "Tuple") && value.type === "array" && IsOptionalString(value.$id) && IsNumber(value.minItems) && IsNumber(value.maxItems) && value.minItems === value.maxItems && // empty
-  (IsUndefined(value.items) && IsUndefined(value.additionalItems) && value.minItems === 0 || IsArray(value.items) && value.items.every((schema) => IsSchema2(schema)));
-}
-function IsUndefined4(value) {
-  return IsKindOf2(value, "Undefined") && value.type === "undefined" && IsOptionalString(value.$id);
-}
-function IsUnionLiteral(value) {
-  return IsUnion2(value) && value.anyOf.every((schema) => IsLiteralString(schema) || IsLiteralNumber(schema));
-}
-function IsUnion2(value) {
-  return IsKindOf2(value, "Union") && IsOptionalString(value.$id) && IsObject(value) && IsArray(value.anyOf) && value.anyOf.every((schema) => IsSchema2(schema));
-}
-function IsUint8Array4(value) {
-  return IsKindOf2(value, "Uint8Array") && value.type === "Uint8Array" && IsOptionalString(value.$id) && IsOptionalNumber(value.minByteLength) && IsOptionalNumber(value.maxByteLength);
-}
-function IsUnknown2(value) {
-  return IsKindOf2(value, "Unknown") && IsOptionalString(value.$id);
-}
-function IsUnsafe2(value) {
-  return IsKindOf2(value, "Unsafe");
-}
-function IsVoid2(value) {
-  return IsKindOf2(value, "Void") && value.type === "void" && IsOptionalString(value.$id);
-}
-function IsKind2(value) {
-  return IsObject(value) && Kind in value && IsString(value[Kind]) && !KnownTypes.includes(value[Kind]);
-}
-function IsSchema2(value) {
-  return IsObject(value) && (IsAny2(value) || IsArgument2(value) || IsArray4(value) || IsBoolean4(value) || IsBigInt4(value) || IsAsyncIterator4(value) || IsComputed2(value) || IsConstructor2(value) || IsDate4(value) || IsFunction4(value) || IsInteger3(value) || IsIntersect2(value) || IsIterator4(value) || IsLiteral2(value) || IsMappedKey2(value) || IsMappedResult2(value) || IsNever2(value) || IsNot2(value) || IsNull4(value) || IsNumber4(value) || IsObject4(value) || IsPromise3(value) || IsRecord2(value) || IsRef2(value) || IsRegExp3(value) || IsString4(value) || IsSymbol4(value) || IsTemplateLiteral2(value) || IsThis2(value) || IsTuple2(value) || IsUndefined4(value) || IsUnion2(value) || IsUint8Array4(value) || IsUnknown2(value) || IsUnsafe2(value) || IsVoid2(value) || IsKind2(value));
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/patterns/patterns.mjs
-var PatternBoolean = "(true|false)";
-var PatternNumber = "(0|[1-9][0-9]*)";
-var PatternString = "(.*)";
-var PatternNever = "(?!.*)";
-var PatternBooleanExact = `^${PatternBoolean}$`;
-var PatternNumberExact = `^${PatternNumber}$`;
-var PatternStringExact = `^${PatternString}$`;
-var PatternNeverExact = `^${PatternNever}$`;
-
-// node_modules/@sinclair/typebox/build/esm/type/registry/format.mjs
-var format_exports = {};
-__export(format_exports, {
-  Clear: () => Clear,
-  Delete: () => Delete,
-  Entries: () => Entries,
-  Get: () => Get,
-  Has: () => Has,
-  Set: () => Set2
-});
-var map = /* @__PURE__ */ new Map();
-function Entries() {
-  return new Map(map);
-}
-function Clear() {
-  return map.clear();
-}
-function Delete(format3) {
-  return map.delete(format3);
-}
-function Has(format3) {
-  return map.has(format3);
-}
-function Set2(format3, func) {
-  map.set(format3, func);
-}
-function Get(format3) {
-  return map.get(format3);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/registry/type.mjs
-var type_exports2 = {};
-__export(type_exports2, {
-  Clear: () => Clear2,
-  Delete: () => Delete2,
-  Entries: () => Entries2,
-  Get: () => Get2,
-  Has: () => Has2,
-  Set: () => Set3
-});
-var map2 = /* @__PURE__ */ new Map();
-function Entries2() {
-  return new Map(map2);
-}
-function Clear2() {
-  return map2.clear();
-}
-function Delete2(kind) {
-  return map2.delete(kind);
-}
-function Has2(kind) {
-  return map2.has(kind);
-}
-function Set3(kind, func) {
-  map2.set(kind, func);
-}
-function Get2(kind) {
-  return map2.get(kind);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/sets/set.mjs
-function SetIncludes(T, S) {
-  return T.includes(S);
-}
-function SetDistinct(T) {
-  return [...new Set(T)];
-}
-function SetIntersect(T, S) {
-  return T.filter((L) => S.includes(L));
-}
-function SetIntersectManyResolve(T, Init) {
-  return T.reduce((Acc, L) => {
-    return SetIntersect(Acc, L);
-  }, Init);
-}
-function SetIntersectMany(T) {
-  return T.length === 1 ? T[0] : T.length > 1 ? SetIntersectManyResolve(T.slice(1), T[0]) : [];
-}
-function SetUnionMany(T) {
-  const Acc = [];
-  for (const L of T)
-    Acc.push(...L);
-  return Acc;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/any/any.mjs
-function Any(options) {
-  return CreateType({ [Kind]: "Any" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/array/array.mjs
-function Array2(items, options) {
-  return CreateType({ [Kind]: "Array", type: "array", items }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/argument/argument.mjs
-function Argument(index2) {
-  return CreateType({ [Kind]: "Argument", index: index2 });
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/async-iterator/async-iterator.mjs
-function AsyncIterator(items, options) {
-  return CreateType({ [Kind]: "AsyncIterator", type: "AsyncIterator", items }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/computed/computed.mjs
-function Computed(target, parameters, options) {
-  return CreateType({ [Kind]: "Computed", target, parameters }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/discard/discard.mjs
-function DiscardKey(value, key) {
-  const { [key]: _, ...rest } = value;
-  return rest;
-}
-function Discard(value, keys) {
-  return keys.reduce((acc, key) => DiscardKey(acc, key), value);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/never/never.mjs
-function Never(options) {
-  return CreateType({ [Kind]: "Never", not: {} }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped-result.mjs
-function MappedResult(properties) {
-  return CreateType({
-    [Kind]: "MappedResult",
-    properties
-  });
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/constructor/constructor.mjs
-function Constructor(parameters, returns, options) {
-  return CreateType({ [Kind]: "Constructor", type: "Constructor", parameters, returns }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/function/function.mjs
-function Function(parameters, returns, options) {
-  return CreateType({ [Kind]: "Function", type: "Function", parameters, returns }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/union/union-create.mjs
-function UnionCreate(T, options) {
-  return CreateType({ [Kind]: "Union", anyOf: T }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/union/union-evaluated.mjs
-function IsUnionOptional(types) {
-  return types.some((type2) => IsOptional(type2));
-}
-function RemoveOptionalFromRest(types) {
-  return types.map((left2) => IsOptional(left2) ? RemoveOptionalFromType(left2) : left2);
-}
-function RemoveOptionalFromType(T) {
-  return Discard(T, [OptionalKind]);
-}
-function ResolveUnion(types, options) {
-  const isOptional = IsUnionOptional(types);
-  return isOptional ? Optional(UnionCreate(RemoveOptionalFromRest(types), options)) : UnionCreate(RemoveOptionalFromRest(types), options);
-}
-function UnionEvaluated(T, options) {
-  return T.length === 1 ? CreateType(T[0], options) : T.length === 0 ? Never(options) : ResolveUnion(T, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/union/union.mjs
-function Union(types, options) {
-  return types.length === 0 ? Never(options) : types.length === 1 ? CreateType(types[0], options) : UnionCreate(types, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/parse.mjs
-var TemplateLiteralParserError = class extends TypeBoxError {
-};
-function Unescape(pattern) {
-  return pattern.replace(/\\\$/g, "$").replace(/\\\*/g, "*").replace(/\\\^/g, "^").replace(/\\\|/g, "|").replace(/\\\(/g, "(").replace(/\\\)/g, ")");
-}
-function IsNonEscaped(pattern, index2, char) {
-  return pattern[index2] === char && pattern.charCodeAt(index2 - 1) !== 92;
-}
-function IsOpenParen(pattern, index2) {
-  return IsNonEscaped(pattern, index2, "(");
-}
-function IsCloseParen(pattern, index2) {
-  return IsNonEscaped(pattern, index2, ")");
-}
-function IsSeparator(pattern, index2) {
-  return IsNonEscaped(pattern, index2, "|");
-}
-function IsGroup(pattern) {
-  if (!(IsOpenParen(pattern, 0) && IsCloseParen(pattern, pattern.length - 1)))
-    return false;
-  let count2 = 0;
-  for (let index2 = 0; index2 < pattern.length; index2++) {
-    if (IsOpenParen(pattern, index2))
-      count2 += 1;
-    if (IsCloseParen(pattern, index2))
-      count2 -= 1;
-    if (count2 === 0 && index2 !== pattern.length - 1)
-      return false;
-  }
-  return true;
-}
-function InGroup(pattern) {
-  return pattern.slice(1, pattern.length - 1);
-}
-function IsPrecedenceOr(pattern) {
-  let count2 = 0;
-  for (let index2 = 0; index2 < pattern.length; index2++) {
-    if (IsOpenParen(pattern, index2))
-      count2 += 1;
-    if (IsCloseParen(pattern, index2))
-      count2 -= 1;
-    if (IsSeparator(pattern, index2) && count2 === 0)
-      return true;
-  }
-  return false;
-}
-function IsPrecedenceAnd(pattern) {
-  for (let index2 = 0; index2 < pattern.length; index2++) {
-    if (IsOpenParen(pattern, index2))
-      return true;
-  }
-  return false;
-}
-function Or(pattern) {
-  let [count2, start2] = [0, 0];
-  const expressions = [];
-  for (let index2 = 0; index2 < pattern.length; index2++) {
-    if (IsOpenParen(pattern, index2))
-      count2 += 1;
-    if (IsCloseParen(pattern, index2))
-      count2 -= 1;
-    if (IsSeparator(pattern, index2) && count2 === 0) {
-      const range4 = pattern.slice(start2, index2);
-      if (range4.length > 0)
-        expressions.push(TemplateLiteralParse(range4));
-      start2 = index2 + 1;
-    }
-  }
-  const range3 = pattern.slice(start2);
-  if (range3.length > 0)
-    expressions.push(TemplateLiteralParse(range3));
-  if (expressions.length === 0)
-    return { type: "const", const: "" };
-  if (expressions.length === 1)
-    return expressions[0];
-  return { type: "or", expr: expressions };
-}
-function And(pattern) {
-  function Group(value, index2) {
-    if (!IsOpenParen(value, index2))
-      throw new TemplateLiteralParserError(`TemplateLiteralParser: Index must point to open parens`);
-    let count2 = 0;
-    for (let scan = index2; scan < value.length; scan++) {
-      if (IsOpenParen(value, scan))
-        count2 += 1;
-      if (IsCloseParen(value, scan))
-        count2 -= 1;
-      if (count2 === 0)
-        return [index2, scan];
-    }
-    throw new TemplateLiteralParserError(`TemplateLiteralParser: Unclosed group parens in expression`);
-  }
-  function Range(pattern2, index2) {
-    for (let scan = index2; scan < pattern2.length; scan++) {
-      if (IsOpenParen(pattern2, scan))
-        return [index2, scan];
-    }
-    return [index2, pattern2.length];
-  }
-  const expressions = [];
-  for (let index2 = 0; index2 < pattern.length; index2++) {
-    if (IsOpenParen(pattern, index2)) {
-      const [start2, end] = Group(pattern, index2);
-      const range3 = pattern.slice(start2, end + 1);
-      expressions.push(TemplateLiteralParse(range3));
-      index2 = end;
-    } else {
-      const [start2, end] = Range(pattern, index2);
-      const range3 = pattern.slice(start2, end);
-      if (range3.length > 0)
-        expressions.push(TemplateLiteralParse(range3));
-      index2 = end - 1;
-    }
-  }
-  return expressions.length === 0 ? { type: "const", const: "" } : expressions.length === 1 ? expressions[0] : { type: "and", expr: expressions };
-}
-function TemplateLiteralParse(pattern) {
-  return IsGroup(pattern) ? TemplateLiteralParse(InGroup(pattern)) : IsPrecedenceOr(pattern) ? Or(pattern) : IsPrecedenceAnd(pattern) ? And(pattern) : { type: "const", const: Unescape(pattern) };
-}
-function TemplateLiteralParseExact(pattern) {
-  return TemplateLiteralParse(pattern.slice(1, pattern.length - 1));
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/finite.mjs
-var TemplateLiteralFiniteError = class extends TypeBoxError {
-};
-function IsNumberExpression(expression) {
-  return expression.type === "or" && expression.expr.length === 2 && expression.expr[0].type === "const" && expression.expr[0].const === "0" && expression.expr[1].type === "const" && expression.expr[1].const === "[1-9][0-9]*";
-}
-function IsBooleanExpression(expression) {
-  return expression.type === "or" && expression.expr.length === 2 && expression.expr[0].type === "const" && expression.expr[0].const === "true" && expression.expr[1].type === "const" && expression.expr[1].const === "false";
-}
-function IsStringExpression(expression) {
-  return expression.type === "const" && expression.const === ".*";
-}
-function IsTemplateLiteralExpressionFinite(expression) {
-  return IsNumberExpression(expression) || IsStringExpression(expression) ? false : IsBooleanExpression(expression) ? true : expression.type === "and" ? expression.expr.every((expr) => IsTemplateLiteralExpressionFinite(expr)) : expression.type === "or" ? expression.expr.every((expr) => IsTemplateLiteralExpressionFinite(expr)) : expression.type === "const" ? true : (() => {
-    throw new TemplateLiteralFiniteError(`Unknown expression type`);
-  })();
-}
-function IsTemplateLiteralFinite(schema) {
-  const expression = TemplateLiteralParseExact(schema.pattern);
-  return IsTemplateLiteralExpressionFinite(expression);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/generate.mjs
-var TemplateLiteralGenerateError = class extends TypeBoxError {
-};
-function* GenerateReduce(buffer) {
-  if (buffer.length === 1)
-    return yield* buffer[0];
-  for (const left2 of buffer[0]) {
-    for (const right2 of GenerateReduce(buffer.slice(1))) {
-      yield `${left2}${right2}`;
-    }
-  }
-}
-function* GenerateAnd(expression) {
-  return yield* GenerateReduce(expression.expr.map((expr) => [...TemplateLiteralExpressionGenerate(expr)]));
-}
-function* GenerateOr(expression) {
-  for (const expr of expression.expr)
-    yield* TemplateLiteralExpressionGenerate(expr);
-}
-function* GenerateConst(expression) {
-  return yield expression.const;
-}
-function* TemplateLiteralExpressionGenerate(expression) {
-  return expression.type === "and" ? yield* GenerateAnd(expression) : expression.type === "or" ? yield* GenerateOr(expression) : expression.type === "const" ? yield* GenerateConst(expression) : (() => {
-    throw new TemplateLiteralGenerateError("Unknown expression");
-  })();
-}
-function TemplateLiteralGenerate(schema) {
-  const expression = TemplateLiteralParseExact(schema.pattern);
-  return IsTemplateLiteralExpressionFinite(expression) ? [...TemplateLiteralExpressionGenerate(expression)] : [];
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/literal/literal.mjs
-function Literal(value, options) {
-  return CreateType({
-    [Kind]: "Literal",
-    const: value,
-    type: typeof value
-  }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/boolean/boolean.mjs
-function Boolean2(options) {
-  return CreateType({ [Kind]: "Boolean", type: "boolean" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/bigint/bigint.mjs
-function BigInt2(options) {
-  return CreateType({ [Kind]: "BigInt", type: "bigint" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/number/number.mjs
-function Number2(options) {
-  return CreateType({ [Kind]: "Number", type: "number" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/string/string.mjs
-function String2(options) {
-  return CreateType({ [Kind]: "String", type: "string" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/syntax.mjs
-function* FromUnion(syntax) {
-  const trim = syntax.trim().replace(/"|'/g, "");
-  return trim === "boolean" ? yield Boolean2() : trim === "number" ? yield Number2() : trim === "bigint" ? yield BigInt2() : trim === "string" ? yield String2() : yield (() => {
-    const literals = trim.split("|").map((literal) => Literal(literal.trim()));
-    return literals.length === 0 ? Never() : literals.length === 1 ? literals[0] : UnionEvaluated(literals);
-  })();
-}
-function* FromTerminal(syntax) {
-  if (syntax[1] !== "{") {
-    const L = Literal("$");
-    const R = FromSyntax(syntax.slice(1));
-    return yield* [L, ...R];
-  }
-  for (let i = 2; i < syntax.length; i++) {
-    if (syntax[i] === "}") {
-      const L = FromUnion(syntax.slice(2, i));
-      const R = FromSyntax(syntax.slice(i + 1));
-      return yield* [...L, ...R];
-    }
-  }
-  yield Literal(syntax);
-}
-function* FromSyntax(syntax) {
-  for (let i = 0; i < syntax.length; i++) {
-    if (syntax[i] === "$") {
-      const L = Literal(syntax.slice(0, i));
-      const R = FromTerminal(syntax.slice(i));
-      return yield* [L, ...R];
-    }
-  }
-  yield Literal(syntax);
-}
-function TemplateLiteralSyntax(syntax) {
-  return [...FromSyntax(syntax)];
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/pattern.mjs
-var TemplateLiteralPatternError = class extends TypeBoxError {
-};
-function Escape(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function Visit2(schema, acc) {
-  return IsTemplateLiteral(schema) ? schema.pattern.slice(1, schema.pattern.length - 1) : IsUnion(schema) ? `(${schema.anyOf.map((schema2) => Visit2(schema2, acc)).join("|")})` : IsNumber3(schema) ? `${acc}${PatternNumber}` : IsInteger2(schema) ? `${acc}${PatternNumber}` : IsBigInt3(schema) ? `${acc}${PatternNumber}` : IsString3(schema) ? `${acc}${PatternString}` : IsLiteral(schema) ? `${acc}${Escape(schema.const.toString())}` : IsBoolean3(schema) ? `${acc}${PatternBoolean}` : (() => {
-    throw new TemplateLiteralPatternError(`Unexpected Kind '${schema[Kind]}'`);
-  })();
-}
-function TemplateLiteralPattern(kinds) {
-  return `^${kinds.map((schema) => Visit2(schema, "")).join("")}$`;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/union.mjs
-function TemplateLiteralToUnion(schema) {
-  const R = TemplateLiteralGenerate(schema);
-  const L = R.map((S) => Literal(S));
-  return UnionEvaluated(L);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/template-literal/template-literal.mjs
-function TemplateLiteral(unresolved, options) {
-  const pattern = IsString(unresolved) ? TemplateLiteralPattern(TemplateLiteralSyntax(unresolved)) : TemplateLiteralPattern(unresolved);
-  return CreateType({ [Kind]: "TemplateLiteral", type: "string", pattern }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-property-keys.mjs
-function FromTemplateLiteral(templateLiteral) {
-  const keys = TemplateLiteralGenerate(templateLiteral);
-  return keys.map((key) => key.toString());
-}
-function FromUnion2(types) {
-  const result = [];
-  for (const type2 of types)
-    result.push(...IndexPropertyKeys(type2));
-  return result;
-}
-function FromLiteral(literalValue) {
-  return [literalValue.toString()];
-}
-function IndexPropertyKeys(type2) {
-  return [...new Set(IsTemplateLiteral(type2) ? FromTemplateLiteral(type2) : IsUnion(type2) ? FromUnion2(type2.anyOf) : IsLiteral(type2) ? FromLiteral(type2.const) : IsNumber3(type2) ? ["[number]"] : IsInteger2(type2) ? ["[number]"] : [])];
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-result.mjs
-function FromProperties(type2, properties, options) {
-  const result = {};
-  for (const K2 of Object.getOwnPropertyNames(properties)) {
-    result[K2] = Index(type2, IndexPropertyKeys(properties[K2]), options);
-  }
-  return result;
-}
-function FromMappedResult(type2, mappedResult, options) {
-  return FromProperties(type2, mappedResult.properties, options);
-}
-function IndexFromMappedResult(type2, mappedResult, options) {
-  const properties = FromMappedResult(type2, mappedResult, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed.mjs
-function FromRest(types, key) {
-  return types.map((type2) => IndexFromPropertyKey(type2, key));
-}
-function FromIntersectRest(types) {
-  return types.filter((type2) => !IsNever(type2));
-}
-function FromIntersect(types, key) {
-  return IntersectEvaluated(FromIntersectRest(FromRest(types, key)));
-}
-function FromUnionRest(types) {
-  return types.some((L) => IsNever(L)) ? [] : types;
-}
-function FromUnion3(types, key) {
-  return UnionEvaluated(FromUnionRest(FromRest(types, key)));
-}
-function FromTuple(types, key) {
-  return key in types ? types[key] : key === "[number]" ? UnionEvaluated(types) : Never();
-}
-function FromArray(type2, key) {
-  return key === "[number]" ? type2 : Never();
-}
-function FromProperty(properties, propertyKey) {
-  return propertyKey in properties ? properties[propertyKey] : Never();
-}
-function IndexFromPropertyKey(type2, propertyKey) {
-  return IsIntersect(type2) ? FromIntersect(type2.allOf, propertyKey) : IsUnion(type2) ? FromUnion3(type2.anyOf, propertyKey) : IsTuple(type2) ? FromTuple(type2.items ?? [], propertyKey) : IsArray3(type2) ? FromArray(type2.items, propertyKey) : IsObject3(type2) ? FromProperty(type2.properties, propertyKey) : Never();
-}
-function IndexFromPropertyKeys(type2, propertyKeys) {
-  return propertyKeys.map((propertyKey) => IndexFromPropertyKey(type2, propertyKey));
-}
-function FromSchema(type2, propertyKeys) {
-  return UnionEvaluated(IndexFromPropertyKeys(type2, propertyKeys));
-}
-function Index(type2, key, options) {
-  if (IsRef(type2) || IsRef(key)) {
-    const error = `Index types using Ref parameters require both Type and Key to be of TSchema`;
-    if (!IsSchema(type2) || !IsSchema(key))
-      throw new TypeBoxError(error);
-    return Computed("Index", [type2, key]);
-  }
-  if (IsMappedResult(key))
-    return IndexFromMappedResult(type2, key, options);
-  if (IsMappedKey(key))
-    return IndexFromMappedKey(type2, key, options);
-  return CreateType(IsSchema(key) ? FromSchema(type2, IndexPropertyKeys(key)) : FromSchema(type2, key), options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-key.mjs
-function MappedIndexPropertyKey(type2, key, options) {
-  return { [key]: Index(type2, [key], Clone(options)) };
-}
-function MappedIndexPropertyKeys(type2, propertyKeys, options) {
-  return propertyKeys.reduce((result, left2) => {
-    return { ...result, ...MappedIndexPropertyKey(type2, left2, options) };
-  }, {});
-}
-function MappedIndexProperties(type2, mappedKey, options) {
-  return MappedIndexPropertyKeys(type2, mappedKey.keys, options);
-}
-function IndexFromMappedKey(type2, mappedKey, options) {
-  const properties = MappedIndexProperties(type2, mappedKey, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/iterator/iterator.mjs
-function Iterator(items, options) {
-  return CreateType({ [Kind]: "Iterator", type: "Iterator", items }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/object/object.mjs
-function RequiredArray(properties) {
-  return globalThis.Object.keys(properties).filter((key) => !IsOptional(properties[key]));
-}
-function _Object_(properties, options) {
-  const required = RequiredArray(properties);
-  const schema = required.length > 0 ? { [Kind]: "Object", type: "object", required, properties } : { [Kind]: "Object", type: "object", properties };
-  return CreateType(schema, options);
-}
-var Object2 = _Object_;
-
-// node_modules/@sinclair/typebox/build/esm/type/promise/promise.mjs
-function Promise2(item, options) {
-  return CreateType({ [Kind]: "Promise", type: "Promise", item }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly.mjs
-function RemoveReadonly(schema) {
-  return CreateType(Discard(schema, [ReadonlyKind]));
-}
-function AddReadonly(schema) {
-  return CreateType({ ...schema, [ReadonlyKind]: "Readonly" });
-}
-function ReadonlyWithFlag(schema, F) {
-  return F === false ? RemoveReadonly(schema) : AddReadonly(schema);
-}
-function Readonly(schema, enable) {
-  const F = enable ?? true;
-  return IsMappedResult(schema) ? ReadonlyFromMappedResult(schema, F) : ReadonlyWithFlag(schema, F);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly-from-mapped-result.mjs
-function FromProperties2(K2, F) {
-  const Acc = {};
-  for (const K22 of globalThis.Object.getOwnPropertyNames(K2))
-    Acc[K22] = Readonly(K2[K22], F);
-  return Acc;
-}
-function FromMappedResult2(R, F) {
-  return FromProperties2(R.properties, F);
-}
-function ReadonlyFromMappedResult(R, F) {
-  const P = FromMappedResult2(R, F);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/tuple/tuple.mjs
-function Tuple(types, options) {
-  return CreateType(types.length > 0 ? { [Kind]: "Tuple", type: "array", items: types, additionalItems: false, minItems: types.length, maxItems: types.length } : { [Kind]: "Tuple", type: "array", minItems: types.length, maxItems: types.length }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped.mjs
-function FromMappedResult3(K2, P) {
-  return K2 in P ? FromSchemaType(K2, P[K2]) : MappedResult(P);
-}
-function MappedKeyToKnownMappedResultProperties(K2) {
-  return { [K2]: Literal(K2) };
-}
-function MappedKeyToUnknownMappedResultProperties(P) {
-  const Acc = {};
-  for (const L of P)
-    Acc[L] = Literal(L);
-  return Acc;
-}
-function MappedKeyToMappedResultProperties(K2, P) {
-  return SetIncludes(P, K2) ? MappedKeyToKnownMappedResultProperties(K2) : MappedKeyToUnknownMappedResultProperties(P);
-}
-function FromMappedKey(K2, P) {
-  const R = MappedKeyToMappedResultProperties(K2, P);
-  return FromMappedResult3(K2, R);
-}
-function FromRest2(K2, T) {
-  return T.map((L) => FromSchemaType(K2, L));
-}
-function FromProperties3(K2, T) {
-  const Acc = {};
-  for (const K22 of globalThis.Object.getOwnPropertyNames(T))
-    Acc[K22] = FromSchemaType(K2, T[K22]);
-  return Acc;
-}
-function FromSchemaType(K2, T) {
-  const options = { ...T };
-  return (
-    // unevaluated modifier types
-    IsOptional(T) ? Optional(FromSchemaType(K2, Discard(T, [OptionalKind]))) : IsReadonly(T) ? Readonly(FromSchemaType(K2, Discard(T, [ReadonlyKind]))) : (
-      // unevaluated mapped types
-      IsMappedResult(T) ? FromMappedResult3(K2, T.properties) : IsMappedKey(T) ? FromMappedKey(K2, T.keys) : (
-        // unevaluated types
-        IsConstructor(T) ? Constructor(FromRest2(K2, T.parameters), FromSchemaType(K2, T.returns), options) : IsFunction3(T) ? Function(FromRest2(K2, T.parameters), FromSchemaType(K2, T.returns), options) : IsAsyncIterator3(T) ? AsyncIterator(FromSchemaType(K2, T.items), options) : IsIterator3(T) ? Iterator(FromSchemaType(K2, T.items), options) : IsIntersect(T) ? Intersect(FromRest2(K2, T.allOf), options) : IsUnion(T) ? Union(FromRest2(K2, T.anyOf), options) : IsTuple(T) ? Tuple(FromRest2(K2, T.items ?? []), options) : IsObject3(T) ? Object2(FromProperties3(K2, T.properties), options) : IsArray3(T) ? Array2(FromSchemaType(K2, T.items), options) : IsPromise2(T) ? Promise2(FromSchemaType(K2, T.item), options) : T
-      )
-    )
-  );
-}
-function MappedFunctionReturnType(K2, T) {
-  const Acc = {};
-  for (const L of K2)
-    Acc[L] = FromSchemaType(L, T);
-  return Acc;
-}
-function Mapped(key, map5, options) {
-  const K2 = IsSchema(key) ? IndexPropertyKeys(key) : key;
-  const RT = map5({ [Kind]: "MappedKey", keys: K2 });
-  const R = MappedFunctionReturnType(K2, RT);
-  return Object2(R, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/optional/optional.mjs
-function RemoveOptional(schema) {
-  return CreateType(Discard(schema, [OptionalKind]));
-}
-function AddOptional(schema) {
-  return CreateType({ ...schema, [OptionalKind]: "Optional" });
-}
-function OptionalWithFlag(schema, F) {
-  return F === false ? RemoveOptional(schema) : AddOptional(schema);
-}
-function Optional(schema, enable) {
-  const F = enable ?? true;
-  return IsMappedResult(schema) ? OptionalFromMappedResult(schema, F) : OptionalWithFlag(schema, F);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/optional/optional-from-mapped-result.mjs
-function FromProperties4(P, F) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
-    Acc[K2] = Optional(P[K2], F);
-  return Acc;
-}
-function FromMappedResult4(R, F) {
-  return FromProperties4(R.properties, F);
-}
-function OptionalFromMappedResult(R, F) {
-  const P = FromMappedResult4(R, F);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-create.mjs
-function IntersectCreate(T, options = {}) {
-  const allObjects = T.every((schema) => IsObject3(schema));
-  const clonedUnevaluatedProperties = IsSchema(options.unevaluatedProperties) ? { unevaluatedProperties: options.unevaluatedProperties } : {};
-  return CreateType(options.unevaluatedProperties === false || IsSchema(options.unevaluatedProperties) || allObjects ? { ...clonedUnevaluatedProperties, [Kind]: "Intersect", type: "object", allOf: T } : { ...clonedUnevaluatedProperties, [Kind]: "Intersect", allOf: T }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-evaluated.mjs
-function IsIntersectOptional(types) {
-  return types.every((left2) => IsOptional(left2));
-}
-function RemoveOptionalFromType2(type2) {
-  return Discard(type2, [OptionalKind]);
-}
-function RemoveOptionalFromRest2(types) {
-  return types.map((left2) => IsOptional(left2) ? RemoveOptionalFromType2(left2) : left2);
-}
-function ResolveIntersect(types, options) {
-  return IsIntersectOptional(types) ? Optional(IntersectCreate(RemoveOptionalFromRest2(types), options)) : IntersectCreate(RemoveOptionalFromRest2(types), options);
-}
-function IntersectEvaluated(types, options = {}) {
-  if (types.length === 1)
-    return CreateType(types[0], options);
-  if (types.length === 0)
-    return Never(options);
-  if (types.some((schema) => IsTransform(schema)))
-    throw new Error("Cannot intersect transform types");
-  return ResolveIntersect(types, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect.mjs
-function Intersect(types, options) {
-  if (types.length === 1)
-    return CreateType(types[0], options);
-  if (types.length === 0)
-    return Never(options);
-  if (types.some((schema) => IsTransform(schema)))
-    throw new Error("Cannot intersect transform types");
-  return IntersectCreate(types, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/ref/ref.mjs
-function Ref(...args) {
-  const [$ref, options] = typeof args[0] === "string" ? [args[0], args[1]] : [args[0].$id, args[1]];
-  if (typeof $ref !== "string")
-    throw new TypeBoxError("Ref: $ref must be a string");
-  return CreateType({ [Kind]: "Ref", $ref }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/awaited/awaited.mjs
-function FromComputed(target, parameters) {
-  return Computed("Awaited", [Computed(target, parameters)]);
-}
-function FromRef($ref) {
-  return Computed("Awaited", [Ref($ref)]);
-}
-function FromIntersect2(types) {
-  return Intersect(FromRest3(types));
-}
-function FromUnion4(types) {
-  return Union(FromRest3(types));
-}
-function FromPromise(type2) {
-  return Awaited(type2);
-}
-function FromRest3(types) {
-  return types.map((type2) => Awaited(type2));
-}
-function Awaited(type2, options) {
-  return CreateType(IsComputed(type2) ? FromComputed(type2.target, type2.parameters) : IsIntersect(type2) ? FromIntersect2(type2.allOf) : IsUnion(type2) ? FromUnion4(type2.anyOf) : IsPromise2(type2) ? FromPromise(type2.item) : IsRef(type2) ? FromRef(type2.$ref) : type2, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-keys.mjs
-function FromRest4(types) {
-  const result = [];
-  for (const L of types)
-    result.push(KeyOfPropertyKeys(L));
-  return result;
-}
-function FromIntersect3(types) {
-  const propertyKeysArray = FromRest4(types);
-  const propertyKeys = SetUnionMany(propertyKeysArray);
-  return propertyKeys;
-}
-function FromUnion5(types) {
-  const propertyKeysArray = FromRest4(types);
-  const propertyKeys = SetIntersectMany(propertyKeysArray);
-  return propertyKeys;
-}
-function FromTuple2(types) {
-  return types.map((_, indexer) => indexer.toString());
-}
-function FromArray2(_) {
-  return ["[number]"];
-}
-function FromProperties5(T) {
-  return globalThis.Object.getOwnPropertyNames(T);
-}
-function FromPatternProperties(patternProperties) {
-  if (!includePatternProperties)
-    return [];
-  const patternPropertyKeys = globalThis.Object.getOwnPropertyNames(patternProperties);
-  return patternPropertyKeys.map((key) => {
-    return key[0] === "^" && key[key.length - 1] === "$" ? key.slice(1, key.length - 1) : key;
-  });
-}
-function KeyOfPropertyKeys(type2) {
-  return IsIntersect(type2) ? FromIntersect3(type2.allOf) : IsUnion(type2) ? FromUnion5(type2.anyOf) : IsTuple(type2) ? FromTuple2(type2.items ?? []) : IsArray3(type2) ? FromArray2(type2.items) : IsObject3(type2) ? FromProperties5(type2.properties) : IsRecord(type2) ? FromPatternProperties(type2.patternProperties) : [];
-}
-var includePatternProperties = false;
-function KeyOfPattern(schema) {
-  includePatternProperties = true;
-  const keys = KeyOfPropertyKeys(schema);
-  includePatternProperties = false;
-  const pattern = keys.map((key) => `(${key})`);
-  return `^(${pattern.join("|")})$`;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof.mjs
-function FromComputed2(target, parameters) {
-  return Computed("KeyOf", [Computed(target, parameters)]);
-}
-function FromRef2($ref) {
-  return Computed("KeyOf", [Ref($ref)]);
-}
-function KeyOfFromType(type2, options) {
-  const propertyKeys = KeyOfPropertyKeys(type2);
-  const propertyKeyTypes = KeyOfPropertyKeysToRest(propertyKeys);
-  const result = UnionEvaluated(propertyKeyTypes);
-  return CreateType(result, options);
-}
-function KeyOfPropertyKeysToRest(propertyKeys) {
-  return propertyKeys.map((L) => L === "[number]" ? Number2() : Literal(L));
-}
-function KeyOf(type2, options) {
-  return IsComputed(type2) ? FromComputed2(type2.target, type2.parameters) : IsRef(type2) ? FromRef2(type2.$ref) : IsMappedResult(type2) ? KeyOfFromMappedResult(type2, options) : KeyOfFromType(type2, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-from-mapped-result.mjs
-function FromProperties6(properties, options) {
-  const result = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
-    result[K2] = KeyOf(properties[K2], Clone(options));
-  return result;
-}
-function FromMappedResult5(mappedResult, options) {
-  return FromProperties6(mappedResult.properties, options);
-}
-function KeyOfFromMappedResult(mappedResult, options) {
-  const properties = FromMappedResult5(mappedResult, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-entries.mjs
-function KeyOfPropertyEntries(schema) {
-  const keys = KeyOfPropertyKeys(schema);
-  const schemas = IndexFromPropertyKeys(schema, keys);
-  return keys.map((_, index2) => [keys[index2], schemas[index2]]);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/composite/composite.mjs
-function CompositeKeys(T) {
-  const Acc = [];
-  for (const L of T)
-    Acc.push(...KeyOfPropertyKeys(L));
-  return SetDistinct(Acc);
-}
-function FilterNever(T) {
-  return T.filter((L) => !IsNever(L));
-}
-function CompositeProperty(T, K2) {
-  const Acc = [];
-  for (const L of T)
-    Acc.push(...IndexFromPropertyKeys(L, [K2]));
-  return FilterNever(Acc);
-}
-function CompositeProperties(T, K2) {
-  const Acc = {};
-  for (const L of K2) {
-    Acc[L] = IntersectEvaluated(CompositeProperty(T, L));
-  }
-  return Acc;
-}
-function Composite(T, options) {
-  const K2 = CompositeKeys(T);
-  const P = CompositeProperties(T, K2);
-  const R = Object2(P, options);
-  return R;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/date/date.mjs
-function Date2(options) {
-  return CreateType({ [Kind]: "Date", type: "Date" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/null/null.mjs
-function Null(options) {
-  return CreateType({ [Kind]: "Null", type: "null" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/symbol/symbol.mjs
-function Symbol2(options) {
-  return CreateType({ [Kind]: "Symbol", type: "symbol" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/undefined/undefined.mjs
-function Undefined(options) {
-  return CreateType({ [Kind]: "Undefined", type: "undefined" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/uint8array/uint8array.mjs
-function Uint8Array2(options) {
-  return CreateType({ [Kind]: "Uint8Array", type: "Uint8Array" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/unknown/unknown.mjs
-function Unknown(options) {
-  return CreateType({ [Kind]: "Unknown" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/const/const.mjs
-function FromArray3(T) {
-  return T.map((L) => FromValue(L, false));
-}
-function FromProperties7(value) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(value))
-    Acc[K2] = Readonly(FromValue(value[K2], false));
-  return Acc;
-}
-function ConditionalReadonly(T, root2) {
-  return root2 === true ? T : Readonly(T);
-}
-function FromValue(value, root2) {
-  return IsAsyncIterator(value) ? ConditionalReadonly(Any(), root2) : IsIterator(value) ? ConditionalReadonly(Any(), root2) : IsArray(value) ? Readonly(Tuple(FromArray3(value))) : IsUint8Array(value) ? Uint8Array2() : IsDate(value) ? Date2() : IsObject(value) ? ConditionalReadonly(Object2(FromProperties7(value)), root2) : IsFunction(value) ? ConditionalReadonly(Function([], Unknown()), root2) : IsUndefined(value) ? Undefined() : IsNull(value) ? Null() : IsSymbol(value) ? Symbol2() : IsBigInt(value) ? BigInt2() : IsNumber(value) ? Literal(value) : IsBoolean(value) ? Literal(value) : IsString(value) ? Literal(value) : Object2({});
-}
-function Const(T, options) {
-  return CreateType(FromValue(T, true), options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/constructor-parameters/constructor-parameters.mjs
-function ConstructorParameters(schema, options) {
-  return IsConstructor(schema) ? Tuple(schema.parameters, options) : Never(options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/enum/enum.mjs
-function Enum(item, options) {
-  if (IsUndefined(item))
-    throw new Error("Enum undefined or empty");
-  const values1 = globalThis.Object.getOwnPropertyNames(item).filter((key) => isNaN(key)).map((key) => item[key]);
-  const values2 = [...new Set(values1)];
-  const anyOf = values2.map((value) => Literal(value));
-  return Union(anyOf, { ...options, [Hint]: "Enum" });
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extends/extends-check.mjs
-var ExtendsResolverError = class extends TypeBoxError {
-};
-var ExtendsResult;
-(function(ExtendsResult2) {
-  ExtendsResult2[ExtendsResult2["Union"] = 0] = "Union";
-  ExtendsResult2[ExtendsResult2["True"] = 1] = "True";
-  ExtendsResult2[ExtendsResult2["False"] = 2] = "False";
-})(ExtendsResult || (ExtendsResult = {}));
-function IntoBooleanResult(result) {
-  return result === ExtendsResult.False ? result : ExtendsResult.True;
-}
-function Throw(message) {
-  throw new ExtendsResolverError(message);
-}
-function IsStructuralRight(right2) {
-  return type_exports.IsNever(right2) || type_exports.IsIntersect(right2) || type_exports.IsUnion(right2) || type_exports.IsUnknown(right2) || type_exports.IsAny(right2);
-}
-function StructuralRight(left2, right2) {
-  return type_exports.IsNever(right2) ? FromNeverRight(left2, right2) : type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsUnknown(right2) ? FromUnknownRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : Throw("StructuralRight");
-}
-function FromAnyRight(left2, right2) {
-  return ExtendsResult.True;
-}
-function FromAny(left2, right2) {
-  return type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) && right2.anyOf.some((schema) => type_exports.IsAny(schema) || type_exports.IsUnknown(schema)) ? ExtendsResult.True : type_exports.IsUnion(right2) ? ExtendsResult.Union : type_exports.IsUnknown(right2) ? ExtendsResult.True : type_exports.IsAny(right2) ? ExtendsResult.True : ExtendsResult.Union;
-}
-function FromArrayRight(left2, right2) {
-  return type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : type_exports.IsNever(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromArray4(left2, right2) {
-  return type_exports.IsObject(right2) && IsObjectArrayLike(right2) ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsArray(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
-}
-function FromAsyncIterator(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsAsyncIterator(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
-}
-function FromBigInt(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsBigInt(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromBooleanRight(left2, right2) {
-  return type_exports.IsLiteralBoolean(left2) ? ExtendsResult.True : type_exports.IsBoolean(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromBoolean(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsBoolean(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromConstructor(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsConstructor(right2) ? ExtendsResult.False : left2.parameters.length > right2.parameters.length ? ExtendsResult.False : !left2.parameters.every((schema, index2) => IntoBooleanResult(Visit3(right2.parameters[index2], schema)) === ExtendsResult.True) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.returns, right2.returns));
-}
-function FromDate(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsDate(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromFunction(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsFunction(right2) ? ExtendsResult.False : left2.parameters.length > right2.parameters.length ? ExtendsResult.False : !left2.parameters.every((schema, index2) => IntoBooleanResult(Visit3(right2.parameters[index2], schema)) === ExtendsResult.True) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.returns, right2.returns));
-}
-function FromIntegerRight(left2, right2) {
-  return type_exports.IsLiteral(left2) && value_exports.IsNumber(left2.const) ? ExtendsResult.True : type_exports.IsNumber(left2) || type_exports.IsInteger(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromInteger(left2, right2) {
-  return type_exports.IsInteger(right2) || type_exports.IsNumber(right2) ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : ExtendsResult.False;
-}
-function FromIntersectRight(left2, right2) {
-  return right2.allOf.every((schema) => Visit3(left2, schema) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromIntersect4(left2, right2) {
-  return left2.allOf.some((schema) => Visit3(schema, right2) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromIterator(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsIterator(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
-}
-function FromLiteral2(left2, right2) {
-  return type_exports.IsLiteral(right2) && right2.const === left2.const ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsString(right2) ? FromStringRight(left2, right2) : type_exports.IsNumber(right2) ? FromNumberRight(left2, right2) : type_exports.IsInteger(right2) ? FromIntegerRight(left2, right2) : type_exports.IsBoolean(right2) ? FromBooleanRight(left2, right2) : ExtendsResult.False;
-}
-function FromNeverRight(left2, right2) {
-  return ExtendsResult.False;
-}
-function FromNever(left2, right2) {
-  return ExtendsResult.True;
-}
-function UnwrapTNot(schema) {
-  let [current, depth] = [schema, 0];
-  while (true) {
-    if (!type_exports.IsNot(current))
-      break;
-    current = current.not;
-    depth += 1;
-  }
-  return depth % 2 === 0 ? current : Unknown();
-}
-function FromNot(left2, right2) {
-  return type_exports.IsNot(left2) ? Visit3(UnwrapTNot(left2), right2) : type_exports.IsNot(right2) ? Visit3(left2, UnwrapTNot(right2)) : Throw("Invalid fallthrough for Not");
-}
-function FromNull(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsNull(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromNumberRight(left2, right2) {
-  return type_exports.IsLiteralNumber(left2) ? ExtendsResult.True : type_exports.IsNumber(left2) || type_exports.IsInteger(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromNumber(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsInteger(right2) || type_exports.IsNumber(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function IsObjectPropertyCount(schema, count2) {
-  return Object.getOwnPropertyNames(schema.properties).length === count2;
-}
-function IsObjectStringLike(schema) {
-  return IsObjectArrayLike(schema);
-}
-function IsObjectSymbolLike(schema) {
-  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "description" in schema.properties && type_exports.IsUnion(schema.properties.description) && schema.properties.description.anyOf.length === 2 && (type_exports.IsString(schema.properties.description.anyOf[0]) && type_exports.IsUndefined(schema.properties.description.anyOf[1]) || type_exports.IsString(schema.properties.description.anyOf[1]) && type_exports.IsUndefined(schema.properties.description.anyOf[0]));
-}
-function IsObjectNumberLike(schema) {
-  return IsObjectPropertyCount(schema, 0);
-}
-function IsObjectBooleanLike(schema) {
-  return IsObjectPropertyCount(schema, 0);
-}
-function IsObjectBigIntLike(schema) {
-  return IsObjectPropertyCount(schema, 0);
-}
-function IsObjectDateLike(schema) {
-  return IsObjectPropertyCount(schema, 0);
-}
-function IsObjectUint8ArrayLike(schema) {
-  return IsObjectArrayLike(schema);
-}
-function IsObjectFunctionLike(schema) {
-  const length3 = Number2();
-  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "length" in schema.properties && IntoBooleanResult(Visit3(schema.properties["length"], length3)) === ExtendsResult.True;
-}
-function IsObjectConstructorLike(schema) {
-  return IsObjectPropertyCount(schema, 0);
-}
-function IsObjectArrayLike(schema) {
-  const length3 = Number2();
-  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "length" in schema.properties && IntoBooleanResult(Visit3(schema.properties["length"], length3)) === ExtendsResult.True;
-}
-function IsObjectPromiseLike(schema) {
-  const then = Function([Any()], Any());
-  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "then" in schema.properties && IntoBooleanResult(Visit3(schema.properties["then"], then)) === ExtendsResult.True;
-}
-function Property(left2, right2) {
-  return Visit3(left2, right2) === ExtendsResult.False ? ExtendsResult.False : type_exports.IsOptional(left2) && !type_exports.IsOptional(right2) ? ExtendsResult.False : ExtendsResult.True;
-}
-function FromObjectRight(left2, right2) {
-  return type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : type_exports.IsNever(left2) || type_exports.IsLiteralString(left2) && IsObjectStringLike(right2) || type_exports.IsLiteralNumber(left2) && IsObjectNumberLike(right2) || type_exports.IsLiteralBoolean(left2) && IsObjectBooleanLike(right2) || type_exports.IsSymbol(left2) && IsObjectSymbolLike(right2) || type_exports.IsBigInt(left2) && IsObjectBigIntLike(right2) || type_exports.IsString(left2) && IsObjectStringLike(right2) || type_exports.IsSymbol(left2) && IsObjectSymbolLike(right2) || type_exports.IsNumber(left2) && IsObjectNumberLike(right2) || type_exports.IsInteger(left2) && IsObjectNumberLike(right2) || type_exports.IsBoolean(left2) && IsObjectBooleanLike(right2) || type_exports.IsUint8Array(left2) && IsObjectUint8ArrayLike(right2) || type_exports.IsDate(left2) && IsObjectDateLike(right2) || type_exports.IsConstructor(left2) && IsObjectConstructorLike(right2) || type_exports.IsFunction(left2) && IsObjectFunctionLike(right2) ? ExtendsResult.True : type_exports.IsRecord(left2) && type_exports.IsString(RecordKey(left2)) ? (() => {
-    return right2[Hint] === "Record" ? ExtendsResult.True : ExtendsResult.False;
-  })() : type_exports.IsRecord(left2) && type_exports.IsNumber(RecordKey(left2)) ? (() => {
-    return IsObjectPropertyCount(right2, 0) ? ExtendsResult.True : ExtendsResult.False;
-  })() : ExtendsResult.False;
-}
-function FromObject(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : !type_exports.IsObject(right2) ? ExtendsResult.False : (() => {
-    for (const key of Object.getOwnPropertyNames(right2.properties)) {
-      if (!(key in left2.properties) && !type_exports.IsOptional(right2.properties[key])) {
-        return ExtendsResult.False;
-      }
-      if (type_exports.IsOptional(right2.properties[key])) {
-        return ExtendsResult.True;
-      }
-      if (Property(left2.properties[key], right2.properties[key]) === ExtendsResult.False) {
-        return ExtendsResult.False;
-      }
-    }
-    return ExtendsResult.True;
-  })();
-}
-function FromPromise2(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) && IsObjectPromiseLike(right2) ? ExtendsResult.True : !type_exports.IsPromise(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.item, right2.item));
-}
-function RecordKey(schema) {
-  return PatternNumberExact in schema.patternProperties ? Number2() : PatternStringExact in schema.patternProperties ? String2() : Throw("Unknown record key pattern");
-}
-function RecordValue(schema) {
-  return PatternNumberExact in schema.patternProperties ? schema.patternProperties[PatternNumberExact] : PatternStringExact in schema.patternProperties ? schema.patternProperties[PatternStringExact] : Throw("Unable to get record value schema");
-}
-function FromRecordRight(left2, right2) {
-  const [Key, Value] = [RecordKey(right2), RecordValue(right2)];
-  return type_exports.IsLiteralString(left2) && type_exports.IsNumber(Key) && IntoBooleanResult(Visit3(left2, Value)) === ExtendsResult.True ? ExtendsResult.True : type_exports.IsUint8Array(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsString(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsArray(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsObject(left2) ? (() => {
-    for (const key of Object.getOwnPropertyNames(left2.properties)) {
-      if (Property(Value, left2.properties[key]) === ExtendsResult.False) {
-        return ExtendsResult.False;
-      }
-    }
-    return ExtendsResult.True;
-  })() : ExtendsResult.False;
-}
-function FromRecord(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsRecord(right2) ? ExtendsResult.False : Visit3(RecordValue(left2), RecordValue(right2));
-}
-function FromRegExp(left2, right2) {
-  const L = type_exports.IsRegExp(left2) ? String2() : left2;
-  const R = type_exports.IsRegExp(right2) ? String2() : right2;
-  return Visit3(L, R);
-}
-function FromStringRight(left2, right2) {
-  return type_exports.IsLiteral(left2) && value_exports.IsString(left2.const) ? ExtendsResult.True : type_exports.IsString(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromString(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsString(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromSymbol(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsSymbol(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromTemplateLiteral2(left2, right2) {
-  return type_exports.IsTemplateLiteral(left2) ? Visit3(TemplateLiteralToUnion(left2), right2) : type_exports.IsTemplateLiteral(right2) ? Visit3(left2, TemplateLiteralToUnion(right2)) : Throw("Invalid fallthrough for TemplateLiteral");
-}
-function IsArrayOfTuple(left2, right2) {
-  return type_exports.IsArray(right2) && left2.items !== void 0 && left2.items.every((schema) => Visit3(schema, right2.items) === ExtendsResult.True);
-}
-function FromTupleRight(left2, right2) {
-  return type_exports.IsNever(left2) ? ExtendsResult.True : type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : ExtendsResult.False;
-}
-function FromTuple3(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) && IsObjectArrayLike(right2) ? ExtendsResult.True : type_exports.IsArray(right2) && IsArrayOfTuple(left2, right2) ? ExtendsResult.True : !type_exports.IsTuple(right2) ? ExtendsResult.False : value_exports.IsUndefined(left2.items) && !value_exports.IsUndefined(right2.items) || !value_exports.IsUndefined(left2.items) && value_exports.IsUndefined(right2.items) ? ExtendsResult.False : value_exports.IsUndefined(left2.items) && !value_exports.IsUndefined(right2.items) ? ExtendsResult.True : left2.items.every((schema, index2) => Visit3(schema, right2.items[index2]) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromUint8Array(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsUint8Array(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromUndefined(left2, right2) {
-  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsVoid(right2) ? FromVoidRight(left2, right2) : type_exports.IsUndefined(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromUnionRight(left2, right2) {
-  return right2.anyOf.some((schema) => Visit3(left2, schema) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromUnion6(left2, right2) {
-  return left2.anyOf.every((schema) => Visit3(schema, right2) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromUnknownRight(left2, right2) {
-  return ExtendsResult.True;
-}
-function FromUnknown(left2, right2) {
-  return type_exports.IsNever(right2) ? FromNeverRight(left2, right2) : type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : type_exports.IsString(right2) ? FromStringRight(left2, right2) : type_exports.IsNumber(right2) ? FromNumberRight(left2, right2) : type_exports.IsInteger(right2) ? FromIntegerRight(left2, right2) : type_exports.IsBoolean(right2) ? FromBooleanRight(left2, right2) : type_exports.IsArray(right2) ? FromArrayRight(left2, right2) : type_exports.IsTuple(right2) ? FromTupleRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsUnknown(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromVoidRight(left2, right2) {
-  return type_exports.IsUndefined(left2) ? ExtendsResult.True : type_exports.IsUndefined(left2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function FromVoid(left2, right2) {
-  return type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsUnknown(right2) ? FromUnknownRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsVoid(right2) ? ExtendsResult.True : ExtendsResult.False;
-}
-function Visit3(left2, right2) {
-  return (
-    // resolvable
-    type_exports.IsTemplateLiteral(left2) || type_exports.IsTemplateLiteral(right2) ? FromTemplateLiteral2(left2, right2) : type_exports.IsRegExp(left2) || type_exports.IsRegExp(right2) ? FromRegExp(left2, right2) : type_exports.IsNot(left2) || type_exports.IsNot(right2) ? FromNot(left2, right2) : (
-      // standard
-      type_exports.IsAny(left2) ? FromAny(left2, right2) : type_exports.IsArray(left2) ? FromArray4(left2, right2) : type_exports.IsBigInt(left2) ? FromBigInt(left2, right2) : type_exports.IsBoolean(left2) ? FromBoolean(left2, right2) : type_exports.IsAsyncIterator(left2) ? FromAsyncIterator(left2, right2) : type_exports.IsConstructor(left2) ? FromConstructor(left2, right2) : type_exports.IsDate(left2) ? FromDate(left2, right2) : type_exports.IsFunction(left2) ? FromFunction(left2, right2) : type_exports.IsInteger(left2) ? FromInteger(left2, right2) : type_exports.IsIntersect(left2) ? FromIntersect4(left2, right2) : type_exports.IsIterator(left2) ? FromIterator(left2, right2) : type_exports.IsLiteral(left2) ? FromLiteral2(left2, right2) : type_exports.IsNever(left2) ? FromNever(left2, right2) : type_exports.IsNull(left2) ? FromNull(left2, right2) : type_exports.IsNumber(left2) ? FromNumber(left2, right2) : type_exports.IsObject(left2) ? FromObject(left2, right2) : type_exports.IsRecord(left2) ? FromRecord(left2, right2) : type_exports.IsString(left2) ? FromString(left2, right2) : type_exports.IsSymbol(left2) ? FromSymbol(left2, right2) : type_exports.IsTuple(left2) ? FromTuple3(left2, right2) : type_exports.IsPromise(left2) ? FromPromise2(left2, right2) : type_exports.IsUint8Array(left2) ? FromUint8Array(left2, right2) : type_exports.IsUndefined(left2) ? FromUndefined(left2, right2) : type_exports.IsUnion(left2) ? FromUnion6(left2, right2) : type_exports.IsUnknown(left2) ? FromUnknown(left2, right2) : type_exports.IsVoid(left2) ? FromVoid(left2, right2) : Throw(`Unknown left type operand '${left2[Kind]}'`)
-    )
-  );
-}
-function ExtendsCheck(left2, right2) {
-  return Visit3(left2, right2);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-result.mjs
-function FromProperties8(P, Right, True, False, options) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
-    Acc[K2] = Extends(P[K2], Right, True, False, Clone(options));
-  return Acc;
-}
-function FromMappedResult6(Left, Right, True, False, options) {
-  return FromProperties8(Left.properties, Right, True, False, options);
-}
-function ExtendsFromMappedResult(Left, Right, True, False, options) {
-  const P = FromMappedResult6(Left, Right, True, False, options);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extends/extends.mjs
-function ExtendsResolve(left2, right2, trueType, falseType) {
-  const R = ExtendsCheck(left2, right2);
-  return R === ExtendsResult.Union ? Union([trueType, falseType]) : R === ExtendsResult.True ? trueType : falseType;
-}
-function Extends(L, R, T, F, options) {
-  return IsMappedResult(L) ? ExtendsFromMappedResult(L, R, T, F, options) : IsMappedKey(L) ? CreateType(ExtendsFromMappedKey(L, R, T, F, options)) : CreateType(ExtendsResolve(L, R, T, F), options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-key.mjs
-function FromPropertyKey(K2, U, L, R, options) {
-  return {
-    [K2]: Extends(Literal(K2), U, L, R, Clone(options))
-  };
-}
-function FromPropertyKeys(K2, U, L, R, options) {
-  return K2.reduce((Acc, LK) => {
-    return { ...Acc, ...FromPropertyKey(LK, U, L, R, options) };
-  }, {});
-}
-function FromMappedKey2(K2, U, L, R, options) {
-  return FromPropertyKeys(K2.keys, U, L, R, options);
-}
-function ExtendsFromMappedKey(T, U, L, R, options) {
-  const P = FromMappedKey2(T, U, L, R, options);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extends/extends-undefined.mjs
-function Intersect2(schema) {
-  return schema.allOf.every((schema2) => ExtendsUndefinedCheck(schema2));
-}
-function Union2(schema) {
-  return schema.anyOf.some((schema2) => ExtendsUndefinedCheck(schema2));
-}
-function Not(schema) {
-  return !ExtendsUndefinedCheck(schema.not);
-}
-function ExtendsUndefinedCheck(schema) {
-  return schema[Kind] === "Intersect" ? Intersect2(schema) : schema[Kind] === "Union" ? Union2(schema) : schema[Kind] === "Not" ? Not(schema) : schema[Kind] === "Undefined" ? true : false;
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-template-literal.mjs
-function ExcludeFromTemplateLiteral(L, R) {
-  return Exclude(TemplateLiteralToUnion(L), R);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude.mjs
-function ExcludeRest(L, R) {
-  const excluded = L.filter((inner) => ExtendsCheck(inner, R) === ExtendsResult.False);
-  return excluded.length === 1 ? excluded[0] : Union(excluded);
-}
-function Exclude(L, R, options = {}) {
-  if (IsTemplateLiteral(L))
-    return CreateType(ExcludeFromTemplateLiteral(L, R), options);
-  if (IsMappedResult(L))
-    return CreateType(ExcludeFromMappedResult(L, R), options);
-  return CreateType(IsUnion(L) ? ExcludeRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? Never() : L, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-mapped-result.mjs
-function FromProperties9(P, U) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
-    Acc[K2] = Exclude(P[K2], U);
-  return Acc;
-}
-function FromMappedResult7(R, T) {
-  return FromProperties9(R.properties, T);
-}
-function ExcludeFromMappedResult(R, T) {
-  const P = FromMappedResult7(R, T);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-template-literal.mjs
-function ExtractFromTemplateLiteral(L, R) {
-  return Extract(TemplateLiteralToUnion(L), R);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extract/extract.mjs
-function ExtractRest(L, R) {
-  const extracted = L.filter((inner) => ExtendsCheck(inner, R) !== ExtendsResult.False);
-  return extracted.length === 1 ? extracted[0] : Union(extracted);
-}
-function Extract(L, R, options) {
-  if (IsTemplateLiteral(L))
-    return CreateType(ExtractFromTemplateLiteral(L, R), options);
-  if (IsMappedResult(L))
-    return CreateType(ExtractFromMappedResult(L, R), options);
-  return CreateType(IsUnion(L) ? ExtractRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? L : Never(), options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-mapped-result.mjs
-function FromProperties10(P, T) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
-    Acc[K2] = Extract(P[K2], T);
-  return Acc;
-}
-function FromMappedResult8(R, T) {
-  return FromProperties10(R.properties, T);
-}
-function ExtractFromMappedResult(R, T) {
-  const P = FromMappedResult8(R, T);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/instance-type/instance-type.mjs
-function InstanceType(schema, options) {
-  return IsConstructor(schema) ? CreateType(schema.returns, options) : Never(options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/readonly-optional/readonly-optional.mjs
-function ReadonlyOptional(schema) {
-  return Readonly(Optional(schema));
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/record/record.mjs
-function RecordCreateFromPattern(pattern, T, options) {
-  return CreateType({ [Kind]: "Record", type: "object", patternProperties: { [pattern]: T } }, options);
-}
-function RecordCreateFromKeys(K2, T, options) {
-  const result = {};
-  for (const K22 of K2)
-    result[K22] = T;
-  return Object2(result, { ...options, [Hint]: "Record" });
-}
-function FromTemplateLiteralKey(K2, T, options) {
-  return IsTemplateLiteralFinite(K2) ? RecordCreateFromKeys(IndexPropertyKeys(K2), T, options) : RecordCreateFromPattern(K2.pattern, T, options);
-}
-function FromUnionKey(key, type2, options) {
-  return RecordCreateFromKeys(IndexPropertyKeys(Union(key)), type2, options);
-}
-function FromLiteralKey(key, type2, options) {
-  return RecordCreateFromKeys([key.toString()], type2, options);
-}
-function FromRegExpKey(key, type2, options) {
-  return RecordCreateFromPattern(key.source, type2, options);
-}
-function FromStringKey(key, type2, options) {
-  const pattern = IsUndefined(key.pattern) ? PatternStringExact : key.pattern;
-  return RecordCreateFromPattern(pattern, type2, options);
-}
-function FromAnyKey(_, type2, options) {
-  return RecordCreateFromPattern(PatternStringExact, type2, options);
-}
-function FromNeverKey(_key, type2, options) {
-  return RecordCreateFromPattern(PatternNeverExact, type2, options);
-}
-function FromBooleanKey(_key, type2, options) {
-  return Object2({ true: type2, false: type2 }, options);
-}
-function FromIntegerKey(_key, type2, options) {
-  return RecordCreateFromPattern(PatternNumberExact, type2, options);
-}
-function FromNumberKey(_, type2, options) {
-  return RecordCreateFromPattern(PatternNumberExact, type2, options);
-}
-function Record(key, type2, options = {}) {
-  return IsUnion(key) ? FromUnionKey(key.anyOf, type2, options) : IsTemplateLiteral(key) ? FromTemplateLiteralKey(key, type2, options) : IsLiteral(key) ? FromLiteralKey(key.const, type2, options) : IsBoolean3(key) ? FromBooleanKey(key, type2, options) : IsInteger2(key) ? FromIntegerKey(key, type2, options) : IsNumber3(key) ? FromNumberKey(key, type2, options) : IsRegExp2(key) ? FromRegExpKey(key, type2, options) : IsString3(key) ? FromStringKey(key, type2, options) : IsAny(key) ? FromAnyKey(key, type2, options) : IsNever(key) ? FromNeverKey(key, type2, options) : Never(options);
-}
-function RecordPattern(record) {
-  return globalThis.Object.getOwnPropertyNames(record.patternProperties)[0];
-}
-function RecordKey2(type2) {
-  const pattern = RecordPattern(type2);
-  return pattern === PatternStringExact ? String2() : pattern === PatternNumberExact ? Number2() : String2({ pattern });
-}
-function RecordValue2(type2) {
-  return type2.patternProperties[RecordPattern(type2)];
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/instantiate/instantiate.mjs
-function FromConstructor2(args, type2) {
-  type2.parameters = FromTypes(args, type2.parameters);
-  type2.returns = FromType(args, type2.returns);
-  return type2;
-}
-function FromFunction2(args, type2) {
-  type2.parameters = FromTypes(args, type2.parameters);
-  type2.returns = FromType(args, type2.returns);
-  return type2;
-}
-function FromIntersect5(args, type2) {
-  type2.allOf = FromTypes(args, type2.allOf);
-  return type2;
-}
-function FromUnion7(args, type2) {
-  type2.anyOf = FromTypes(args, type2.anyOf);
-  return type2;
-}
-function FromTuple4(args, type2) {
-  if (IsUndefined(type2.items))
-    return type2;
-  type2.items = FromTypes(args, type2.items);
-  return type2;
-}
-function FromArray5(args, type2) {
-  type2.items = FromType(args, type2.items);
-  return type2;
-}
-function FromAsyncIterator2(args, type2) {
-  type2.items = FromType(args, type2.items);
-  return type2;
-}
-function FromIterator2(args, type2) {
-  type2.items = FromType(args, type2.items);
-  return type2;
-}
-function FromPromise3(args, type2) {
-  type2.item = FromType(args, type2.item);
-  return type2;
-}
-function FromObject2(args, type2) {
-  const mappedProperties = FromProperties11(args, type2.properties);
-  return { ...type2, ...Object2(mappedProperties) };
-}
-function FromRecord2(args, type2) {
-  const mappedKey = FromType(args, RecordKey2(type2));
-  const mappedValue = FromType(args, RecordValue2(type2));
-  const result = Record(mappedKey, mappedValue);
-  return { ...type2, ...result };
-}
-function FromArgument(args, argument) {
-  return argument.index in args ? args[argument.index] : Unknown();
-}
-function FromProperty2(args, type2) {
-  const isReadonly = IsReadonly(type2);
-  const isOptional = IsOptional(type2);
-  const mapped = FromType(args, type2);
-  return isReadonly && isOptional ? ReadonlyOptional(mapped) : isReadonly && !isOptional ? Readonly(mapped) : !isReadonly && isOptional ? Optional(mapped) : mapped;
-}
-function FromProperties11(args, properties) {
-  return globalThis.Object.getOwnPropertyNames(properties).reduce((result, key) => {
-    return { ...result, [key]: FromProperty2(args, properties[key]) };
-  }, {});
-}
-function FromTypes(args, types) {
-  return types.map((type2) => FromType(args, type2));
-}
-function FromType(args, type2) {
-  return IsConstructor(type2) ? FromConstructor2(args, type2) : IsFunction3(type2) ? FromFunction2(args, type2) : IsIntersect(type2) ? FromIntersect5(args, type2) : IsUnion(type2) ? FromUnion7(args, type2) : IsTuple(type2) ? FromTuple4(args, type2) : IsArray3(type2) ? FromArray5(args, type2) : IsAsyncIterator3(type2) ? FromAsyncIterator2(args, type2) : IsIterator3(type2) ? FromIterator2(args, type2) : IsPromise2(type2) ? FromPromise3(args, type2) : IsObject3(type2) ? FromObject2(args, type2) : IsRecord(type2) ? FromRecord2(args, type2) : IsArgument(type2) ? FromArgument(args, type2) : type2;
-}
-function Instantiate(type2, args) {
-  return FromType(args, CloneType(type2));
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/integer/integer.mjs
-function Integer(options) {
-  return CreateType({ [Kind]: "Integer", type: "integer" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic-from-mapped-key.mjs
-function MappedIntrinsicPropertyKey(K2, M2, options) {
-  return {
-    [K2]: Intrinsic(Literal(K2), M2, Clone(options))
-  };
-}
-function MappedIntrinsicPropertyKeys(K2, M2, options) {
-  const result = K2.reduce((Acc, L) => {
-    return { ...Acc, ...MappedIntrinsicPropertyKey(L, M2, options) };
-  }, {});
-  return result;
-}
-function MappedIntrinsicProperties(T, M2, options) {
-  return MappedIntrinsicPropertyKeys(T["keys"], M2, options);
-}
-function IntrinsicFromMappedKey(T, M2, options) {
-  const P = MappedIntrinsicProperties(T, M2, options);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic.mjs
-function ApplyUncapitalize(value) {
-  const [first2, rest] = [value.slice(0, 1), value.slice(1)];
-  return [first2.toLowerCase(), rest].join("");
-}
-function ApplyCapitalize(value) {
-  const [first2, rest] = [value.slice(0, 1), value.slice(1)];
-  return [first2.toUpperCase(), rest].join("");
-}
-function ApplyUppercase(value) {
-  return value.toUpperCase();
-}
-function ApplyLowercase(value) {
-  return value.toLowerCase();
-}
-function FromTemplateLiteral3(schema, mode2, options) {
-  const expression = TemplateLiteralParseExact(schema.pattern);
-  const finite2 = IsTemplateLiteralExpressionFinite(expression);
-  if (!finite2)
-    return { ...schema, pattern: FromLiteralValue(schema.pattern, mode2) };
-  const strings = [...TemplateLiteralExpressionGenerate(expression)];
-  const literals = strings.map((value) => Literal(value));
-  const mapped = FromRest5(literals, mode2);
-  const union = Union(mapped);
-  return TemplateLiteral([union], options);
-}
-function FromLiteralValue(value, mode2) {
-  return typeof value === "string" ? mode2 === "Uncapitalize" ? ApplyUncapitalize(value) : mode2 === "Capitalize" ? ApplyCapitalize(value) : mode2 === "Uppercase" ? ApplyUppercase(value) : mode2 === "Lowercase" ? ApplyLowercase(value) : value : value.toString();
-}
-function FromRest5(T, M2) {
-  return T.map((L) => Intrinsic(L, M2));
-}
-function Intrinsic(schema, mode2, options = {}) {
-  return (
-    // Intrinsic-Mapped-Inference
-    IsMappedKey(schema) ? IntrinsicFromMappedKey(schema, mode2, options) : (
-      // Standard-Inference
-      IsTemplateLiteral(schema) ? FromTemplateLiteral3(schema, mode2, options) : IsUnion(schema) ? Union(FromRest5(schema.anyOf, mode2), options) : IsLiteral(schema) ? Literal(FromLiteralValue(schema.const, mode2), options) : (
-        // Default Type
-        CreateType(schema, options)
-      )
-    )
-  );
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/capitalize.mjs
-function Capitalize(T, options = {}) {
-  return Intrinsic(T, "Capitalize", options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/lowercase.mjs
-function Lowercase(T, options = {}) {
-  return Intrinsic(T, "Lowercase", options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uncapitalize.mjs
-function Uncapitalize(T, options = {}) {
-  return Intrinsic(T, "Uncapitalize", options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uppercase.mjs
-function Uppercase(T, options = {}) {
-  return Intrinsic(T, "Uppercase", options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-result.mjs
-function FromProperties12(properties, propertyKeys, options) {
-  const result = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
-    result[K2] = Omit(properties[K2], propertyKeys, Clone(options));
-  return result;
-}
-function FromMappedResult9(mappedResult, propertyKeys, options) {
-  return FromProperties12(mappedResult.properties, propertyKeys, options);
-}
-function OmitFromMappedResult(mappedResult, propertyKeys, options) {
-  const properties = FromMappedResult9(mappedResult, propertyKeys, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/omit/omit.mjs
-function FromIntersect6(types, propertyKeys) {
-  return types.map((type2) => OmitResolve(type2, propertyKeys));
-}
-function FromUnion8(types, propertyKeys) {
-  return types.map((type2) => OmitResolve(type2, propertyKeys));
-}
-function FromProperty3(properties, key) {
-  const { [key]: _, ...R } = properties;
-  return R;
-}
-function FromProperties13(properties, propertyKeys) {
-  return propertyKeys.reduce((T, K2) => FromProperty3(T, K2), properties);
-}
-function FromObject3(type2, propertyKeys, properties) {
-  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
-  const mappedProperties = FromProperties13(properties, propertyKeys);
-  return Object2(mappedProperties, options);
-}
-function UnionFromPropertyKeys(propertyKeys) {
-  const result = propertyKeys.reduce((result2, key) => IsLiteralValue(key) ? [...result2, Literal(key)] : result2, []);
-  return Union(result);
-}
-function OmitResolve(type2, propertyKeys) {
-  return IsIntersect(type2) ? Intersect(FromIntersect6(type2.allOf, propertyKeys)) : IsUnion(type2) ? Union(FromUnion8(type2.anyOf, propertyKeys)) : IsObject3(type2) ? FromObject3(type2, propertyKeys, type2.properties) : Object2({});
-}
-function Omit(type2, key, options) {
-  const typeKey = IsArray(key) ? UnionFromPropertyKeys(key) : key;
-  const propertyKeys = IsSchema(key) ? IndexPropertyKeys(key) : key;
-  const isTypeRef = IsRef(type2);
-  const isKeyRef = IsRef(key);
-  return IsMappedResult(type2) ? OmitFromMappedResult(type2, propertyKeys, options) : IsMappedKey(key) ? OmitFromMappedKey(type2, key, options) : isTypeRef && isKeyRef ? Computed("Omit", [type2, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Omit", [type2, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Omit", [type2, typeKey], options) : CreateType({ ...OmitResolve(type2, propertyKeys), ...options });
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-key.mjs
-function FromPropertyKey2(type2, key, options) {
-  return { [key]: Omit(type2, [key], Clone(options)) };
-}
-function FromPropertyKeys2(type2, propertyKeys, options) {
-  return propertyKeys.reduce((Acc, LK) => {
-    return { ...Acc, ...FromPropertyKey2(type2, LK, options) };
-  }, {});
-}
-function FromMappedKey3(type2, mappedKey, options) {
-  return FromPropertyKeys2(type2, mappedKey.keys, options);
-}
-function OmitFromMappedKey(type2, mappedKey, options) {
-  const properties = FromMappedKey3(type2, mappedKey, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-result.mjs
-function FromProperties14(properties, propertyKeys, options) {
-  const result = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
-    result[K2] = Pick(properties[K2], propertyKeys, Clone(options));
-  return result;
-}
-function FromMappedResult10(mappedResult, propertyKeys, options) {
-  return FromProperties14(mappedResult.properties, propertyKeys, options);
-}
-function PickFromMappedResult(mappedResult, propertyKeys, options) {
-  const properties = FromMappedResult10(mappedResult, propertyKeys, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/pick/pick.mjs
-function FromIntersect7(types, propertyKeys) {
-  return types.map((type2) => PickResolve(type2, propertyKeys));
-}
-function FromUnion9(types, propertyKeys) {
-  return types.map((type2) => PickResolve(type2, propertyKeys));
-}
-function FromProperties15(properties, propertyKeys) {
-  const result = {};
-  for (const K2 of propertyKeys)
-    if (K2 in properties)
-      result[K2] = properties[K2];
-  return result;
-}
-function FromObject4(Type2, keys, properties) {
-  const options = Discard(Type2, [TransformKind, "$id", "required", "properties"]);
-  const mappedProperties = FromProperties15(properties, keys);
-  return Object2(mappedProperties, options);
-}
-function UnionFromPropertyKeys2(propertyKeys) {
-  const result = propertyKeys.reduce((result2, key) => IsLiteralValue(key) ? [...result2, Literal(key)] : result2, []);
-  return Union(result);
-}
-function PickResolve(type2, propertyKeys) {
-  return IsIntersect(type2) ? Intersect(FromIntersect7(type2.allOf, propertyKeys)) : IsUnion(type2) ? Union(FromUnion9(type2.anyOf, propertyKeys)) : IsObject3(type2) ? FromObject4(type2, propertyKeys, type2.properties) : Object2({});
-}
-function Pick(type2, key, options) {
-  const typeKey = IsArray(key) ? UnionFromPropertyKeys2(key) : key;
-  const propertyKeys = IsSchema(key) ? IndexPropertyKeys(key) : key;
-  const isTypeRef = IsRef(type2);
-  const isKeyRef = IsRef(key);
-  return IsMappedResult(type2) ? PickFromMappedResult(type2, propertyKeys, options) : IsMappedKey(key) ? PickFromMappedKey(type2, key, options) : isTypeRef && isKeyRef ? Computed("Pick", [type2, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Pick", [type2, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Pick", [type2, typeKey], options) : CreateType({ ...PickResolve(type2, propertyKeys), ...options });
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-key.mjs
-function FromPropertyKey3(type2, key, options) {
-  return {
-    [key]: Pick(type2, [key], Clone(options))
-  };
-}
-function FromPropertyKeys3(type2, propertyKeys, options) {
-  return propertyKeys.reduce((result, leftKey) => {
-    return { ...result, ...FromPropertyKey3(type2, leftKey, options) };
-  }, {});
-}
-function FromMappedKey4(type2, mappedKey, options) {
-  return FromPropertyKeys3(type2, mappedKey.keys, options);
-}
-function PickFromMappedKey(type2, mappedKey, options) {
-  const properties = FromMappedKey4(type2, mappedKey, options);
-  return MappedResult(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/partial/partial.mjs
-function FromComputed3(target, parameters) {
-  return Computed("Partial", [Computed(target, parameters)]);
-}
-function FromRef3($ref) {
-  return Computed("Partial", [Ref($ref)]);
-}
-function FromProperties16(properties) {
-  const partialProperties = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
-    partialProperties[K2] = Optional(properties[K2]);
-  return partialProperties;
-}
-function FromObject5(type2, properties) {
-  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
-  const mappedProperties = FromProperties16(properties);
-  return Object2(mappedProperties, options);
-}
-function FromRest6(types) {
-  return types.map((type2) => PartialResolve(type2));
-}
-function PartialResolve(type2) {
-  return (
-    // Mappable
-    IsComputed(type2) ? FromComputed3(type2.target, type2.parameters) : IsRef(type2) ? FromRef3(type2.$ref) : IsIntersect(type2) ? Intersect(FromRest6(type2.allOf)) : IsUnion(type2) ? Union(FromRest6(type2.anyOf)) : IsObject3(type2) ? FromObject5(type2, type2.properties) : (
-      // Intrinsic
-      IsBigInt3(type2) ? type2 : IsBoolean3(type2) ? type2 : IsInteger2(type2) ? type2 : IsLiteral(type2) ? type2 : IsNull3(type2) ? type2 : IsNumber3(type2) ? type2 : IsString3(type2) ? type2 : IsSymbol3(type2) ? type2 : IsUndefined3(type2) ? type2 : (
-        // Passthrough
-        Object2({})
-      )
-    )
-  );
-}
-function Partial(type2, options) {
-  if (IsMappedResult(type2)) {
-    return PartialFromMappedResult(type2, options);
-  } else {
-    return CreateType({ ...PartialResolve(type2), ...options });
-  }
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/partial/partial-from-mapped-result.mjs
-function FromProperties17(K2, options) {
-  const Acc = {};
-  for (const K22 of globalThis.Object.getOwnPropertyNames(K2))
-    Acc[K22] = Partial(K2[K22], Clone(options));
-  return Acc;
-}
-function FromMappedResult11(R, options) {
-  return FromProperties17(R.properties, options);
-}
-function PartialFromMappedResult(R, options) {
-  const P = FromMappedResult11(R, options);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/required/required.mjs
-function FromComputed4(target, parameters) {
-  return Computed("Required", [Computed(target, parameters)]);
-}
-function FromRef4($ref) {
-  return Computed("Required", [Ref($ref)]);
-}
-function FromProperties18(properties) {
-  const requiredProperties = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
-    requiredProperties[K2] = Discard(properties[K2], [OptionalKind]);
-  return requiredProperties;
-}
-function FromObject6(type2, properties) {
-  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
-  const mappedProperties = FromProperties18(properties);
-  return Object2(mappedProperties, options);
-}
-function FromRest7(types) {
-  return types.map((type2) => RequiredResolve(type2));
-}
-function RequiredResolve(type2) {
-  return (
-    // Mappable
-    IsComputed(type2) ? FromComputed4(type2.target, type2.parameters) : IsRef(type2) ? FromRef4(type2.$ref) : IsIntersect(type2) ? Intersect(FromRest7(type2.allOf)) : IsUnion(type2) ? Union(FromRest7(type2.anyOf)) : IsObject3(type2) ? FromObject6(type2, type2.properties) : (
-      // Intrinsic
-      IsBigInt3(type2) ? type2 : IsBoolean3(type2) ? type2 : IsInteger2(type2) ? type2 : IsLiteral(type2) ? type2 : IsNull3(type2) ? type2 : IsNumber3(type2) ? type2 : IsString3(type2) ? type2 : IsSymbol3(type2) ? type2 : IsUndefined3(type2) ? type2 : (
-        // Passthrough
-        Object2({})
-      )
-    )
-  );
-}
-function Required(type2, options) {
-  if (IsMappedResult(type2)) {
-    return RequiredFromMappedResult(type2, options);
-  } else {
-    return CreateType({ ...RequiredResolve(type2), ...options });
-  }
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/required/required-from-mapped-result.mjs
-function FromProperties19(P, options) {
-  const Acc = {};
-  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
-    Acc[K2] = Required(P[K2], options);
-  return Acc;
-}
-function FromMappedResult12(R, options) {
-  return FromProperties19(R.properties, options);
-}
-function RequiredFromMappedResult(R, options) {
-  const P = FromMappedResult12(R, options);
-  return MappedResult(P);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/module/compute.mjs
-function DereferenceParameters(moduleProperties, types) {
-  return types.map((type2) => {
-    return IsRef(type2) ? Dereference(moduleProperties, type2.$ref) : FromType2(moduleProperties, type2);
-  });
-}
-function Dereference(moduleProperties, ref) {
-  return ref in moduleProperties ? IsRef(moduleProperties[ref]) ? Dereference(moduleProperties, moduleProperties[ref].$ref) : FromType2(moduleProperties, moduleProperties[ref]) : Never();
-}
-function FromAwaited(parameters) {
-  return Awaited(parameters[0]);
-}
-function FromIndex(parameters) {
-  return Index(parameters[0], parameters[1]);
-}
-function FromKeyOf(parameters) {
-  return KeyOf(parameters[0]);
-}
-function FromPartial(parameters) {
-  return Partial(parameters[0]);
-}
-function FromOmit(parameters) {
-  return Omit(parameters[0], parameters[1]);
-}
-function FromPick(parameters) {
-  return Pick(parameters[0], parameters[1]);
-}
-function FromRequired(parameters) {
-  return Required(parameters[0]);
-}
-function FromComputed5(moduleProperties, target, parameters) {
-  const dereferenced = DereferenceParameters(moduleProperties, parameters);
-  return target === "Awaited" ? FromAwaited(dereferenced) : target === "Index" ? FromIndex(dereferenced) : target === "KeyOf" ? FromKeyOf(dereferenced) : target === "Partial" ? FromPartial(dereferenced) : target === "Omit" ? FromOmit(dereferenced) : target === "Pick" ? FromPick(dereferenced) : target === "Required" ? FromRequired(dereferenced) : Never();
-}
-function FromArray6(moduleProperties, type2) {
-  return Array2(FromType2(moduleProperties, type2));
-}
-function FromAsyncIterator3(moduleProperties, type2) {
-  return AsyncIterator(FromType2(moduleProperties, type2));
-}
-function FromConstructor3(moduleProperties, parameters, instanceType) {
-  return Constructor(FromTypes2(moduleProperties, parameters), FromType2(moduleProperties, instanceType));
-}
-function FromFunction3(moduleProperties, parameters, returnType) {
-  return Function(FromTypes2(moduleProperties, parameters), FromType2(moduleProperties, returnType));
-}
-function FromIntersect8(moduleProperties, types) {
-  return Intersect(FromTypes2(moduleProperties, types));
-}
-function FromIterator3(moduleProperties, type2) {
-  return Iterator(FromType2(moduleProperties, type2));
-}
-function FromObject7(moduleProperties, properties) {
-  return Object2(globalThis.Object.keys(properties).reduce((result, key) => {
-    return { ...result, [key]: FromType2(moduleProperties, properties[key]) };
-  }, {}));
-}
-function FromRecord3(moduleProperties, type2) {
-  const [value, pattern] = [FromType2(moduleProperties, RecordValue2(type2)), RecordPattern(type2)];
-  const result = CloneType(type2);
-  result.patternProperties[pattern] = value;
-  return result;
-}
-function FromTransform(moduleProperties, transform2) {
-  return IsRef(transform2) ? { ...Dereference(moduleProperties, transform2.$ref), [TransformKind]: transform2[TransformKind] } : transform2;
-}
-function FromTuple5(moduleProperties, types) {
-  return Tuple(FromTypes2(moduleProperties, types));
-}
-function FromUnion10(moduleProperties, types) {
-  return Union(FromTypes2(moduleProperties, types));
-}
-function FromTypes2(moduleProperties, types) {
-  return types.map((type2) => FromType2(moduleProperties, type2));
-}
-function FromType2(moduleProperties, type2) {
-  return (
-    // Modifiers
-    IsOptional(type2) ? CreateType(FromType2(moduleProperties, Discard(type2, [OptionalKind])), type2) : IsReadonly(type2) ? CreateType(FromType2(moduleProperties, Discard(type2, [ReadonlyKind])), type2) : (
-      // Transform
-      IsTransform(type2) ? CreateType(FromTransform(moduleProperties, type2), type2) : (
-        // Types
-        IsArray3(type2) ? CreateType(FromArray6(moduleProperties, type2.items), type2) : IsAsyncIterator3(type2) ? CreateType(FromAsyncIterator3(moduleProperties, type2.items), type2) : IsComputed(type2) ? CreateType(FromComputed5(moduleProperties, type2.target, type2.parameters)) : IsConstructor(type2) ? CreateType(FromConstructor3(moduleProperties, type2.parameters, type2.returns), type2) : IsFunction3(type2) ? CreateType(FromFunction3(moduleProperties, type2.parameters, type2.returns), type2) : IsIntersect(type2) ? CreateType(FromIntersect8(moduleProperties, type2.allOf), type2) : IsIterator3(type2) ? CreateType(FromIterator3(moduleProperties, type2.items), type2) : IsObject3(type2) ? CreateType(FromObject7(moduleProperties, type2.properties), type2) : IsRecord(type2) ? CreateType(FromRecord3(moduleProperties, type2)) : IsTuple(type2) ? CreateType(FromTuple5(moduleProperties, type2.items || []), type2) : IsUnion(type2) ? CreateType(FromUnion10(moduleProperties, type2.anyOf), type2) : type2
-      )
-    )
-  );
-}
-function ComputeType(moduleProperties, key) {
-  return key in moduleProperties ? FromType2(moduleProperties, moduleProperties[key]) : Never();
-}
-function ComputeModuleProperties(moduleProperties) {
-  return globalThis.Object.getOwnPropertyNames(moduleProperties).reduce((result, key) => {
-    return { ...result, [key]: ComputeType(moduleProperties, key) };
-  }, {});
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/module/module.mjs
-var TModule = class {
-  constructor($defs) {
-    const computed = ComputeModuleProperties($defs);
-    const identified = this.WithIdentifiers(computed);
-    this.$defs = identified;
-  }
-  /** `[Json]` Imports a Type by Key. */
-  Import(key, options) {
-    const $defs = { ...this.$defs, [key]: CreateType(this.$defs[key], options) };
-    return CreateType({ [Kind]: "Import", $defs, $ref: key });
-  }
-  // prettier-ignore
-  WithIdentifiers($defs) {
-    return globalThis.Object.getOwnPropertyNames($defs).reduce((result, key) => {
-      return { ...result, [key]: { ...$defs[key], $id: key } };
-    }, {});
-  }
-};
-function Module(properties) {
-  return new TModule(properties);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/not/not.mjs
-function Not2(type2, options) {
-  return CreateType({ [Kind]: "Not", not: type2 }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/parameters/parameters.mjs
-function Parameters(schema, options) {
-  return IsFunction3(schema) ? Tuple(schema.parameters, options) : Never();
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/recursive/recursive.mjs
-var Ordinal = 0;
-function Recursive(callback, options = {}) {
-  if (IsUndefined(options.$id))
-    options.$id = `T${Ordinal++}`;
-  const thisType = CloneType(callback({ [Kind]: "This", $ref: `${options.$id}` }));
-  thisType.$id = options.$id;
-  return CreateType({ [Hint]: "Recursive", ...thisType }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/regexp/regexp.mjs
-function RegExp2(unresolved, options) {
-  const expr = IsString(unresolved) ? new globalThis.RegExp(unresolved) : unresolved;
-  return CreateType({ [Kind]: "RegExp", type: "RegExp", source: expr.source, flags: expr.flags }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/rest/rest.mjs
-function RestResolve(T) {
-  return IsIntersect(T) ? T.allOf : IsUnion(T) ? T.anyOf : IsTuple(T) ? T.items ?? [] : [];
-}
-function Rest(T) {
-  return RestResolve(T);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/return-type/return-type.mjs
-function ReturnType(schema, options) {
-  return IsFunction3(schema) ? CreateType(schema.returns, options) : Never(options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/transform/transform.mjs
-var TransformDecodeBuilder = class {
-  constructor(schema) {
-    this.schema = schema;
-  }
-  Decode(decode) {
-    return new TransformEncodeBuilder(this.schema, decode);
-  }
-};
-var TransformEncodeBuilder = class {
-  constructor(schema, decode) {
-    this.schema = schema;
-    this.decode = decode;
-  }
-  EncodeTransform(encode, schema) {
-    const Encode2 = (value) => schema[TransformKind].Encode(encode(value));
-    const Decode2 = (value) => this.decode(schema[TransformKind].Decode(value));
-    const Codec = { Encode: Encode2, Decode: Decode2 };
-    return { ...schema, [TransformKind]: Codec };
-  }
-  EncodeSchema(encode, schema) {
-    const Codec = { Decode: this.decode, Encode: encode };
-    return { ...schema, [TransformKind]: Codec };
-  }
-  Encode(encode) {
-    return IsTransform(this.schema) ? this.EncodeTransform(encode, this.schema) : this.EncodeSchema(encode, this.schema);
-  }
-};
-function Transform(schema) {
-  return new TransformDecodeBuilder(schema);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/unsafe/unsafe.mjs
-function Unsafe(options = {}) {
-  return CreateType({ [Kind]: options[Kind] ?? "Unsafe" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/void/void.mjs
-function Void(options) {
-  return CreateType({ [Kind]: "Void", type: "void" }, options);
-}
-
-// node_modules/@sinclair/typebox/build/esm/type/type/type.mjs
-var type_exports3 = {};
-__export(type_exports3, {
-  Any: () => Any,
-  Argument: () => Argument,
-  Array: () => Array2,
-  AsyncIterator: () => AsyncIterator,
-  Awaited: () => Awaited,
-  BigInt: () => BigInt2,
-  Boolean: () => Boolean2,
-  Capitalize: () => Capitalize,
-  Composite: () => Composite,
-  Const: () => Const,
-  Constructor: () => Constructor,
-  ConstructorParameters: () => ConstructorParameters,
-  Date: () => Date2,
-  Enum: () => Enum,
-  Exclude: () => Exclude,
-  Extends: () => Extends,
-  Extract: () => Extract,
-  Function: () => Function,
-  Index: () => Index,
-  InstanceType: () => InstanceType,
-  Instantiate: () => Instantiate,
-  Integer: () => Integer,
-  Intersect: () => Intersect,
-  Iterator: () => Iterator,
-  KeyOf: () => KeyOf,
-  Literal: () => Literal,
-  Lowercase: () => Lowercase,
-  Mapped: () => Mapped,
-  Module: () => Module,
-  Never: () => Never,
-  Not: () => Not2,
-  Null: () => Null,
-  Number: () => Number2,
-  Object: () => Object2,
-  Omit: () => Omit,
-  Optional: () => Optional,
-  Parameters: () => Parameters,
-  Partial: () => Partial,
-  Pick: () => Pick,
-  Promise: () => Promise2,
-  Readonly: () => Readonly,
-  ReadonlyOptional: () => ReadonlyOptional,
-  Record: () => Record,
-  Recursive: () => Recursive,
-  Ref: () => Ref,
-  RegExp: () => RegExp2,
-  Required: () => Required,
-  Rest: () => Rest,
-  ReturnType: () => ReturnType,
-  String: () => String2,
-  Symbol: () => Symbol2,
-  TemplateLiteral: () => TemplateLiteral,
-  Transform: () => Transform,
-  Tuple: () => Tuple,
-  Uint8Array: () => Uint8Array2,
-  Uncapitalize: () => Uncapitalize,
-  Undefined: () => Undefined,
-  Union: () => Union,
-  Unknown: () => Unknown,
-  Unsafe: () => Unsafe,
-  Uppercase: () => Uppercase,
-  Void: () => Void
-});
-
-// node_modules/@sinclair/typebox/build/esm/type/type/index.mjs
-var Type = type_exports3;
-
-// src/spec/common.ts
-var AxisSpecSchema = Type.Object({
-  label: Type.String(),
-  domain: Type.Optional(Type.Tuple([Type.Number(), Type.Number()]))
-});
-var ReferenceLineSpecSchema = Type.Object({
-  type: Type.Union([
-    Type.Literal("identity"),
-    Type.Literal("horizontal"),
-    Type.Literal("vertical")
-  ]),
-  value: Type.Optional(Type.Number())
-});
-var BaseChartSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("1.0"),
-  title: Type.Optional(Type.String()),
-  xAxis: AxisSpecSchema,
-  yAxis: AxisSpecSchema,
-  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
-});
-
-// src/spec/calibration.ts
-var CalibrationDatumSchema = Type.Object({
-  model: Type.String(),
-  population: Type.Optional(Type.String()),
-  horizon: Type.Optional(Type.Number()),
-  predicted: Type.Number({ minimum: 0, maximum: 1 }),
-  observed: Type.Number({ minimum: 0, maximum: 1 }),
-  method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
-  events: Type.Optional(Type.Number({ minimum: 0 })),
-  total: Type.Optional(Type.Number({ minimum: 0 }))
-});
-var CalibrationDistributionDatumSchema = Type.Object({
-  model: Type.String(),
-  population: Type.Optional(Type.String()),
-  horizon: Type.Optional(Type.Number()),
-  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
-  count: Type.Number({ minimum: 0 }),
-  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 })
-});
-var CalibrationSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("1.0"),
-  type: Type.Literal("calibration"),
-  data: Type.Array(CalibrationDatumSchema),
-  distribution: Type.Optional(Type.Array(CalibrationDistributionDatumSchema)),
-  x: Type.Literal("predicted"),
-  y: Type.Literal("observed"),
-  xAxis: AxisSpecSchema,
-  yAxis: AxisSpecSchema,
-  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
-});
-
-// src/spec/roc.ts
-var RocDatumSchema = Type.Object({
-  model: Type.String(),
-  population: Type.Optional(Type.String()),
-  horizon: Type.Optional(Type.Number()),
-  cutoff: Type.Number(),
-  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
-  specificity: Type.Number({ minimum: 0, maximum: 1 })
-});
-var RocSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("1.0"),
-  type: Type.Literal("roc"),
-  data: Type.Array(RocDatumSchema),
-  x: Type.Literal("false_positive_rate"),
-  y: Type.Literal("sensitivity"),
-  xAxis: AxisSpecSchema,
-  yAxis: AxisSpecSchema,
-  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
-});
-
-// src/spec/chart.ts
-var RtichokeChartSpecSchema = Type.Union([
-  RocSpecSchema,
-  CalibrationSpecSchema
-], {
-  $id: "https://rtichoke.dev/schema/viz/1.0.json",
-  title: "rtichoke visualization specification"
-});
-
-// src/spec/v2/common.ts
-var EvaluationSpecSchema = Type.Object({
-  id: Type.String(),
-  model: Type.Optional(Type.String()),
-  population: Type.String(),
-  label: Type.Optional(Type.String())
-});
-var DisplayRoleSchema = Type.Union([
-  Type.Literal("model"),
-  Type.Literal("population"),
-  Type.Literal("evaluation"),
-  Type.Literal("context")
-]);
-var DisplayGroupingSpecSchema = Type.Object({
-  label: Type.String(),
-  group: Type.String(),
-  role: DisplayRoleSchema
-});
-var SeriesSpecSchema = Type.Object({
-  id: Type.String(),
-  evaluationId: Type.String(),
-  horizon: Type.Optional(Type.Number({ minimum: 0 })),
-  display: DisplayGroupingSpecSchema
-});
-var ReferencePointSchema = Type.Object({
-  x: Type.Number(),
-  y: Type.Number()
-});
-var ReferenceGeometrySchema = Type.Union([
-  Type.Object({
-    type: Type.Literal("identity"),
-    label: Type.Optional(Type.String())
-  }),
-  Type.Object({
-    type: Type.Literal("horizontal"),
-    value: Type.Number(),
-    label: Type.Optional(Type.String())
-  }),
-  Type.Object({
-    type: Type.Literal("vertical"),
-    value: Type.Number(),
-    label: Type.Optional(Type.String())
-  }),
-  Type.Object({
-    type: Type.Literal("path"),
-    points: Type.Array(ReferencePointSchema, { minItems: 2 }),
-    label: Type.Optional(Type.String())
-  })
-]);
-var GlobalReferenceLineSpecSchema = Type.Intersect([
-  ReferenceGeometrySchema,
-  Type.Object({ scope: Type.Literal("global") })
-]);
-var PopulationReferenceLineSpecSchema = Type.Intersect([
-  ReferenceGeometrySchema,
-  Type.Object({
-    scope: Type.Literal("population"),
-    population: Type.String()
-  })
-]);
-var PopulationHorizonReferenceLineSpecSchema = Type.Intersect([
-  ReferenceGeometrySchema,
-  Type.Object({
-    scope: Type.Literal("population_horizon"),
-    population: Type.String(),
-    horizon: Type.Number({ minimum: 0 })
-  })
-]);
-var ReferenceLineV2SpecSchema = Type.Union([
-  GlobalReferenceLineSpecSchema,
-  PopulationReferenceLineSpecSchema,
-  PopulationHorizonReferenceLineSpecSchema
-]);
-var BaseChartV2SpecSchema = Type.Object({
-  schemaVersion: Type.Literal("2.0"),
-  title: Type.Optional(Type.String()),
-  evaluations: Type.Array(EvaluationSpecSchema),
-  series: Type.Array(SeriesSpecSchema),
-  xAxis: AxisSpecSchema,
-  yAxis: AxisSpecSchema,
-  references: Type.Optional(Type.Array(ReferenceLineV2SpecSchema))
-});
-var OperatingPointDimensionSchema = Type.Union([
-  Type.Literal("probability_threshold"),
-  Type.Literal("ppcr")
-]);
-var OperatingPointSpecSchema = Type.Object({
-  operatingPoint: Type.Optional(
-    Type.Object({
-      dimension: OperatingPointDimensionSchema
-    })
-  )
-});
-var ThresholdOperatingPointSpecSchema = Type.Object({
-  operatingPoint: Type.Optional(
-    Type.Object({
-      dimension: Type.Literal("probability_threshold")
-    })
-  )
-});
-
-// src/spec/v2/calibration.ts
-var DiscreteCalibrationV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  predicted: Type.Number({ minimum: 0, maximum: 1 }),
-  observed: Type.Number({ minimum: 0, maximum: 1 }),
-  method: Type.Literal("discrete"),
-  events: Type.Optional(Type.Number({ minimum: 0 })),
-  total: Type.Optional(Type.Number({ minimum: 0 }))
-});
-var SmoothCalibrationV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  predicted: Type.Number({ minimum: 0, maximum: 1 }),
-  observed: Type.Number(),
-  method: Type.Literal("smooth"),
-  events: Type.Optional(Type.Number({ minimum: 0 })),
-  total: Type.Optional(Type.Number({ minimum: 0 }))
-});
-var CalibrationV2DatumSchema = Type.Union([
-  DiscreteCalibrationV2DatumSchema,
-  SmoothCalibrationV2DatumSchema
-]);
-var CalibrationV2DistributionDatumSchema = Type.Object({
-  seriesId: Type.String(),
-  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
-  count: Type.Number({ minimum: 0 }),
-  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 })
-});
-var CalibrationV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  Type.Object({
-    type: Type.Literal("calibration"),
-    data: Type.Array(CalibrationV2DatumSchema),
-    distribution: Type.Optional(Type.Array(CalibrationV2DistributionDatumSchema)),
-    x: Type.Literal("predicted"),
-    y: Type.Literal("observed")
-  })
-]);
-
-// src/spec/v2/performance-table.ts
-var PerformanceMetricIdSchema = Type.Union([
-  Type.Literal("true_positives"),
-  Type.Literal("true_negatives"),
-  Type.Literal("false_positives"),
-  Type.Literal("false_negatives"),
-  Type.Literal("sensitivity"),
-  Type.Literal("specificity"),
-  Type.Literal("false_positive_rate"),
-  Type.Literal("ppv"),
-  Type.Literal("npv"),
-  Type.Literal("lift"),
-  Type.Literal("predicted_positives"),
-  Type.Literal("ppcr"),
-  Type.Literal("net_benefit"),
-  Type.Literal("net_benefit_interventions_avoided")
-]);
-var PerformanceMetricDefinitionSchema = Type.Object({
-  id: PerformanceMetricIdSchema,
-  label: Type.String()
-});
-var PerformanceMetricValueSchema = Type.Object({
-  metricId: PerformanceMetricIdSchema,
-  estimate: Type.Union([Type.Number(), Type.Null()]),
-  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
-});
-var OperatingPointSchema = Type.Union([
-  Type.Object({
-    type: Type.Literal("probability_threshold"),
-    value: Type.Number()
-  }),
-  Type.Object({
-    type: Type.Literal("ppcr"),
-    value: Type.Number({ minimum: 0, maximum: 1 })
-  })
-]);
-var PerformanceEvaluationContextSchema = Type.Object({
-  censoringHeuristic: Type.Optional(Type.String()),
-  competingEventHeuristic: Type.Optional(Type.String())
-});
-var PerformanceTableRowSchema = Type.Object({
-  evaluationId: Type.String(),
-  horizon: Type.Optional(Type.Number({ minimum: 0 })),
-  operatingPoint: OperatingPointSchema,
-  context: Type.Optional(PerformanceEvaluationContextSchema),
-  values: Type.Array(PerformanceMetricValueSchema)
-});
-var PerformanceTableSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("2.0"),
-  type: Type.Literal("performance_table"),
-  title: Type.Optional(Type.String()),
-  evaluations: Type.Array(EvaluationSpecSchema),
-  metrics: Type.Array(PerformanceMetricDefinitionSchema),
-  rows: Type.Array(PerformanceTableRowSchema)
-});
-
-// src/spec/v2/decision-curve.ts
-var DecisionCurveV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  threshold: Type.Number({ minimum: 0, maximum: 1 }),
-  netBenefit: Type.Number(),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var DecisionCurveV2EvaluationSchema = Type.Intersect([
-  EvaluationSpecSchema,
-  Type.Object({ id: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" }) })
-]);
-var DecisionCurveV2SeriesSchema = Type.Intersect([
-  SeriesSpecSchema,
-  Type.Object({
-    id: Type.String({ pattern: "^series-[1-9][0-9]*$" }),
-    evaluationId: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" })
-  })
-]);
-var TreatNoneReferenceSchema = Type.Object({
-  type: Type.Literal("horizontal"),
-  value: Type.Literal(0),
-  label: Type.Optional(Type.String()),
-  scope: Type.Literal("global"),
-  benchmark: Type.Literal("treat_none")
-});
-var TreatAllGeometry = {
-  type: Type.Literal("path"),
-  points: Type.Array(
-    Type.Object({ x: Type.Number(), y: Type.Number() }),
-    { minItems: 2 }
-  ),
-  label: Type.Optional(Type.String()),
-  benchmark: Type.Literal("treat_all")
-};
-var TreatAllReferenceSchema = Type.Union([
-  Type.Object({
-    ...TreatAllGeometry,
-    scope: Type.Literal("population"),
-    population: Type.String()
-  }),
-  Type.Object({
-    ...TreatAllGeometry,
-    scope: Type.Literal("population_horizon"),
-    population: Type.String(),
-    horizon: Type.Number({ minimum: 0 })
-  })
-]);
-var DecisionCurveV2ReferenceSchema = Type.Union([
-  TreatNoneReferenceSchema,
-  TreatAllReferenceSchema
-]);
-var DecisionCurveV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  ThresholdOperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("decision_curve"),
-    evaluations: Type.Array(DecisionCurveV2EvaluationSchema, { minItems: 1 }),
-    series: Type.Array(DecisionCurveV2SeriesSchema, { minItems: 1 }),
-    data: Type.Array(DecisionCurveV2DatumSchema),
-    x: Type.Literal("threshold"),
-    y: Type.Literal("netBenefit"),
-    references: Type.Array(DecisionCurveV2ReferenceSchema, { minItems: 2 })
-  })
-]);
-
-// src/spec/v2/gains.ts
-var GainsV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  cutoff: Type.Number(),
-  ppcr: Type.Number({ minimum: 0, maximum: 1 }),
-  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var GainsV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  OperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("gains"),
-    data: Type.Array(GainsV2DatumSchema),
-    x: Type.Literal("ppcr"),
-    y: Type.Literal("sensitivity")
-  })
-]);
-
-// src/spec/v2/interventions-avoided.ts
-var InterventionsAvoidedV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  threshold: Type.Number({ minimum: 0, maximum: 1 }),
-  interventionsAvoided: Type.Number(),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var InterventionsAvoidedV2EvaluationSchema = Type.Intersect([
-  EvaluationSpecSchema,
-  Type.Object({ id: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" }) })
-]);
-var InterventionsAvoidedV2SeriesSchema = Type.Intersect([
-  SeriesSpecSchema,
-  Type.Object({
-    id: Type.String({ pattern: "^series-[1-9][0-9]*$" }),
-    evaluationId: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" })
-  })
-]);
-var InterventionsAvoidedTreatAllReferenceSchema = Type.Object({
-  type: Type.Literal("horizontal"),
-  value: Type.Literal(0),
-  label: Type.Optional(Type.String()),
-  scope: Type.Literal("global"),
-  benchmark: Type.Literal("treat_all")
-});
-var TreatNoneGeometry = {
-  type: Type.Literal("path"),
-  points: Type.Array(
-    Type.Object({ x: Type.Number(), y: Type.Number() }),
-    { minItems: 2 }
-  ),
-  label: Type.Optional(Type.String()),
-  benchmark: Type.Literal("treat_none")
-};
-var InterventionsAvoidedTreatNoneReferenceSchema = Type.Union([
-  Type.Object({
-    ...TreatNoneGeometry,
-    scope: Type.Literal("population"),
-    population: Type.String()
-  }),
-  Type.Object({
-    ...TreatNoneGeometry,
-    scope: Type.Literal("population_horizon"),
-    population: Type.String(),
-    horizon: Type.Number({ minimum: 0 })
-  })
-]);
-var InterventionsAvoidedV2ReferenceSchema = Type.Union([
-  InterventionsAvoidedTreatAllReferenceSchema,
-  InterventionsAvoidedTreatNoneReferenceSchema
-]);
-var InterventionsAvoidedV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  ThresholdOperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("interventions_avoided"),
-    evaluations: Type.Array(InterventionsAvoidedV2EvaluationSchema, { minItems: 1 }),
-    series: Type.Array(InterventionsAvoidedV2SeriesSchema, { minItems: 1 }),
-    data: Type.Array(InterventionsAvoidedV2DatumSchema),
-    x: Type.Literal("threshold"),
-    y: Type.Literal("interventionsAvoided"),
-    references: Type.Array(InterventionsAvoidedV2ReferenceSchema, { minItems: 2 })
-  })
-]);
-
-// src/spec/v2/lift.ts
-var LiftV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  cutoff: Type.Number(),
-  ppcr: Type.Number({ minimum: 0, maximum: 1 }),
-  lift: Type.Number(),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var LiftV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  OperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("lift"),
-    data: Type.Array(LiftV2DatumSchema),
-    x: Type.Literal("ppcr"),
-    y: Type.Literal("lift")
-  })
-]);
-
-// src/spec/v2/precision_recall.ts
-var PrecisionRecallV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  cutoff: Type.Number(),
-  ppcr: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
-  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
-  ppv: Type.Number({ minimum: 0, maximum: 1 }),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var PrecisionRecallV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  OperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("precision_recall"),
-    data: Type.Array(PrecisionRecallV2DatumSchema),
-    x: Type.Literal("sensitivity"),
-    y: Type.Literal("ppv")
-  })
-]);
-
-// src/spec/v2/state-distribution.ts
-var OutcomeStateSchema = Type.Object({
-  stateId: Type.String(),
-  label: Type.Optional(Type.String()),
-  estimate: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  mass: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  count: Type.Optional(Type.Union([Type.Integer(), Type.Null()])),
-  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
-});
-var StateStratumSchema = Type.Object({
-  type: Type.String(),
-  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  includeLower: Type.Optional(Type.Boolean()),
-  includeUpper: Type.Optional(Type.Boolean()),
-  rankLower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  rankUpper: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  operatingPointType: Type.Optional(Type.String()),
-  cutoff: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  value: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  realizedPpcr: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
-});
-var StateDistributionSchema = Type.Object({
-  evaluationId: Type.String(),
-  horizon: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
-  estimator: Type.String(),
-  estimateOrigin: Type.Optional(
-    Type.Union([
-      Type.Literal("event_table"),
-      Type.Literal("fixed_time_horizon"),
-      Type.Literal("observed_step")
-    ])
-  ),
-  stratum: Type.Optional(StateStratumSchema),
-  region: Type.Optional(Type.String()),
-  censoringHeuristic: Type.Optional(Type.String()),
-  competingHeuristic: Type.Optional(Type.String()),
-  states: Type.Array(OutcomeStateSchema, { minItems: 1 }),
-  regimeId: Type.Optional(Type.String()),
-  interventionId: Type.Optional(Type.String()),
-  estimand: Type.Optional(Type.String()),
-  contrastId: Type.Optional(Type.String())
-});
-
-// src/spec/v2/prediction-distribution.ts
-var PredictionDistributionBinSchema = Type.Object({
-  evaluationId: Type.String(),
-  lower: Type.Number({ minimum: 0, maximum: 1 }),
-  upper: Type.Number({ minimum: 0, maximum: 1 }),
-  includeLower: Type.Boolean(),
-  includeUpper: Type.Boolean(),
-  nPositive: Type.Integer({ minimum: 0 }),
-  nNegative: Type.Integer({ minimum: 0 })
-});
-var PredictionDistributionRankBinSchema = Type.Object({
-  evaluationId: Type.String(),
-  rankLower: Type.Number({ minimum: 0, maximum: 1 }),
-  rankUpper: Type.Number({ minimum: 0, maximum: 1 }),
-  positiveMass: Type.Number({ minimum: 0 }),
-  negativeMass: Type.Number({ minimum: 0 })
-});
-var PredictionDistributionOperatingPointSchema = Type.Object({
-  evaluationId: Type.String(),
-  type: OperatingPointDimensionSchema,
-  value: Type.Number({ minimum: 0, maximum: 1 }),
-  cutoff: Type.Number({ minimum: 0, maximum: 1 }),
-  realizedPpcr: Type.Number({ minimum: 0, maximum: 1 }),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var PredictionDistributionSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("2.0"),
-  type: Type.Literal("prediction_distribution"),
-  title: Type.Optional(Type.String()),
-  evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
-  operatingPoint: Type.Optional(
-    Type.Object({
-      dimension: OperatingPointDimensionSchema
-    })
-  ),
-  bins: Type.Array(PredictionDistributionBinSchema, { minItems: 1 }),
-  rankBins: Type.Optional(Type.Array(PredictionDistributionRankBinSchema)),
-  operatingPoints: Type.Array(PredictionDistributionOperatingPointSchema, {
-    minItems: 1
-  }),
-  stateDistributions: Type.Optional(Type.Array(StateDistributionSchema))
-});
-
-// src/spec/v2/roc.ts
-var RocV2DatumSchema = Type.Object({
-  seriesId: Type.String(),
-  cutoff: Type.Number(),
-  ppcr: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
-  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
-  specificity: Type.Number({ minimum: 0, maximum: 1 }),
-  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
-});
-var RocV2SpecSchema = Type.Intersect([
-  BaseChartV2SpecSchema,
-  OperatingPointSpecSchema,
-  Type.Object({
-    type: Type.Literal("roc"),
-    data: Type.Array(RocV2DatumSchema),
-    x: Type.Literal("false_positive_rate"),
-    y: Type.Literal("sensitivity")
-  })
-]);
-
-// src/spec/v2/chart.ts
-var RtichokeChartSpecV2Schema = Type.Union(
-  [
-    RocV2SpecSchema,
-    CalibrationV2SpecSchema,
-    PrecisionRecallV2SpecSchema,
-    GainsV2SpecSchema,
-    LiftV2SpecSchema,
-    DecisionCurveV2SpecSchema,
-    InterventionsAvoidedV2SpecSchema,
-    PredictionDistributionSpecSchema
-  ],
-  {
-    $id: "https://rtichoke.dev/schema/viz/2.0.json",
-    title: "rtichoke visualization specification v2"
-  }
-);
-
-// src/spec/v2/summary-metrics.ts
-var PopulationSummaryOwnerSpecSchema = Type.Object({
-  id: Type.String(),
-  label: Type.String()
-});
-var AUROCSummaryMetricSchema = Type.Object({
-  metric: Type.Literal("auroc"),
-  owner: Type.Object({
-    type: Type.Literal("evaluation"),
-    evaluationId: Type.String()
-  }),
-  estimate: Type.Union([Type.Number(), Type.Null()])
-});
-var PrevalenceSummaryMetricSchema = Type.Object({
-  metric: Type.Literal("prevalence"),
-  owner: Type.Object({
-    type: Type.Literal("population"),
-    populationId: Type.String()
-  }),
-  estimate: Type.Union([Type.Number(), Type.Null()])
-});
-var EventRiskSummaryMetricSchema = Type.Object({
-  metric: Type.Literal("event_risk"),
-  owner: Type.Object({
-    type: Type.Literal("population"),
-    populationId: Type.String()
-  }),
-  horizon: Type.Number({ minimum: 0 }),
-  estimate: Type.Union([Type.Number(), Type.Null()])
-});
-var SummaryMetricV1_0Schema = Type.Union([
-  AUROCSummaryMetricSchema,
-  PrevalenceSummaryMetricSchema
-]);
-var SummaryMetricV1_1Schema = Type.Union([
-  AUROCSummaryMetricSchema,
-  PrevalenceSummaryMetricSchema,
-  EventRiskSummaryMetricSchema
-]);
-var SummaryMetricsSpecV1_0Schema = Type.Object({
-  schemaVersion: Type.Literal("1.0"),
-  type: Type.Literal("summary_metrics"),
-  title: Type.Optional(Type.String()),
-  evaluations: Type.Array(EvaluationSpecSchema),
-  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
-  metrics: Type.Array(SummaryMetricV1_0Schema)
-});
-var SummaryMetricsSpecV1_1Schema = Type.Object({
-  schemaVersion: Type.Literal("1.1"),
-  type: Type.Literal("summary_metrics"),
-  title: Type.Optional(Type.String()),
-  evaluations: Type.Array(EvaluationSpecSchema),
-  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
-  metrics: Type.Array(SummaryMetricV1_1Schema)
-});
-var SummaryMetricsSpecSchema = Type.Union(
-  [SummaryMetricsSpecV1_0Schema, SummaryMetricsSpecV1_1Schema],
-  {
-    $id: "https://rtichoke.dev/schema/viz/summary-metrics.json",
-    title: "rtichoke summary metrics specification"
-  }
-);
-
-// src/spec/v2/heuristics.ts
-var HeuristicPairKeySchema = Type.Union([
-  Type.Literal("excluded:excluded"),
-  Type.Literal("excluded:adjusted_as_censored"),
-  Type.Literal("excluded:adjusted_as_negative"),
-  Type.Literal("excluded:adjusted_as_composite"),
-  Type.Literal("adjusted:excluded"),
-  Type.Literal("adjusted:adjusted_as_censored"),
-  Type.Literal("adjusted:adjusted_as_negative"),
-  Type.Literal("adjusted:adjusted_as_composite")
-]);
-var ReportHeuristicsSchema = Type.Object({
-  active: HeuristicPairKeySchema,
-  available: Type.Array(HeuristicPairKeySchema, { minItems: 1 })
-});
-
-// src/spec/v2/outcome-distribution.ts
-var HorizonExclusionCountsSchema = Type.Object({
-  horizon: Type.Number(),
-  censoredExcludedCount: Type.Integer({ minimum: 0 }),
-  competingExcludedCount: Type.Integer({ minimum: 0 })
-});
-var PopulationExclusionSchema = Type.Object({
-  evaluationId: Type.String(),
-  originalSampleSize: Type.Integer({ minimum: 1 }),
-  excludedCounts: Type.Array(HorizonExclusionCountsSchema)
-});
-var OutcomeDistributionAvailableVariantSchema = Type.Object({
-  status: Type.Literal("available"),
-  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
-  exclusions: Type.Array(PopulationExclusionSchema)
-});
-var OutcomeDistributionUnsupportedVariantSchema = Type.Object({
-  status: Type.Literal("unsupported")
-});
-var OutcomeDistributionVariantSchema = Type.Union([
-  OutcomeDistributionAvailableVariantSchema,
-  OutcomeDistributionUnsupportedVariantSchema
-]);
-var OutcomeDistributionVariantsRecordSchema = Type.Partial(
-  Type.Record(HeuristicPairKeySchema, OutcomeDistributionVariantSchema)
-);
-var OutcomeDistributionSpecSchema = Type.Object({
-  schemaVersion: Type.Literal("2.0"),
-  type: Type.Literal("outcome_distribution"),
-  title: Type.Optional(Type.String()),
-  stateScale: Type.Optional(
-    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
-  ),
-  evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
-  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
-  exclusions: Type.Optional(Type.Array(PopulationExclusionSchema)),
-  variants: Type.Optional(OutcomeDistributionVariantsRecordSchema)
-});
-
-// src/spec/report.ts
-var StandaloneCanonicalSpecSchema = Type.Union([
-  RtichokeChartSpecV2Schema,
-  PerformanceTableSpecSchema,
-  SummaryMetricsSpecSchema,
-  PredictionDistributionSpecSchema,
-  OutcomeDistributionSpecSchema
-]);
-var ReportComponentSchema = Type.Object({
-  id: Type.String(),
-  title: Type.Optional(Type.String()),
-  spec: StandaloneCanonicalSpecSchema
-});
-var ReportSpecV1_0Schema = Type.Object({
-  schemaVersion: Type.Literal("1.0"),
-  type: Type.Literal("report"),
-  title: Type.Optional(Type.String()),
-  components: Type.Array(ReportComponentSchema, { minItems: 1 })
-});
-var ReportComponentV1_1Schema = Type.Object({
-  type: Type.Literal("component"),
-  id: Type.String(),
-  title: Type.Optional(Type.String()),
-  spec: StandaloneCanonicalSpecSchema
-});
-var ReportGroupSchema = Type.Object({
-  type: Type.Literal("group"),
-  id: Type.String(),
-  title: Type.String(),
-  components: Type.Array(ReportComponentV1_1Schema, { minItems: 1 })
-});
-var ReportSectionSchema = Type.Object({
-  id: Type.String(),
-  title: Type.String(),
-  items: Type.Array(
-    Type.Union([ReportComponentV1_1Schema, ReportGroupSchema]),
-    { minItems: 1 }
-  )
-});
-var ReportSpecV1_1Schema = Type.Object({
-  schemaVersion: Type.Literal("1.1"),
-  type: Type.Literal("report"),
-  title: Type.Optional(Type.String()),
-  heuristics: Type.Optional(ReportHeuristicsSchema),
-  sections: Type.Array(ReportSectionSchema, { minItems: 1 })
-});
-var ReportSpecSchema = Type.Union(
-  [ReportSpecV1_0Schema, ReportSpecV1_1Schema],
-  {
-    $id: "https://rtichoke.dev/schema/viz/report.json",
-    title: "rtichoke report specification"
-  }
-);
-
-// src/spec/validate-report.ts
-var VALID_HEURISTIC_PAIR_KEYS = /* @__PURE__ */ new Set([
-  "excluded:excluded",
-  "excluded:adjusted_as_censored",
-  "excluded:adjusted_as_negative",
-  "excluded:adjusted_as_composite",
-  "adjusted:excluded",
-  "adjusted:adjusted_as_censored",
-  "adjusted:adjusted_as_negative",
-  "adjusted:adjusted_as_composite"
-]);
-function assertReportReferentialIntegrity(spec) {
-  const componentIds = /* @__PURE__ */ new Set();
-  const assertUniqueComponent = (component) => {
-    if (componentIds.has(component.id)) {
-      throw new Error(`duplicate component id: ${component.id}`);
-    }
-    componentIds.add(component.id);
-  };
-  if (spec.schemaVersion === "1.0") {
-    for (const component of spec.components) assertUniqueComponent(component);
-    return;
-  }
-  let reportAvailableHeuristics;
-  if (spec.heuristics) {
-    const { active, available } = spec.heuristics;
-    if (!available || available.length === 0) {
-      throw new Error("heuristics.available must be non-empty");
-    }
-    const availableSet = /* @__PURE__ */ new Set();
-    for (const key of available) {
-      if (!VALID_HEURISTIC_PAIR_KEYS.has(key)) {
-        throw new Error(`invalid heuristic pair key: '${key}'`);
-      }
-      if (availableSet.has(key)) {
-        throw new Error(`duplicate heuristic pair key in available: '${key}'`);
-      }
-      availableSet.add(key);
-    }
-    if (!VALID_HEURISTIC_PAIR_KEYS.has(active)) {
-      throw new Error(`invalid active heuristic pair key: '${active}'`);
-    }
-    if (!availableSet.has(active)) {
-      throw new Error(
-        `active heuristic '${active}' must be present in available heuristics`
-      );
-    }
-    reportAvailableHeuristics = availableSet;
-  }
-  const validateComponentVariants = (component) => {
-    assertUniqueComponent(component);
-    if (reportAvailableHeuristics && component.spec.type === "outcome_distribution" && component.spec.variants) {
-      for (const variantKey of Object.keys(component.spec.variants)) {
-        if (!reportAvailableHeuristics.has(variantKey)) {
-          throw new Error(
-            `component '${component.id}' variant '${variantKey}' is not declared in report heuristics.available`
-          );
-        }
-      }
-    }
-  };
-  const sectionIds = /* @__PURE__ */ new Set();
-  const groupIds = /* @__PURE__ */ new Set();
-  for (const section of spec.sections) {
-    if (sectionIds.has(section.id)) {
-      throw new Error(`duplicate section id: ${section.id}`);
-    }
-    sectionIds.add(section.id);
-    for (const item of section.items) {
-      if (item.type === "component") {
-        validateComponentVariants(item);
-        continue;
-      }
-      if (groupIds.has(item.id)) {
-        throw new Error(`duplicate group id: ${item.id}`);
-      }
-      groupIds.add(item.id);
-      for (const component of item.components) {
-        validateComponentVariants(component);
-      }
-    }
-  }
-}
-
-// src/spec/v2/validate-performance-table.ts
-function assertPerformanceTableReferentialIntegrity(spec) {
-  const evaluationIds = /* @__PURE__ */ new Set();
-  for (const evaluation of spec.evaluations) {
-    if (evaluationIds.has(evaluation.id)) {
-      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
-    }
-    evaluationIds.add(evaluation.id);
-  }
-  const metricIds = /* @__PURE__ */ new Set();
-  for (const metric of spec.metrics) {
-    if (metricIds.has(metric.id)) {
-      throw new Error(`duplicate metric id: ${metric.id}`);
-    }
-    metricIds.add(metric.id);
-  }
-  for (const row of spec.rows) {
-    if (!evaluationIds.has(row.evaluationId)) {
-      throw new Error(`unknown evaluation id: ${row.evaluationId}`);
-    }
-    for (const value of row.values) {
-      if (!metricIds.has(value.metricId)) {
-        throw new Error(`unknown metric id: ${value.metricId}`);
-      }
-    }
-  }
-}
-
-// src/spec/v2/validate-outcome-distribution.ts
-var VALID_HEURISTIC_PAIR_KEYS2 = /* @__PURE__ */ new Set([
-  "excluded:excluded",
-  "excluded:adjusted_as_censored",
-  "excluded:adjusted_as_negative",
-  "excluded:adjusted_as_composite",
-  "adjusted:excluded",
-  "adjusted:adjusted_as_censored",
-  "adjusted:adjusted_as_negative",
-  "adjusted:adjusted_as_composite"
-]);
-function assertPopulationExclusionValid(exclusion, validEvaluationIds) {
-  if (validEvaluationIds && !validEvaluationIds.has(exclusion.evaluationId)) {
-    throw new Error(`unknown evaluation id: ${exclusion.evaluationId}`);
-  }
-  if (!Number.isInteger(exclusion.originalSampleSize) || exclusion.originalSampleSize <= 0) {
-    throw new Error(
-      `originalSampleSize must be a positive integer for evaluation ${exclusion.evaluationId}`
-    );
-  }
-  const seenHorizons = /* @__PURE__ */ new Set();
-  for (const counts of exclusion.excludedCounts) {
-    if (!Number.isFinite(counts.horizon) || counts.horizon < 0) {
-      throw new Error(
-        `horizon must be non-negative in excludedCounts for evaluation ${exclusion.evaluationId}`
-      );
-    }
-    if (seenHorizons.has(counts.horizon)) {
-      throw new Error(
-        `duplicate horizon ${counts.horizon} in excludedCounts for evaluation ${exclusion.evaluationId}`
-      );
-    }
-    seenHorizons.add(counts.horizon);
-    if (!Number.isInteger(counts.censoredExcludedCount) || counts.censoredExcludedCount < 0) {
-      throw new Error(
-        `censoredExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
-      );
-    }
-    if (!Number.isInteger(counts.competingExcludedCount) || counts.competingExcludedCount < 0) {
-      throw new Error(
-        `competingExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
-      );
-    }
-    const totalExcluded = counts.censoredExcludedCount + counts.competingExcludedCount;
-    if (totalExcluded > exclusion.originalSampleSize) {
-      throw new Error(
-        `total excluded count (${totalExcluded}) exceeds original sample size (${exclusion.originalSampleSize}) for evaluation ${exclusion.evaluationId} at horizon ${counts.horizon}`
-      );
-    }
-  }
-}
-function assertStateDistributionValid(dist, validEvaluationIds) {
-  if (validEvaluationIds && !validEvaluationIds.has(dist.evaluationId)) {
-    throw new Error(`unknown evaluation id: ${dist.evaluationId}`);
-  }
-  if (dist.horizon !== void 0 && dist.horizon !== null && (!Number.isFinite(dist.horizon) || dist.horizon < 0)) {
-    throw new Error(
-      `horizon must be finite and non-negative for evaluation ${dist.evaluationId}`
-    );
-  }
-  if (dist.estimateOrigin === "observed_step") {
-    if (dist.horizon === void 0 || dist.horizon === null || !Number.isInteger(dist.horizon) || dist.horizon < 0) {
-      throw new Error(
-        `step (horizon) must be a non-negative integer for observed_step in evaluation ${dist.evaluationId}`
-      );
-    }
-    if (dist.estimator !== "raw" && dist.estimator !== "aalen_johansen") {
-      throw new Error(
-        `unsupported estimator '${dist.estimator}' for observed_step in evaluation ${dist.evaluationId}`
-      );
-    }
-  }
-  if (dist.estimateOrigin !== void 0 && dist.estimateOrigin !== null && dist.estimateOrigin !== "event_table" && dist.estimateOrigin !== "fixed_time_horizon" && dist.estimateOrigin !== "observed_step") {
-    throw new Error(
-      `invalid estimateOrigin '${dist.estimateOrigin}' for evaluation ${dist.evaluationId}`
-    );
-  }
-  if (!dist.states || dist.states.length === 0) {
-    throw new Error(`states must be non-empty for evaluation ${dist.evaluationId}`);
-  }
-  if (dist.estimateOrigin === "observed_step") {
-    if (dist.estimator === "raw") {
-      let totalCount = 0;
-      for (const state of dist.states) {
-        if (state.count === void 0 || state.count === null) {
-          throw new Error(
-            `count is required for state ${state.stateId} when estimator is 'raw' in observed_step`
-          );
-        }
-        if (!Number.isInteger(state.count) || state.count < 0) {
-          throw new Error(
-            `count must be a non-negative integer for state ${state.stateId}`
-          );
-        }
-        totalCount += state.count;
-      }
-      if (totalCount === 0) {
-        throw new Error(
-          `total observed count across states must be greater than zero for step ${dist.horizon}`
-        );
-      }
-    } else if (dist.estimator === "aalen_johansen") {
-      let sumEstimate = 0;
-      for (const state of dist.states) {
-        if (state.estimate === void 0 || state.estimate === null) {
-          throw new Error(
-            `estimate is required for state ${state.stateId} when estimator is 'aalen_johansen' in observed_step`
-          );
-        }
-        if (!Number.isFinite(state.estimate) || state.estimate < 0 || state.estimate > 1) {
-          throw new Error(
-            `estimate must be a finite probability in [0, 1] for state ${state.stateId}`
-          );
-        }
-        sumEstimate += state.estimate;
-      }
-      if (Math.abs(sumEstimate - 1) > 1e-8) {
-        throw new Error(
-          `occupancy estimates across states must sum to 1.0 (got ${sumEstimate}) for step ${dist.horizon}`
-        );
-      }
-    }
-  }
-  for (const state of dist.states) {
-    if (state.estimate !== void 0 && state.estimate !== null) {
-      if (!Number.isFinite(state.estimate) || state.estimate < 0 || state.estimate > 1) {
-        throw new Error(
-          `estimate must be a finite probability in [0, 1] for state ${state.stateId}`
-        );
-      }
-    }
-    if (state.lower !== void 0 && state.lower !== null) {
-      if (!Number.isFinite(state.lower) || state.lower < 0 || state.lower > 1) {
-        throw new Error(
-          `lower bound must be a finite probability in [0, 1] for state ${state.stateId}`
-        );
-      }
-    }
-    if (state.upper !== void 0 && state.upper !== null) {
-      if (!Number.isFinite(state.upper) || state.upper < 0 || state.upper > 1) {
-        throw new Error(
-          `upper bound must be a finite probability in [0, 1] for state ${state.stateId}`
-        );
-      }
-    }
-    if (state.lower !== void 0 && state.lower !== null && state.upper !== void 0 && state.upper !== null) {
-      if (state.lower > state.upper) {
-        throw new Error(
-          `lower bound ${state.lower} cannot exceed upper bound ${state.upper} for state ${state.stateId}`
-        );
-      }
-    }
-    if (state.mass !== void 0 && state.mass !== null) {
-      if (!Number.isFinite(state.mass) || state.mass < 0) {
-        throw new Error(
-          `mass must be finite and non-negative for state ${state.stateId}`
-        );
-      }
-    }
-    if (state.count !== void 0 && state.count !== null) {
-      if (!Number.isInteger(state.count) || state.count < 0) {
-        throw new Error(
-          `count must be a non-negative integer for state ${state.stateId}`
-        );
-      }
-    }
-  }
-  if (dist.stratum) {
-    const s2 = dist.stratum;
-    if (s2.lower !== void 0 && s2.lower !== null && s2.upper !== void 0 && s2.upper !== null) {
-      if (s2.lower > s2.upper) {
-        throw new Error(
-          `stratum lower bound ${s2.lower} cannot exceed upper bound ${s2.upper} for evaluation ${dist.evaluationId}`
-        );
-      }
-    }
-    if (s2.rankLower !== void 0 && s2.rankLower !== null && s2.rankUpper !== void 0 && s2.rankUpper !== null) {
-      if (s2.rankLower > s2.rankUpper) {
-        throw new Error(
-          `stratum rankLower ${s2.rankLower} cannot exceed rankUpper ${s2.rankUpper} for evaluation ${dist.evaluationId}`
-        );
-      }
-    }
-  }
-}
-function assertOutcomeDistributionReferentialIntegrity(spec) {
-  const evaluationIds = /* @__PURE__ */ new Set();
-  for (const evaluation of spec.evaluations) {
-    if (evaluationIds.has(evaluation.id)) {
-      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
-    }
-    evaluationIds.add(evaluation.id);
-  }
-  if (!spec.stateDistributions || spec.stateDistributions.length === 0) {
-    throw new Error("stateDistributions must be non-empty");
-  }
-  const seenKeys = /* @__PURE__ */ new Set();
-  const originHorizonKeys = /* @__PURE__ */ new Set();
-  const evalStateOrders = /* @__PURE__ */ new Map();
-  for (const dist of spec.stateDistributions) {
-    assertStateDistributionValid(dist, evaluationIds);
-    const originKey = dist.estimateOrigin ?? "unspecified";
-    const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
-    if (originHorizonKeys.has(horizonKey)) {
-      throw new Error(
-        `multiple state distributions defined for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
-      );
-    }
-    originHorizonKeys.add(horizonKey);
-    if (dist.estimateOrigin === "observed_step") {
-      const key = `${dist.evaluationId}|${dist.estimator}|${dist.horizon}|${dist.censoringHeuristic ?? ""}|${dist.competingHeuristic ?? ""}`;
-      if (seenKeys.has(key)) {
-        throw new Error(
-          `duplicate distribution for evaluation ${dist.evaluationId}, estimator ${dist.estimator}, and step ${dist.horizon}`
-        );
-      }
-      seenKeys.add(key);
-      const stateOrder = dist.states.map((s2) => s2.stateId);
-      const groupKey = `${dist.evaluationId}|${dist.estimator}`;
-      const existingOrder = evalStateOrders.get(groupKey);
-      if (!existingOrder) {
-        evalStateOrders.set(groupKey, stateOrder);
-      } else {
-        if (stateOrder.length !== existingOrder.length || !stateOrder.every((id2, idx) => id2 === existingOrder[idx])) {
-          throw new Error(
-            `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`
-          );
-        }
-      }
-    }
-  }
-  if (spec.variants) {
-    for (const [key, variant] of Object.entries(spec.variants)) {
-      if (!VALID_HEURISTIC_PAIR_KEYS2.has(key)) {
-        throw new Error(`invalid variant heuristic pair key: '${key}'`);
-      }
-      if (!variant) continue;
-      if (variant.status === "available") {
-        if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
-          throw new Error(`variant '${key}' stateDistributions must be non-empty`);
-        }
-        const variantOriginHorizonKeys = /* @__PURE__ */ new Set();
-        for (const dist of variant.stateDistributions) {
-          assertStateDistributionValid(dist, evaluationIds);
-          const originKey = dist.estimateOrigin ?? "unspecified";
-          const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
-          if (variantOriginHorizonKeys.has(horizonKey)) {
-            throw new Error(
-              `variant '${key}' has multiple state distributions for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
-            );
-          }
-          variantOriginHorizonKeys.add(horizonKey);
-        }
-        if (variant.exclusions) {
-          const exclusionEvalIds = /* @__PURE__ */ new Set();
-          for (const exclusion of variant.exclusions) {
-            if (exclusionEvalIds.has(exclusion.evaluationId)) {
-              throw new Error(
-                `variant '${key}' has duplicate exclusion entry for evaluation ${exclusion.evaluationId}`
-              );
-            }
-            exclusionEvalIds.add(exclusion.evaluationId);
-            assertPopulationExclusionValid(exclusion, evaluationIds);
-          }
-        }
-      }
-    }
-  }
-}
-
-// src/spec/v2/validate-prediction-distribution.ts
-function assertPredictionDistributionReferentialIntegrity(spec) {
-  if (spec.operatingPoint?.dimension) {
-    const prefDim = spec.operatingPoint.dimension;
-    const hasPrefDim = spec.operatingPoints.some((op) => op.type === prefDim);
-    if (!hasPrefDim) {
-      throw new Error(
-        `configured operatingPoint dimension ${prefDim} is not present in operatingPoints`
-      );
-    }
-  }
-  const evaluationIds = /* @__PURE__ */ new Set();
-  for (const evaluation of spec.evaluations) {
-    if (evaluationIds.has(evaluation.id)) {
-      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
-    }
-    evaluationIds.add(evaluation.id);
-  }
-  if (spec.stateDistributions) {
-    for (const dist of spec.stateDistributions) {
-      assertStateDistributionValid(dist, evaluationIds);
-    }
-  }
-  const binsByEvaluation = /* @__PURE__ */ new Map();
-  for (const bin of spec.bins) {
-    if (!evaluationIds.has(bin.evaluationId)) {
-      throw new Error(`unknown evaluation id: ${bin.evaluationId}`);
-    }
-    let evalBins = binsByEvaluation.get(bin.evaluationId);
-    if (!evalBins) {
-      evalBins = [];
-      binsByEvaluation.set(bin.evaluationId, evalBins);
-    }
-    evalBins.push(bin);
-  }
-  const opsByEvaluation = /* @__PURE__ */ new Map();
-  const opKeys = /* @__PURE__ */ new Set();
-  for (const op of spec.operatingPoints) {
-    if (!evaluationIds.has(op.evaluationId)) {
-      throw new Error(`unknown evaluation id: ${op.evaluationId}`);
-    }
-    const opKey = `${op.evaluationId}\0${op.type}\0${op.value}`;
-    if (opKeys.has(opKey)) {
-      throw new Error(
-        `duplicate operating point: evaluationId=${op.evaluationId}, type=${op.type}, value=${op.value}`
-      );
-    }
-    opKeys.add(opKey);
-    if (!Number.isFinite(op.value) || op.value < 0 || op.value > 1 || !Number.isFinite(op.cutoff) || op.cutoff < 0 || op.cutoff > 1 || !Number.isFinite(op.realizedPpcr) || op.realizedPpcr < 0 || op.realizedPpcr > 1) {
-      throw new Error(
-        `invalid operating point bounds for evaluation ${op.evaluationId}`
-      );
-    }
-    if (op.type === "probability_threshold") {
-      if (Math.abs(op.value - op.cutoff) > 1e-9) {
-        throw new Error(
-          `probability_threshold value ${op.value} must equal cutoff ${op.cutoff} for evaluation ${op.evaluationId}`
-        );
-      }
-    }
-    let evalOps = opsByEvaluation.get(op.evaluationId);
-    if (!evalOps) {
-      evalOps = [];
-      opsByEvaluation.set(op.evaluationId, evalOps);
-    }
-    evalOps.push(op);
-  }
-  for (const evalId of evaluationIds) {
-    const bins = binsByEvaluation.get(evalId);
-    if (!bins || bins.length === 0) {
-      throw new Error(`evaluation ${evalId} has no bins`);
-    }
-    const ops = opsByEvaluation.get(evalId);
-    if (!ops || ops.length === 0) {
-      throw new Error(`evaluation ${evalId} has no operating points`);
-    }
-    const bin0 = bins[0];
-    if (bin0.lower !== 0 || bin0.upper !== 0 || bin0.includeLower !== true || bin0.includeUpper !== true) {
-      throw new Error(`first bin for evaluation ${evalId} must be [0, 0]`);
-    }
-    const binUppers = /* @__PURE__ */ new Set([0]);
-    let totalCount = bin0.nPositive + bin0.nNegative;
-    if (!Number.isInteger(bin0.nPositive) || bin0.nPositive < 0 || !Number.isInteger(bin0.nNegative) || bin0.nNegative < 0) {
-      throw new Error(`invalid bin counts for evaluation ${evalId}`);
-    }
-    for (let i = 1; i < bins.length; i++) {
-      const bin = bins[i];
-      if (!Number.isFinite(bin.lower) || bin.lower < 0 || bin.lower > 1 || !Number.isFinite(bin.upper) || bin.upper < 0 || bin.upper > 1) {
-        throw new Error(`invalid bin bounds for evaluation ${evalId}`);
-      }
-      if (!Number.isInteger(bin.nPositive) || bin.nPositive < 0 || !Number.isInteger(bin.nNegative) || bin.nNegative < 0) {
-        throw new Error(`invalid bin counts for evaluation ${evalId}`);
-      }
-      if (bin.includeLower !== false || bin.includeUpper !== true) {
-        throw new Error(
-          `bin ${i} for evaluation ${evalId} must be (lower, upper]`
-        );
-      }
-      if (bin.lower >= bin.upper) {
-        throw new Error(
-          `bin ${i} for evaluation ${evalId} must be nondegenerate`
-        );
-      }
-      if (bin.lower !== bins[i - 1].upper) {
-        throw new Error(
-          `bins for evaluation ${evalId} must be contiguous and ascending`
-        );
-      }
-      binUppers.add(bin.upper);
-      totalCount += bin.nPositive + bin.nNegative;
-    }
-    if (bins[bins.length - 1].upper !== 1) {
-      throw new Error(
-        `final bin upper bound for evaluation ${evalId} must be 1`
-      );
-    }
-    if (totalCount <= 0) {
-      throw new Error(`total count for evaluation ${evalId} must be positive`);
-    }
-    for (const op of ops) {
-      if (op.type === "probability_threshold") {
-        if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
-          throw new Error(
-            `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`
-          );
-        }
-        let predictedPositive = 0;
-        if (op.cutoff === 0) {
-          predictedPositive = totalCount;
-        } else {
-          for (const bin of bins) {
-            if (bin.upper > op.cutoff) {
-              predictedPositive += bin.nPositive + bin.nNegative;
-            }
-          }
-        }
-        const expectedRealizedPpcr = predictedPositive / totalCount;
-        if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
-          throw new Error(
-            `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`
-          );
-        }
-      }
-    }
-  }
-}
-
-// src/spec/v2/validate-summary-metrics.ts
-function assertSummaryMetricsReferentialIntegrity(spec) {
-  const evaluationIds = /* @__PURE__ */ new Set();
-  for (const evaluation of spec.evaluations) {
-    if (evaluationIds.has(evaluation.id)) {
-      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
-    }
-    evaluationIds.add(evaluation.id);
-  }
-  const populationIds = /* @__PURE__ */ new Set();
-  for (const population of spec.populations) {
-    if (populationIds.has(population.id)) {
-      throw new Error(`duplicate population id: ${population.id}`);
-    }
-    populationIds.add(population.id);
-  }
-  const seenMetrics = /* @__PURE__ */ new Set();
-  for (const item of spec.metrics) {
-    if (item.estimate !== null && !Number.isFinite(item.estimate)) {
-      throw new Error(`non-finite metric estimate: ${item.estimate}`);
-    }
-    if ("horizon" in item && item.horizon !== void 0) {
-      if (!Number.isFinite(item.horizon) || item.horizon < 0) {
-        throw new Error(`invalid horizon: ${item.horizon}`);
-      }
-    }
-    if (item.metric === "auroc") {
-      if ("horizon" in item && item.horizon !== void 0) {
-        throw new Error("auroc metric cannot specify horizon");
-      }
-      if (!evaluationIds.has(item.owner.evaluationId)) {
-        throw new Error(`unknown evaluation id: ${item.owner.evaluationId}`);
-      }
-      const key = `auroc:${item.owner.evaluationId}`;
-      if (seenMetrics.has(key)) {
-        throw new Error(
-          `duplicate metric ownership: auroc for evaluation ${item.owner.evaluationId}`
-        );
-      }
-      seenMetrics.add(key);
-    } else if (item.metric === "prevalence") {
-      if ("horizon" in item && item.horizon !== void 0) {
-        throw new Error("prevalence metric cannot specify horizon");
-      }
-      if (!populationIds.has(item.owner.populationId)) {
-        throw new Error(`unknown population id: ${item.owner.populationId}`);
-      }
-      const key = `prevalence:${item.owner.populationId}`;
-      if (seenMetrics.has(key)) {
-        throw new Error(
-          `duplicate metric ownership: prevalence for population ${item.owner.populationId}`
-        );
-      }
-      seenMetrics.add(key);
-    } else if (item.metric === "event_risk") {
-      if (spec.schemaVersion !== "1.1") {
-        throw new Error(
-          `event_risk metric requires schemaVersion 1.1, got ${spec.schemaVersion}`
-        );
-      }
-      if (!("horizon" in item) || item.horizon === void 0) {
-        throw new Error("event_risk metric requires horizon");
-      }
-      if (!populationIds.has(item.owner.populationId)) {
-        throw new Error(`unknown population id: ${item.owner.populationId}`);
-      }
-      const key = `event_risk:${item.owner.populationId}:${item.horizon}`;
-      if (seenMetrics.has(key)) {
-        throw new Error(
-          `duplicate metric ownership: event_risk for population ${item.owner.populationId} at horizon ${item.horizon}`
-        );
-      }
-      seenMetrics.add(key);
-    }
-  }
-}
-
-// src/spec/v2/validate.ts
-function assertV2ReferentialIntegrity(spec) {
-  if (spec.type === "prediction_distribution") {
-    assertPredictionDistributionReferentialIntegrity(spec);
-    return;
-  }
-  const evaluationIds = new Set(spec.evaluations.map((evaluation) => evaluation.id));
-  const seriesIds = /* @__PURE__ */ new Set();
-  if (evaluationIds.size !== spec.evaluations.length) throw new Error("duplicate evaluation id");
-  for (const series of spec.series) {
-    if (seriesIds.has(series.id)) throw new Error(`duplicate series id: ${series.id}`);
-    seriesIds.add(series.id);
-    if (!evaluationIds.has(series.evaluationId)) throw new Error(`unknown evaluation id: ${series.evaluationId}`);
-  }
-  for (const datum2 of spec.data) {
-    if (!seriesIds.has(datum2.seriesId)) throw new Error(`unknown series id: ${datum2.seriesId}`);
-  }
-  if (spec.type === "calibration") {
-    for (const datum2 of spec.distribution ?? []) {
-      if (!seriesIds.has(datum2.seriesId)) throw new Error(`unknown distribution series id: ${datum2.seriesId}`);
-    }
-  }
-  const populations = new Set(spec.evaluations.map((evaluation) => evaluation.population));
-  for (const reference of spec.references ?? []) {
-    if ((reference.scope === "population" || reference.scope === "population_horizon") && !populations.has(reference.population)) {
-      throw new Error(`unknown reference population: ${reference.population}`);
-    }
-  }
-  if (spec.type === "decision_curve") {
-    const decisionCurve = spec;
-    const references = decisionCurve.references;
-    decisionCurve.evaluations.forEach((evaluation, index2) => {
-      const expectedId = `evaluation-${index2 + 1}`;
-      if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
-    });
-    const horizonCount = decisionCurve.series.filter((series) => series.horizon !== void 0).length;
-    if (horizonCount !== 0 && horizonCount !== decisionCurve.series.length) {
-      throw new Error("decision curve cannot mix static and horizon-qualified series");
-    }
-    const isTimeDependent = horizonCount > 0;
-    const horizons2 = [...new Set(decisionCurve.series.map((series) => series.horizon).filter((horizon) => horizon !== void 0))];
-    const seriesCoverage = /* @__PURE__ */ new Set();
-    decisionCurve.series.forEach((series, index2) => {
-      if (series.id !== `series-${index2 + 1}`) throw new Error(`decision curve series ids must be ordinal: expected series-${index2 + 1}`);
-      const evaluation = decisionCurve.evaluations.find((candidate) => candidate.id === series.evaluationId);
-      const expectedDisplay = evaluation.model ?? evaluation.population;
-      const expectedRole = evaluation.model === void 0 ? "population" : "model";
-      if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
-        throw new Error("decision curve display must follow evaluation semantics");
-      }
-      const coverageKey = `${series.evaluationId}\0${series.horizon ?? "static"}`;
-      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate decision curve evaluation-horizon series: ${series.evaluationId}`);
-      seriesCoverage.add(coverageKey);
-    });
-    if (isTimeDependent) {
-      const complete = decisionCurve.evaluations.every(
-        (evaluation) => horizons2.every((horizon) => seriesCoverage.has(`${evaluation.id}\0${horizon}`))
-      );
-      if (!complete || decisionCurve.series.length !== decisionCurve.evaluations.length * horizons2.length) {
-        throw new Error("decision curve requires exactly one series per evaluation and horizon");
-      }
-    } else if (decisionCurve.series.length !== decisionCurve.evaluations.length || decisionCurve.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\0static`))) {
-      throw new Error("decision curve requires exactly one series per evaluation");
-    }
-    const treatNone = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_none");
-    if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
-    const treatAll = references.filter(
-      (reference) => "benchmark" in reference && reference.benchmark === "treat_all"
-    );
-    const treatAllOwners = /* @__PURE__ */ new Set();
-    for (const reference of treatAll) {
-      if (isTimeDependent && reference.scope !== "population_horizon") {
-        throw new Error("time-dependent decision curve Treat All must use population_horizon scope");
-      }
-      if (!isTimeDependent && reference.scope !== "population") {
-        throw new Error("static decision curve Treat All must use population scope");
-      }
-      const owner = reference.scope === "population_horizon" ? `${reference.population}\0${reference.horizon}` : reference.population;
-      if (treatAllOwners.has(owner)) throw new Error(`duplicate Treat All owner: ${reference.population}`);
-      treatAllOwners.add(owner);
-    }
-    const expectedTreatAllOwners = isTimeDependent ? [...populations].flatMap((population) => horizons2.map((horizon) => `${population}\0${horizon}`)) : [...populations];
-    if (treatAllOwners.size !== expectedTreatAllOwners.length || expectedTreatAllOwners.some((owner) => !treatAllOwners.has(owner))) {
-      throw new Error(isTimeDependent ? "decision curve requires exactly one Treat All reference per population and horizon" : "decision curve requires exactly one Treat All reference per population");
-    }
-  }
-  if (spec.type === "interventions_avoided") {
-    const interventionsAvoided = spec;
-    const references = interventionsAvoided.references;
-    interventionsAvoided.evaluations.forEach((evaluation, index2) => {
-      const expectedId = `evaluation-${index2 + 1}`;
-      if (evaluation.id !== expectedId) throw new Error(`interventions avoided evaluation ids must be ordinal: expected ${expectedId}`);
-    });
-    const horizonCount = interventionsAvoided.series.filter((series) => series.horizon !== void 0).length;
-    if (horizonCount !== 0 && horizonCount !== interventionsAvoided.series.length) {
-      throw new Error("interventions avoided cannot mix static and horizon-qualified series");
-    }
-    const isTimeDependent = horizonCount > 0;
-    const horizons2 = [...new Set(interventionsAvoided.series.map((series) => series.horizon).filter((horizon) => horizon !== void 0))];
-    const seriesCoverage = /* @__PURE__ */ new Set();
-    interventionsAvoided.series.forEach((series, index2) => {
-      if (series.id !== `series-${index2 + 1}`) throw new Error(`interventions avoided series ids must be ordinal: expected series-${index2 + 1}`);
-      const evaluation = interventionsAvoided.evaluations.find((candidate) => candidate.id === series.evaluationId);
-      if (!evaluation) throw new Error(`unknown evaluation id: ${series.evaluationId}`);
-      const expectedDisplay = evaluation.model ?? evaluation.population;
-      const expectedRole = evaluation.model === void 0 ? "population" : "model";
-      if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
-        throw new Error("interventions avoided display must follow evaluation semantics");
-      }
-      const coverageKey = `${series.evaluationId}\0${series.horizon ?? "static"}`;
-      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate interventions avoided evaluation-horizon series: ${series.evaluationId}`);
-      seriesCoverage.add(coverageKey);
-    });
-    if (isTimeDependent) {
-      const complete = interventionsAvoided.evaluations.every(
-        (evaluation) => horizons2.every((horizon) => seriesCoverage.has(`${evaluation.id}\0${horizon}`))
-      );
-      if (!complete || interventionsAvoided.series.length !== interventionsAvoided.evaluations.length * horizons2.length) {
-        throw new Error("interventions avoided requires exactly one series per evaluation and horizon");
-      }
-    } else if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length || interventionsAvoided.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\0static`))) {
-      throw new Error("interventions avoided requires exactly one series per evaluation");
-    }
-    const treatAll = references.filter(
-      (reference) => "benchmark" in reference && reference.benchmark === "treat_all"
-    );
-    if (treatAll.length !== 1) throw new Error("interventions avoided requires exactly one Treat All reference");
-    if (treatAll[0].scope !== "global" || treatAll[0].type !== "horizontal" || treatAll[0].value !== 0) {
-      throw new Error("interventions avoided Treat All must be the global zero reference");
-    }
-    const treatNone = references.filter(
-      (reference) => "benchmark" in reference && reference.benchmark === "treat_none"
-    );
-    const treatNoneOwners = /* @__PURE__ */ new Set();
-    for (const reference of treatNone) {
-      if (isTimeDependent && reference.scope !== "population_horizon") {
-        throw new Error("time-dependent interventions avoided Treat None must use population_horizon scope");
-      }
-      if (!isTimeDependent && reference.scope !== "population") {
-        throw new Error("static interventions avoided Treat None must use population scope");
-      }
-      const owner = reference.scope === "population_horizon" ? `${reference.population}\0${reference.horizon}` : reference.population;
-      if (treatNoneOwners.has(owner)) throw new Error(`duplicate Treat None owner: ${reference.population}`);
-      treatNoneOwners.add(owner);
-    }
-    const expectedTreatNoneOwners = isTimeDependent ? [...populations].flatMap((population) => horizons2.map((horizon) => `${population}\0${horizon}`)) : [...populations];
-    if (treatNoneOwners.size !== expectedTreatNoneOwners.length || expectedTreatNoneOwners.some((owner) => !treatNoneOwners.has(owner))) {
-      throw new Error(isTimeDependent ? "interventions avoided requires exactly one Treat None reference per population and horizon" : "interventions avoided requires exactly one Treat None reference per population");
-    }
-  }
-}
-
 // node_modules/d3-array/src/ascending.js
 function ascending(a2, b) {
   return a2 == null || b == null ? NaN : a2 < b ? -1 : a2 > b ? 1 : a2 >= b ? 0 : NaN;
@@ -7937,10 +3668,10 @@ function identity_default2(x2) {
 }
 
 // node_modules/d3-format/src/locale.js
-var map3 = Array.prototype.map;
+var map = Array.prototype.map;
 var prefixes = ["y", "z", "a", "f", "p", "n", "\xB5", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
 function locale_default(locale3) {
-  var group2 = locale3.grouping === void 0 || locale3.thousands === void 0 ? identity_default2 : formatGroup_default(map3.call(locale3.grouping, Number), locale3.thousands + ""), currencyPrefix = locale3.currency === void 0 ? "" : locale3.currency[0] + "", currencySuffix = locale3.currency === void 0 ? "" : locale3.currency[1] + "", decimal = locale3.decimal === void 0 ? "." : locale3.decimal + "", numerals = locale3.numerals === void 0 ? identity_default2 : formatNumerals_default(map3.call(locale3.numerals, String)), percent = locale3.percent === void 0 ? "%" : locale3.percent + "", minus = locale3.minus === void 0 ? "\u2212" : locale3.minus + "", nan = locale3.nan === void 0 ? "NaN" : locale3.nan + "";
+  var group2 = locale3.grouping === void 0 || locale3.thousands === void 0 ? identity_default2 : formatGroup_default(map.call(locale3.grouping, Number), locale3.thousands + ""), currencyPrefix = locale3.currency === void 0 ? "" : locale3.currency[0] + "", currencySuffix = locale3.currency === void 0 ? "" : locale3.currency[1] + "", decimal = locale3.decimal === void 0 ? "." : locale3.decimal + "", numerals = locale3.numerals === void 0 ? identity_default2 : formatNumerals_default(map.call(locale3.numerals, String)), percent = locale3.percent === void 0 ? "%" : locale3.percent + "", minus = locale3.minus === void 0 ? "\u2212" : locale3.minus + "", nan = locale3.nan === void 0 ? "NaN" : locale3.nan + "";
   function newFormat(specifier, options) {
     specifier = formatSpecifier(specifier);
     var fill = specifier.fill, align = specifier.align, sign3 = specifier.sign, symbol2 = specifier.symbol, zero3 = specifier.zero, width = specifier.width, comma = specifier.comma, precision = specifier.precision, trim = specifier.trim, type2 = specifier.type;
@@ -13138,18 +8869,18 @@ function stepAfter(context) {
 }
 
 // node_modules/d3-zoom/src/transform.js
-function Transform2(k2, x2, y2) {
+function Transform(k2, x2, y2) {
   this.k = k2;
   this.x = x2;
   this.y = y2;
 }
-Transform2.prototype = {
-  constructor: Transform2,
+Transform.prototype = {
+  constructor: Transform,
   scale: function(k2) {
-    return k2 === 1 ? this : new Transform2(this.k * k2, this.x, this.y);
+    return k2 === 1 ? this : new Transform(this.k * k2, this.x, this.y);
   },
   translate: function(x2, y2) {
-    return x2 === 0 & y2 === 0 ? this : new Transform2(this.k, this.x + this.k * x2, this.y + this.k * y2);
+    return x2 === 0 & y2 === 0 ? this : new Transform(this.k, this.x + this.k * x2, this.y + this.k * y2);
   },
   apply: function(point6) {
     return [point6[0] * this.k + this.x, point6[1] * this.k + this.y];
@@ -13179,8 +8910,8 @@ Transform2.prototype = {
     return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
   }
 };
-var identity5 = new Transform2(1, 0, 0);
-transform.prototype = Transform2.prototype;
+var identity5 = new Transform(1, 0, 0);
+transform.prototype = Transform.prototype;
 function transform(node) {
   while (!node.__zoom) if (!(node = node.parentNode)) return identity5;
   return node.__zoom;
@@ -13498,13 +9229,13 @@ function isBigIntType(type2) {
 var reindex = Symbol("reindex");
 function valueof(data, value, type2) {
   const valueType = typeof value;
-  return valueType === "string" ? isArrowTable(data) ? maybeTypedArrowify(data.getChild(value), type2) : maybeTypedMap(data, field(value), type2) : valueType === "function" ? maybeTypedMap(data, value, type2) : valueType === "number" || value instanceof Date || valueType === "boolean" ? map4(data, constant(value), type2) : typeof value?.transform === "function" ? maybeTypedArrayify(value.transform(data), type2) : maybeTake(maybeTypedArrayify(value, type2), data?.[reindex]);
+  return valueType === "string" ? isArrowTable(data) ? maybeTypedArrowify(data.getChild(value), type2) : maybeTypedMap(data, field(value), type2) : valueType === "function" ? maybeTypedMap(data, value, type2) : valueType === "number" || value instanceof Date || valueType === "boolean" ? map2(data, constant(value), type2) : typeof value?.transform === "function" ? maybeTypedArrayify(value.transform(data), type2) : maybeTake(maybeTypedArrayify(value, type2), data?.[reindex]);
 }
 function maybeTake(values2, index2) {
   return values2 != null && index2 ? take(values2, index2) : values2;
 }
 function maybeTypedMap(data, f, type2) {
-  return map4(data, isNumberType(type2) ? (d, i) => coerceNumber(f(d, i)) : f, type2);
+  return map2(data, isNumberType(type2) ? (d, i) => coerceNumber(f(d, i)) : f, type2);
 }
 function maybeTypedArrayify(data, type2) {
   return type2 === void 0 ? arrayify2(data) : isArrowVector(data) ? maybeTypedArrowify(data, type2) : data instanceof type2 ? data : type2.from(data, isNumberType(type2) && !isNumberArray2(data) ? coerceNumber : void 0);
@@ -13534,13 +9265,13 @@ function percentile(reduce) {
   return (I, f) => quantile(I, p, f);
 }
 function coerceNumbers(values2) {
-  return isNumberArray2(values2) ? values2 : map4(values2, coerceNumber, Float64Array);
+  return isNumberArray2(values2) ? values2 : map2(values2, coerceNumber, Float64Array);
 }
 function coerceNumber(x2) {
   return x2 == null ? NaN : Number(x2);
 }
 function coerceDates(values2) {
-  return map4(values2, coerceDate);
+  return map2(values2, coerceDate);
 }
 function coerceDate(x2) {
   return x2 instanceof Date && !isNaN(x2) ? x2 : typeof x2 === "string" ? parse(x2) : x2 == null || isNaN(x2 = Number(x2)) ? void 0 : new Date(x2);
@@ -13596,7 +9327,7 @@ function isGeoJSON(x2) {
       return false;
   }
 }
-function map4(values2, f, type2 = Array) {
+function map2(values2, f, type2 = Array) {
   return values2 == null ? values2 : values2 instanceof type2 ? values2.map(f) : type2.from(values2, f);
 }
 function slice2(values2, type2 = Array) {
@@ -13651,7 +9382,7 @@ function range2(data) {
   return r;
 }
 function take(values2, index2) {
-  return isArray(values2) ? map4(index2, (i) => values2[i], values2.constructor) : map4(index2, (i) => values2.at(i));
+  return isArray(values2) ? map2(index2, (i) => values2[i], values2.constructor) : map2(index2, (i) => values2.at(i));
 }
 function subarray(I, i, j) {
   return I.subarray ? I.subarray(i, j) : I.slice(i, j);
@@ -13694,14 +9425,14 @@ function mid(x12, x2) {
     transform(data) {
       const X12 = x12.transform(data);
       const X22 = x2.transform(data);
-      return isTemporal(X12) || isTemporal(X22) ? map4(X12, (_, i) => new Date((+X12[i] + +X22[i]) / 2)) : map4(X12, (_, i) => (+X12[i] + +X22[i]) / 2, Float64Array);
+      return isTemporal(X12) || isTemporal(X22) ? map2(X12, (_, i) => new Date((+X12[i] + +X22[i]) / 2)) : map2(X12, (_, i) => (+X12[i] + +X22[i]) / 2, Float64Array);
     },
     label: x12.label
   };
 }
 function maybeApplyInterval(V, scale) {
   const t = maybeIntervalTransform(scale?.interval, scale?.type);
-  return t ? map4(V, t) : V;
+  return t ? map2(V, t) : V;
 }
 function maybeIntervalTransform(interval2, type2) {
   const i = maybeInterval(interval2, type2);
@@ -14315,7 +10046,7 @@ function valueObject(channels, scales) {
   const values2 = Object.fromEntries(
     Object.entries(channels).map(([name, { scale: scaleName, value }]) => {
       const scale = scaleName == null ? null : scales[scaleName];
-      return [name, scale == null ? value : map4(value, scale)];
+      return [name, scale == null ? value : map2(value, scale)];
     })
   );
   values2.channels = channels;
@@ -14340,7 +10071,7 @@ function inferChannelScale(name, channel) {
       case "symbol":
         if (scale !== true && isEvery(value, isSymbol)) {
           channel.scale = null;
-          channel.value = map4(value, maybeSymbol);
+          channel.value = map2(value, maybeSymbol);
         } else {
           channel.scale = "symbol";
         }
@@ -14414,7 +10145,7 @@ function reindexFacetChannel(facets, channel) {
 function difference(channels, k1, k2) {
   const X12 = values(channels, k1);
   const X22 = values(channels, k2);
-  return map4(X22, (x2, i) => Math.abs(x2 - X12[i]), Float64Array);
+  return map2(X22, (x2, i) => Math.abs(x2 - X12[i]), Float64Array);
 }
 function values(channels, name, alias) {
   let channel = channels[name];
@@ -15003,7 +10734,7 @@ function createScaleOrdinal(key, channels, { type: type2, interval: interval2, d
   let hint;
   if (registry.get(key) === symbol) {
     hint = inferSymbolHint(channels);
-    range3 = range3 === void 0 ? inferSymbolRange(hint) : map4(range3, maybeSymbol);
+    range3 = range3 === void 0 ? inferSymbolRange(hint) : map2(range3, maybeSymbol);
   } else if (registry.get(key) === color2) {
     if (range3 === void 0 && (type2 === "ordinal" || type2 === ordinalImplicit)) {
       range3 = maybeBooleanRange(domain, scheme28);
@@ -15462,7 +11193,7 @@ function coerceType(channels, { domain, ...options }, coerceValues) {
   };
 }
 function coerceSymbols(values2) {
-  return map4(values2, maybeSymbol);
+  return map2(values2, maybeSymbol);
 }
 function exposeScales(scales) {
   return (key) => {
@@ -15590,7 +11321,7 @@ function maybeFacetAnchor(facetAnchor) {
 var indexCache = /* @__PURE__ */ new WeakMap();
 function facetIndex(V) {
   let I = indexCache.get(V);
-  if (!I) indexCache.set(V, I = new InternMap(map4(V, (v, i) => [v, i])));
+  if (!I) indexCache.set(V, I = new InternMap(map2(V, (v, i) => [v, i])));
   return I;
 }
 function facetIndexOf(V, v) {
@@ -16759,7 +12490,7 @@ function legendRamp(color3, options) {
     const thresholdFormat = tickFormat2 === void 0 ? (d) => d : typeof tickFormat2 === "string" ? format(tickFormat2) : tickFormat2;
     x2 = applyRange(linear2().domain([-1, range3.length - 1]), [marginLeft, width - marginRight]);
     svg.append("g").attr("fill-opacity", opacity2).selectAll().data(range3).enter().append("rect").attr("x", (d, i) => x2(i - 1)).attr("y", marginTop).attr("width", (d, i) => x2(i) - x2(i - 1)).attr("height", height - marginTop - marginBottom).attr("fill", (d) => d);
-    ticks2 = map4(thresholds, (_, i) => i);
+    ticks2 = map2(thresholds, (_, i) => i);
     tickFormat2 = (i) => thresholdFormat(thresholds[i], i);
   } else {
     x2 = applyRange(band().domain(domain), [marginLeft, width - marginRight]);
@@ -16919,7 +12650,7 @@ function maybeIntervalK(k2, maybeInsetK, options, trivial) {
   let D1, V1;
   function transform2(data) {
     if (V1 !== void 0 && data === D1) return V1;
-    return V1 = map4(valueof(D1 = data, value), (v3) => interval2.floor(v3));
+    return V1 = map2(valueof(D1 = data, value), (v3) => interval2.floor(v3));
   }
   return maybeInsetK({
     ...options,
@@ -16937,7 +12668,7 @@ function maybeIntervalMidK(k2, maybeInsetK, options) {
     [k2]: {
       label: labelof(v),
       transform: (data) => {
-        const V1 = map4(valueof(data, value), (v2) => interval2.floor(v2));
+        const V1 = map2(valueof(data, value), (v2) => interval2.floor(v2));
         const V2 = V1.map((v2) => interval2.offset(v2));
         return V1.map(
           isTemporal(V1) ? (v1, v2) => v1 == null || isNaN(v1 = +v1) || (v2 = V2[v2], v2 == null) || isNaN(v2 = +v2) ? void 0 : new Date((v1 + v2) / 2) : (v1, v2) => v1 == null || (v2 = V2[v2], v2 == null) ? NaN : (+v1 + +v2) / 2
@@ -19388,7 +15119,7 @@ function applyScaleTransform(channel, options) {
     transform: transform2 = percent ? (x2) => x2 == null ? NaN : x2 * 100 : maybeIntervalTransform(interval2, type2)
   } = options[scale] ?? {};
   if (transform2 == null) return;
-  channel.value = map4(channel.value, transform2);
+  channel.value = map2(channel.value, transform2);
   channel.transform = false;
 }
 function inferChannelScales(channels) {
@@ -19846,7 +15577,7 @@ function maybeBin(options) {
     let V = valueof(data, value);
     let T;
     if (isTemporal(V) || isTimeThresholds(thresholds)) {
-      V = map4(V, coerceDate, Float64Array);
+      V = map2(V, coerceDate, Float64Array);
       let [min4, max3] = typeof domain === "function" ? domain(V) : domain;
       let t = typeof thresholds === "function" && !isInterval(thresholds) ? thresholds(V, min4, max3) : thresholds;
       if (typeof t === "number") t = utcTickInterval(min4, max3, t);
@@ -20338,6 +16069,663 @@ function lineY(data, { x: x2 = indexOf, y: y2 = identity6, ...options } = {}) {
 Mark.prototype.plot = function({ marks: marks2 = [], ...options } = {}) {
   return plot({ ...options, marks: [...marks2, this] });
 };
+
+// src/spec/v2/validate-outcome-distribution.ts
+var VALID_HEURISTIC_PAIR_KEYS = /* @__PURE__ */ new Set([
+  "excluded:excluded",
+  "excluded:adjusted_as_censored",
+  "excluded:adjusted_as_negative",
+  "excluded:adjusted_as_composite",
+  "adjusted:excluded",
+  "adjusted:adjusted_as_censored",
+  "adjusted:adjusted_as_negative",
+  "adjusted:adjusted_as_composite"
+]);
+function inferTopologicalStateOrder(stepOrders) {
+  const nodes = /* @__PURE__ */ new Set();
+  const inDegree = /* @__PURE__ */ new Map();
+  const adj = /* @__PURE__ */ new Map();
+  const firstSeenOrder = [];
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      const node = step[i];
+      if (!nodes.has(node)) {
+        nodes.add(node);
+        firstSeenOrder.push(node);
+        inDegree.set(node, 0);
+        adj.set(node, /* @__PURE__ */ new Set());
+      }
+    }
+  }
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      for (let j = i + 1; j < step.length; j++) {
+        const u = step[i];
+        const v = step[j];
+        const neighbors = adj.get(u);
+        if (!neighbors.has(v)) {
+          neighbors.add(v);
+          inDegree.set(v, (inDegree.get(v) ?? 0) + 1);
+        }
+      }
+    }
+  }
+  const queue = firstSeenOrder.filter((n) => inDegree.get(n) === 0);
+  const result = [];
+  while (queue.length > 0) {
+    queue.sort((a2, b) => firstSeenOrder.indexOf(a2) - firstSeenOrder.indexOf(b));
+    const u = queue.shift();
+    result.push(u);
+    const neighbors = adj.get(u) ?? /* @__PURE__ */ new Set();
+    for (const v of neighbors) {
+      const newDeg = (inDegree.get(v) ?? 1) - 1;
+      inDegree.set(v, newDeg);
+      if (newDeg === 0) {
+        queue.push(v);
+      }
+    }
+  }
+  if (result.length !== nodes.size) {
+    return null;
+  }
+  return result;
+}
+function assertPopulationExclusionValid(exclusion, validEvaluationIds) {
+  if (validEvaluationIds && !validEvaluationIds.has(exclusion.evaluationId)) {
+    throw new Error(`unknown evaluation id: ${exclusion.evaluationId}`);
+  }
+  if (!Number.isInteger(exclusion.originalSampleSize) || exclusion.originalSampleSize <= 0) {
+    throw new Error(
+      `originalSampleSize must be a positive integer for evaluation ${exclusion.evaluationId}`
+    );
+  }
+  const seenHorizons = /* @__PURE__ */ new Set();
+  for (const counts of exclusion.excludedCounts) {
+    if (!Number.isFinite(counts.horizon) || counts.horizon < 0) {
+      throw new Error(
+        `horizon must be non-negative in excludedCounts for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    if (seenHorizons.has(counts.horizon)) {
+      throw new Error(
+        `duplicate horizon ${counts.horizon} in excludedCounts for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    seenHorizons.add(counts.horizon);
+    if (!Number.isInteger(counts.censoredExcludedCount) || counts.censoredExcludedCount < 0) {
+      throw new Error(
+        `censoredExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    if (!Number.isInteger(counts.competingExcludedCount) || counts.competingExcludedCount < 0) {
+      throw new Error(
+        `competingExcludedCount must be a non-negative integer for evaluation ${exclusion.evaluationId}`
+      );
+    }
+    const totalExcluded = counts.censoredExcludedCount + counts.competingExcludedCount;
+    if (totalExcluded > exclusion.originalSampleSize) {
+      throw new Error(
+        `total excluded count (${totalExcluded}) exceeds original sample size (${exclusion.originalSampleSize}) for evaluation ${exclusion.evaluationId} at horizon ${counts.horizon}`
+      );
+    }
+  }
+}
+function assertStateDistributionValid(dist, validEvaluationIds) {
+  if (validEvaluationIds && !validEvaluationIds.has(dist.evaluationId)) {
+    throw new Error(`unknown evaluation id: ${dist.evaluationId}`);
+  }
+  if (dist.horizon !== void 0 && dist.horizon !== null && (!Number.isFinite(dist.horizon) || dist.horizon < 0)) {
+    throw new Error(
+      `horizon must be finite and non-negative for evaluation ${dist.evaluationId}`
+    );
+  }
+  if (dist.estimateOrigin === "observed_step") {
+    if (dist.horizon === void 0 || dist.horizon === null || !Number.isInteger(dist.horizon) || dist.horizon < 0) {
+      throw new Error(
+        `step (horizon) must be a non-negative integer for observed_step in evaluation ${dist.evaluationId}`
+      );
+    }
+    if (dist.estimator !== "raw" && dist.estimator !== "aalen_johansen") {
+      throw new Error(
+        `unsupported estimator '${dist.estimator}' for observed_step in evaluation ${dist.evaluationId}`
+      );
+    }
+  }
+  if (dist.estimateOrigin !== void 0 && dist.estimateOrigin !== null && dist.estimateOrigin !== "event_table" && dist.estimateOrigin !== "fixed_time_horizon" && dist.estimateOrigin !== "observed_step") {
+    throw new Error(
+      `invalid estimateOrigin '${dist.estimateOrigin}' for evaluation ${dist.evaluationId}`
+    );
+  }
+  if (!dist.states || dist.states.length === 0) {
+    throw new Error(`states must be non-empty for evaluation ${dist.evaluationId}`);
+  }
+  if (dist.estimateOrigin === "observed_step") {
+    if (dist.estimator === "raw") {
+      let totalCount = 0;
+      for (const state of dist.states) {
+        if (state.count === void 0 || state.count === null) {
+          throw new Error(
+            `count is required for state ${state.stateId} when estimator is 'raw' in observed_step`
+          );
+        }
+        if (!Number.isInteger(state.count) || state.count < 0) {
+          throw new Error(
+            `count must be a non-negative integer for state ${state.stateId}`
+          );
+        }
+        totalCount += state.count;
+      }
+      if (totalCount === 0) {
+        throw new Error(
+          `total observed count across states must be greater than zero for step ${dist.horizon}`
+        );
+      }
+    } else if (dist.estimator === "aalen_johansen") {
+      let sumEstimate = 0;
+      for (const state of dist.states) {
+        if (state.estimate === void 0 || state.estimate === null) {
+          throw new Error(
+            `estimate is required for state ${state.stateId} when estimator is 'aalen_johansen' in observed_step`
+          );
+        }
+        if (!Number.isFinite(state.estimate) || state.estimate < 0 || state.estimate > 1) {
+          throw new Error(
+            `estimate must be a finite probability in [0, 1] for state ${state.stateId}`
+          );
+        }
+        sumEstimate += state.estimate;
+      }
+      if (Math.abs(sumEstimate - 1) > 1e-8) {
+        throw new Error(
+          `occupancy estimates across states must sum to 1.0 (got ${sumEstimate}) for step ${dist.horizon}`
+        );
+      }
+    }
+  }
+  for (const state of dist.states) {
+    if (state.estimate !== void 0 && state.estimate !== null) {
+      if (!Number.isFinite(state.estimate) || state.estimate < 0 || state.estimate > 1) {
+        throw new Error(
+          `estimate must be a finite probability in [0, 1] for state ${state.stateId}`
+        );
+      }
+    }
+    if (state.lower !== void 0 && state.lower !== null) {
+      if (!Number.isFinite(state.lower) || state.lower < 0 || state.lower > 1) {
+        throw new Error(
+          `lower bound must be a finite probability in [0, 1] for state ${state.stateId}`
+        );
+      }
+    }
+    if (state.upper !== void 0 && state.upper !== null) {
+      if (!Number.isFinite(state.upper) || state.upper < 0 || state.upper > 1) {
+        throw new Error(
+          `upper bound must be a finite probability in [0, 1] for state ${state.stateId}`
+        );
+      }
+    }
+    if (state.lower !== void 0 && state.lower !== null && state.upper !== void 0 && state.upper !== null) {
+      if (state.lower > state.upper) {
+        throw new Error(
+          `lower bound ${state.lower} cannot exceed upper bound ${state.upper} for state ${state.stateId}`
+        );
+      }
+    }
+    if (state.mass !== void 0 && state.mass !== null) {
+      if (!Number.isFinite(state.mass) || state.mass < 0) {
+        throw new Error(
+          `mass must be finite and non-negative for state ${state.stateId}`
+        );
+      }
+    }
+    if (state.count !== void 0 && state.count !== null) {
+      if (!Number.isInteger(state.count) || state.count < 0) {
+        throw new Error(
+          `count must be a non-negative integer for state ${state.stateId}`
+        );
+      }
+    }
+  }
+  if (dist.stratum) {
+    const s2 = dist.stratum;
+    if (s2.lower !== void 0 && s2.lower !== null && s2.upper !== void 0 && s2.upper !== null) {
+      if (s2.lower > s2.upper) {
+        throw new Error(
+          `stratum lower bound ${s2.lower} cannot exceed upper bound ${s2.upper} for evaluation ${dist.evaluationId}`
+        );
+      }
+    }
+    if (s2.rankLower !== void 0 && s2.rankLower !== null && s2.rankUpper !== void 0 && s2.rankUpper !== null) {
+      if (s2.rankLower > s2.rankUpper) {
+        throw new Error(
+          `stratum rankLower ${s2.rankLower} cannot exceed rankUpper ${s2.rankUpper} for evaluation ${dist.evaluationId}`
+        );
+      }
+    }
+  }
+}
+function assertOutcomeDistributionReferentialIntegrity(spec) {
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  if (!spec.stateDistributions || spec.stateDistributions.length === 0) {
+    throw new Error("stateDistributions must be non-empty");
+  }
+  const seenKeys = /* @__PURE__ */ new Set();
+  const originHorizonKeys = /* @__PURE__ */ new Set();
+  const nonObservedStateOrders = /* @__PURE__ */ new Map();
+  const observedStepOrders = /* @__PURE__ */ new Map();
+  const explicitLabels = /* @__PURE__ */ new Map();
+  const checkAndRegisterStateLabels = (dists) => {
+    for (const dist of dists) {
+      for (const state of dist.states) {
+        if (state.label !== void 0 && state.label !== null) {
+          const trimmed = state.label.trim();
+          if (trimmed !== "") {
+            const existing = explicitLabels.get(state.stateId);
+            if (existing !== void 0 && existing !== trimmed) {
+              throw new Error(
+                `conflicting explicit labels for state '${state.stateId}': '${existing}' vs '${trimmed}'`
+              );
+            }
+            explicitLabels.set(state.stateId, trimmed);
+          }
+        }
+      }
+    }
+  };
+  checkAndRegisterStateLabels(spec.stateDistributions);
+  for (const dist of spec.stateDistributions) {
+    assertStateDistributionValid(dist, evaluationIds);
+    const originKey = dist.estimateOrigin ?? "unspecified";
+    const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+    if (originHorizonKeys.has(horizonKey)) {
+      throw new Error(
+        `multiple state distributions defined for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
+      );
+    }
+    originHorizonKeys.add(horizonKey);
+    if (dist.estimateOrigin === "observed_step") {
+      const key = `${dist.evaluationId}|${dist.estimator}|${dist.horizon}|${dist.censoringHeuristic ?? ""}|${dist.competingHeuristic ?? ""}`;
+      if (seenKeys.has(key)) {
+        throw new Error(
+          `duplicate distribution for evaluation ${dist.evaluationId}, estimator ${dist.estimator}, and step ${dist.horizon}`
+        );
+      }
+      seenKeys.add(key);
+      const groupKey = `${dist.evaluationId}|${dist.estimator}`;
+      let orders = observedStepOrders.get(groupKey);
+      if (!orders) {
+        orders = [];
+        observedStepOrders.set(groupKey, orders);
+      }
+      orders.push(dist.states.map((s2) => s2.stateId));
+    } else {
+      const strictKey = `${dist.evaluationId}|${dist.estimator}`;
+      const stateOrder = dist.states.map((s2) => s2.stateId);
+      const existingStrictOrder = nonObservedStateOrders.get(strictKey);
+      if (!existingStrictOrder) {
+        nonObservedStateOrders.set(strictKey, stateOrder);
+      } else {
+        if (stateOrder.length !== existingStrictOrder.length || !stateOrder.every((id2, idx) => id2 === existingStrictOrder[idx])) {
+          throw new Error(
+            `inconsistent state ordering across horizons for evaluation ${dist.evaluationId}`
+          );
+        }
+      }
+    }
+  }
+  for (const [groupKey, orders] of observedStepOrders.entries()) {
+    const evalId = groupKey.split("|")[0];
+    const inferred = inferTopologicalStateOrder(orders);
+    if (!inferred) {
+      throw new Error(
+        `inconsistent state ordering across steps for evaluation ${evalId}`
+      );
+    }
+  }
+  if (spec.variants) {
+    for (const [key, variant] of Object.entries(spec.variants)) {
+      if (!VALID_HEURISTIC_PAIR_KEYS.has(key)) {
+        throw new Error(`invalid variant heuristic pair key: '${key}'`);
+      }
+      if (!variant) continue;
+      if (variant.status === "available") {
+        if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
+          throw new Error(`variant '${key}' stateDistributions must be non-empty`);
+        }
+        checkAndRegisterStateLabels(variant.stateDistributions);
+        const variantOriginHorizonKeys = /* @__PURE__ */ new Set();
+        for (const dist of variant.stateDistributions) {
+          assertStateDistributionValid(dist, evaluationIds);
+          const originKey = dist.estimateOrigin ?? "unspecified";
+          const horizonKey = `${dist.evaluationId}|${originKey}:${dist.horizon ?? 0}`;
+          if (variantOriginHorizonKeys.has(horizonKey)) {
+            throw new Error(
+              `variant '${key}' has multiple state distributions for evaluation ${dist.evaluationId} at step/horizon ${dist.horizon ?? 0}`
+            );
+          }
+          variantOriginHorizonKeys.add(horizonKey);
+        }
+        if (variant.exclusions) {
+          const exclusionEvalIds = /* @__PURE__ */ new Set();
+          for (const exclusion of variant.exclusions) {
+            if (exclusionEvalIds.has(exclusion.evaluationId)) {
+              throw new Error(
+                `variant '${key}' has duplicate exclusion entry for evaluation ${exclusion.evaluationId}`
+              );
+            }
+            exclusionEvalIds.add(exclusion.evaluationId);
+            assertPopulationExclusionValid(exclusion, evaluationIds);
+          }
+        }
+      }
+    }
+  }
+}
+
+// src/spec/v2/validate-prediction-distribution.ts
+function assertPredictionDistributionReferentialIntegrity(spec) {
+  if (spec.operatingPoint?.dimension) {
+    const prefDim = spec.operatingPoint.dimension;
+    const hasPrefDim = spec.operatingPoints.some((op) => op.type === prefDim);
+    if (!hasPrefDim) {
+      throw new Error(
+        `configured operatingPoint dimension ${prefDim} is not present in operatingPoints`
+      );
+    }
+  }
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  if (spec.stateDistributions) {
+    for (const dist of spec.stateDistributions) {
+      assertStateDistributionValid(dist, evaluationIds);
+    }
+  }
+  const binsByEvaluation = /* @__PURE__ */ new Map();
+  for (const bin of spec.bins) {
+    if (!evaluationIds.has(bin.evaluationId)) {
+      throw new Error(`unknown evaluation id: ${bin.evaluationId}`);
+    }
+    let evalBins = binsByEvaluation.get(bin.evaluationId);
+    if (!evalBins) {
+      evalBins = [];
+      binsByEvaluation.set(bin.evaluationId, evalBins);
+    }
+    evalBins.push(bin);
+  }
+  const opsByEvaluation = /* @__PURE__ */ new Map();
+  const opKeys = /* @__PURE__ */ new Set();
+  for (const op of spec.operatingPoints) {
+    if (!evaluationIds.has(op.evaluationId)) {
+      throw new Error(`unknown evaluation id: ${op.evaluationId}`);
+    }
+    const opKey = `${op.evaluationId}\0${op.type}\0${op.value}`;
+    if (opKeys.has(opKey)) {
+      throw new Error(
+        `duplicate operating point: evaluationId=${op.evaluationId}, type=${op.type}, value=${op.value}`
+      );
+    }
+    opKeys.add(opKey);
+    if (!Number.isFinite(op.value) || op.value < 0 || op.value > 1 || !Number.isFinite(op.cutoff) || op.cutoff < 0 || op.cutoff > 1 || !Number.isFinite(op.realizedPpcr) || op.realizedPpcr < 0 || op.realizedPpcr > 1) {
+      throw new Error(
+        `invalid operating point bounds for evaluation ${op.evaluationId}`
+      );
+    }
+    if (op.type === "probability_threshold") {
+      if (Math.abs(op.value - op.cutoff) > 1e-9) {
+        throw new Error(
+          `probability_threshold value ${op.value} must equal cutoff ${op.cutoff} for evaluation ${op.evaluationId}`
+        );
+      }
+    }
+    let evalOps = opsByEvaluation.get(op.evaluationId);
+    if (!evalOps) {
+      evalOps = [];
+      opsByEvaluation.set(op.evaluationId, evalOps);
+    }
+    evalOps.push(op);
+  }
+  for (const evalId of evaluationIds) {
+    const bins = binsByEvaluation.get(evalId);
+    if (!bins || bins.length === 0) {
+      throw new Error(`evaluation ${evalId} has no bins`);
+    }
+    const ops = opsByEvaluation.get(evalId);
+    if (!ops || ops.length === 0) {
+      throw new Error(`evaluation ${evalId} has no operating points`);
+    }
+    const bin0 = bins[0];
+    if (bin0.lower !== 0 || bin0.upper !== 0 || bin0.includeLower !== true || bin0.includeUpper !== true) {
+      throw new Error(`first bin for evaluation ${evalId} must be [0, 0]`);
+    }
+    const binUppers = /* @__PURE__ */ new Set([0]);
+    let totalCount = bin0.nPositive + bin0.nNegative;
+    if (!Number.isInteger(bin0.nPositive) || bin0.nPositive < 0 || !Number.isInteger(bin0.nNegative) || bin0.nNegative < 0) {
+      throw new Error(`invalid bin counts for evaluation ${evalId}`);
+    }
+    for (let i = 1; i < bins.length; i++) {
+      const bin = bins[i];
+      if (!Number.isFinite(bin.lower) || bin.lower < 0 || bin.lower > 1 || !Number.isFinite(bin.upper) || bin.upper < 0 || bin.upper > 1) {
+        throw new Error(`invalid bin bounds for evaluation ${evalId}`);
+      }
+      if (!Number.isInteger(bin.nPositive) || bin.nPositive < 0 || !Number.isInteger(bin.nNegative) || bin.nNegative < 0) {
+        throw new Error(`invalid bin counts for evaluation ${evalId}`);
+      }
+      if (bin.includeLower !== false || bin.includeUpper !== true) {
+        throw new Error(
+          `bin ${i} for evaluation ${evalId} must be (lower, upper]`
+        );
+      }
+      if (bin.lower >= bin.upper) {
+        throw new Error(
+          `bin ${i} for evaluation ${evalId} must be nondegenerate`
+        );
+      }
+      if (bin.lower !== bins[i - 1].upper) {
+        throw new Error(
+          `bins for evaluation ${evalId} must be contiguous and ascending`
+        );
+      }
+      binUppers.add(bin.upper);
+      totalCount += bin.nPositive + bin.nNegative;
+    }
+    if (bins[bins.length - 1].upper !== 1) {
+      throw new Error(
+        `final bin upper bound for evaluation ${evalId} must be 1`
+      );
+    }
+    if (totalCount <= 0) {
+      throw new Error(`total count for evaluation ${evalId} must be positive`);
+    }
+    for (const op of ops) {
+      if (op.type === "probability_threshold") {
+        if (op.cutoff !== 0 && !binUppers.has(op.cutoff)) {
+          throw new Error(
+            `operating point cutoff ${op.cutoff} for evaluation ${evalId} does not match any bin upper boundary`
+          );
+        }
+        let predictedPositive = 0;
+        if (op.cutoff === 0) {
+          predictedPositive = totalCount;
+        } else {
+          for (const bin of bins) {
+            if (bin.upper > op.cutoff) {
+              predictedPositive += bin.nPositive + bin.nNegative;
+            }
+          }
+        }
+        const expectedRealizedPpcr = predictedPositive / totalCount;
+        if (Math.abs(op.realizedPpcr - expectedRealizedPpcr) > 1e-6) {
+          throw new Error(
+            `operating point realizedPpcr ${op.realizedPpcr} for evaluation ${evalId} does not match reconstructed count fraction ${expectedRealizedPpcr}`
+          );
+        }
+      }
+    }
+  }
+}
+
+// src/spec/v2/validate.ts
+function assertV2ReferentialIntegrity(spec) {
+  if (spec.type === "prediction_distribution") {
+    assertPredictionDistributionReferentialIntegrity(spec);
+    return;
+  }
+  const evaluationIds = new Set(spec.evaluations.map((evaluation) => evaluation.id));
+  const seriesIds = /* @__PURE__ */ new Set();
+  if (evaluationIds.size !== spec.evaluations.length) throw new Error("duplicate evaluation id");
+  for (const series of spec.series) {
+    if (seriesIds.has(series.id)) throw new Error(`duplicate series id: ${series.id}`);
+    seriesIds.add(series.id);
+    if (!evaluationIds.has(series.evaluationId)) throw new Error(`unknown evaluation id: ${series.evaluationId}`);
+  }
+  for (const datum2 of spec.data) {
+    if (!seriesIds.has(datum2.seriesId)) throw new Error(`unknown series id: ${datum2.seriesId}`);
+  }
+  if (spec.type === "calibration") {
+    for (const datum2 of spec.distribution ?? []) {
+      if (!seriesIds.has(datum2.seriesId)) throw new Error(`unknown distribution series id: ${datum2.seriesId}`);
+    }
+  }
+  const populations = new Set(spec.evaluations.map((evaluation) => evaluation.population));
+  for (const reference of spec.references ?? []) {
+    if ((reference.scope === "population" || reference.scope === "population_horizon") && !populations.has(reference.population)) {
+      throw new Error(`unknown reference population: ${reference.population}`);
+    }
+  }
+  if (spec.type === "decision_curve") {
+    const decisionCurve = spec;
+    const references = decisionCurve.references;
+    decisionCurve.evaluations.forEach((evaluation, index2) => {
+      const expectedId = `evaluation-${index2 + 1}`;
+      if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
+    });
+    const horizonCount = decisionCurve.series.filter((series) => series.horizon !== void 0).length;
+    if (horizonCount !== 0 && horizonCount !== decisionCurve.series.length) {
+      throw new Error("decision curve cannot mix static and horizon-qualified series");
+    }
+    const isTimeDependent = horizonCount > 0;
+    const horizons2 = [...new Set(decisionCurve.series.map((series) => series.horizon).filter((horizon) => horizon !== void 0))];
+    const seriesCoverage = /* @__PURE__ */ new Set();
+    decisionCurve.series.forEach((series, index2) => {
+      if (series.id !== `series-${index2 + 1}`) throw new Error(`decision curve series ids must be ordinal: expected series-${index2 + 1}`);
+      const evaluation = decisionCurve.evaluations.find((candidate) => candidate.id === series.evaluationId);
+      const expectedDisplay = evaluation.model ?? evaluation.population;
+      const expectedRole = evaluation.model === void 0 ? "population" : "model";
+      if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
+        throw new Error("decision curve display must follow evaluation semantics");
+      }
+      const coverageKey = `${series.evaluationId}\0${series.horizon ?? "static"}`;
+      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate decision curve evaluation-horizon series: ${series.evaluationId}`);
+      seriesCoverage.add(coverageKey);
+    });
+    if (isTimeDependent) {
+      const complete = decisionCurve.evaluations.every(
+        (evaluation) => horizons2.every((horizon) => seriesCoverage.has(`${evaluation.id}\0${horizon}`))
+      );
+      if (!complete || decisionCurve.series.length !== decisionCurve.evaluations.length * horizons2.length) {
+        throw new Error("decision curve requires exactly one series per evaluation and horizon");
+      }
+    } else if (decisionCurve.series.length !== decisionCurve.evaluations.length || decisionCurve.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\0static`))) {
+      throw new Error("decision curve requires exactly one series per evaluation");
+    }
+    const treatNone = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_none");
+    if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
+    const treatAll = references.filter(
+      (reference) => "benchmark" in reference && reference.benchmark === "treat_all"
+    );
+    const treatAllOwners = /* @__PURE__ */ new Set();
+    for (const reference of treatAll) {
+      if (isTimeDependent && reference.scope !== "population_horizon") {
+        throw new Error("time-dependent decision curve Treat All must use population_horizon scope");
+      }
+      if (!isTimeDependent && reference.scope !== "population") {
+        throw new Error("static decision curve Treat All must use population scope");
+      }
+      const owner = reference.scope === "population_horizon" ? `${reference.population}\0${reference.horizon}` : reference.population;
+      if (treatAllOwners.has(owner)) throw new Error(`duplicate Treat All owner: ${reference.population}`);
+      treatAllOwners.add(owner);
+    }
+    const expectedTreatAllOwners = isTimeDependent ? [...populations].flatMap((population) => horizons2.map((horizon) => `${population}\0${horizon}`)) : [...populations];
+    if (treatAllOwners.size !== expectedTreatAllOwners.length || expectedTreatAllOwners.some((owner) => !treatAllOwners.has(owner))) {
+      throw new Error(isTimeDependent ? "decision curve requires exactly one Treat All reference per population and horizon" : "decision curve requires exactly one Treat All reference per population");
+    }
+  }
+  if (spec.type === "interventions_avoided") {
+    const interventionsAvoided = spec;
+    const references = interventionsAvoided.references;
+    interventionsAvoided.evaluations.forEach((evaluation, index2) => {
+      const expectedId = `evaluation-${index2 + 1}`;
+      if (evaluation.id !== expectedId) throw new Error(`interventions avoided evaluation ids must be ordinal: expected ${expectedId}`);
+    });
+    const horizonCount = interventionsAvoided.series.filter((series) => series.horizon !== void 0).length;
+    if (horizonCount !== 0 && horizonCount !== interventionsAvoided.series.length) {
+      throw new Error("interventions avoided cannot mix static and horizon-qualified series");
+    }
+    const isTimeDependent = horizonCount > 0;
+    const horizons2 = [...new Set(interventionsAvoided.series.map((series) => series.horizon).filter((horizon) => horizon !== void 0))];
+    const seriesCoverage = /* @__PURE__ */ new Set();
+    interventionsAvoided.series.forEach((series, index2) => {
+      if (series.id !== `series-${index2 + 1}`) throw new Error(`interventions avoided series ids must be ordinal: expected series-${index2 + 1}`);
+      const evaluation = interventionsAvoided.evaluations.find((candidate) => candidate.id === series.evaluationId);
+      if (!evaluation) throw new Error(`unknown evaluation id: ${series.evaluationId}`);
+      const expectedDisplay = evaluation.model ?? evaluation.population;
+      const expectedRole = evaluation.model === void 0 ? "population" : "model";
+      if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
+        throw new Error("interventions avoided display must follow evaluation semantics");
+      }
+      const coverageKey = `${series.evaluationId}\0${series.horizon ?? "static"}`;
+      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate interventions avoided evaluation-horizon series: ${series.evaluationId}`);
+      seriesCoverage.add(coverageKey);
+    });
+    if (isTimeDependent) {
+      const complete = interventionsAvoided.evaluations.every(
+        (evaluation) => horizons2.every((horizon) => seriesCoverage.has(`${evaluation.id}\0${horizon}`))
+      );
+      if (!complete || interventionsAvoided.series.length !== interventionsAvoided.evaluations.length * horizons2.length) {
+        throw new Error("interventions avoided requires exactly one series per evaluation and horizon");
+      }
+    } else if (interventionsAvoided.series.length !== interventionsAvoided.evaluations.length || interventionsAvoided.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\0static`))) {
+      throw new Error("interventions avoided requires exactly one series per evaluation");
+    }
+    const treatAll = references.filter(
+      (reference) => "benchmark" in reference && reference.benchmark === "treat_all"
+    );
+    if (treatAll.length !== 1) throw new Error("interventions avoided requires exactly one Treat All reference");
+    if (treatAll[0].scope !== "global" || treatAll[0].type !== "horizontal" || treatAll[0].value !== 0) {
+      throw new Error("interventions avoided Treat All must be the global zero reference");
+    }
+    const treatNone = references.filter(
+      (reference) => "benchmark" in reference && reference.benchmark === "treat_none"
+    );
+    const treatNoneOwners = /* @__PURE__ */ new Set();
+    for (const reference of treatNone) {
+      if (isTimeDependent && reference.scope !== "population_horizon") {
+        throw new Error("time-dependent interventions avoided Treat None must use population_horizon scope");
+      }
+      if (!isTimeDependent && reference.scope !== "population") {
+        throw new Error("static interventions avoided Treat None must use population scope");
+      }
+      const owner = reference.scope === "population_horizon" ? `${reference.population}\0${reference.horizon}` : reference.population;
+      if (treatNoneOwners.has(owner)) throw new Error(`duplicate Treat None owner: ${reference.population}`);
+      treatNoneOwners.add(owner);
+    }
+    const expectedTreatNoneOwners = isTimeDependent ? [...populations].flatMap((population) => horizons2.map((horizon) => `${population}\0${horizon}`)) : [...populations];
+    if (treatNoneOwners.size !== expectedTreatNoneOwners.length || expectedTreatNoneOwners.some((owner) => !treatNoneOwners.has(owner))) {
+      throw new Error(isTimeDependent ? "interventions avoided requires exactly one Treat None reference per population and horizon" : "interventions avoided requires exactly one Treat None reference per population");
+    }
+  }
+}
 
 // src/render/v2.ts
 var sliderIdCounter = 0;
@@ -21922,6 +18310,4383 @@ function renderLiftV2(spec, options = {}) {
   return renderHorizonLineChart(spec, options, "ppcr", "lift");
 }
 
+// src/experimental/synthetic-data.ts
+function createRandomGenerator(seed) {
+  let s2 = seed >>> 0;
+  return () => {
+    s2 = s2 + 1831565813 | 0;
+    let t = Math.imul(s2 ^ s2 >>> 15, 1 | s2);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function createNormalGenerator(rand) {
+  return (mean2 = 0, std = 1) => {
+    let u1 = rand();
+    let u2 = rand();
+    while (u1 === 0) u1 = rand();
+    while (u2 === 0) u2 = rand();
+    const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    return mean2 + z0 * std;
+  };
+}
+function generateSyntheticContinuousDataset(seed = 42) {
+  const rand = createRandomGenerator(seed);
+  const randNorm = createNormalGenerator(rand);
+  const nSubjects = 600;
+  const numSteps = 36;
+  const clusters = [];
+  for (let i = 0; i < nSubjects; i++) {
+    clusters.push(rand() < 0.55 ? "shifter" : "stayer");
+  }
+  const subjectTraits = [];
+  for (let i = 0; i < nSubjects; i++) {
+    subjectTraits.push(randNorm(0, 0.08));
+  }
+  const censoringSteps = [];
+  for (let i = 0; i < nSubjects; i++) {
+    let lastObserved = 35;
+    for (let s2 = 1; s2 <= 35; s2++) {
+      const hazard = 88e-4 + 15e-5 * s2;
+      if (rand() < hazard) {
+        lastObserved = s2 - 1;
+        break;
+      }
+    }
+    censoringSteps.push(lastObserved);
+  }
+  const subjects = [];
+  for (let i = 0; i < nSubjects; i++) {
+    const isShifter = clusters[i] === "shifter";
+    const trait = subjectTraits[i];
+    const outcomes = [];
+    for (let s2 = 0; s2 < numSteps; s2++) {
+      const progress = s2 / 35;
+      let val;
+      if (isShifter) {
+        const mean2 = 0.25 + 0.53 * Math.pow(progress, 1.4);
+        const std = 0.07 + 0.04 * Math.sin(progress * Math.PI);
+        val = randNorm(mean2, std) + trait * (1 + progress);
+      } else {
+        const mean2 = 0.25 - 0.05 * progress;
+        const std = 0.07 + 0.06 * progress;
+        val = randNorm(mean2, std) + trait;
+      }
+      val += randNorm(0, 0.02);
+      val = Math.max(0, Math.min(1, val));
+      outcomes.push(val);
+    }
+    subjects.push({
+      subjectId: i + 1,
+      outcomes,
+      censoringStep: censoringSteps[i]
+    });
+  }
+  return {
+    subjects,
+    nSubjects,
+    numSteps
+  };
+}
+
+// src/experimental/continuous-outcome-distribution.ts
+var continuousInstanceCounter = 0;
+var continuousSliderCounter = 0;
+function createBinDefinitions(numBins = 20) {
+  const binWidth = 1 / numBins;
+  const bins = [];
+  for (let i = 0; i < numBins; i++) {
+    const lower2 = i * binWidth;
+    const upper = (i + 1) * binWidth;
+    bins.push({
+      index: i,
+      lower: lower2,
+      upper,
+      label: i === 0 ? `0.00\u2013${upper.toFixed(2)}` : `${lower2.toFixed(2)}\u2013${upper.toFixed(2)}`
+    });
+  }
+  return bins;
+}
+function computeScenarioStats(dataset, scenario, numBins = 20) {
+  const bins = createBinDefinitions(numBins);
+  const binWidth = 1 / numBins;
+  const totalN = dataset.nSubjects;
+  const summaries = [];
+  for (let s2 = 0; s2 < dataset.numSteps; s2++) {
+    const included = dataset.subjects.filter((sub) => {
+      if (scenario === "A") return true;
+      return sub.censoringStep >= s2;
+    });
+    const includedCount = included.length;
+    const excludedCount = totalN - includedCount;
+    const excludedProportion = excludedCount / totalN;
+    const excludedPercentage = excludedProportion * 100;
+    const binCounts = new Array(numBins).fill(0);
+    for (const sub of included) {
+      const val = sub.outcomes[s2];
+      let bIdx = Math.floor(val / binWidth);
+      if (bIdx >= numBins) bIdx = numBins - 1;
+      if (bIdx < 0) bIdx = 0;
+      binCounts[bIdx]++;
+    }
+    const cells = bins.map((b, idx) => {
+      const count2 = binCounts[idx];
+      const proportion = includedCount > 0 ? count2 / includedCount : 0;
+      return {
+        step: s2,
+        binIndex: idx,
+        binLower: b.lower,
+        binUpper: b.upper,
+        binLabel: b.label,
+        count: count2,
+        includedCount,
+        proportion,
+        percentage: proportion * 100
+      };
+    });
+    summaries.push({
+      step: s2,
+      includedCount,
+      excludedCount,
+      excludedProportion,
+      excludedPercentage,
+      cells
+    });
+  }
+  return summaries;
+}
+function computeJointMaxProportion(dataset, numBins = 20) {
+  const statsA = computeScenarioStats(dataset, "A", numBins);
+  const statsB = computeScenarioStats(dataset, "B", numBins);
+  let maxProp = 0;
+  for (const step of statsA) {
+    for (const cell3 of step.cells) {
+      if (cell3.proportion > maxProp) maxProp = cell3.proportion;
+    }
+  }
+  for (const step of statsB) {
+    for (const cell3 of step.cells) {
+      if (cell3.proportion > maxProp) maxProp = cell3.proportion;
+    }
+  }
+  const pct = maxProp * 100;
+  const roundedPct = Math.ceil(pct / 5) * 5;
+  return Math.max(5, Math.min(100, roundedPct)) / 100;
+}
+function renderContinuousOutcomeDistributionPOC(options = {}) {
+  const instanceId = ++continuousInstanceCounter;
+  const resolved = resolveV2RenderOptions(2, options);
+  const { theme } = resolved;
+  const digits = theme.tip.digits;
+  const dataset = options.dataset ?? generateSyntheticContinuousDataset();
+  let activeScenario = options.initialScenario ?? "A";
+  const numBins = 20;
+  let selectedStep = 35;
+  let isHistogramOpen = false;
+  let isExcludedExpanded = false;
+  const container = document.createElement("div");
+  container.className = "rtichoke-outcome-distribution rtichoke-continuous-poc";
+  container.style.width = `${theme.width}px`;
+  container.style.maxWidth = "100%";
+  const titleEl = document.createElement("h3");
+  titleEl.className = "rtichoke-outcome-distribution__title";
+  titleEl.textContent = "Continuous Outcome Distribution (Experimental POC)";
+  container.append(titleEl);
+  const descEl = document.createElement("p");
+  descEl.style.margin = "0 0 1rem 0";
+  descEl.style.fontSize = "13px";
+  descEl.style.color = "#4b5563";
+  descEl.textContent = "Longitudinal empirical distribution heatmap of observed numerical outcomes across 36 steps (0\u201335), with optional step histogram detail below.";
+  container.append(descEl);
+  const controlsDiv = document.createElement("div");
+  controlsDiv.className = "rtichoke-outcome-distribution__controls";
+  controlsDiv.style.display = "flex";
+  controlsDiv.style.flexWrap = "wrap";
+  controlsDiv.style.alignItems = "center";
+  controlsDiv.style.gap = "1.5rem";
+  controlsDiv.style.marginBottom = "1rem";
+  container.append(controlsDiv);
+  const mainLayoutDiv = document.createElement("div");
+  mainLayoutDiv.className = "rtichoke-continuous-main-layout";
+  mainLayoutDiv.style.display = "flex";
+  mainLayoutDiv.style.flexDirection = "column";
+  mainLayoutDiv.style.gap = "0.75rem";
+  container.append(mainLayoutDiv);
+  const heatmapWrapper = document.createElement("div");
+  heatmapWrapper.className = "rtichoke-continuous-heatmap-wrapper";
+  const legendDiv = document.createElement("div");
+  legendDiv.className = "rtichoke-continuous-legend";
+  legendDiv.style.display = "flex";
+  legendDiv.style.alignItems = "center";
+  legendDiv.style.gap = "0.75rem";
+  legendDiv.style.marginLeft = `${theme.margins.left + 5}px`;
+  legendDiv.style.marginTop = "0.25rem";
+  legendDiv.style.marginBottom = "0.5rem";
+  const histogramWrapper = document.createElement("div");
+  histogramWrapper.className = "rtichoke-continuous-histogram-wrapper";
+  histogramWrapper.style.marginTop = "0.5rem";
+  histogramWrapper.style.marginBottom = "0.5rem";
+  const sliderControl = document.createElement("div");
+  sliderControl.className = "rtichoke-operating-point-control";
+  sliderControl.style.marginLeft = `${theme.margins.left + 5}px`;
+  sliderControl.style.marginRight = `${theme.margins.right}px`;
+  sliderControl.style.marginTop = "0.5rem";
+  sliderControl.style.marginBottom = "0.75rem";
+  const sliderId = `rtichoke-cod-slider-${++continuousSliderCounter}`;
+  const sliderLabel = document.createElement("label");
+  sliderLabel.className = "rtichoke-operating-point-label";
+  sliderLabel.htmlFor = sliderId;
+  const sliderLabelText = document.createElement("span");
+  sliderLabelText.textContent = "Step: ";
+  const sliderValueText = document.createElement("span");
+  sliderValueText.className = "rtichoke-operating-point-value";
+  sliderValueText.textContent = String(selectedStep);
+  sliderLabel.append(sliderLabelText, sliderValueText);
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.id = sliderId;
+  slider.className = "rtichoke-operating-point-slider";
+  slider.min = "0";
+  slider.max = "35";
+  slider.step = "1";
+  slider.value = String(selectedStep);
+  slider.setAttribute("aria-label", "Step");
+  sliderControl.append(sliderLabel, slider);
+  const excludedSection = document.createElement("div");
+  excludedSection.className = "rtichoke-continuous-excluded-section";
+  excludedSection.style.marginTop = "0.25rem";
+  excludedSection.style.padding = "0.5rem 0";
+  excludedSection.style.backgroundColor = "transparent";
+  mainLayoutDiv.append(heatmapWrapper, legendDiv, histogramWrapper, sliderControl, excludedSection);
+  const renderAll = () => {
+    const scenarioStats = computeScenarioStats(dataset, activeScenario, numBins);
+    const jointUpperProp = computeJointMaxProportion(dataset, numBins);
+    const currentStepSummary = scenarioStats.find((s2) => s2.step === selectedStep) ?? scenarioStats[35];
+    controlsDiv.replaceChildren();
+    const scenarioGroup = document.createElement("div");
+    scenarioGroup.className = "rtichoke-pd-radio-group";
+    scenarioGroup.setAttribute("role", "radiogroup");
+    scenarioGroup.setAttribute("aria-label", "Scenario");
+    const scenarioGroupLabel = document.createElement("span");
+    scenarioGroupLabel.className = "rtichoke-pd-radio-group-label";
+    scenarioGroupLabel.textContent = "Demonstration Scenario:";
+    scenarioGroup.append(scenarioGroupLabel);
+    const scenarioOptions = document.createElement("div");
+    scenarioOptions.className = "rtichoke-pd-radio-options";
+    const scenarioItems = [
+      { id: "A", label: "Scenario A (Complete follow-up, N=600)" },
+      { id: "B", label: "Scenario B (Right-censored follow-up, N=600 \u2192 390)" }
+    ];
+    for (const item of scenarioItems) {
+      const optLabel = document.createElement("label");
+      optLabel.className = "rtichoke-pd-radio-option";
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `cod-scenario-${instanceId}`;
+      radio.value = item.id;
+      radio.checked = activeScenario === item.id;
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          activeScenario = item.id;
+          renderAll();
+        }
+      });
+      const span = document.createElement("span");
+      span.textContent = item.label;
+      optLabel.append(radio, span);
+      scenarioOptions.append(optLabel);
+    }
+    scenarioGroup.append(scenarioOptions);
+    controlsDiv.append(scenarioGroup);
+    heatmapWrapper.replaceChildren();
+    const flatCells = [];
+    for (const stepSum of scenarioStats) {
+      const isPastSelected = stepSum.step > selectedStep;
+      const opacity2 = isPastSelected ? 0.28 : 0.88;
+      for (const cell3 of stepSum.cells) {
+        const tipText = tooltip(digits, [
+          ["Step", cell3.step],
+          ["Reals", cell3.binLabel],
+          ["Included count", cell3.includedCount],
+          ["Bin count", cell3.count],
+          ["Bin proportion", `${cell3.percentage.toFixed(1)}%`]
+        ]);
+        flatCells.push({
+          ...cell3,
+          opacity: opacity2,
+          tooltipTitle: tipText
+        });
+      }
+    }
+    const heatmapWidth = theme.width - theme.margins.left - theme.margins.right;
+    const heatmapMarks = [
+      rect(flatCells, {
+        x1: (d) => d.step - 0.5,
+        x2: (d) => d.step + 0.5,
+        y1: (d) => d.binLower,
+        y2: (d) => d.binUpper,
+        fill: (d) => d.proportion,
+        fillOpacity: (d) => d.opacity,
+        stroke: "#ffffff",
+        strokeWidth: 0.4,
+        title: (d) => d.tooltipTitle
+      })
+    ];
+    heatmapMarks.push(
+      rect(
+        [
+          {
+            x1: selectedStep - 0.5,
+            x2: selectedStep + 0.5,
+            y1: 0,
+            y2: 1
+          }
+        ],
+        {
+          x1: "x1",
+          x2: "x2",
+          y1: "y1",
+          y2: "y2",
+          fill: "none",
+          stroke: theme.axis.color,
+          strokeWidth: 2.5
+        }
+      )
+    );
+    const heatmapPlot = themedPlot(
+      {
+        width: heatmapWidth,
+        height: Math.round(theme.height * 0.65),
+        marginTop: theme.margins.top + 10,
+        marginRight: theme.margins.right,
+        marginBottom: theme.margins.bottom,
+        marginLeft: theme.margins.left + 5,
+        style: {
+          background: theme.background,
+          color: theme.axis.color,
+          fontFamily: theme.typography.fontFamily,
+          fontSize: `${theme.typography.fontSize}px`
+        },
+        x: {
+          label: "Step",
+          domain: [-0.5, 35.5],
+          ticks: [0, 5, 10, 15, 20, 25, 30, 35],
+          tickFormat: (d) => String(Math.round(d)),
+          grid: false,
+          line: true
+        },
+        y: {
+          label: "Reals (Outcome Value)",
+          domain: [0, 1],
+          ticks: 5,
+          tickFormat: (d) => d.toFixed(2),
+          grid: false,
+          line: true
+        },
+        color: {
+          type: "linear",
+          scheme: "Blues",
+          domain: [0, jointUpperProp],
+          clamp: true
+        },
+        marks: heatmapMarks
+      },
+      theme
+    );
+    const svgEl = heatmapPlot;
+    svgEl.style.cursor = "pointer";
+    svgEl.tabIndex = 0;
+    svgEl.setAttribute("aria-label", "Heatmap. Press Enter or click a step column to view detail histogram.");
+    const handleStepSelection = (evt) => {
+      let node = evt.target;
+      while (node && node !== svgEl) {
+        const titleEl2 = node.querySelector("title");
+        const titleText = titleEl2 ? titleEl2.textContent : node.getAttribute("title");
+        if (titleText) {
+          const match = titleText.match(/Step:\s*(\d+)/);
+          if (match) {
+            const clickedStep = parseInt(match[1], 10);
+            selectedStep = clickedStep;
+            isHistogramOpen = true;
+            slider.value = String(selectedStep);
+            sliderValueText.textContent = String(selectedStep);
+            renderAll();
+            return;
+          }
+        }
+        node = node.parentElement;
+      }
+    };
+    svgEl.addEventListener("click", handleStepSelection);
+    svgEl.addEventListener("keydown", (evt) => {
+      if (evt.key === "Enter" || evt.key === " ") {
+        handleStepSelection(evt);
+      }
+    });
+    heatmapWrapper.append(heatmapPlot);
+    histogramWrapper.replaceChildren();
+    if (isHistogramOpen) {
+      const histCard = document.createElement("div");
+      histCard.style.padding = "0.75rem";
+      histCard.style.backgroundColor = "#f9fafb";
+      histCard.style.border = "1px solid #e5e7eb";
+      histCard.style.borderRadius = "6px";
+      histCard.style.marginLeft = `${theme.margins.left + 5}px`;
+      histCard.style.marginRight = `${theme.margins.right}px`;
+      const histHeader = document.createElement("div");
+      histHeader.style.display = "flex";
+      histHeader.style.justifyContent = "space-between";
+      histHeader.style.alignItems = "center";
+      histHeader.style.marginBottom = "0.25rem";
+      histHeader.style.paddingBottom = "0.25rem";
+      histHeader.style.borderBottom = "1px solid #e5e7eb";
+      const histTitle = document.createElement("div");
+      histTitle.style.fontWeight = "600";
+      histTitle.style.fontSize = "13px";
+      histTitle.style.color = "#1f2937";
+      histTitle.textContent = `Step ${selectedStep} Detail Histogram (n = ${currentStepSummary.includedCount} observed subjects)`;
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "rtichoke-continuous-close-hist";
+      closeBtn.style.background = "none";
+      closeBtn.style.border = "none";
+      closeBtn.style.fontSize = "14px";
+      closeBtn.style.fontWeight = "bold";
+      closeBtn.style.color = "#6b7280";
+      closeBtn.style.cursor = "pointer";
+      closeBtn.style.padding = "2px 6px";
+      closeBtn.setAttribute("aria-label", "Close histogram detail view");
+      closeBtn.textContent = "\u2715 Close";
+      closeBtn.addEventListener("click", () => {
+        isHistogramOpen = false;
+        renderAll();
+      });
+      histHeader.append(histTitle, closeBtn);
+      const histData = currentStepSummary.cells.map((c4) => ({
+        ...c4,
+        title: tooltip(digits, [
+          ["Step", c4.step],
+          ["Reals", c4.binLabel],
+          ["Count", `${c4.count} / ${c4.includedCount}`],
+          ["Proportion", `${c4.percentage.toFixed(1)}%`]
+        ])
+      }));
+      const histWidth = heatmapWidth - 10;
+      const histPlot = themedPlot(
+        {
+          width: histWidth,
+          height: 180,
+          marginTop: 15,
+          marginRight: theme.margins.right,
+          marginBottom: theme.margins.bottom,
+          marginLeft: theme.margins.left + 5,
+          style: {
+            background: theme.background,
+            color: theme.axis.color,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: `${theme.typography.fontSize}px`
+          },
+          x: {
+            label: "Reals (Outcome Value)",
+            domain: [0, 1],
+            ticks: 5,
+            tickFormat: (d) => d.toFixed(2),
+            grid: false,
+            line: true
+          },
+          y: {
+            label: "Proportion (%)",
+            domain: [0, jointUpperProp * 100],
+            ticks: 4,
+            tickFormat: (d) => `${d}%`,
+            grid: true,
+            line: true
+          },
+          marks: [
+            rectY(histData, {
+              x1: "binLower",
+              x2: "binUpper",
+              y: "percentage",
+              fill: "#2477BB",
+              fillOpacity: 0.85,
+              stroke: "#ffffff",
+              strokeWidth: 0.5,
+              title: (d) => d.title
+            })
+          ]
+        },
+        theme
+      );
+      histCard.append(histHeader, histPlot);
+      histogramWrapper.append(histCard);
+    }
+    legendDiv.replaceChildren();
+    const legendLabel = document.createElement("span");
+    legendLabel.style.fontSize = "12px";
+    legendLabel.style.fontWeight = "600";
+    legendLabel.style.color = "#374151";
+    legendLabel.textContent = "Bin Proportion:";
+    const gradientBar = document.createElement("div");
+    gradientBar.style.width = "120px";
+    gradientBar.style.height = "12px";
+    gradientBar.style.borderRadius = "2px";
+    gradientBar.style.border = "1px solid #d1d5db";
+    gradientBar.style.background = "linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #084594)";
+    const legendMinLabel = document.createElement("span");
+    legendMinLabel.style.fontSize = "11px";
+    legendMinLabel.style.color = "#6b7280";
+    legendMinLabel.textContent = "0%";
+    const legendMaxLabel = document.createElement("span");
+    legendMaxLabel.style.fontSize = "11px";
+    legendMaxLabel.style.color = "#6b7280";
+    legendMaxLabel.textContent = `${(jointUpperProp * 100).toFixed(0)}%`;
+    legendDiv.append(legendLabel, legendMinLabel, gradientBar, legendMaxLabel);
+    sliderValueText.textContent = String(selectedStep);
+    excludedSection.replaceChildren();
+    const excludedHeader = document.createElement("div");
+    excludedHeader.style.display = "flex";
+    excludedHeader.style.justifyContent = "space-between";
+    excludedHeader.style.alignItems = "center";
+    const excludedReadout = document.createElement("div");
+    excludedReadout.style.fontSize = "13px";
+    excludedReadout.style.fontWeight = "600";
+    excludedReadout.style.color = "#1f2937";
+    if (activeScenario === "A" || currentStepSummary.excludedCount === 0) {
+      excludedReadout.textContent = `Excluded at step ${selectedStep}: 0 / ${dataset.nSubjects} (0.0%)`;
+    } else {
+      excludedReadout.textContent = `Excluded at step ${selectedStep}: ${currentStepSummary.excludedCount} / ${dataset.nSubjects} (${currentStepSummary.excludedPercentage.toFixed(1)}%)`;
+    }
+    excludedHeader.append(excludedReadout);
+    excludedSection.append(excludedHeader);
+    const excludedPanel = document.createElement("div");
+    excludedPanel.style.marginTop = "0.5rem";
+    excludedPanel.style.paddingTop = "0.5rem";
+    excludedPanel.style.borderTop = "1px dashed #d1d5db";
+    if (activeScenario === "A") {
+      const noExclMsg = document.createElement("p");
+      noExclMsg.style.margin = "0.5rem 0 0 0";
+      noExclMsg.style.fontSize = "13px";
+      noExclMsg.style.color = "#6b7280";
+      noExclMsg.style.fontStyle = "italic";
+      noExclMsg.textContent = "Scenario A has complete follow-up: zero excluded observations across all 36 steps.";
+      excludedPanel.append(noExclMsg);
+    } else {
+      const exclPlotData = scenarioStats.map((s2) => ({
+        step: s2.step,
+        excludedCount: s2.excludedCount,
+        excludedPercentage: s2.excludedPercentage,
+        opacity: s2.step > selectedStep ? 0.28 : 0.88,
+        title: tooltip(digits, [
+          ["Step", s2.step],
+          ["Excluded count", `${s2.excludedCount} / ${dataset.nSubjects}`],
+          ["Excluded proportion", `${s2.excludedPercentage.toFixed(1)}%`]
+        ])
+      }));
+      const maxExclPct = Math.max(...scenarioStats.map((s2) => s2.excludedPercentage), 5);
+      const selectedExcludedPct = currentStepSummary.excludedPercentage;
+      const CENSORING_COLOR = "#E3F09B";
+      const exclMarks = [
+        rectY(exclPlotData, {
+          x1: (d) => d.step - 0.5,
+          x2: (d) => d.step + 0.5,
+          y: "excludedPercentage",
+          fill: CENSORING_COLOR,
+          fillOpacity: (d) => d.opacity,
+          stroke: "#4a5568",
+          strokeWidth: 0.4,
+          title: (d) => d.title
+        })
+      ];
+      if (selectedExcludedPct > 0) {
+        exclMarks.push(
+          rect(
+            [
+              {
+                x1: selectedStep - 0.5,
+                x2: selectedStep + 0.5,
+                y1: 0,
+                y2: selectedExcludedPct
+              }
+            ],
+            {
+              x1: "x1",
+              x2: "x2",
+              y1: "y1",
+              y2: "y2",
+              fill: "none",
+              stroke: theme.axis.color,
+              strokeWidth: 2.5
+            }
+          )
+        );
+      }
+      const exclPlot = themedPlot(
+        {
+          width: heatmapWidth,
+          height: 140,
+          marginTop: 10,
+          marginRight: theme.margins.right,
+          marginBottom: theme.margins.bottom,
+          marginLeft: theme.margins.left + 5,
+          style: {
+            background: theme.background,
+            color: theme.axis.color,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: `${theme.typography.fontSize}px`
+          },
+          x: {
+            label: "Step",
+            domain: [-0.5, 35.5],
+            ticks: [0, 5, 10, 15, 20, 25, 30, 35],
+            tickFormat: (d) => String(Math.round(d)),
+            grid: false,
+            line: true
+          },
+          y: {
+            label: "Excluded (%)",
+            domain: [0, maxExclPct * 1.05],
+            ticks: 4,
+            tickFormat: (d) => `${d.toFixed(0)}%`,
+            grid: true,
+            line: true
+          },
+          marks: exclMarks
+        },
+        theme
+      );
+      const exclSvgEl = exclPlot;
+      exclSvgEl.style.cursor = "pointer";
+      exclSvgEl.addEventListener("click", (evt) => {
+        let node = evt.target;
+        while (node && node !== exclSvgEl) {
+          const titleEl2 = node.querySelector("title");
+          const titleText = titleEl2 ? titleEl2.textContent : node.getAttribute("title");
+          if (titleText) {
+            const match = titleText.match(/Step:\s*(\d+)/);
+            if (match) {
+              const clickedStep = parseInt(match[1], 10);
+              selectedStep = clickedStep;
+              slider.value = String(selectedStep);
+              sliderValueText.textContent = String(selectedStep);
+              renderAll();
+              return;
+            }
+          }
+          node = node.parentElement;
+        }
+      });
+      excludedPanel.append(exclPlot);
+    }
+    excludedSection.append(excludedPanel);
+  };
+  slider.addEventListener("input", () => {
+    selectedStep = Number(slider.value);
+    renderAll();
+  });
+  renderAll();
+  return container;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/guard/value.mjs
+var value_exports = {};
+__export(value_exports, {
+  HasPropertyKey: () => HasPropertyKey,
+  IsArray: () => IsArray,
+  IsAsyncIterator: () => IsAsyncIterator,
+  IsBigInt: () => IsBigInt,
+  IsBoolean: () => IsBoolean,
+  IsDate: () => IsDate,
+  IsFunction: () => IsFunction,
+  IsIterator: () => IsIterator,
+  IsNull: () => IsNull,
+  IsNumber: () => IsNumber,
+  IsObject: () => IsObject,
+  IsRegExp: () => IsRegExp,
+  IsString: () => IsString,
+  IsSymbol: () => IsSymbol,
+  IsUint8Array: () => IsUint8Array,
+  IsUndefined: () => IsUndefined
+});
+function HasPropertyKey(value, key) {
+  return key in value;
+}
+function IsAsyncIterator(value) {
+  return IsObject(value) && !IsArray(value) && !IsUint8Array(value) && Symbol.asyncIterator in value;
+}
+function IsArray(value) {
+  return Array.isArray(value);
+}
+function IsBigInt(value) {
+  return typeof value === "bigint";
+}
+function IsBoolean(value) {
+  return typeof value === "boolean";
+}
+function IsDate(value) {
+  return value instanceof globalThis.Date;
+}
+function IsFunction(value) {
+  return typeof value === "function";
+}
+function IsIterator(value) {
+  return IsObject(value) && !IsArray(value) && !IsUint8Array(value) && Symbol.iterator in value;
+}
+function IsNull(value) {
+  return value === null;
+}
+function IsNumber(value) {
+  return typeof value === "number";
+}
+function IsObject(value) {
+  return typeof value === "object" && value !== null;
+}
+function IsRegExp(value) {
+  return value instanceof globalThis.RegExp;
+}
+function IsString(value) {
+  return typeof value === "string";
+}
+function IsSymbol(value) {
+  return typeof value === "symbol";
+}
+function IsUint8Array(value) {
+  return value instanceof globalThis.Uint8Array;
+}
+function IsUndefined(value) {
+  return value === void 0;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/clone/value.mjs
+function ArrayType(value) {
+  return value.map((value2) => Visit(value2));
+}
+function DateType(value) {
+  return new Date(value.getTime());
+}
+function Uint8ArrayType(value) {
+  return new Uint8Array(value);
+}
+function RegExpType(value) {
+  return new RegExp(value.source, value.flags);
+}
+function ObjectType(value) {
+  const result = {};
+  for (const key of Object.getOwnPropertyNames(value)) {
+    result[key] = Visit(value[key]);
+  }
+  for (const key of Object.getOwnPropertySymbols(value)) {
+    result[key] = Visit(value[key]);
+  }
+  return result;
+}
+function Visit(value) {
+  return IsArray(value) ? ArrayType(value) : IsDate(value) ? DateType(value) : IsUint8Array(value) ? Uint8ArrayType(value) : IsRegExp(value) ? RegExpType(value) : IsObject(value) ? ObjectType(value) : value;
+}
+function Clone(value) {
+  return Visit(value);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/clone/type.mjs
+function CloneType(schema, options) {
+  return options === void 0 ? Clone(schema) : Clone({ ...options, ...schema });
+}
+
+// node_modules/@sinclair/typebox/build/esm/value/guard/guard.mjs
+function IsAsyncIterator2(value) {
+  return IsObject2(value) && globalThis.Symbol.asyncIterator in value;
+}
+function IsIterator2(value) {
+  return IsObject2(value) && globalThis.Symbol.iterator in value;
+}
+function IsStandardObject(value) {
+  return IsObject2(value) && (globalThis.Object.getPrototypeOf(value) === Object.prototype || globalThis.Object.getPrototypeOf(value) === null);
+}
+function IsPromise(value) {
+  return value instanceof globalThis.Promise;
+}
+function IsDate2(value) {
+  return value instanceof Date && globalThis.Number.isFinite(value.getTime());
+}
+function IsMap(value) {
+  return value instanceof globalThis.Map;
+}
+function IsSet(value) {
+  return value instanceof globalThis.Set;
+}
+function IsTypedArray(value) {
+  return globalThis.ArrayBuffer.isView(value);
+}
+function IsUint8Array2(value) {
+  return value instanceof globalThis.Uint8Array;
+}
+function HasPropertyKey2(value, key) {
+  return key in value;
+}
+function IsObject2(value) {
+  return value !== null && typeof value === "object";
+}
+function IsArray2(value) {
+  return globalThis.Array.isArray(value) && !globalThis.ArrayBuffer.isView(value);
+}
+function IsUndefined2(value) {
+  return value === void 0;
+}
+function IsNull2(value) {
+  return value === null;
+}
+function IsBoolean2(value) {
+  return typeof value === "boolean";
+}
+function IsNumber2(value) {
+  return typeof value === "number";
+}
+function IsInteger(value) {
+  return globalThis.Number.isInteger(value);
+}
+function IsBigInt2(value) {
+  return typeof value === "bigint";
+}
+function IsString2(value) {
+  return typeof value === "string";
+}
+function IsFunction2(value) {
+  return typeof value === "function";
+}
+function IsSymbol2(value) {
+  return typeof value === "symbol";
+}
+function IsValueType(value) {
+  return IsBigInt2(value) || IsBoolean2(value) || IsNull2(value) || IsNumber2(value) || IsString2(value) || IsSymbol2(value) || IsUndefined2(value);
+}
+
+// node_modules/@sinclair/typebox/build/esm/system/policy.mjs
+var TypeSystemPolicy;
+(function(TypeSystemPolicy2) {
+  TypeSystemPolicy2.InstanceMode = "default";
+  TypeSystemPolicy2.ExactOptionalPropertyTypes = false;
+  TypeSystemPolicy2.AllowArrayObject = false;
+  TypeSystemPolicy2.AllowNaN = false;
+  TypeSystemPolicy2.AllowNullVoid = false;
+  function IsExactOptionalProperty(value, key) {
+    return TypeSystemPolicy2.ExactOptionalPropertyTypes ? key in value : value[key] !== void 0;
+  }
+  TypeSystemPolicy2.IsExactOptionalProperty = IsExactOptionalProperty;
+  function IsObjectLike(value) {
+    const isObject2 = IsObject2(value);
+    return TypeSystemPolicy2.AllowArrayObject ? isObject2 : isObject2 && !IsArray2(value);
+  }
+  TypeSystemPolicy2.IsObjectLike = IsObjectLike;
+  function IsRecordLike(value) {
+    return IsObjectLike(value) && !(value instanceof Date) && !(value instanceof Uint8Array);
+  }
+  TypeSystemPolicy2.IsRecordLike = IsRecordLike;
+  function IsNumberLike(value) {
+    return TypeSystemPolicy2.AllowNaN ? IsNumber2(value) : Number.isFinite(value);
+  }
+  TypeSystemPolicy2.IsNumberLike = IsNumberLike;
+  function IsVoidLike(value) {
+    const isUndefined = IsUndefined2(value);
+    return TypeSystemPolicy2.AllowNullVoid ? isUndefined || value === null : isUndefined;
+  }
+  TypeSystemPolicy2.IsVoidLike = IsVoidLike;
+})(TypeSystemPolicy || (TypeSystemPolicy = {}));
+
+// node_modules/@sinclair/typebox/build/esm/type/create/immutable.mjs
+function ImmutableArray(value) {
+  return globalThis.Object.freeze(value).map((value2) => Immutable(value2));
+}
+function ImmutableDate(value) {
+  return value;
+}
+function ImmutableUint8Array(value) {
+  return value;
+}
+function ImmutableRegExp(value) {
+  return value;
+}
+function ImmutableObject(value) {
+  const result = {};
+  for (const key of Object.getOwnPropertyNames(value)) {
+    result[key] = Immutable(value[key]);
+  }
+  for (const key of Object.getOwnPropertySymbols(value)) {
+    result[key] = Immutable(value[key]);
+  }
+  return globalThis.Object.freeze(result);
+}
+function Immutable(value) {
+  return IsArray(value) ? ImmutableArray(value) : IsDate(value) ? ImmutableDate(value) : IsUint8Array(value) ? ImmutableUint8Array(value) : IsRegExp(value) ? ImmutableRegExp(value) : IsObject(value) ? ImmutableObject(value) : value;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/create/type.mjs
+function CreateType(schema, options) {
+  const result = options !== void 0 ? { ...options, ...schema } : schema;
+  switch (TypeSystemPolicy.InstanceMode) {
+    case "freeze":
+      return Immutable(result);
+    case "clone":
+      return Clone(result);
+    default:
+      return result;
+  }
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/error/error.mjs
+var TypeBoxError = class extends Error {
+  constructor(message) {
+    super(message);
+  }
+};
+
+// node_modules/@sinclair/typebox/build/esm/type/symbols/symbols.mjs
+var TransformKind = Symbol.for("TypeBox.Transform");
+var ReadonlyKind = Symbol.for("TypeBox.Readonly");
+var OptionalKind = Symbol.for("TypeBox.Optional");
+var Hint = Symbol.for("TypeBox.Hint");
+var Kind = Symbol.for("TypeBox.Kind");
+
+// node_modules/@sinclair/typebox/build/esm/type/guard/kind.mjs
+function IsReadonly(value) {
+  return IsObject(value) && value[ReadonlyKind] === "Readonly";
+}
+function IsOptional(value) {
+  return IsObject(value) && value[OptionalKind] === "Optional";
+}
+function IsAny(value) {
+  return IsKindOf(value, "Any");
+}
+function IsArgument(value) {
+  return IsKindOf(value, "Argument");
+}
+function IsArray3(value) {
+  return IsKindOf(value, "Array");
+}
+function IsAsyncIterator3(value) {
+  return IsKindOf(value, "AsyncIterator");
+}
+function IsBigInt3(value) {
+  return IsKindOf(value, "BigInt");
+}
+function IsBoolean3(value) {
+  return IsKindOf(value, "Boolean");
+}
+function IsComputed(value) {
+  return IsKindOf(value, "Computed");
+}
+function IsConstructor(value) {
+  return IsKindOf(value, "Constructor");
+}
+function IsDate3(value) {
+  return IsKindOf(value, "Date");
+}
+function IsFunction3(value) {
+  return IsKindOf(value, "Function");
+}
+function IsInteger2(value) {
+  return IsKindOf(value, "Integer");
+}
+function IsIntersect(value) {
+  return IsKindOf(value, "Intersect");
+}
+function IsIterator3(value) {
+  return IsKindOf(value, "Iterator");
+}
+function IsKindOf(value, kind) {
+  return IsObject(value) && Kind in value && value[Kind] === kind;
+}
+function IsLiteralValue(value) {
+  return IsBoolean(value) || IsNumber(value) || IsString(value);
+}
+function IsLiteral(value) {
+  return IsKindOf(value, "Literal");
+}
+function IsMappedKey(value) {
+  return IsKindOf(value, "MappedKey");
+}
+function IsMappedResult(value) {
+  return IsKindOf(value, "MappedResult");
+}
+function IsNever(value) {
+  return IsKindOf(value, "Never");
+}
+function IsNot(value) {
+  return IsKindOf(value, "Not");
+}
+function IsNull3(value) {
+  return IsKindOf(value, "Null");
+}
+function IsNumber3(value) {
+  return IsKindOf(value, "Number");
+}
+function IsObject3(value) {
+  return IsKindOf(value, "Object");
+}
+function IsPromise2(value) {
+  return IsKindOf(value, "Promise");
+}
+function IsRecord(value) {
+  return IsKindOf(value, "Record");
+}
+function IsRef(value) {
+  return IsKindOf(value, "Ref");
+}
+function IsRegExp2(value) {
+  return IsKindOf(value, "RegExp");
+}
+function IsString3(value) {
+  return IsKindOf(value, "String");
+}
+function IsSymbol3(value) {
+  return IsKindOf(value, "Symbol");
+}
+function IsTemplateLiteral(value) {
+  return IsKindOf(value, "TemplateLiteral");
+}
+function IsThis(value) {
+  return IsKindOf(value, "This");
+}
+function IsTransform(value) {
+  return IsObject(value) && TransformKind in value;
+}
+function IsTuple(value) {
+  return IsKindOf(value, "Tuple");
+}
+function IsUndefined3(value) {
+  return IsKindOf(value, "Undefined");
+}
+function IsUnion(value) {
+  return IsKindOf(value, "Union");
+}
+function IsUint8Array3(value) {
+  return IsKindOf(value, "Uint8Array");
+}
+function IsUnknown(value) {
+  return IsKindOf(value, "Unknown");
+}
+function IsUnsafe(value) {
+  return IsKindOf(value, "Unsafe");
+}
+function IsVoid(value) {
+  return IsKindOf(value, "Void");
+}
+function IsKind(value) {
+  return IsObject(value) && Kind in value && IsString(value[Kind]);
+}
+function IsSchema(value) {
+  return IsAny(value) || IsArgument(value) || IsArray3(value) || IsBoolean3(value) || IsBigInt3(value) || IsAsyncIterator3(value) || IsComputed(value) || IsConstructor(value) || IsDate3(value) || IsFunction3(value) || IsInteger2(value) || IsIntersect(value) || IsIterator3(value) || IsLiteral(value) || IsMappedKey(value) || IsMappedResult(value) || IsNever(value) || IsNot(value) || IsNull3(value) || IsNumber3(value) || IsObject3(value) || IsPromise2(value) || IsRecord(value) || IsRef(value) || IsRegExp2(value) || IsString3(value) || IsSymbol3(value) || IsTemplateLiteral(value) || IsThis(value) || IsTuple(value) || IsUndefined3(value) || IsUnion(value) || IsUint8Array3(value) || IsUnknown(value) || IsUnsafe(value) || IsVoid(value) || IsKind(value);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/guard/type.mjs
+var type_exports = {};
+__export(type_exports, {
+  IsAny: () => IsAny2,
+  IsArgument: () => IsArgument2,
+  IsArray: () => IsArray4,
+  IsAsyncIterator: () => IsAsyncIterator4,
+  IsBigInt: () => IsBigInt4,
+  IsBoolean: () => IsBoolean4,
+  IsComputed: () => IsComputed2,
+  IsConstructor: () => IsConstructor2,
+  IsDate: () => IsDate4,
+  IsFunction: () => IsFunction4,
+  IsImport: () => IsImport,
+  IsInteger: () => IsInteger3,
+  IsIntersect: () => IsIntersect2,
+  IsIterator: () => IsIterator4,
+  IsKind: () => IsKind2,
+  IsKindOf: () => IsKindOf2,
+  IsLiteral: () => IsLiteral2,
+  IsLiteralBoolean: () => IsLiteralBoolean,
+  IsLiteralNumber: () => IsLiteralNumber,
+  IsLiteralString: () => IsLiteralString,
+  IsLiteralValue: () => IsLiteralValue2,
+  IsMappedKey: () => IsMappedKey2,
+  IsMappedResult: () => IsMappedResult2,
+  IsNever: () => IsNever2,
+  IsNot: () => IsNot2,
+  IsNull: () => IsNull4,
+  IsNumber: () => IsNumber4,
+  IsObject: () => IsObject4,
+  IsOptional: () => IsOptional2,
+  IsPromise: () => IsPromise3,
+  IsProperties: () => IsProperties,
+  IsReadonly: () => IsReadonly2,
+  IsRecord: () => IsRecord2,
+  IsRecursive: () => IsRecursive,
+  IsRef: () => IsRef2,
+  IsRegExp: () => IsRegExp3,
+  IsSchema: () => IsSchema2,
+  IsString: () => IsString4,
+  IsSymbol: () => IsSymbol4,
+  IsTemplateLiteral: () => IsTemplateLiteral2,
+  IsThis: () => IsThis2,
+  IsTransform: () => IsTransform2,
+  IsTuple: () => IsTuple2,
+  IsUint8Array: () => IsUint8Array4,
+  IsUndefined: () => IsUndefined4,
+  IsUnion: () => IsUnion2,
+  IsUnionLiteral: () => IsUnionLiteral,
+  IsUnknown: () => IsUnknown2,
+  IsUnsafe: () => IsUnsafe2,
+  IsVoid: () => IsVoid2,
+  TypeGuardUnknownTypeError: () => TypeGuardUnknownTypeError
+});
+var TypeGuardUnknownTypeError = class extends TypeBoxError {
+};
+var KnownTypes = [
+  "Argument",
+  "Any",
+  "Array",
+  "AsyncIterator",
+  "BigInt",
+  "Boolean",
+  "Computed",
+  "Constructor",
+  "Date",
+  "Enum",
+  "Function",
+  "Integer",
+  "Intersect",
+  "Iterator",
+  "Literal",
+  "MappedKey",
+  "MappedResult",
+  "Not",
+  "Null",
+  "Number",
+  "Object",
+  "Promise",
+  "Record",
+  "Ref",
+  "RegExp",
+  "String",
+  "Symbol",
+  "TemplateLiteral",
+  "This",
+  "Tuple",
+  "Undefined",
+  "Union",
+  "Uint8Array",
+  "Unknown",
+  "Void"
+];
+function IsPattern(value) {
+  try {
+    new RegExp(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function IsControlCharacterFree(value) {
+  if (!IsString(value))
+    return false;
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code >= 7 && code <= 13 || code === 27 || code === 127) {
+      return false;
+    }
+  }
+  return true;
+}
+function IsAdditionalProperties(value) {
+  return IsOptionalBoolean(value) || IsSchema2(value);
+}
+function IsOptionalBigInt(value) {
+  return IsUndefined(value) || IsBigInt(value);
+}
+function IsOptionalNumber(value) {
+  return IsUndefined(value) || IsNumber(value);
+}
+function IsOptionalBoolean(value) {
+  return IsUndefined(value) || IsBoolean(value);
+}
+function IsOptionalString(value) {
+  return IsUndefined(value) || IsString(value);
+}
+function IsOptionalPattern(value) {
+  return IsUndefined(value) || IsString(value) && IsControlCharacterFree(value) && IsPattern(value);
+}
+function IsOptionalFormat(value) {
+  return IsUndefined(value) || IsString(value) && IsControlCharacterFree(value);
+}
+function IsOptionalSchema(value) {
+  return IsUndefined(value) || IsSchema2(value);
+}
+function IsReadonly2(value) {
+  return IsObject(value) && value[ReadonlyKind] === "Readonly";
+}
+function IsOptional2(value) {
+  return IsObject(value) && value[OptionalKind] === "Optional";
+}
+function IsAny2(value) {
+  return IsKindOf2(value, "Any") && IsOptionalString(value.$id);
+}
+function IsArgument2(value) {
+  return IsKindOf2(value, "Argument") && IsNumber(value.index);
+}
+function IsArray4(value) {
+  return IsKindOf2(value, "Array") && value.type === "array" && IsOptionalString(value.$id) && IsSchema2(value.items) && IsOptionalNumber(value.minItems) && IsOptionalNumber(value.maxItems) && IsOptionalBoolean(value.uniqueItems) && IsOptionalSchema(value.contains) && IsOptionalNumber(value.minContains) && IsOptionalNumber(value.maxContains);
+}
+function IsAsyncIterator4(value) {
+  return IsKindOf2(value, "AsyncIterator") && value.type === "AsyncIterator" && IsOptionalString(value.$id) && IsSchema2(value.items);
+}
+function IsBigInt4(value) {
+  return IsKindOf2(value, "BigInt") && value.type === "bigint" && IsOptionalString(value.$id) && IsOptionalBigInt(value.exclusiveMaximum) && IsOptionalBigInt(value.exclusiveMinimum) && IsOptionalBigInt(value.maximum) && IsOptionalBigInt(value.minimum) && IsOptionalBigInt(value.multipleOf);
+}
+function IsBoolean4(value) {
+  return IsKindOf2(value, "Boolean") && value.type === "boolean" && IsOptionalString(value.$id);
+}
+function IsComputed2(value) {
+  return IsKindOf2(value, "Computed") && IsString(value.target) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema));
+}
+function IsConstructor2(value) {
+  return IsKindOf2(value, "Constructor") && value.type === "Constructor" && IsOptionalString(value.$id) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema)) && IsSchema2(value.returns);
+}
+function IsDate4(value) {
+  return IsKindOf2(value, "Date") && value.type === "Date" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximumTimestamp) && IsOptionalNumber(value.exclusiveMinimumTimestamp) && IsOptionalNumber(value.maximumTimestamp) && IsOptionalNumber(value.minimumTimestamp) && IsOptionalNumber(value.multipleOfTimestamp);
+}
+function IsFunction4(value) {
+  return IsKindOf2(value, "Function") && value.type === "Function" && IsOptionalString(value.$id) && IsArray(value.parameters) && value.parameters.every((schema) => IsSchema2(schema)) && IsSchema2(value.returns);
+}
+function IsImport(value) {
+  return IsKindOf2(value, "Import") && HasPropertyKey(value, "$defs") && IsObject(value.$defs) && IsProperties(value.$defs) && HasPropertyKey(value, "$ref") && IsString(value.$ref) && value.$ref in value.$defs;
+}
+function IsInteger3(value) {
+  return IsKindOf2(value, "Integer") && value.type === "integer" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximum) && IsOptionalNumber(value.exclusiveMinimum) && IsOptionalNumber(value.maximum) && IsOptionalNumber(value.minimum) && IsOptionalNumber(value.multipleOf);
+}
+function IsProperties(value) {
+  return IsObject(value) && Object.entries(value).every(([key, schema]) => IsControlCharacterFree(key) && IsSchema2(schema));
+}
+function IsIntersect2(value) {
+  return IsKindOf2(value, "Intersect") && (IsString(value.type) && value.type !== "object" ? false : true) && IsArray(value.allOf) && value.allOf.every((schema) => IsSchema2(schema) && !IsTransform2(schema)) && IsOptionalString(value.type) && (IsOptionalBoolean(value.unevaluatedProperties) || IsOptionalSchema(value.unevaluatedProperties)) && IsOptionalString(value.$id);
+}
+function IsIterator4(value) {
+  return IsKindOf2(value, "Iterator") && value.type === "Iterator" && IsOptionalString(value.$id) && IsSchema2(value.items);
+}
+function IsKindOf2(value, kind) {
+  return IsObject(value) && Kind in value && value[Kind] === kind;
+}
+function IsLiteralString(value) {
+  return IsLiteral2(value) && IsString(value.const);
+}
+function IsLiteralNumber(value) {
+  return IsLiteral2(value) && IsNumber(value.const);
+}
+function IsLiteralBoolean(value) {
+  return IsLiteral2(value) && IsBoolean(value.const);
+}
+function IsLiteral2(value) {
+  return IsKindOf2(value, "Literal") && IsOptionalString(value.$id) && IsLiteralValue2(value.const);
+}
+function IsLiteralValue2(value) {
+  return IsBoolean(value) || IsNumber(value) || IsString(value);
+}
+function IsMappedKey2(value) {
+  return IsKindOf2(value, "MappedKey") && IsArray(value.keys) && value.keys.every((key) => IsNumber(key) || IsString(key));
+}
+function IsMappedResult2(value) {
+  return IsKindOf2(value, "MappedResult") && IsProperties(value.properties);
+}
+function IsNever2(value) {
+  return IsKindOf2(value, "Never") && IsObject(value.not) && Object.getOwnPropertyNames(value.not).length === 0;
+}
+function IsNot2(value) {
+  return IsKindOf2(value, "Not") && IsSchema2(value.not);
+}
+function IsNull4(value) {
+  return IsKindOf2(value, "Null") && value.type === "null" && IsOptionalString(value.$id);
+}
+function IsNumber4(value) {
+  return IsKindOf2(value, "Number") && value.type === "number" && IsOptionalString(value.$id) && IsOptionalNumber(value.exclusiveMaximum) && IsOptionalNumber(value.exclusiveMinimum) && IsOptionalNumber(value.maximum) && IsOptionalNumber(value.minimum) && IsOptionalNumber(value.multipleOf);
+}
+function IsObject4(value) {
+  return IsKindOf2(value, "Object") && value.type === "object" && IsOptionalString(value.$id) && IsProperties(value.properties) && IsAdditionalProperties(value.additionalProperties) && IsOptionalNumber(value.minProperties) && IsOptionalNumber(value.maxProperties);
+}
+function IsPromise3(value) {
+  return IsKindOf2(value, "Promise") && value.type === "Promise" && IsOptionalString(value.$id) && IsSchema2(value.item);
+}
+function IsRecord2(value) {
+  return IsKindOf2(value, "Record") && value.type === "object" && IsOptionalString(value.$id) && IsAdditionalProperties(value.additionalProperties) && IsObject(value.patternProperties) && ((schema) => {
+    const keys = Object.getOwnPropertyNames(schema.patternProperties);
+    return keys.length === 1 && IsPattern(keys[0]) && IsObject(schema.patternProperties) && IsSchema2(schema.patternProperties[keys[0]]);
+  })(value);
+}
+function IsRecursive(value) {
+  return IsObject(value) && Hint in value && value[Hint] === "Recursive";
+}
+function IsRef2(value) {
+  return IsKindOf2(value, "Ref") && IsOptionalString(value.$id) && IsString(value.$ref);
+}
+function IsRegExp3(value) {
+  return IsKindOf2(value, "RegExp") && IsOptionalString(value.$id) && IsString(value.source) && IsString(value.flags) && IsOptionalNumber(value.maxLength) && IsOptionalNumber(value.minLength);
+}
+function IsString4(value) {
+  return IsKindOf2(value, "String") && value.type === "string" && IsOptionalString(value.$id) && IsOptionalNumber(value.minLength) && IsOptionalNumber(value.maxLength) && IsOptionalPattern(value.pattern) && IsOptionalFormat(value.format);
+}
+function IsSymbol4(value) {
+  return IsKindOf2(value, "Symbol") && value.type === "symbol" && IsOptionalString(value.$id);
+}
+function IsTemplateLiteral2(value) {
+  return IsKindOf2(value, "TemplateLiteral") && value.type === "string" && IsString(value.pattern) && value.pattern[0] === "^" && value.pattern[value.pattern.length - 1] === "$";
+}
+function IsThis2(value) {
+  return IsKindOf2(value, "This") && IsOptionalString(value.$id) && IsString(value.$ref);
+}
+function IsTransform2(value) {
+  return IsObject(value) && TransformKind in value;
+}
+function IsTuple2(value) {
+  return IsKindOf2(value, "Tuple") && value.type === "array" && IsOptionalString(value.$id) && IsNumber(value.minItems) && IsNumber(value.maxItems) && value.minItems === value.maxItems && // empty
+  (IsUndefined(value.items) && IsUndefined(value.additionalItems) && value.minItems === 0 || IsArray(value.items) && value.items.every((schema) => IsSchema2(schema)));
+}
+function IsUndefined4(value) {
+  return IsKindOf2(value, "Undefined") && value.type === "undefined" && IsOptionalString(value.$id);
+}
+function IsUnionLiteral(value) {
+  return IsUnion2(value) && value.anyOf.every((schema) => IsLiteralString(schema) || IsLiteralNumber(schema));
+}
+function IsUnion2(value) {
+  return IsKindOf2(value, "Union") && IsOptionalString(value.$id) && IsObject(value) && IsArray(value.anyOf) && value.anyOf.every((schema) => IsSchema2(schema));
+}
+function IsUint8Array4(value) {
+  return IsKindOf2(value, "Uint8Array") && value.type === "Uint8Array" && IsOptionalString(value.$id) && IsOptionalNumber(value.minByteLength) && IsOptionalNumber(value.maxByteLength);
+}
+function IsUnknown2(value) {
+  return IsKindOf2(value, "Unknown") && IsOptionalString(value.$id);
+}
+function IsUnsafe2(value) {
+  return IsKindOf2(value, "Unsafe");
+}
+function IsVoid2(value) {
+  return IsKindOf2(value, "Void") && value.type === "void" && IsOptionalString(value.$id);
+}
+function IsKind2(value) {
+  return IsObject(value) && Kind in value && IsString(value[Kind]) && !KnownTypes.includes(value[Kind]);
+}
+function IsSchema2(value) {
+  return IsObject(value) && (IsAny2(value) || IsArgument2(value) || IsArray4(value) || IsBoolean4(value) || IsBigInt4(value) || IsAsyncIterator4(value) || IsComputed2(value) || IsConstructor2(value) || IsDate4(value) || IsFunction4(value) || IsInteger3(value) || IsIntersect2(value) || IsIterator4(value) || IsLiteral2(value) || IsMappedKey2(value) || IsMappedResult2(value) || IsNever2(value) || IsNot2(value) || IsNull4(value) || IsNumber4(value) || IsObject4(value) || IsPromise3(value) || IsRecord2(value) || IsRef2(value) || IsRegExp3(value) || IsString4(value) || IsSymbol4(value) || IsTemplateLiteral2(value) || IsThis2(value) || IsTuple2(value) || IsUndefined4(value) || IsUnion2(value) || IsUint8Array4(value) || IsUnknown2(value) || IsUnsafe2(value) || IsVoid2(value) || IsKind2(value));
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/patterns/patterns.mjs
+var PatternBoolean = "(true|false)";
+var PatternNumber = "(0|[1-9][0-9]*)";
+var PatternString = "(.*)";
+var PatternNever = "(?!.*)";
+var PatternBooleanExact = `^${PatternBoolean}$`;
+var PatternNumberExact = `^${PatternNumber}$`;
+var PatternStringExact = `^${PatternString}$`;
+var PatternNeverExact = `^${PatternNever}$`;
+
+// node_modules/@sinclair/typebox/build/esm/type/registry/format.mjs
+var format_exports = {};
+__export(format_exports, {
+  Clear: () => Clear,
+  Delete: () => Delete,
+  Entries: () => Entries,
+  Get: () => Get,
+  Has: () => Has,
+  Set: () => Set2
+});
+var map3 = /* @__PURE__ */ new Map();
+function Entries() {
+  return new Map(map3);
+}
+function Clear() {
+  return map3.clear();
+}
+function Delete(format3) {
+  return map3.delete(format3);
+}
+function Has(format3) {
+  return map3.has(format3);
+}
+function Set2(format3, func) {
+  map3.set(format3, func);
+}
+function Get(format3) {
+  return map3.get(format3);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/registry/type.mjs
+var type_exports2 = {};
+__export(type_exports2, {
+  Clear: () => Clear2,
+  Delete: () => Delete2,
+  Entries: () => Entries2,
+  Get: () => Get2,
+  Has: () => Has2,
+  Set: () => Set3
+});
+var map4 = /* @__PURE__ */ new Map();
+function Entries2() {
+  return new Map(map4);
+}
+function Clear2() {
+  return map4.clear();
+}
+function Delete2(kind) {
+  return map4.delete(kind);
+}
+function Has2(kind) {
+  return map4.has(kind);
+}
+function Set3(kind, func) {
+  map4.set(kind, func);
+}
+function Get2(kind) {
+  return map4.get(kind);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/sets/set.mjs
+function SetIncludes(T, S) {
+  return T.includes(S);
+}
+function SetDistinct(T) {
+  return [...new Set(T)];
+}
+function SetIntersect(T, S) {
+  return T.filter((L) => S.includes(L));
+}
+function SetIntersectManyResolve(T, Init) {
+  return T.reduce((Acc, L) => {
+    return SetIntersect(Acc, L);
+  }, Init);
+}
+function SetIntersectMany(T) {
+  return T.length === 1 ? T[0] : T.length > 1 ? SetIntersectManyResolve(T.slice(1), T[0]) : [];
+}
+function SetUnionMany(T) {
+  const Acc = [];
+  for (const L of T)
+    Acc.push(...L);
+  return Acc;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/any/any.mjs
+function Any(options) {
+  return CreateType({ [Kind]: "Any" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/array/array.mjs
+function Array2(items, options) {
+  return CreateType({ [Kind]: "Array", type: "array", items }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/argument/argument.mjs
+function Argument(index2) {
+  return CreateType({ [Kind]: "Argument", index: index2 });
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/async-iterator/async-iterator.mjs
+function AsyncIterator(items, options) {
+  return CreateType({ [Kind]: "AsyncIterator", type: "AsyncIterator", items }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/computed/computed.mjs
+function Computed(target, parameters, options) {
+  return CreateType({ [Kind]: "Computed", target, parameters }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/discard/discard.mjs
+function DiscardKey(value, key) {
+  const { [key]: _, ...rest } = value;
+  return rest;
+}
+function Discard(value, keys) {
+  return keys.reduce((acc, key) => DiscardKey(acc, key), value);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/never/never.mjs
+function Never(options) {
+  return CreateType({ [Kind]: "Never", not: {} }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped-result.mjs
+function MappedResult(properties) {
+  return CreateType({
+    [Kind]: "MappedResult",
+    properties
+  });
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/constructor/constructor.mjs
+function Constructor(parameters, returns, options) {
+  return CreateType({ [Kind]: "Constructor", type: "Constructor", parameters, returns }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/function/function.mjs
+function Function(parameters, returns, options) {
+  return CreateType({ [Kind]: "Function", type: "Function", parameters, returns }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/union/union-create.mjs
+function UnionCreate(T, options) {
+  return CreateType({ [Kind]: "Union", anyOf: T }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/union/union-evaluated.mjs
+function IsUnionOptional(types) {
+  return types.some((type2) => IsOptional(type2));
+}
+function RemoveOptionalFromRest(types) {
+  return types.map((left2) => IsOptional(left2) ? RemoveOptionalFromType(left2) : left2);
+}
+function RemoveOptionalFromType(T) {
+  return Discard(T, [OptionalKind]);
+}
+function ResolveUnion(types, options) {
+  const isOptional = IsUnionOptional(types);
+  return isOptional ? Optional(UnionCreate(RemoveOptionalFromRest(types), options)) : UnionCreate(RemoveOptionalFromRest(types), options);
+}
+function UnionEvaluated(T, options) {
+  return T.length === 1 ? CreateType(T[0], options) : T.length === 0 ? Never(options) : ResolveUnion(T, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/union/union.mjs
+function Union(types, options) {
+  return types.length === 0 ? Never(options) : types.length === 1 ? CreateType(types[0], options) : UnionCreate(types, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/parse.mjs
+var TemplateLiteralParserError = class extends TypeBoxError {
+};
+function Unescape(pattern) {
+  return pattern.replace(/\\\$/g, "$").replace(/\\\*/g, "*").replace(/\\\^/g, "^").replace(/\\\|/g, "|").replace(/\\\(/g, "(").replace(/\\\)/g, ")");
+}
+function IsNonEscaped(pattern, index2, char) {
+  return pattern[index2] === char && pattern.charCodeAt(index2 - 1) !== 92;
+}
+function IsOpenParen(pattern, index2) {
+  return IsNonEscaped(pattern, index2, "(");
+}
+function IsCloseParen(pattern, index2) {
+  return IsNonEscaped(pattern, index2, ")");
+}
+function IsSeparator(pattern, index2) {
+  return IsNonEscaped(pattern, index2, "|");
+}
+function IsGroup(pattern) {
+  if (!(IsOpenParen(pattern, 0) && IsCloseParen(pattern, pattern.length - 1)))
+    return false;
+  let count2 = 0;
+  for (let index2 = 0; index2 < pattern.length; index2++) {
+    if (IsOpenParen(pattern, index2))
+      count2 += 1;
+    if (IsCloseParen(pattern, index2))
+      count2 -= 1;
+    if (count2 === 0 && index2 !== pattern.length - 1)
+      return false;
+  }
+  return true;
+}
+function InGroup(pattern) {
+  return pattern.slice(1, pattern.length - 1);
+}
+function IsPrecedenceOr(pattern) {
+  let count2 = 0;
+  for (let index2 = 0; index2 < pattern.length; index2++) {
+    if (IsOpenParen(pattern, index2))
+      count2 += 1;
+    if (IsCloseParen(pattern, index2))
+      count2 -= 1;
+    if (IsSeparator(pattern, index2) && count2 === 0)
+      return true;
+  }
+  return false;
+}
+function IsPrecedenceAnd(pattern) {
+  for (let index2 = 0; index2 < pattern.length; index2++) {
+    if (IsOpenParen(pattern, index2))
+      return true;
+  }
+  return false;
+}
+function Or(pattern) {
+  let [count2, start2] = [0, 0];
+  const expressions = [];
+  for (let index2 = 0; index2 < pattern.length; index2++) {
+    if (IsOpenParen(pattern, index2))
+      count2 += 1;
+    if (IsCloseParen(pattern, index2))
+      count2 -= 1;
+    if (IsSeparator(pattern, index2) && count2 === 0) {
+      const range4 = pattern.slice(start2, index2);
+      if (range4.length > 0)
+        expressions.push(TemplateLiteralParse(range4));
+      start2 = index2 + 1;
+    }
+  }
+  const range3 = pattern.slice(start2);
+  if (range3.length > 0)
+    expressions.push(TemplateLiteralParse(range3));
+  if (expressions.length === 0)
+    return { type: "const", const: "" };
+  if (expressions.length === 1)
+    return expressions[0];
+  return { type: "or", expr: expressions };
+}
+function And(pattern) {
+  function Group(value, index2) {
+    if (!IsOpenParen(value, index2))
+      throw new TemplateLiteralParserError(`TemplateLiteralParser: Index must point to open parens`);
+    let count2 = 0;
+    for (let scan = index2; scan < value.length; scan++) {
+      if (IsOpenParen(value, scan))
+        count2 += 1;
+      if (IsCloseParen(value, scan))
+        count2 -= 1;
+      if (count2 === 0)
+        return [index2, scan];
+    }
+    throw new TemplateLiteralParserError(`TemplateLiteralParser: Unclosed group parens in expression`);
+  }
+  function Range(pattern2, index2) {
+    for (let scan = index2; scan < pattern2.length; scan++) {
+      if (IsOpenParen(pattern2, scan))
+        return [index2, scan];
+    }
+    return [index2, pattern2.length];
+  }
+  const expressions = [];
+  for (let index2 = 0; index2 < pattern.length; index2++) {
+    if (IsOpenParen(pattern, index2)) {
+      const [start2, end] = Group(pattern, index2);
+      const range3 = pattern.slice(start2, end + 1);
+      expressions.push(TemplateLiteralParse(range3));
+      index2 = end;
+    } else {
+      const [start2, end] = Range(pattern, index2);
+      const range3 = pattern.slice(start2, end);
+      if (range3.length > 0)
+        expressions.push(TemplateLiteralParse(range3));
+      index2 = end - 1;
+    }
+  }
+  return expressions.length === 0 ? { type: "const", const: "" } : expressions.length === 1 ? expressions[0] : { type: "and", expr: expressions };
+}
+function TemplateLiteralParse(pattern) {
+  return IsGroup(pattern) ? TemplateLiteralParse(InGroup(pattern)) : IsPrecedenceOr(pattern) ? Or(pattern) : IsPrecedenceAnd(pattern) ? And(pattern) : { type: "const", const: Unescape(pattern) };
+}
+function TemplateLiteralParseExact(pattern) {
+  return TemplateLiteralParse(pattern.slice(1, pattern.length - 1));
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/finite.mjs
+var TemplateLiteralFiniteError = class extends TypeBoxError {
+};
+function IsNumberExpression(expression) {
+  return expression.type === "or" && expression.expr.length === 2 && expression.expr[0].type === "const" && expression.expr[0].const === "0" && expression.expr[1].type === "const" && expression.expr[1].const === "[1-9][0-9]*";
+}
+function IsBooleanExpression(expression) {
+  return expression.type === "or" && expression.expr.length === 2 && expression.expr[0].type === "const" && expression.expr[0].const === "true" && expression.expr[1].type === "const" && expression.expr[1].const === "false";
+}
+function IsStringExpression(expression) {
+  return expression.type === "const" && expression.const === ".*";
+}
+function IsTemplateLiteralExpressionFinite(expression) {
+  return IsNumberExpression(expression) || IsStringExpression(expression) ? false : IsBooleanExpression(expression) ? true : expression.type === "and" ? expression.expr.every((expr) => IsTemplateLiteralExpressionFinite(expr)) : expression.type === "or" ? expression.expr.every((expr) => IsTemplateLiteralExpressionFinite(expr)) : expression.type === "const" ? true : (() => {
+    throw new TemplateLiteralFiniteError(`Unknown expression type`);
+  })();
+}
+function IsTemplateLiteralFinite(schema) {
+  const expression = TemplateLiteralParseExact(schema.pattern);
+  return IsTemplateLiteralExpressionFinite(expression);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/generate.mjs
+var TemplateLiteralGenerateError = class extends TypeBoxError {
+};
+function* GenerateReduce(buffer) {
+  if (buffer.length === 1)
+    return yield* buffer[0];
+  for (const left2 of buffer[0]) {
+    for (const right2 of GenerateReduce(buffer.slice(1))) {
+      yield `${left2}${right2}`;
+    }
+  }
+}
+function* GenerateAnd(expression) {
+  return yield* GenerateReduce(expression.expr.map((expr) => [...TemplateLiteralExpressionGenerate(expr)]));
+}
+function* GenerateOr(expression) {
+  for (const expr of expression.expr)
+    yield* TemplateLiteralExpressionGenerate(expr);
+}
+function* GenerateConst(expression) {
+  return yield expression.const;
+}
+function* TemplateLiteralExpressionGenerate(expression) {
+  return expression.type === "and" ? yield* GenerateAnd(expression) : expression.type === "or" ? yield* GenerateOr(expression) : expression.type === "const" ? yield* GenerateConst(expression) : (() => {
+    throw new TemplateLiteralGenerateError("Unknown expression");
+  })();
+}
+function TemplateLiteralGenerate(schema) {
+  const expression = TemplateLiteralParseExact(schema.pattern);
+  return IsTemplateLiteralExpressionFinite(expression) ? [...TemplateLiteralExpressionGenerate(expression)] : [];
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/literal/literal.mjs
+function Literal(value, options) {
+  return CreateType({
+    [Kind]: "Literal",
+    const: value,
+    type: typeof value
+  }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/boolean/boolean.mjs
+function Boolean2(options) {
+  return CreateType({ [Kind]: "Boolean", type: "boolean" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/bigint/bigint.mjs
+function BigInt2(options) {
+  return CreateType({ [Kind]: "BigInt", type: "bigint" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/number/number.mjs
+function Number2(options) {
+  return CreateType({ [Kind]: "Number", type: "number" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/string/string.mjs
+function String2(options) {
+  return CreateType({ [Kind]: "String", type: "string" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/syntax.mjs
+function* FromUnion(syntax) {
+  const trim = syntax.trim().replace(/"|'/g, "");
+  return trim === "boolean" ? yield Boolean2() : trim === "number" ? yield Number2() : trim === "bigint" ? yield BigInt2() : trim === "string" ? yield String2() : yield (() => {
+    const literals = trim.split("|").map((literal) => Literal(literal.trim()));
+    return literals.length === 0 ? Never() : literals.length === 1 ? literals[0] : UnionEvaluated(literals);
+  })();
+}
+function* FromTerminal(syntax) {
+  if (syntax[1] !== "{") {
+    const L = Literal("$");
+    const R = FromSyntax(syntax.slice(1));
+    return yield* [L, ...R];
+  }
+  for (let i = 2; i < syntax.length; i++) {
+    if (syntax[i] === "}") {
+      const L = FromUnion(syntax.slice(2, i));
+      const R = FromSyntax(syntax.slice(i + 1));
+      return yield* [...L, ...R];
+    }
+  }
+  yield Literal(syntax);
+}
+function* FromSyntax(syntax) {
+  for (let i = 0; i < syntax.length; i++) {
+    if (syntax[i] === "$") {
+      const L = Literal(syntax.slice(0, i));
+      const R = FromTerminal(syntax.slice(i));
+      return yield* [L, ...R];
+    }
+  }
+  yield Literal(syntax);
+}
+function TemplateLiteralSyntax(syntax) {
+  return [...FromSyntax(syntax)];
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/pattern.mjs
+var TemplateLiteralPatternError = class extends TypeBoxError {
+};
+function Escape(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function Visit2(schema, acc) {
+  return IsTemplateLiteral(schema) ? schema.pattern.slice(1, schema.pattern.length - 1) : IsUnion(schema) ? `(${schema.anyOf.map((schema2) => Visit2(schema2, acc)).join("|")})` : IsNumber3(schema) ? `${acc}${PatternNumber}` : IsInteger2(schema) ? `${acc}${PatternNumber}` : IsBigInt3(schema) ? `${acc}${PatternNumber}` : IsString3(schema) ? `${acc}${PatternString}` : IsLiteral(schema) ? `${acc}${Escape(schema.const.toString())}` : IsBoolean3(schema) ? `${acc}${PatternBoolean}` : (() => {
+    throw new TemplateLiteralPatternError(`Unexpected Kind '${schema[Kind]}'`);
+  })();
+}
+function TemplateLiteralPattern(kinds) {
+  return `^${kinds.map((schema) => Visit2(schema, "")).join("")}$`;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/union.mjs
+function TemplateLiteralToUnion(schema) {
+  const R = TemplateLiteralGenerate(schema);
+  const L = R.map((S) => Literal(S));
+  return UnionEvaluated(L);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/template-literal.mjs
+function TemplateLiteral(unresolved, options) {
+  const pattern = IsString(unresolved) ? TemplateLiteralPattern(TemplateLiteralSyntax(unresolved)) : TemplateLiteralPattern(unresolved);
+  return CreateType({ [Kind]: "TemplateLiteral", type: "string", pattern }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-property-keys.mjs
+function FromTemplateLiteral(templateLiteral) {
+  const keys = TemplateLiteralGenerate(templateLiteral);
+  return keys.map((key) => key.toString());
+}
+function FromUnion2(types) {
+  const result = [];
+  for (const type2 of types)
+    result.push(...IndexPropertyKeys(type2));
+  return result;
+}
+function FromLiteral(literalValue) {
+  return [literalValue.toString()];
+}
+function IndexPropertyKeys(type2) {
+  return [...new Set(IsTemplateLiteral(type2) ? FromTemplateLiteral(type2) : IsUnion(type2) ? FromUnion2(type2.anyOf) : IsLiteral(type2) ? FromLiteral(type2.const) : IsNumber3(type2) ? ["[number]"] : IsInteger2(type2) ? ["[number]"] : [])];
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-result.mjs
+function FromProperties(type2, properties, options) {
+  const result = {};
+  for (const K2 of Object.getOwnPropertyNames(properties)) {
+    result[K2] = Index(type2, IndexPropertyKeys(properties[K2]), options);
+  }
+  return result;
+}
+function FromMappedResult(type2, mappedResult, options) {
+  return FromProperties(type2, mappedResult.properties, options);
+}
+function IndexFromMappedResult(type2, mappedResult, options) {
+  const properties = FromMappedResult(type2, mappedResult, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed.mjs
+function FromRest(types, key) {
+  return types.map((type2) => IndexFromPropertyKey(type2, key));
+}
+function FromIntersectRest(types) {
+  return types.filter((type2) => !IsNever(type2));
+}
+function FromIntersect(types, key) {
+  return IntersectEvaluated(FromIntersectRest(FromRest(types, key)));
+}
+function FromUnionRest(types) {
+  return types.some((L) => IsNever(L)) ? [] : types;
+}
+function FromUnion3(types, key) {
+  return UnionEvaluated(FromUnionRest(FromRest(types, key)));
+}
+function FromTuple(types, key) {
+  return key in types ? types[key] : key === "[number]" ? UnionEvaluated(types) : Never();
+}
+function FromArray(type2, key) {
+  return key === "[number]" ? type2 : Never();
+}
+function FromProperty(properties, propertyKey) {
+  return propertyKey in properties ? properties[propertyKey] : Never();
+}
+function IndexFromPropertyKey(type2, propertyKey) {
+  return IsIntersect(type2) ? FromIntersect(type2.allOf, propertyKey) : IsUnion(type2) ? FromUnion3(type2.anyOf, propertyKey) : IsTuple(type2) ? FromTuple(type2.items ?? [], propertyKey) : IsArray3(type2) ? FromArray(type2.items, propertyKey) : IsObject3(type2) ? FromProperty(type2.properties, propertyKey) : Never();
+}
+function IndexFromPropertyKeys(type2, propertyKeys) {
+  return propertyKeys.map((propertyKey) => IndexFromPropertyKey(type2, propertyKey));
+}
+function FromSchema(type2, propertyKeys) {
+  return UnionEvaluated(IndexFromPropertyKeys(type2, propertyKeys));
+}
+function Index(type2, key, options) {
+  if (IsRef(type2) || IsRef(key)) {
+    const error = `Index types using Ref parameters require both Type and Key to be of TSchema`;
+    if (!IsSchema(type2) || !IsSchema(key))
+      throw new TypeBoxError(error);
+    return Computed("Index", [type2, key]);
+  }
+  if (IsMappedResult(key))
+    return IndexFromMappedResult(type2, key, options);
+  if (IsMappedKey(key))
+    return IndexFromMappedKey(type2, key, options);
+  return CreateType(IsSchema(key) ? FromSchema(type2, IndexPropertyKeys(key)) : FromSchema(type2, key), options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-key.mjs
+function MappedIndexPropertyKey(type2, key, options) {
+  return { [key]: Index(type2, [key], Clone(options)) };
+}
+function MappedIndexPropertyKeys(type2, propertyKeys, options) {
+  return propertyKeys.reduce((result, left2) => {
+    return { ...result, ...MappedIndexPropertyKey(type2, left2, options) };
+  }, {});
+}
+function MappedIndexProperties(type2, mappedKey, options) {
+  return MappedIndexPropertyKeys(type2, mappedKey.keys, options);
+}
+function IndexFromMappedKey(type2, mappedKey, options) {
+  const properties = MappedIndexProperties(type2, mappedKey, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/iterator/iterator.mjs
+function Iterator(items, options) {
+  return CreateType({ [Kind]: "Iterator", type: "Iterator", items }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/object/object.mjs
+function RequiredArray(properties) {
+  return globalThis.Object.keys(properties).filter((key) => !IsOptional(properties[key]));
+}
+function _Object_(properties, options) {
+  const required = RequiredArray(properties);
+  const schema = required.length > 0 ? { [Kind]: "Object", type: "object", required, properties } : { [Kind]: "Object", type: "object", properties };
+  return CreateType(schema, options);
+}
+var Object2 = _Object_;
+
+// node_modules/@sinclair/typebox/build/esm/type/promise/promise.mjs
+function Promise2(item, options) {
+  return CreateType({ [Kind]: "Promise", type: "Promise", item }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly.mjs
+function RemoveReadonly(schema) {
+  return CreateType(Discard(schema, [ReadonlyKind]));
+}
+function AddReadonly(schema) {
+  return CreateType({ ...schema, [ReadonlyKind]: "Readonly" });
+}
+function ReadonlyWithFlag(schema, F) {
+  return F === false ? RemoveReadonly(schema) : AddReadonly(schema);
+}
+function Readonly(schema, enable) {
+  const F = enable ?? true;
+  return IsMappedResult(schema) ? ReadonlyFromMappedResult(schema, F) : ReadonlyWithFlag(schema, F);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly-from-mapped-result.mjs
+function FromProperties2(K2, F) {
+  const Acc = {};
+  for (const K22 of globalThis.Object.getOwnPropertyNames(K2))
+    Acc[K22] = Readonly(K2[K22], F);
+  return Acc;
+}
+function FromMappedResult2(R, F) {
+  return FromProperties2(R.properties, F);
+}
+function ReadonlyFromMappedResult(R, F) {
+  const P = FromMappedResult2(R, F);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/tuple/tuple.mjs
+function Tuple(types, options) {
+  return CreateType(types.length > 0 ? { [Kind]: "Tuple", type: "array", items: types, additionalItems: false, minItems: types.length, maxItems: types.length } : { [Kind]: "Tuple", type: "array", minItems: types.length, maxItems: types.length }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped.mjs
+function FromMappedResult3(K2, P) {
+  return K2 in P ? FromSchemaType(K2, P[K2]) : MappedResult(P);
+}
+function MappedKeyToKnownMappedResultProperties(K2) {
+  return { [K2]: Literal(K2) };
+}
+function MappedKeyToUnknownMappedResultProperties(P) {
+  const Acc = {};
+  for (const L of P)
+    Acc[L] = Literal(L);
+  return Acc;
+}
+function MappedKeyToMappedResultProperties(K2, P) {
+  return SetIncludes(P, K2) ? MappedKeyToKnownMappedResultProperties(K2) : MappedKeyToUnknownMappedResultProperties(P);
+}
+function FromMappedKey(K2, P) {
+  const R = MappedKeyToMappedResultProperties(K2, P);
+  return FromMappedResult3(K2, R);
+}
+function FromRest2(K2, T) {
+  return T.map((L) => FromSchemaType(K2, L));
+}
+function FromProperties3(K2, T) {
+  const Acc = {};
+  for (const K22 of globalThis.Object.getOwnPropertyNames(T))
+    Acc[K22] = FromSchemaType(K2, T[K22]);
+  return Acc;
+}
+function FromSchemaType(K2, T) {
+  const options = { ...T };
+  return (
+    // unevaluated modifier types
+    IsOptional(T) ? Optional(FromSchemaType(K2, Discard(T, [OptionalKind]))) : IsReadonly(T) ? Readonly(FromSchemaType(K2, Discard(T, [ReadonlyKind]))) : (
+      // unevaluated mapped types
+      IsMappedResult(T) ? FromMappedResult3(K2, T.properties) : IsMappedKey(T) ? FromMappedKey(K2, T.keys) : (
+        // unevaluated types
+        IsConstructor(T) ? Constructor(FromRest2(K2, T.parameters), FromSchemaType(K2, T.returns), options) : IsFunction3(T) ? Function(FromRest2(K2, T.parameters), FromSchemaType(K2, T.returns), options) : IsAsyncIterator3(T) ? AsyncIterator(FromSchemaType(K2, T.items), options) : IsIterator3(T) ? Iterator(FromSchemaType(K2, T.items), options) : IsIntersect(T) ? Intersect(FromRest2(K2, T.allOf), options) : IsUnion(T) ? Union(FromRest2(K2, T.anyOf), options) : IsTuple(T) ? Tuple(FromRest2(K2, T.items ?? []), options) : IsObject3(T) ? Object2(FromProperties3(K2, T.properties), options) : IsArray3(T) ? Array2(FromSchemaType(K2, T.items), options) : IsPromise2(T) ? Promise2(FromSchemaType(K2, T.item), options) : T
+      )
+    )
+  );
+}
+function MappedFunctionReturnType(K2, T) {
+  const Acc = {};
+  for (const L of K2)
+    Acc[L] = FromSchemaType(L, T);
+  return Acc;
+}
+function Mapped(key, map5, options) {
+  const K2 = IsSchema(key) ? IndexPropertyKeys(key) : key;
+  const RT = map5({ [Kind]: "MappedKey", keys: K2 });
+  const R = MappedFunctionReturnType(K2, RT);
+  return Object2(R, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/optional/optional.mjs
+function RemoveOptional(schema) {
+  return CreateType(Discard(schema, [OptionalKind]));
+}
+function AddOptional(schema) {
+  return CreateType({ ...schema, [OptionalKind]: "Optional" });
+}
+function OptionalWithFlag(schema, F) {
+  return F === false ? RemoveOptional(schema) : AddOptional(schema);
+}
+function Optional(schema, enable) {
+  const F = enable ?? true;
+  return IsMappedResult(schema) ? OptionalFromMappedResult(schema, F) : OptionalWithFlag(schema, F);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/optional/optional-from-mapped-result.mjs
+function FromProperties4(P, F) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
+    Acc[K2] = Optional(P[K2], F);
+  return Acc;
+}
+function FromMappedResult4(R, F) {
+  return FromProperties4(R.properties, F);
+}
+function OptionalFromMappedResult(R, F) {
+  const P = FromMappedResult4(R, F);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-create.mjs
+function IntersectCreate(T, options = {}) {
+  const allObjects = T.every((schema) => IsObject3(schema));
+  const clonedUnevaluatedProperties = IsSchema(options.unevaluatedProperties) ? { unevaluatedProperties: options.unevaluatedProperties } : {};
+  return CreateType(options.unevaluatedProperties === false || IsSchema(options.unevaluatedProperties) || allObjects ? { ...clonedUnevaluatedProperties, [Kind]: "Intersect", type: "object", allOf: T } : { ...clonedUnevaluatedProperties, [Kind]: "Intersect", allOf: T }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-evaluated.mjs
+function IsIntersectOptional(types) {
+  return types.every((left2) => IsOptional(left2));
+}
+function RemoveOptionalFromType2(type2) {
+  return Discard(type2, [OptionalKind]);
+}
+function RemoveOptionalFromRest2(types) {
+  return types.map((left2) => IsOptional(left2) ? RemoveOptionalFromType2(left2) : left2);
+}
+function ResolveIntersect(types, options) {
+  return IsIntersectOptional(types) ? Optional(IntersectCreate(RemoveOptionalFromRest2(types), options)) : IntersectCreate(RemoveOptionalFromRest2(types), options);
+}
+function IntersectEvaluated(types, options = {}) {
+  if (types.length === 1)
+    return CreateType(types[0], options);
+  if (types.length === 0)
+    return Never(options);
+  if (types.some((schema) => IsTransform(schema)))
+    throw new Error("Cannot intersect transform types");
+  return ResolveIntersect(types, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect.mjs
+function Intersect(types, options) {
+  if (types.length === 1)
+    return CreateType(types[0], options);
+  if (types.length === 0)
+    return Never(options);
+  if (types.some((schema) => IsTransform(schema)))
+    throw new Error("Cannot intersect transform types");
+  return IntersectCreate(types, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/ref/ref.mjs
+function Ref(...args) {
+  const [$ref, options] = typeof args[0] === "string" ? [args[0], args[1]] : [args[0].$id, args[1]];
+  if (typeof $ref !== "string")
+    throw new TypeBoxError("Ref: $ref must be a string");
+  return CreateType({ [Kind]: "Ref", $ref }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/awaited/awaited.mjs
+function FromComputed(target, parameters) {
+  return Computed("Awaited", [Computed(target, parameters)]);
+}
+function FromRef($ref) {
+  return Computed("Awaited", [Ref($ref)]);
+}
+function FromIntersect2(types) {
+  return Intersect(FromRest3(types));
+}
+function FromUnion4(types) {
+  return Union(FromRest3(types));
+}
+function FromPromise(type2) {
+  return Awaited(type2);
+}
+function FromRest3(types) {
+  return types.map((type2) => Awaited(type2));
+}
+function Awaited(type2, options) {
+  return CreateType(IsComputed(type2) ? FromComputed(type2.target, type2.parameters) : IsIntersect(type2) ? FromIntersect2(type2.allOf) : IsUnion(type2) ? FromUnion4(type2.anyOf) : IsPromise2(type2) ? FromPromise(type2.item) : IsRef(type2) ? FromRef(type2.$ref) : type2, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-keys.mjs
+function FromRest4(types) {
+  const result = [];
+  for (const L of types)
+    result.push(KeyOfPropertyKeys(L));
+  return result;
+}
+function FromIntersect3(types) {
+  const propertyKeysArray = FromRest4(types);
+  const propertyKeys = SetUnionMany(propertyKeysArray);
+  return propertyKeys;
+}
+function FromUnion5(types) {
+  const propertyKeysArray = FromRest4(types);
+  const propertyKeys = SetIntersectMany(propertyKeysArray);
+  return propertyKeys;
+}
+function FromTuple2(types) {
+  return types.map((_, indexer) => indexer.toString());
+}
+function FromArray2(_) {
+  return ["[number]"];
+}
+function FromProperties5(T) {
+  return globalThis.Object.getOwnPropertyNames(T);
+}
+function FromPatternProperties(patternProperties) {
+  if (!includePatternProperties)
+    return [];
+  const patternPropertyKeys = globalThis.Object.getOwnPropertyNames(patternProperties);
+  return patternPropertyKeys.map((key) => {
+    return key[0] === "^" && key[key.length - 1] === "$" ? key.slice(1, key.length - 1) : key;
+  });
+}
+function KeyOfPropertyKeys(type2) {
+  return IsIntersect(type2) ? FromIntersect3(type2.allOf) : IsUnion(type2) ? FromUnion5(type2.anyOf) : IsTuple(type2) ? FromTuple2(type2.items ?? []) : IsArray3(type2) ? FromArray2(type2.items) : IsObject3(type2) ? FromProperties5(type2.properties) : IsRecord(type2) ? FromPatternProperties(type2.patternProperties) : [];
+}
+var includePatternProperties = false;
+function KeyOfPattern(schema) {
+  includePatternProperties = true;
+  const keys = KeyOfPropertyKeys(schema);
+  includePatternProperties = false;
+  const pattern = keys.map((key) => `(${key})`);
+  return `^(${pattern.join("|")})$`;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof.mjs
+function FromComputed2(target, parameters) {
+  return Computed("KeyOf", [Computed(target, parameters)]);
+}
+function FromRef2($ref) {
+  return Computed("KeyOf", [Ref($ref)]);
+}
+function KeyOfFromType(type2, options) {
+  const propertyKeys = KeyOfPropertyKeys(type2);
+  const propertyKeyTypes = KeyOfPropertyKeysToRest(propertyKeys);
+  const result = UnionEvaluated(propertyKeyTypes);
+  return CreateType(result, options);
+}
+function KeyOfPropertyKeysToRest(propertyKeys) {
+  return propertyKeys.map((L) => L === "[number]" ? Number2() : Literal(L));
+}
+function KeyOf(type2, options) {
+  return IsComputed(type2) ? FromComputed2(type2.target, type2.parameters) : IsRef(type2) ? FromRef2(type2.$ref) : IsMappedResult(type2) ? KeyOfFromMappedResult(type2, options) : KeyOfFromType(type2, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-from-mapped-result.mjs
+function FromProperties6(properties, options) {
+  const result = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
+    result[K2] = KeyOf(properties[K2], Clone(options));
+  return result;
+}
+function FromMappedResult5(mappedResult, options) {
+  return FromProperties6(mappedResult.properties, options);
+}
+function KeyOfFromMappedResult(mappedResult, options) {
+  const properties = FromMappedResult5(mappedResult, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-entries.mjs
+function KeyOfPropertyEntries(schema) {
+  const keys = KeyOfPropertyKeys(schema);
+  const schemas = IndexFromPropertyKeys(schema, keys);
+  return keys.map((_, index2) => [keys[index2], schemas[index2]]);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/composite/composite.mjs
+function CompositeKeys(T) {
+  const Acc = [];
+  for (const L of T)
+    Acc.push(...KeyOfPropertyKeys(L));
+  return SetDistinct(Acc);
+}
+function FilterNever(T) {
+  return T.filter((L) => !IsNever(L));
+}
+function CompositeProperty(T, K2) {
+  const Acc = [];
+  for (const L of T)
+    Acc.push(...IndexFromPropertyKeys(L, [K2]));
+  return FilterNever(Acc);
+}
+function CompositeProperties(T, K2) {
+  const Acc = {};
+  for (const L of K2) {
+    Acc[L] = IntersectEvaluated(CompositeProperty(T, L));
+  }
+  return Acc;
+}
+function Composite(T, options) {
+  const K2 = CompositeKeys(T);
+  const P = CompositeProperties(T, K2);
+  const R = Object2(P, options);
+  return R;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/date/date.mjs
+function Date2(options) {
+  return CreateType({ [Kind]: "Date", type: "Date" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/null/null.mjs
+function Null(options) {
+  return CreateType({ [Kind]: "Null", type: "null" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/symbol/symbol.mjs
+function Symbol3(options) {
+  return CreateType({ [Kind]: "Symbol", type: "symbol" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/undefined/undefined.mjs
+function Undefined(options) {
+  return CreateType({ [Kind]: "Undefined", type: "undefined" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/uint8array/uint8array.mjs
+function Uint8Array2(options) {
+  return CreateType({ [Kind]: "Uint8Array", type: "Uint8Array" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/unknown/unknown.mjs
+function Unknown(options) {
+  return CreateType({ [Kind]: "Unknown" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/const/const.mjs
+function FromArray3(T) {
+  return T.map((L) => FromValue(L, false));
+}
+function FromProperties7(value) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(value))
+    Acc[K2] = Readonly(FromValue(value[K2], false));
+  return Acc;
+}
+function ConditionalReadonly(T, root2) {
+  return root2 === true ? T : Readonly(T);
+}
+function FromValue(value, root2) {
+  return IsAsyncIterator(value) ? ConditionalReadonly(Any(), root2) : IsIterator(value) ? ConditionalReadonly(Any(), root2) : IsArray(value) ? Readonly(Tuple(FromArray3(value))) : IsUint8Array(value) ? Uint8Array2() : IsDate(value) ? Date2() : IsObject(value) ? ConditionalReadonly(Object2(FromProperties7(value)), root2) : IsFunction(value) ? ConditionalReadonly(Function([], Unknown()), root2) : IsUndefined(value) ? Undefined() : IsNull(value) ? Null() : IsSymbol(value) ? Symbol3() : IsBigInt(value) ? BigInt2() : IsNumber(value) ? Literal(value) : IsBoolean(value) ? Literal(value) : IsString(value) ? Literal(value) : Object2({});
+}
+function Const(T, options) {
+  return CreateType(FromValue(T, true), options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/constructor-parameters/constructor-parameters.mjs
+function ConstructorParameters(schema, options) {
+  return IsConstructor(schema) ? Tuple(schema.parameters, options) : Never(options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/enum/enum.mjs
+function Enum(item, options) {
+  if (IsUndefined(item))
+    throw new Error("Enum undefined or empty");
+  const values1 = globalThis.Object.getOwnPropertyNames(item).filter((key) => isNaN(key)).map((key) => item[key]);
+  const values2 = [...new Set(values1)];
+  const anyOf = values2.map((value) => Literal(value));
+  return Union(anyOf, { ...options, [Hint]: "Enum" });
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-check.mjs
+var ExtendsResolverError = class extends TypeBoxError {
+};
+var ExtendsResult;
+(function(ExtendsResult2) {
+  ExtendsResult2[ExtendsResult2["Union"] = 0] = "Union";
+  ExtendsResult2[ExtendsResult2["True"] = 1] = "True";
+  ExtendsResult2[ExtendsResult2["False"] = 2] = "False";
+})(ExtendsResult || (ExtendsResult = {}));
+function IntoBooleanResult(result) {
+  return result === ExtendsResult.False ? result : ExtendsResult.True;
+}
+function Throw(message) {
+  throw new ExtendsResolverError(message);
+}
+function IsStructuralRight(right2) {
+  return type_exports.IsNever(right2) || type_exports.IsIntersect(right2) || type_exports.IsUnion(right2) || type_exports.IsUnknown(right2) || type_exports.IsAny(right2);
+}
+function StructuralRight(left2, right2) {
+  return type_exports.IsNever(right2) ? FromNeverRight(left2, right2) : type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsUnknown(right2) ? FromUnknownRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : Throw("StructuralRight");
+}
+function FromAnyRight(left2, right2) {
+  return ExtendsResult.True;
+}
+function FromAny(left2, right2) {
+  return type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) && right2.anyOf.some((schema) => type_exports.IsAny(schema) || type_exports.IsUnknown(schema)) ? ExtendsResult.True : type_exports.IsUnion(right2) ? ExtendsResult.Union : type_exports.IsUnknown(right2) ? ExtendsResult.True : type_exports.IsAny(right2) ? ExtendsResult.True : ExtendsResult.Union;
+}
+function FromArrayRight(left2, right2) {
+  return type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : type_exports.IsNever(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromArray4(left2, right2) {
+  return type_exports.IsObject(right2) && IsObjectArrayLike(right2) ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsArray(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
+}
+function FromAsyncIterator(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsAsyncIterator(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
+}
+function FromBigInt(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsBigInt(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromBooleanRight(left2, right2) {
+  return type_exports.IsLiteralBoolean(left2) ? ExtendsResult.True : type_exports.IsBoolean(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromBoolean(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsBoolean(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromConstructor(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsConstructor(right2) ? ExtendsResult.False : left2.parameters.length > right2.parameters.length ? ExtendsResult.False : !left2.parameters.every((schema, index2) => IntoBooleanResult(Visit3(right2.parameters[index2], schema)) === ExtendsResult.True) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.returns, right2.returns));
+}
+function FromDate(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsDate(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromFunction(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsFunction(right2) ? ExtendsResult.False : left2.parameters.length > right2.parameters.length ? ExtendsResult.False : !left2.parameters.every((schema, index2) => IntoBooleanResult(Visit3(right2.parameters[index2], schema)) === ExtendsResult.True) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.returns, right2.returns));
+}
+function FromIntegerRight(left2, right2) {
+  return type_exports.IsLiteral(left2) && value_exports.IsNumber(left2.const) ? ExtendsResult.True : type_exports.IsNumber(left2) || type_exports.IsInteger(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromInteger(left2, right2) {
+  return type_exports.IsInteger(right2) || type_exports.IsNumber(right2) ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : ExtendsResult.False;
+}
+function FromIntersectRight(left2, right2) {
+  return right2.allOf.every((schema) => Visit3(left2, schema) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromIntersect4(left2, right2) {
+  return left2.allOf.some((schema) => Visit3(schema, right2) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromIterator(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : !type_exports.IsIterator(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.items, right2.items));
+}
+function FromLiteral2(left2, right2) {
+  return type_exports.IsLiteral(right2) && right2.const === left2.const ? ExtendsResult.True : IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsString(right2) ? FromStringRight(left2, right2) : type_exports.IsNumber(right2) ? FromNumberRight(left2, right2) : type_exports.IsInteger(right2) ? FromIntegerRight(left2, right2) : type_exports.IsBoolean(right2) ? FromBooleanRight(left2, right2) : ExtendsResult.False;
+}
+function FromNeverRight(left2, right2) {
+  return ExtendsResult.False;
+}
+function FromNever(left2, right2) {
+  return ExtendsResult.True;
+}
+function UnwrapTNot(schema) {
+  let [current, depth] = [schema, 0];
+  while (true) {
+    if (!type_exports.IsNot(current))
+      break;
+    current = current.not;
+    depth += 1;
+  }
+  return depth % 2 === 0 ? current : Unknown();
+}
+function FromNot(left2, right2) {
+  return type_exports.IsNot(left2) ? Visit3(UnwrapTNot(left2), right2) : type_exports.IsNot(right2) ? Visit3(left2, UnwrapTNot(right2)) : Throw("Invalid fallthrough for Not");
+}
+function FromNull(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsNull(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromNumberRight(left2, right2) {
+  return type_exports.IsLiteralNumber(left2) ? ExtendsResult.True : type_exports.IsNumber(left2) || type_exports.IsInteger(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromNumber(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsInteger(right2) || type_exports.IsNumber(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function IsObjectPropertyCount(schema, count2) {
+  return Object.getOwnPropertyNames(schema.properties).length === count2;
+}
+function IsObjectStringLike(schema) {
+  return IsObjectArrayLike(schema);
+}
+function IsObjectSymbolLike(schema) {
+  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "description" in schema.properties && type_exports.IsUnion(schema.properties.description) && schema.properties.description.anyOf.length === 2 && (type_exports.IsString(schema.properties.description.anyOf[0]) && type_exports.IsUndefined(schema.properties.description.anyOf[1]) || type_exports.IsString(schema.properties.description.anyOf[1]) && type_exports.IsUndefined(schema.properties.description.anyOf[0]));
+}
+function IsObjectNumberLike(schema) {
+  return IsObjectPropertyCount(schema, 0);
+}
+function IsObjectBooleanLike(schema) {
+  return IsObjectPropertyCount(schema, 0);
+}
+function IsObjectBigIntLike(schema) {
+  return IsObjectPropertyCount(schema, 0);
+}
+function IsObjectDateLike(schema) {
+  return IsObjectPropertyCount(schema, 0);
+}
+function IsObjectUint8ArrayLike(schema) {
+  return IsObjectArrayLike(schema);
+}
+function IsObjectFunctionLike(schema) {
+  const length3 = Number2();
+  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "length" in schema.properties && IntoBooleanResult(Visit3(schema.properties["length"], length3)) === ExtendsResult.True;
+}
+function IsObjectConstructorLike(schema) {
+  return IsObjectPropertyCount(schema, 0);
+}
+function IsObjectArrayLike(schema) {
+  const length3 = Number2();
+  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "length" in schema.properties && IntoBooleanResult(Visit3(schema.properties["length"], length3)) === ExtendsResult.True;
+}
+function IsObjectPromiseLike(schema) {
+  const then = Function([Any()], Any());
+  return IsObjectPropertyCount(schema, 0) || IsObjectPropertyCount(schema, 1) && "then" in schema.properties && IntoBooleanResult(Visit3(schema.properties["then"], then)) === ExtendsResult.True;
+}
+function Property(left2, right2) {
+  return Visit3(left2, right2) === ExtendsResult.False ? ExtendsResult.False : type_exports.IsOptional(left2) && !type_exports.IsOptional(right2) ? ExtendsResult.False : ExtendsResult.True;
+}
+function FromObjectRight(left2, right2) {
+  return type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : type_exports.IsNever(left2) || type_exports.IsLiteralString(left2) && IsObjectStringLike(right2) || type_exports.IsLiteralNumber(left2) && IsObjectNumberLike(right2) || type_exports.IsLiteralBoolean(left2) && IsObjectBooleanLike(right2) || type_exports.IsSymbol(left2) && IsObjectSymbolLike(right2) || type_exports.IsBigInt(left2) && IsObjectBigIntLike(right2) || type_exports.IsString(left2) && IsObjectStringLike(right2) || type_exports.IsSymbol(left2) && IsObjectSymbolLike(right2) || type_exports.IsNumber(left2) && IsObjectNumberLike(right2) || type_exports.IsInteger(left2) && IsObjectNumberLike(right2) || type_exports.IsBoolean(left2) && IsObjectBooleanLike(right2) || type_exports.IsUint8Array(left2) && IsObjectUint8ArrayLike(right2) || type_exports.IsDate(left2) && IsObjectDateLike(right2) || type_exports.IsConstructor(left2) && IsObjectConstructorLike(right2) || type_exports.IsFunction(left2) && IsObjectFunctionLike(right2) ? ExtendsResult.True : type_exports.IsRecord(left2) && type_exports.IsString(RecordKey(left2)) ? (() => {
+    return right2[Hint] === "Record" ? ExtendsResult.True : ExtendsResult.False;
+  })() : type_exports.IsRecord(left2) && type_exports.IsNumber(RecordKey(left2)) ? (() => {
+    return IsObjectPropertyCount(right2, 0) ? ExtendsResult.True : ExtendsResult.False;
+  })() : ExtendsResult.False;
+}
+function FromObject(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : !type_exports.IsObject(right2) ? ExtendsResult.False : (() => {
+    for (const key of Object.getOwnPropertyNames(right2.properties)) {
+      if (!(key in left2.properties) && !type_exports.IsOptional(right2.properties[key])) {
+        return ExtendsResult.False;
+      }
+      if (type_exports.IsOptional(right2.properties[key])) {
+        return ExtendsResult.True;
+      }
+      if (Property(left2.properties[key], right2.properties[key]) === ExtendsResult.False) {
+        return ExtendsResult.False;
+      }
+    }
+    return ExtendsResult.True;
+  })();
+}
+function FromPromise2(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) && IsObjectPromiseLike(right2) ? ExtendsResult.True : !type_exports.IsPromise(right2) ? ExtendsResult.False : IntoBooleanResult(Visit3(left2.item, right2.item));
+}
+function RecordKey(schema) {
+  return PatternNumberExact in schema.patternProperties ? Number2() : PatternStringExact in schema.patternProperties ? String2() : Throw("Unknown record key pattern");
+}
+function RecordValue(schema) {
+  return PatternNumberExact in schema.patternProperties ? schema.patternProperties[PatternNumberExact] : PatternStringExact in schema.patternProperties ? schema.patternProperties[PatternStringExact] : Throw("Unable to get record value schema");
+}
+function FromRecordRight(left2, right2) {
+  const [Key, Value] = [RecordKey(right2), RecordValue(right2)];
+  return type_exports.IsLiteralString(left2) && type_exports.IsNumber(Key) && IntoBooleanResult(Visit3(left2, Value)) === ExtendsResult.True ? ExtendsResult.True : type_exports.IsUint8Array(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsString(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsArray(left2) && type_exports.IsNumber(Key) ? Visit3(left2, Value) : type_exports.IsObject(left2) ? (() => {
+    for (const key of Object.getOwnPropertyNames(left2.properties)) {
+      if (Property(Value, left2.properties[key]) === ExtendsResult.False) {
+        return ExtendsResult.False;
+      }
+    }
+    return ExtendsResult.True;
+  })() : ExtendsResult.False;
+}
+function FromRecord(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : !type_exports.IsRecord(right2) ? ExtendsResult.False : Visit3(RecordValue(left2), RecordValue(right2));
+}
+function FromRegExp(left2, right2) {
+  const L = type_exports.IsRegExp(left2) ? String2() : left2;
+  const R = type_exports.IsRegExp(right2) ? String2() : right2;
+  return Visit3(L, R);
+}
+function FromStringRight(left2, right2) {
+  return type_exports.IsLiteral(left2) && value_exports.IsString(left2.const) ? ExtendsResult.True : type_exports.IsString(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromString(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsString(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromSymbol(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsSymbol(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromTemplateLiteral2(left2, right2) {
+  return type_exports.IsTemplateLiteral(left2) ? Visit3(TemplateLiteralToUnion(left2), right2) : type_exports.IsTemplateLiteral(right2) ? Visit3(left2, TemplateLiteralToUnion(right2)) : Throw("Invalid fallthrough for TemplateLiteral");
+}
+function IsArrayOfTuple(left2, right2) {
+  return type_exports.IsArray(right2) && left2.items !== void 0 && left2.items.every((schema) => Visit3(schema, right2.items) === ExtendsResult.True);
+}
+function FromTupleRight(left2, right2) {
+  return type_exports.IsNever(left2) ? ExtendsResult.True : type_exports.IsUnknown(left2) ? ExtendsResult.False : type_exports.IsAny(left2) ? ExtendsResult.Union : ExtendsResult.False;
+}
+function FromTuple3(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) && IsObjectArrayLike(right2) ? ExtendsResult.True : type_exports.IsArray(right2) && IsArrayOfTuple(left2, right2) ? ExtendsResult.True : !type_exports.IsTuple(right2) ? ExtendsResult.False : value_exports.IsUndefined(left2.items) && !value_exports.IsUndefined(right2.items) || !value_exports.IsUndefined(left2.items) && value_exports.IsUndefined(right2.items) ? ExtendsResult.False : value_exports.IsUndefined(left2.items) && !value_exports.IsUndefined(right2.items) ? ExtendsResult.True : left2.items.every((schema, index2) => Visit3(schema, right2.items[index2]) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromUint8Array(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsUint8Array(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromUndefined(left2, right2) {
+  return IsStructuralRight(right2) ? StructuralRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsRecord(right2) ? FromRecordRight(left2, right2) : type_exports.IsVoid(right2) ? FromVoidRight(left2, right2) : type_exports.IsUndefined(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromUnionRight(left2, right2) {
+  return right2.anyOf.some((schema) => Visit3(left2, schema) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromUnion6(left2, right2) {
+  return left2.anyOf.every((schema) => Visit3(schema, right2) === ExtendsResult.True) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromUnknownRight(left2, right2) {
+  return ExtendsResult.True;
+}
+function FromUnknown(left2, right2) {
+  return type_exports.IsNever(right2) ? FromNeverRight(left2, right2) : type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : type_exports.IsString(right2) ? FromStringRight(left2, right2) : type_exports.IsNumber(right2) ? FromNumberRight(left2, right2) : type_exports.IsInteger(right2) ? FromIntegerRight(left2, right2) : type_exports.IsBoolean(right2) ? FromBooleanRight(left2, right2) : type_exports.IsArray(right2) ? FromArrayRight(left2, right2) : type_exports.IsTuple(right2) ? FromTupleRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsUnknown(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromVoidRight(left2, right2) {
+  return type_exports.IsUndefined(left2) ? ExtendsResult.True : type_exports.IsUndefined(left2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function FromVoid(left2, right2) {
+  return type_exports.IsIntersect(right2) ? FromIntersectRight(left2, right2) : type_exports.IsUnion(right2) ? FromUnionRight(left2, right2) : type_exports.IsUnknown(right2) ? FromUnknownRight(left2, right2) : type_exports.IsAny(right2) ? FromAnyRight(left2, right2) : type_exports.IsObject(right2) ? FromObjectRight(left2, right2) : type_exports.IsVoid(right2) ? ExtendsResult.True : ExtendsResult.False;
+}
+function Visit3(left2, right2) {
+  return (
+    // resolvable
+    type_exports.IsTemplateLiteral(left2) || type_exports.IsTemplateLiteral(right2) ? FromTemplateLiteral2(left2, right2) : type_exports.IsRegExp(left2) || type_exports.IsRegExp(right2) ? FromRegExp(left2, right2) : type_exports.IsNot(left2) || type_exports.IsNot(right2) ? FromNot(left2, right2) : (
+      // standard
+      type_exports.IsAny(left2) ? FromAny(left2, right2) : type_exports.IsArray(left2) ? FromArray4(left2, right2) : type_exports.IsBigInt(left2) ? FromBigInt(left2, right2) : type_exports.IsBoolean(left2) ? FromBoolean(left2, right2) : type_exports.IsAsyncIterator(left2) ? FromAsyncIterator(left2, right2) : type_exports.IsConstructor(left2) ? FromConstructor(left2, right2) : type_exports.IsDate(left2) ? FromDate(left2, right2) : type_exports.IsFunction(left2) ? FromFunction(left2, right2) : type_exports.IsInteger(left2) ? FromInteger(left2, right2) : type_exports.IsIntersect(left2) ? FromIntersect4(left2, right2) : type_exports.IsIterator(left2) ? FromIterator(left2, right2) : type_exports.IsLiteral(left2) ? FromLiteral2(left2, right2) : type_exports.IsNever(left2) ? FromNever(left2, right2) : type_exports.IsNull(left2) ? FromNull(left2, right2) : type_exports.IsNumber(left2) ? FromNumber(left2, right2) : type_exports.IsObject(left2) ? FromObject(left2, right2) : type_exports.IsRecord(left2) ? FromRecord(left2, right2) : type_exports.IsString(left2) ? FromString(left2, right2) : type_exports.IsSymbol(left2) ? FromSymbol(left2, right2) : type_exports.IsTuple(left2) ? FromTuple3(left2, right2) : type_exports.IsPromise(left2) ? FromPromise2(left2, right2) : type_exports.IsUint8Array(left2) ? FromUint8Array(left2, right2) : type_exports.IsUndefined(left2) ? FromUndefined(left2, right2) : type_exports.IsUnion(left2) ? FromUnion6(left2, right2) : type_exports.IsUnknown(left2) ? FromUnknown(left2, right2) : type_exports.IsVoid(left2) ? FromVoid(left2, right2) : Throw(`Unknown left type operand '${left2[Kind]}'`)
+    )
+  );
+}
+function ExtendsCheck(left2, right2) {
+  return Visit3(left2, right2);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-result.mjs
+function FromProperties8(P, Right, True, False, options) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
+    Acc[K2] = Extends(P[K2], Right, True, False, Clone(options));
+  return Acc;
+}
+function FromMappedResult6(Left, Right, True, False, options) {
+  return FromProperties8(Left.properties, Right, True, False, options);
+}
+function ExtendsFromMappedResult(Left, Right, True, False, options) {
+  const P = FromMappedResult6(Left, Right, True, False, options);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends.mjs
+function ExtendsResolve(left2, right2, trueType, falseType) {
+  const R = ExtendsCheck(left2, right2);
+  return R === ExtendsResult.Union ? Union([trueType, falseType]) : R === ExtendsResult.True ? trueType : falseType;
+}
+function Extends(L, R, T, F, options) {
+  return IsMappedResult(L) ? ExtendsFromMappedResult(L, R, T, F, options) : IsMappedKey(L) ? CreateType(ExtendsFromMappedKey(L, R, T, F, options)) : CreateType(ExtendsResolve(L, R, T, F), options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-key.mjs
+function FromPropertyKey(K2, U, L, R, options) {
+  return {
+    [K2]: Extends(Literal(K2), U, L, R, Clone(options))
+  };
+}
+function FromPropertyKeys(K2, U, L, R, options) {
+  return K2.reduce((Acc, LK) => {
+    return { ...Acc, ...FromPropertyKey(LK, U, L, R, options) };
+  }, {});
+}
+function FromMappedKey2(K2, U, L, R, options) {
+  return FromPropertyKeys(K2.keys, U, L, R, options);
+}
+function ExtendsFromMappedKey(T, U, L, R, options) {
+  const P = FromMappedKey2(T, U, L, R, options);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-undefined.mjs
+function Intersect2(schema) {
+  return schema.allOf.every((schema2) => ExtendsUndefinedCheck(schema2));
+}
+function Union2(schema) {
+  return schema.anyOf.some((schema2) => ExtendsUndefinedCheck(schema2));
+}
+function Not(schema) {
+  return !ExtendsUndefinedCheck(schema.not);
+}
+function ExtendsUndefinedCheck(schema) {
+  return schema[Kind] === "Intersect" ? Intersect2(schema) : schema[Kind] === "Union" ? Union2(schema) : schema[Kind] === "Not" ? Not(schema) : schema[Kind] === "Undefined" ? true : false;
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-template-literal.mjs
+function ExcludeFromTemplateLiteral(L, R) {
+  return Exclude(TemplateLiteralToUnion(L), R);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude.mjs
+function ExcludeRest(L, R) {
+  const excluded = L.filter((inner) => ExtendsCheck(inner, R) === ExtendsResult.False);
+  return excluded.length === 1 ? excluded[0] : Union(excluded);
+}
+function Exclude(L, R, options = {}) {
+  if (IsTemplateLiteral(L))
+    return CreateType(ExcludeFromTemplateLiteral(L, R), options);
+  if (IsMappedResult(L))
+    return CreateType(ExcludeFromMappedResult(L, R), options);
+  return CreateType(IsUnion(L) ? ExcludeRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? Never() : L, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-mapped-result.mjs
+function FromProperties9(P, U) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
+    Acc[K2] = Exclude(P[K2], U);
+  return Acc;
+}
+function FromMappedResult7(R, T) {
+  return FromProperties9(R.properties, T);
+}
+function ExcludeFromMappedResult(R, T) {
+  const P = FromMappedResult7(R, T);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-template-literal.mjs
+function ExtractFromTemplateLiteral(L, R) {
+  return Extract(TemplateLiteralToUnion(L), R);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract.mjs
+function ExtractRest(L, R) {
+  const extracted = L.filter((inner) => ExtendsCheck(inner, R) !== ExtendsResult.False);
+  return extracted.length === 1 ? extracted[0] : Union(extracted);
+}
+function Extract(L, R, options) {
+  if (IsTemplateLiteral(L))
+    return CreateType(ExtractFromTemplateLiteral(L, R), options);
+  if (IsMappedResult(L))
+    return CreateType(ExtractFromMappedResult(L, R), options);
+  return CreateType(IsUnion(L) ? ExtractRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? L : Never(), options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-mapped-result.mjs
+function FromProperties10(P, T) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
+    Acc[K2] = Extract(P[K2], T);
+  return Acc;
+}
+function FromMappedResult8(R, T) {
+  return FromProperties10(R.properties, T);
+}
+function ExtractFromMappedResult(R, T) {
+  const P = FromMappedResult8(R, T);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/instance-type/instance-type.mjs
+function InstanceType(schema, options) {
+  return IsConstructor(schema) ? CreateType(schema.returns, options) : Never(options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/readonly-optional/readonly-optional.mjs
+function ReadonlyOptional(schema) {
+  return Readonly(Optional(schema));
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/record/record.mjs
+function RecordCreateFromPattern(pattern, T, options) {
+  return CreateType({ [Kind]: "Record", type: "object", patternProperties: { [pattern]: T } }, options);
+}
+function RecordCreateFromKeys(K2, T, options) {
+  const result = {};
+  for (const K22 of K2)
+    result[K22] = T;
+  return Object2(result, { ...options, [Hint]: "Record" });
+}
+function FromTemplateLiteralKey(K2, T, options) {
+  return IsTemplateLiteralFinite(K2) ? RecordCreateFromKeys(IndexPropertyKeys(K2), T, options) : RecordCreateFromPattern(K2.pattern, T, options);
+}
+function FromUnionKey(key, type2, options) {
+  return RecordCreateFromKeys(IndexPropertyKeys(Union(key)), type2, options);
+}
+function FromLiteralKey(key, type2, options) {
+  return RecordCreateFromKeys([key.toString()], type2, options);
+}
+function FromRegExpKey(key, type2, options) {
+  return RecordCreateFromPattern(key.source, type2, options);
+}
+function FromStringKey(key, type2, options) {
+  const pattern = IsUndefined(key.pattern) ? PatternStringExact : key.pattern;
+  return RecordCreateFromPattern(pattern, type2, options);
+}
+function FromAnyKey(_, type2, options) {
+  return RecordCreateFromPattern(PatternStringExact, type2, options);
+}
+function FromNeverKey(_key, type2, options) {
+  return RecordCreateFromPattern(PatternNeverExact, type2, options);
+}
+function FromBooleanKey(_key, type2, options) {
+  return Object2({ true: type2, false: type2 }, options);
+}
+function FromIntegerKey(_key, type2, options) {
+  return RecordCreateFromPattern(PatternNumberExact, type2, options);
+}
+function FromNumberKey(_, type2, options) {
+  return RecordCreateFromPattern(PatternNumberExact, type2, options);
+}
+function Record(key, type2, options = {}) {
+  return IsUnion(key) ? FromUnionKey(key.anyOf, type2, options) : IsTemplateLiteral(key) ? FromTemplateLiteralKey(key, type2, options) : IsLiteral(key) ? FromLiteralKey(key.const, type2, options) : IsBoolean3(key) ? FromBooleanKey(key, type2, options) : IsInteger2(key) ? FromIntegerKey(key, type2, options) : IsNumber3(key) ? FromNumberKey(key, type2, options) : IsRegExp2(key) ? FromRegExpKey(key, type2, options) : IsString3(key) ? FromStringKey(key, type2, options) : IsAny(key) ? FromAnyKey(key, type2, options) : IsNever(key) ? FromNeverKey(key, type2, options) : Never(options);
+}
+function RecordPattern(record) {
+  return globalThis.Object.getOwnPropertyNames(record.patternProperties)[0];
+}
+function RecordKey2(type2) {
+  const pattern = RecordPattern(type2);
+  return pattern === PatternStringExact ? String2() : pattern === PatternNumberExact ? Number2() : String2({ pattern });
+}
+function RecordValue2(type2) {
+  return type2.patternProperties[RecordPattern(type2)];
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/instantiate/instantiate.mjs
+function FromConstructor2(args, type2) {
+  type2.parameters = FromTypes(args, type2.parameters);
+  type2.returns = FromType(args, type2.returns);
+  return type2;
+}
+function FromFunction2(args, type2) {
+  type2.parameters = FromTypes(args, type2.parameters);
+  type2.returns = FromType(args, type2.returns);
+  return type2;
+}
+function FromIntersect5(args, type2) {
+  type2.allOf = FromTypes(args, type2.allOf);
+  return type2;
+}
+function FromUnion7(args, type2) {
+  type2.anyOf = FromTypes(args, type2.anyOf);
+  return type2;
+}
+function FromTuple4(args, type2) {
+  if (IsUndefined(type2.items))
+    return type2;
+  type2.items = FromTypes(args, type2.items);
+  return type2;
+}
+function FromArray5(args, type2) {
+  type2.items = FromType(args, type2.items);
+  return type2;
+}
+function FromAsyncIterator2(args, type2) {
+  type2.items = FromType(args, type2.items);
+  return type2;
+}
+function FromIterator2(args, type2) {
+  type2.items = FromType(args, type2.items);
+  return type2;
+}
+function FromPromise3(args, type2) {
+  type2.item = FromType(args, type2.item);
+  return type2;
+}
+function FromObject2(args, type2) {
+  const mappedProperties = FromProperties11(args, type2.properties);
+  return { ...type2, ...Object2(mappedProperties) };
+}
+function FromRecord2(args, type2) {
+  const mappedKey = FromType(args, RecordKey2(type2));
+  const mappedValue = FromType(args, RecordValue2(type2));
+  const result = Record(mappedKey, mappedValue);
+  return { ...type2, ...result };
+}
+function FromArgument(args, argument) {
+  return argument.index in args ? args[argument.index] : Unknown();
+}
+function FromProperty2(args, type2) {
+  const isReadonly = IsReadonly(type2);
+  const isOptional = IsOptional(type2);
+  const mapped = FromType(args, type2);
+  return isReadonly && isOptional ? ReadonlyOptional(mapped) : isReadonly && !isOptional ? Readonly(mapped) : !isReadonly && isOptional ? Optional(mapped) : mapped;
+}
+function FromProperties11(args, properties) {
+  return globalThis.Object.getOwnPropertyNames(properties).reduce((result, key) => {
+    return { ...result, [key]: FromProperty2(args, properties[key]) };
+  }, {});
+}
+function FromTypes(args, types) {
+  return types.map((type2) => FromType(args, type2));
+}
+function FromType(args, type2) {
+  return IsConstructor(type2) ? FromConstructor2(args, type2) : IsFunction3(type2) ? FromFunction2(args, type2) : IsIntersect(type2) ? FromIntersect5(args, type2) : IsUnion(type2) ? FromUnion7(args, type2) : IsTuple(type2) ? FromTuple4(args, type2) : IsArray3(type2) ? FromArray5(args, type2) : IsAsyncIterator3(type2) ? FromAsyncIterator2(args, type2) : IsIterator3(type2) ? FromIterator2(args, type2) : IsPromise2(type2) ? FromPromise3(args, type2) : IsObject3(type2) ? FromObject2(args, type2) : IsRecord(type2) ? FromRecord2(args, type2) : IsArgument(type2) ? FromArgument(args, type2) : type2;
+}
+function Instantiate(type2, args) {
+  return FromType(args, CloneType(type2));
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/integer/integer.mjs
+function Integer(options) {
+  return CreateType({ [Kind]: "Integer", type: "integer" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic-from-mapped-key.mjs
+function MappedIntrinsicPropertyKey(K2, M2, options) {
+  return {
+    [K2]: Intrinsic(Literal(K2), M2, Clone(options))
+  };
+}
+function MappedIntrinsicPropertyKeys(K2, M2, options) {
+  const result = K2.reduce((Acc, L) => {
+    return { ...Acc, ...MappedIntrinsicPropertyKey(L, M2, options) };
+  }, {});
+  return result;
+}
+function MappedIntrinsicProperties(T, M2, options) {
+  return MappedIntrinsicPropertyKeys(T["keys"], M2, options);
+}
+function IntrinsicFromMappedKey(T, M2, options) {
+  const P = MappedIntrinsicProperties(T, M2, options);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic.mjs
+function ApplyUncapitalize(value) {
+  const [first2, rest] = [value.slice(0, 1), value.slice(1)];
+  return [first2.toLowerCase(), rest].join("");
+}
+function ApplyCapitalize(value) {
+  const [first2, rest] = [value.slice(0, 1), value.slice(1)];
+  return [first2.toUpperCase(), rest].join("");
+}
+function ApplyUppercase(value) {
+  return value.toUpperCase();
+}
+function ApplyLowercase(value) {
+  return value.toLowerCase();
+}
+function FromTemplateLiteral3(schema, mode2, options) {
+  const expression = TemplateLiteralParseExact(schema.pattern);
+  const finite2 = IsTemplateLiteralExpressionFinite(expression);
+  if (!finite2)
+    return { ...schema, pattern: FromLiteralValue(schema.pattern, mode2) };
+  const strings = [...TemplateLiteralExpressionGenerate(expression)];
+  const literals = strings.map((value) => Literal(value));
+  const mapped = FromRest5(literals, mode2);
+  const union = Union(mapped);
+  return TemplateLiteral([union], options);
+}
+function FromLiteralValue(value, mode2) {
+  return typeof value === "string" ? mode2 === "Uncapitalize" ? ApplyUncapitalize(value) : mode2 === "Capitalize" ? ApplyCapitalize(value) : mode2 === "Uppercase" ? ApplyUppercase(value) : mode2 === "Lowercase" ? ApplyLowercase(value) : value : value.toString();
+}
+function FromRest5(T, M2) {
+  return T.map((L) => Intrinsic(L, M2));
+}
+function Intrinsic(schema, mode2, options = {}) {
+  return (
+    // Intrinsic-Mapped-Inference
+    IsMappedKey(schema) ? IntrinsicFromMappedKey(schema, mode2, options) : (
+      // Standard-Inference
+      IsTemplateLiteral(schema) ? FromTemplateLiteral3(schema, mode2, options) : IsUnion(schema) ? Union(FromRest5(schema.anyOf, mode2), options) : IsLiteral(schema) ? Literal(FromLiteralValue(schema.const, mode2), options) : (
+        // Default Type
+        CreateType(schema, options)
+      )
+    )
+  );
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/capitalize.mjs
+function Capitalize(T, options = {}) {
+  return Intrinsic(T, "Capitalize", options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/lowercase.mjs
+function Lowercase(T, options = {}) {
+  return Intrinsic(T, "Lowercase", options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uncapitalize.mjs
+function Uncapitalize(T, options = {}) {
+  return Intrinsic(T, "Uncapitalize", options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uppercase.mjs
+function Uppercase(T, options = {}) {
+  return Intrinsic(T, "Uppercase", options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-result.mjs
+function FromProperties12(properties, propertyKeys, options) {
+  const result = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
+    result[K2] = Omit(properties[K2], propertyKeys, Clone(options));
+  return result;
+}
+function FromMappedResult9(mappedResult, propertyKeys, options) {
+  return FromProperties12(mappedResult.properties, propertyKeys, options);
+}
+function OmitFromMappedResult(mappedResult, propertyKeys, options) {
+  const properties = FromMappedResult9(mappedResult, propertyKeys, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit.mjs
+function FromIntersect6(types, propertyKeys) {
+  return types.map((type2) => OmitResolve(type2, propertyKeys));
+}
+function FromUnion8(types, propertyKeys) {
+  return types.map((type2) => OmitResolve(type2, propertyKeys));
+}
+function FromProperty3(properties, key) {
+  const { [key]: _, ...R } = properties;
+  return R;
+}
+function FromProperties13(properties, propertyKeys) {
+  return propertyKeys.reduce((T, K2) => FromProperty3(T, K2), properties);
+}
+function FromObject3(type2, propertyKeys, properties) {
+  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
+  const mappedProperties = FromProperties13(properties, propertyKeys);
+  return Object2(mappedProperties, options);
+}
+function UnionFromPropertyKeys(propertyKeys) {
+  const result = propertyKeys.reduce((result2, key) => IsLiteralValue(key) ? [...result2, Literal(key)] : result2, []);
+  return Union(result);
+}
+function OmitResolve(type2, propertyKeys) {
+  return IsIntersect(type2) ? Intersect(FromIntersect6(type2.allOf, propertyKeys)) : IsUnion(type2) ? Union(FromUnion8(type2.anyOf, propertyKeys)) : IsObject3(type2) ? FromObject3(type2, propertyKeys, type2.properties) : Object2({});
+}
+function Omit(type2, key, options) {
+  const typeKey = IsArray(key) ? UnionFromPropertyKeys(key) : key;
+  const propertyKeys = IsSchema(key) ? IndexPropertyKeys(key) : key;
+  const isTypeRef = IsRef(type2);
+  const isKeyRef = IsRef(key);
+  return IsMappedResult(type2) ? OmitFromMappedResult(type2, propertyKeys, options) : IsMappedKey(key) ? OmitFromMappedKey(type2, key, options) : isTypeRef && isKeyRef ? Computed("Omit", [type2, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Omit", [type2, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Omit", [type2, typeKey], options) : CreateType({ ...OmitResolve(type2, propertyKeys), ...options });
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-key.mjs
+function FromPropertyKey2(type2, key, options) {
+  return { [key]: Omit(type2, [key], Clone(options)) };
+}
+function FromPropertyKeys2(type2, propertyKeys, options) {
+  return propertyKeys.reduce((Acc, LK) => {
+    return { ...Acc, ...FromPropertyKey2(type2, LK, options) };
+  }, {});
+}
+function FromMappedKey3(type2, mappedKey, options) {
+  return FromPropertyKeys2(type2, mappedKey.keys, options);
+}
+function OmitFromMappedKey(type2, mappedKey, options) {
+  const properties = FromMappedKey3(type2, mappedKey, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-result.mjs
+function FromProperties14(properties, propertyKeys, options) {
+  const result = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
+    result[K2] = Pick(properties[K2], propertyKeys, Clone(options));
+  return result;
+}
+function FromMappedResult10(mappedResult, propertyKeys, options) {
+  return FromProperties14(mappedResult.properties, propertyKeys, options);
+}
+function PickFromMappedResult(mappedResult, propertyKeys, options) {
+  const properties = FromMappedResult10(mappedResult, propertyKeys, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick.mjs
+function FromIntersect7(types, propertyKeys) {
+  return types.map((type2) => PickResolve(type2, propertyKeys));
+}
+function FromUnion9(types, propertyKeys) {
+  return types.map((type2) => PickResolve(type2, propertyKeys));
+}
+function FromProperties15(properties, propertyKeys) {
+  const result = {};
+  for (const K2 of propertyKeys)
+    if (K2 in properties)
+      result[K2] = properties[K2];
+  return result;
+}
+function FromObject4(Type2, keys, properties) {
+  const options = Discard(Type2, [TransformKind, "$id", "required", "properties"]);
+  const mappedProperties = FromProperties15(properties, keys);
+  return Object2(mappedProperties, options);
+}
+function UnionFromPropertyKeys2(propertyKeys) {
+  const result = propertyKeys.reduce((result2, key) => IsLiteralValue(key) ? [...result2, Literal(key)] : result2, []);
+  return Union(result);
+}
+function PickResolve(type2, propertyKeys) {
+  return IsIntersect(type2) ? Intersect(FromIntersect7(type2.allOf, propertyKeys)) : IsUnion(type2) ? Union(FromUnion9(type2.anyOf, propertyKeys)) : IsObject3(type2) ? FromObject4(type2, propertyKeys, type2.properties) : Object2({});
+}
+function Pick(type2, key, options) {
+  const typeKey = IsArray(key) ? UnionFromPropertyKeys2(key) : key;
+  const propertyKeys = IsSchema(key) ? IndexPropertyKeys(key) : key;
+  const isTypeRef = IsRef(type2);
+  const isKeyRef = IsRef(key);
+  return IsMappedResult(type2) ? PickFromMappedResult(type2, propertyKeys, options) : IsMappedKey(key) ? PickFromMappedKey(type2, key, options) : isTypeRef && isKeyRef ? Computed("Pick", [type2, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Pick", [type2, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Pick", [type2, typeKey], options) : CreateType({ ...PickResolve(type2, propertyKeys), ...options });
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-key.mjs
+function FromPropertyKey3(type2, key, options) {
+  return {
+    [key]: Pick(type2, [key], Clone(options))
+  };
+}
+function FromPropertyKeys3(type2, propertyKeys, options) {
+  return propertyKeys.reduce((result, leftKey) => {
+    return { ...result, ...FromPropertyKey3(type2, leftKey, options) };
+  }, {});
+}
+function FromMappedKey4(type2, mappedKey, options) {
+  return FromPropertyKeys3(type2, mappedKey.keys, options);
+}
+function PickFromMappedKey(type2, mappedKey, options) {
+  const properties = FromMappedKey4(type2, mappedKey, options);
+  return MappedResult(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/partial/partial.mjs
+function FromComputed3(target, parameters) {
+  return Computed("Partial", [Computed(target, parameters)]);
+}
+function FromRef3($ref) {
+  return Computed("Partial", [Ref($ref)]);
+}
+function FromProperties16(properties) {
+  const partialProperties = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
+    partialProperties[K2] = Optional(properties[K2]);
+  return partialProperties;
+}
+function FromObject5(type2, properties) {
+  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
+  const mappedProperties = FromProperties16(properties);
+  return Object2(mappedProperties, options);
+}
+function FromRest6(types) {
+  return types.map((type2) => PartialResolve(type2));
+}
+function PartialResolve(type2) {
+  return (
+    // Mappable
+    IsComputed(type2) ? FromComputed3(type2.target, type2.parameters) : IsRef(type2) ? FromRef3(type2.$ref) : IsIntersect(type2) ? Intersect(FromRest6(type2.allOf)) : IsUnion(type2) ? Union(FromRest6(type2.anyOf)) : IsObject3(type2) ? FromObject5(type2, type2.properties) : (
+      // Intrinsic
+      IsBigInt3(type2) ? type2 : IsBoolean3(type2) ? type2 : IsInteger2(type2) ? type2 : IsLiteral(type2) ? type2 : IsNull3(type2) ? type2 : IsNumber3(type2) ? type2 : IsString3(type2) ? type2 : IsSymbol3(type2) ? type2 : IsUndefined3(type2) ? type2 : (
+        // Passthrough
+        Object2({})
+      )
+    )
+  );
+}
+function Partial(type2, options) {
+  if (IsMappedResult(type2)) {
+    return PartialFromMappedResult(type2, options);
+  } else {
+    return CreateType({ ...PartialResolve(type2), ...options });
+  }
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/partial/partial-from-mapped-result.mjs
+function FromProperties17(K2, options) {
+  const Acc = {};
+  for (const K22 of globalThis.Object.getOwnPropertyNames(K2))
+    Acc[K22] = Partial(K2[K22], Clone(options));
+  return Acc;
+}
+function FromMappedResult11(R, options) {
+  return FromProperties17(R.properties, options);
+}
+function PartialFromMappedResult(R, options) {
+  const P = FromMappedResult11(R, options);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/required/required.mjs
+function FromComputed4(target, parameters) {
+  return Computed("Required", [Computed(target, parameters)]);
+}
+function FromRef4($ref) {
+  return Computed("Required", [Ref($ref)]);
+}
+function FromProperties18(properties) {
+  const requiredProperties = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
+    requiredProperties[K2] = Discard(properties[K2], [OptionalKind]);
+  return requiredProperties;
+}
+function FromObject6(type2, properties) {
+  const options = Discard(type2, [TransformKind, "$id", "required", "properties"]);
+  const mappedProperties = FromProperties18(properties);
+  return Object2(mappedProperties, options);
+}
+function FromRest7(types) {
+  return types.map((type2) => RequiredResolve(type2));
+}
+function RequiredResolve(type2) {
+  return (
+    // Mappable
+    IsComputed(type2) ? FromComputed4(type2.target, type2.parameters) : IsRef(type2) ? FromRef4(type2.$ref) : IsIntersect(type2) ? Intersect(FromRest7(type2.allOf)) : IsUnion(type2) ? Union(FromRest7(type2.anyOf)) : IsObject3(type2) ? FromObject6(type2, type2.properties) : (
+      // Intrinsic
+      IsBigInt3(type2) ? type2 : IsBoolean3(type2) ? type2 : IsInteger2(type2) ? type2 : IsLiteral(type2) ? type2 : IsNull3(type2) ? type2 : IsNumber3(type2) ? type2 : IsString3(type2) ? type2 : IsSymbol3(type2) ? type2 : IsUndefined3(type2) ? type2 : (
+        // Passthrough
+        Object2({})
+      )
+    )
+  );
+}
+function Required(type2, options) {
+  if (IsMappedResult(type2)) {
+    return RequiredFromMappedResult(type2, options);
+  } else {
+    return CreateType({ ...RequiredResolve(type2), ...options });
+  }
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/required/required-from-mapped-result.mjs
+function FromProperties19(P, options) {
+  const Acc = {};
+  for (const K2 of globalThis.Object.getOwnPropertyNames(P))
+    Acc[K2] = Required(P[K2], options);
+  return Acc;
+}
+function FromMappedResult12(R, options) {
+  return FromProperties19(R.properties, options);
+}
+function RequiredFromMappedResult(R, options) {
+  const P = FromMappedResult12(R, options);
+  return MappedResult(P);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/module/compute.mjs
+function DereferenceParameters(moduleProperties, types) {
+  return types.map((type2) => {
+    return IsRef(type2) ? Dereference(moduleProperties, type2.$ref) : FromType2(moduleProperties, type2);
+  });
+}
+function Dereference(moduleProperties, ref) {
+  return ref in moduleProperties ? IsRef(moduleProperties[ref]) ? Dereference(moduleProperties, moduleProperties[ref].$ref) : FromType2(moduleProperties, moduleProperties[ref]) : Never();
+}
+function FromAwaited(parameters) {
+  return Awaited(parameters[0]);
+}
+function FromIndex(parameters) {
+  return Index(parameters[0], parameters[1]);
+}
+function FromKeyOf(parameters) {
+  return KeyOf(parameters[0]);
+}
+function FromPartial(parameters) {
+  return Partial(parameters[0]);
+}
+function FromOmit(parameters) {
+  return Omit(parameters[0], parameters[1]);
+}
+function FromPick(parameters) {
+  return Pick(parameters[0], parameters[1]);
+}
+function FromRequired(parameters) {
+  return Required(parameters[0]);
+}
+function FromComputed5(moduleProperties, target, parameters) {
+  const dereferenced = DereferenceParameters(moduleProperties, parameters);
+  return target === "Awaited" ? FromAwaited(dereferenced) : target === "Index" ? FromIndex(dereferenced) : target === "KeyOf" ? FromKeyOf(dereferenced) : target === "Partial" ? FromPartial(dereferenced) : target === "Omit" ? FromOmit(dereferenced) : target === "Pick" ? FromPick(dereferenced) : target === "Required" ? FromRequired(dereferenced) : Never();
+}
+function FromArray6(moduleProperties, type2) {
+  return Array2(FromType2(moduleProperties, type2));
+}
+function FromAsyncIterator3(moduleProperties, type2) {
+  return AsyncIterator(FromType2(moduleProperties, type2));
+}
+function FromConstructor3(moduleProperties, parameters, instanceType) {
+  return Constructor(FromTypes2(moduleProperties, parameters), FromType2(moduleProperties, instanceType));
+}
+function FromFunction3(moduleProperties, parameters, returnType) {
+  return Function(FromTypes2(moduleProperties, parameters), FromType2(moduleProperties, returnType));
+}
+function FromIntersect8(moduleProperties, types) {
+  return Intersect(FromTypes2(moduleProperties, types));
+}
+function FromIterator3(moduleProperties, type2) {
+  return Iterator(FromType2(moduleProperties, type2));
+}
+function FromObject7(moduleProperties, properties) {
+  return Object2(globalThis.Object.keys(properties).reduce((result, key) => {
+    return { ...result, [key]: FromType2(moduleProperties, properties[key]) };
+  }, {}));
+}
+function FromRecord3(moduleProperties, type2) {
+  const [value, pattern] = [FromType2(moduleProperties, RecordValue2(type2)), RecordPattern(type2)];
+  const result = CloneType(type2);
+  result.patternProperties[pattern] = value;
+  return result;
+}
+function FromTransform(moduleProperties, transform2) {
+  return IsRef(transform2) ? { ...Dereference(moduleProperties, transform2.$ref), [TransformKind]: transform2[TransformKind] } : transform2;
+}
+function FromTuple5(moduleProperties, types) {
+  return Tuple(FromTypes2(moduleProperties, types));
+}
+function FromUnion10(moduleProperties, types) {
+  return Union(FromTypes2(moduleProperties, types));
+}
+function FromTypes2(moduleProperties, types) {
+  return types.map((type2) => FromType2(moduleProperties, type2));
+}
+function FromType2(moduleProperties, type2) {
+  return (
+    // Modifiers
+    IsOptional(type2) ? CreateType(FromType2(moduleProperties, Discard(type2, [OptionalKind])), type2) : IsReadonly(type2) ? CreateType(FromType2(moduleProperties, Discard(type2, [ReadonlyKind])), type2) : (
+      // Transform
+      IsTransform(type2) ? CreateType(FromTransform(moduleProperties, type2), type2) : (
+        // Types
+        IsArray3(type2) ? CreateType(FromArray6(moduleProperties, type2.items), type2) : IsAsyncIterator3(type2) ? CreateType(FromAsyncIterator3(moduleProperties, type2.items), type2) : IsComputed(type2) ? CreateType(FromComputed5(moduleProperties, type2.target, type2.parameters)) : IsConstructor(type2) ? CreateType(FromConstructor3(moduleProperties, type2.parameters, type2.returns), type2) : IsFunction3(type2) ? CreateType(FromFunction3(moduleProperties, type2.parameters, type2.returns), type2) : IsIntersect(type2) ? CreateType(FromIntersect8(moduleProperties, type2.allOf), type2) : IsIterator3(type2) ? CreateType(FromIterator3(moduleProperties, type2.items), type2) : IsObject3(type2) ? CreateType(FromObject7(moduleProperties, type2.properties), type2) : IsRecord(type2) ? CreateType(FromRecord3(moduleProperties, type2)) : IsTuple(type2) ? CreateType(FromTuple5(moduleProperties, type2.items || []), type2) : IsUnion(type2) ? CreateType(FromUnion10(moduleProperties, type2.anyOf), type2) : type2
+      )
+    )
+  );
+}
+function ComputeType(moduleProperties, key) {
+  return key in moduleProperties ? FromType2(moduleProperties, moduleProperties[key]) : Never();
+}
+function ComputeModuleProperties(moduleProperties) {
+  return globalThis.Object.getOwnPropertyNames(moduleProperties).reduce((result, key) => {
+    return { ...result, [key]: ComputeType(moduleProperties, key) };
+  }, {});
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/module/module.mjs
+var TModule = class {
+  constructor($defs) {
+    const computed = ComputeModuleProperties($defs);
+    const identified = this.WithIdentifiers(computed);
+    this.$defs = identified;
+  }
+  /** `[Json]` Imports a Type by Key. */
+  Import(key, options) {
+    const $defs = { ...this.$defs, [key]: CreateType(this.$defs[key], options) };
+    return CreateType({ [Kind]: "Import", $defs, $ref: key });
+  }
+  // prettier-ignore
+  WithIdentifiers($defs) {
+    return globalThis.Object.getOwnPropertyNames($defs).reduce((result, key) => {
+      return { ...result, [key]: { ...$defs[key], $id: key } };
+    }, {});
+  }
+};
+function Module(properties) {
+  return new TModule(properties);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/not/not.mjs
+function Not2(type2, options) {
+  return CreateType({ [Kind]: "Not", not: type2 }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/parameters/parameters.mjs
+function Parameters(schema, options) {
+  return IsFunction3(schema) ? Tuple(schema.parameters, options) : Never();
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/recursive/recursive.mjs
+var Ordinal = 0;
+function Recursive(callback, options = {}) {
+  if (IsUndefined(options.$id))
+    options.$id = `T${Ordinal++}`;
+  const thisType = CloneType(callback({ [Kind]: "This", $ref: `${options.$id}` }));
+  thisType.$id = options.$id;
+  return CreateType({ [Hint]: "Recursive", ...thisType }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/regexp/regexp.mjs
+function RegExp2(unresolved, options) {
+  const expr = IsString(unresolved) ? new globalThis.RegExp(unresolved) : unresolved;
+  return CreateType({ [Kind]: "RegExp", type: "RegExp", source: expr.source, flags: expr.flags }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/rest/rest.mjs
+function RestResolve(T) {
+  return IsIntersect(T) ? T.allOf : IsUnion(T) ? T.anyOf : IsTuple(T) ? T.items ?? [] : [];
+}
+function Rest(T) {
+  return RestResolve(T);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/return-type/return-type.mjs
+function ReturnType(schema, options) {
+  return IsFunction3(schema) ? CreateType(schema.returns, options) : Never(options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/transform/transform.mjs
+var TransformDecodeBuilder = class {
+  constructor(schema) {
+    this.schema = schema;
+  }
+  Decode(decode) {
+    return new TransformEncodeBuilder(this.schema, decode);
+  }
+};
+var TransformEncodeBuilder = class {
+  constructor(schema, decode) {
+    this.schema = schema;
+    this.decode = decode;
+  }
+  EncodeTransform(encode, schema) {
+    const Encode2 = (value) => schema[TransformKind].Encode(encode(value));
+    const Decode2 = (value) => this.decode(schema[TransformKind].Decode(value));
+    const Codec = { Encode: Encode2, Decode: Decode2 };
+    return { ...schema, [TransformKind]: Codec };
+  }
+  EncodeSchema(encode, schema) {
+    const Codec = { Decode: this.decode, Encode: encode };
+    return { ...schema, [TransformKind]: Codec };
+  }
+  Encode(encode) {
+    return IsTransform(this.schema) ? this.EncodeTransform(encode, this.schema) : this.EncodeSchema(encode, this.schema);
+  }
+};
+function Transform2(schema) {
+  return new TransformDecodeBuilder(schema);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/unsafe/unsafe.mjs
+function Unsafe(options = {}) {
+  return CreateType({ [Kind]: options[Kind] ?? "Unsafe" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/void/void.mjs
+function Void(options) {
+  return CreateType({ [Kind]: "Void", type: "void" }, options);
+}
+
+// node_modules/@sinclair/typebox/build/esm/type/type/type.mjs
+var type_exports3 = {};
+__export(type_exports3, {
+  Any: () => Any,
+  Argument: () => Argument,
+  Array: () => Array2,
+  AsyncIterator: () => AsyncIterator,
+  Awaited: () => Awaited,
+  BigInt: () => BigInt2,
+  Boolean: () => Boolean2,
+  Capitalize: () => Capitalize,
+  Composite: () => Composite,
+  Const: () => Const,
+  Constructor: () => Constructor,
+  ConstructorParameters: () => ConstructorParameters,
+  Date: () => Date2,
+  Enum: () => Enum,
+  Exclude: () => Exclude,
+  Extends: () => Extends,
+  Extract: () => Extract,
+  Function: () => Function,
+  Index: () => Index,
+  InstanceType: () => InstanceType,
+  Instantiate: () => Instantiate,
+  Integer: () => Integer,
+  Intersect: () => Intersect,
+  Iterator: () => Iterator,
+  KeyOf: () => KeyOf,
+  Literal: () => Literal,
+  Lowercase: () => Lowercase,
+  Mapped: () => Mapped,
+  Module: () => Module,
+  Never: () => Never,
+  Not: () => Not2,
+  Null: () => Null,
+  Number: () => Number2,
+  Object: () => Object2,
+  Omit: () => Omit,
+  Optional: () => Optional,
+  Parameters: () => Parameters,
+  Partial: () => Partial,
+  Pick: () => Pick,
+  Promise: () => Promise2,
+  Readonly: () => Readonly,
+  ReadonlyOptional: () => ReadonlyOptional,
+  Record: () => Record,
+  Recursive: () => Recursive,
+  Ref: () => Ref,
+  RegExp: () => RegExp2,
+  Required: () => Required,
+  Rest: () => Rest,
+  ReturnType: () => ReturnType,
+  String: () => String2,
+  Symbol: () => Symbol3,
+  TemplateLiteral: () => TemplateLiteral,
+  Transform: () => Transform2,
+  Tuple: () => Tuple,
+  Uint8Array: () => Uint8Array2,
+  Uncapitalize: () => Uncapitalize,
+  Undefined: () => Undefined,
+  Union: () => Union,
+  Unknown: () => Unknown,
+  Unsafe: () => Unsafe,
+  Uppercase: () => Uppercase,
+  Void: () => Void
+});
+
+// node_modules/@sinclair/typebox/build/esm/type/type/index.mjs
+var Type = type_exports3;
+
+// src/spec/common.ts
+var AxisSpecSchema = Type.Object({
+  label: Type.String(),
+  domain: Type.Optional(Type.Tuple([Type.Number(), Type.Number()]))
+});
+var ReferenceLineSpecSchema = Type.Object({
+  type: Type.Union([
+    Type.Literal("identity"),
+    Type.Literal("horizontal"),
+    Type.Literal("vertical")
+  ]),
+  value: Type.Optional(Type.Number())
+});
+var BaseChartSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  title: Type.Optional(Type.String()),
+  xAxis: AxisSpecSchema,
+  yAxis: AxisSpecSchema,
+  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
+});
+
+// src/spec/calibration.ts
+var CalibrationDatumSchema = Type.Object({
+  model: Type.String(),
+  population: Type.Optional(Type.String()),
+  horizon: Type.Optional(Type.Number()),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number({ minimum: 0, maximum: 1 }),
+  method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 }))
+});
+var CalibrationDistributionDatumSchema = Type.Object({
+  model: Type.String(),
+  population: Type.Optional(Type.String()),
+  horizon: Type.Optional(Type.Number()),
+  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
+  count: Type.Number({ minimum: 0 }),
+  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 })
+});
+var CalibrationSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  type: Type.Literal("calibration"),
+  data: Type.Array(CalibrationDatumSchema),
+  distribution: Type.Optional(Type.Array(CalibrationDistributionDatumSchema)),
+  x: Type.Literal("predicted"),
+  y: Type.Literal("observed"),
+  xAxis: AxisSpecSchema,
+  yAxis: AxisSpecSchema,
+  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
+});
+
+// src/spec/roc.ts
+var RocDatumSchema = Type.Object({
+  model: Type.String(),
+  population: Type.Optional(Type.String()),
+  horizon: Type.Optional(Type.Number()),
+  cutoff: Type.Number(),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  specificity: Type.Number({ minimum: 0, maximum: 1 })
+});
+var RocSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  type: Type.Literal("roc"),
+  data: Type.Array(RocDatumSchema),
+  x: Type.Literal("false_positive_rate"),
+  y: Type.Literal("sensitivity"),
+  xAxis: AxisSpecSchema,
+  yAxis: AxisSpecSchema,
+  references: Type.Optional(Type.Array(ReferenceLineSpecSchema))
+});
+
+// src/spec/chart.ts
+var RtichokeChartSpecSchema = Type.Union([
+  RocSpecSchema,
+  CalibrationSpecSchema
+], {
+  $id: "https://rtichoke.dev/schema/viz/1.0.json",
+  title: "rtichoke visualization specification"
+});
+
+// src/spec/v2/common.ts
+var EvaluationSpecSchema = Type.Object({
+  id: Type.String(),
+  model: Type.Optional(Type.String()),
+  population: Type.String(),
+  label: Type.Optional(Type.String())
+});
+var DisplayRoleSchema = Type.Union([
+  Type.Literal("model"),
+  Type.Literal("population"),
+  Type.Literal("evaluation"),
+  Type.Literal("context")
+]);
+var DisplayGroupingSpecSchema = Type.Object({
+  label: Type.String(),
+  group: Type.String(),
+  role: DisplayRoleSchema
+});
+var SeriesSpecSchema = Type.Object({
+  id: Type.String(),
+  evaluationId: Type.String(),
+  horizon: Type.Optional(Type.Number({ minimum: 0 })),
+  display: DisplayGroupingSpecSchema
+});
+var ReferencePointSchema = Type.Object({
+  x: Type.Number(),
+  y: Type.Number()
+});
+var ReferenceGeometrySchema = Type.Union([
+  Type.Object({
+    type: Type.Literal("identity"),
+    label: Type.Optional(Type.String())
+  }),
+  Type.Object({
+    type: Type.Literal("horizontal"),
+    value: Type.Number(),
+    label: Type.Optional(Type.String())
+  }),
+  Type.Object({
+    type: Type.Literal("vertical"),
+    value: Type.Number(),
+    label: Type.Optional(Type.String())
+  }),
+  Type.Object({
+    type: Type.Literal("path"),
+    points: Type.Array(ReferencePointSchema, { minItems: 2 }),
+    label: Type.Optional(Type.String())
+  })
+]);
+var GlobalReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({ scope: Type.Literal("global") })
+]);
+var PopulationReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({
+    scope: Type.Literal("population"),
+    population: Type.String()
+  })
+]);
+var PopulationHorizonReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 })
+  })
+]);
+var ReferenceLineV2SpecSchema = Type.Union([
+  GlobalReferenceLineSpecSchema,
+  PopulationReferenceLineSpecSchema,
+  PopulationHorizonReferenceLineSpecSchema
+]);
+var BaseChartV2SpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  series: Type.Array(SeriesSpecSchema),
+  xAxis: AxisSpecSchema,
+  yAxis: AxisSpecSchema,
+  references: Type.Optional(Type.Array(ReferenceLineV2SpecSchema))
+});
+var OperatingPointDimensionSchema = Type.Union([
+  Type.Literal("probability_threshold"),
+  Type.Literal("ppcr")
+]);
+var OperatingPointSpecSchema = Type.Object({
+  operatingPoint: Type.Optional(
+    Type.Object({
+      dimension: OperatingPointDimensionSchema
+    })
+  )
+});
+var ThresholdOperatingPointSpecSchema = Type.Object({
+  operatingPoint: Type.Optional(
+    Type.Object({
+      dimension: Type.Literal("probability_threshold")
+    })
+  )
+});
+
+// src/spec/v2/calibration.ts
+var DiscreteCalibrationV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number({ minimum: 0, maximum: 1 }),
+  method: Type.Literal("discrete"),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 }))
+});
+var SmoothCalibrationV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number(),
+  method: Type.Literal("smooth"),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 }))
+});
+var CalibrationV2DatumSchema = Type.Union([
+  DiscreteCalibrationV2DatumSchema,
+  SmoothCalibrationV2DatumSchema
+]);
+var CalibrationV2DistributionDatumSchema = Type.Object({
+  seriesId: Type.String(),
+  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
+  count: Type.Number({ minimum: 0 }),
+  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 })
+});
+var CalibrationV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  Type.Object({
+    type: Type.Literal("calibration"),
+    data: Type.Array(CalibrationV2DatumSchema),
+    distribution: Type.Optional(Type.Array(CalibrationV2DistributionDatumSchema)),
+    x: Type.Literal("predicted"),
+    y: Type.Literal("observed")
+  })
+]);
+
+// src/spec/v2/performance-table.ts
+var PerformanceMetricIdSchema = Type.Union([
+  Type.Literal("true_positives"),
+  Type.Literal("true_negatives"),
+  Type.Literal("false_positives"),
+  Type.Literal("false_negatives"),
+  Type.Literal("sensitivity"),
+  Type.Literal("specificity"),
+  Type.Literal("false_positive_rate"),
+  Type.Literal("ppv"),
+  Type.Literal("npv"),
+  Type.Literal("lift"),
+  Type.Literal("predicted_positives"),
+  Type.Literal("ppcr"),
+  Type.Literal("net_benefit"),
+  Type.Literal("net_benefit_interventions_avoided")
+]);
+var PerformanceMetricDefinitionSchema = Type.Object({
+  id: PerformanceMetricIdSchema,
+  label: Type.String()
+});
+var PerformanceMetricValueSchema = Type.Object({
+  metricId: PerformanceMetricIdSchema,
+  estimate: Type.Union([Type.Number(), Type.Null()]),
+  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
+});
+var OperatingPointSchema = Type.Union([
+  Type.Object({
+    type: Type.Literal("probability_threshold"),
+    value: Type.Number()
+  }),
+  Type.Object({
+    type: Type.Literal("ppcr"),
+    value: Type.Number({ minimum: 0, maximum: 1 })
+  })
+]);
+var PerformanceEvaluationContextSchema = Type.Object({
+  censoringHeuristic: Type.Optional(Type.String()),
+  competingEventHeuristic: Type.Optional(Type.String())
+});
+var PerformanceTableRowSchema = Type.Object({
+  evaluationId: Type.String(),
+  horizon: Type.Optional(Type.Number({ minimum: 0 })),
+  operatingPoint: OperatingPointSchema,
+  context: Type.Optional(PerformanceEvaluationContextSchema),
+  values: Type.Array(PerformanceMetricValueSchema)
+});
+var PerformanceTableSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  type: Type.Literal("performance_table"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  metrics: Type.Array(PerformanceMetricDefinitionSchema),
+  rows: Type.Array(PerformanceTableRowSchema)
+});
+
+// src/spec/v2/decision-curve.ts
+var DecisionCurveV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  threshold: Type.Number({ minimum: 0, maximum: 1 }),
+  netBenefit: Type.Number(),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var DecisionCurveV2EvaluationSchema = Type.Intersect([
+  EvaluationSpecSchema,
+  Type.Object({ id: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" }) })
+]);
+var DecisionCurveV2SeriesSchema = Type.Intersect([
+  SeriesSpecSchema,
+  Type.Object({
+    id: Type.String({ pattern: "^series-[1-9][0-9]*$" }),
+    evaluationId: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" })
+  })
+]);
+var TreatNoneReferenceSchema = Type.Object({
+  type: Type.Literal("horizontal"),
+  value: Type.Literal(0),
+  label: Type.Optional(Type.String()),
+  scope: Type.Literal("global"),
+  benchmark: Type.Literal("treat_none")
+});
+var TreatAllGeometry = {
+  type: Type.Literal("path"),
+  points: Type.Array(
+    Type.Object({ x: Type.Number(), y: Type.Number() }),
+    { minItems: 2 }
+  ),
+  label: Type.Optional(Type.String()),
+  benchmark: Type.Literal("treat_all")
+};
+var TreatAllReferenceSchema = Type.Union([
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population"),
+    population: Type.String()
+  }),
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 })
+  })
+]);
+var DecisionCurveV2ReferenceSchema = Type.Union([
+  TreatNoneReferenceSchema,
+  TreatAllReferenceSchema
+]);
+var DecisionCurveV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  ThresholdOperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("decision_curve"),
+    evaluations: Type.Array(DecisionCurveV2EvaluationSchema, { minItems: 1 }),
+    series: Type.Array(DecisionCurveV2SeriesSchema, { minItems: 1 }),
+    data: Type.Array(DecisionCurveV2DatumSchema),
+    x: Type.Literal("threshold"),
+    y: Type.Literal("netBenefit"),
+    references: Type.Array(DecisionCurveV2ReferenceSchema, { minItems: 2 })
+  })
+]);
+
+// src/spec/v2/gains.ts
+var GainsV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  ppcr: Type.Number({ minimum: 0, maximum: 1 }),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var GainsV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  OperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("gains"),
+    data: Type.Array(GainsV2DatumSchema),
+    x: Type.Literal("ppcr"),
+    y: Type.Literal("sensitivity")
+  })
+]);
+
+// src/spec/v2/interventions-avoided.ts
+var InterventionsAvoidedV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  threshold: Type.Number({ minimum: 0, maximum: 1 }),
+  interventionsAvoided: Type.Number(),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var InterventionsAvoidedV2EvaluationSchema = Type.Intersect([
+  EvaluationSpecSchema,
+  Type.Object({ id: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" }) })
+]);
+var InterventionsAvoidedV2SeriesSchema = Type.Intersect([
+  SeriesSpecSchema,
+  Type.Object({
+    id: Type.String({ pattern: "^series-[1-9][0-9]*$" }),
+    evaluationId: Type.String({ pattern: "^evaluation-[1-9][0-9]*$" })
+  })
+]);
+var InterventionsAvoidedTreatAllReferenceSchema = Type.Object({
+  type: Type.Literal("horizontal"),
+  value: Type.Literal(0),
+  label: Type.Optional(Type.String()),
+  scope: Type.Literal("global"),
+  benchmark: Type.Literal("treat_all")
+});
+var TreatNoneGeometry = {
+  type: Type.Literal("path"),
+  points: Type.Array(
+    Type.Object({ x: Type.Number(), y: Type.Number() }),
+    { minItems: 2 }
+  ),
+  label: Type.Optional(Type.String()),
+  benchmark: Type.Literal("treat_none")
+};
+var InterventionsAvoidedTreatNoneReferenceSchema = Type.Union([
+  Type.Object({
+    ...TreatNoneGeometry,
+    scope: Type.Literal("population"),
+    population: Type.String()
+  }),
+  Type.Object({
+    ...TreatNoneGeometry,
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 })
+  })
+]);
+var InterventionsAvoidedV2ReferenceSchema = Type.Union([
+  InterventionsAvoidedTreatAllReferenceSchema,
+  InterventionsAvoidedTreatNoneReferenceSchema
+]);
+var InterventionsAvoidedV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  ThresholdOperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("interventions_avoided"),
+    evaluations: Type.Array(InterventionsAvoidedV2EvaluationSchema, { minItems: 1 }),
+    series: Type.Array(InterventionsAvoidedV2SeriesSchema, { minItems: 1 }),
+    data: Type.Array(InterventionsAvoidedV2DatumSchema),
+    x: Type.Literal("threshold"),
+    y: Type.Literal("interventionsAvoided"),
+    references: Type.Array(InterventionsAvoidedV2ReferenceSchema, { minItems: 2 })
+  })
+]);
+
+// src/spec/v2/lift.ts
+var LiftV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  ppcr: Type.Number({ minimum: 0, maximum: 1 }),
+  lift: Type.Number(),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var LiftV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  OperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("lift"),
+    data: Type.Array(LiftV2DatumSchema),
+    x: Type.Literal("ppcr"),
+    y: Type.Literal("lift")
+  })
+]);
+
+// src/spec/v2/precision_recall.ts
+var PrecisionRecallV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  ppcr: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  ppv: Type.Number({ minimum: 0, maximum: 1 }),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var PrecisionRecallV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  OperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("precision_recall"),
+    data: Type.Array(PrecisionRecallV2DatumSchema),
+    x: Type.Literal("sensitivity"),
+    y: Type.Literal("ppv")
+  })
+]);
+
+// src/spec/v2/state-distribution.ts
+var OutcomeStateSchema = Type.Object({
+  stateId: Type.String(),
+  label: Type.Optional(Type.String()),
+  estimate: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  mass: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  count: Type.Optional(Type.Union([Type.Integer(), Type.Null()])),
+  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
+});
+var StateStratumSchema = Type.Object({
+  type: Type.String(),
+  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  includeLower: Type.Optional(Type.Boolean()),
+  includeUpper: Type.Optional(Type.Boolean()),
+  rankLower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  rankUpper: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  operatingPointType: Type.Optional(Type.String()),
+  cutoff: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  value: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  realizedPpcr: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
+});
+var StateDistributionSchema = Type.Object({
+  evaluationId: Type.String(),
+  horizon: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  estimator: Type.String(),
+  estimateOrigin: Type.Optional(
+    Type.Union([
+      Type.Literal("event_table"),
+      Type.Literal("fixed_time_horizon"),
+      Type.Literal("observed_step")
+    ])
+  ),
+  stratum: Type.Optional(StateStratumSchema),
+  region: Type.Optional(Type.String()),
+  censoringHeuristic: Type.Optional(Type.String()),
+  competingHeuristic: Type.Optional(Type.String()),
+  states: Type.Array(OutcomeStateSchema, { minItems: 1 }),
+  regimeId: Type.Optional(Type.String()),
+  interventionId: Type.Optional(Type.String()),
+  estimand: Type.Optional(Type.String()),
+  contrastId: Type.Optional(Type.String())
+});
+
+// src/spec/v2/prediction-distribution.ts
+var PredictionDistributionBinSchema = Type.Object({
+  evaluationId: Type.String(),
+  lower: Type.Number({ minimum: 0, maximum: 1 }),
+  upper: Type.Number({ minimum: 0, maximum: 1 }),
+  includeLower: Type.Boolean(),
+  includeUpper: Type.Boolean(),
+  nPositive: Type.Integer({ minimum: 0 }),
+  nNegative: Type.Integer({ minimum: 0 })
+});
+var PredictionDistributionRankBinSchema = Type.Object({
+  evaluationId: Type.String(),
+  rankLower: Type.Number({ minimum: 0, maximum: 1 }),
+  rankUpper: Type.Number({ minimum: 0, maximum: 1 }),
+  positiveMass: Type.Number({ minimum: 0 }),
+  negativeMass: Type.Number({ minimum: 0 })
+});
+var PredictionDistributionOperatingPointSchema = Type.Object({
+  evaluationId: Type.String(),
+  type: OperatingPointDimensionSchema,
+  value: Type.Number({ minimum: 0, maximum: 1 }),
+  cutoff: Type.Number({ minimum: 0, maximum: 1 }),
+  realizedPpcr: Type.Number({ minimum: 0, maximum: 1 }),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var PredictionDistributionSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  type: Type.Literal("prediction_distribution"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
+  operatingPoint: Type.Optional(
+    Type.Object({
+      dimension: OperatingPointDimensionSchema
+    })
+  ),
+  bins: Type.Array(PredictionDistributionBinSchema, { minItems: 1 }),
+  rankBins: Type.Optional(Type.Array(PredictionDistributionRankBinSchema)),
+  operatingPoints: Type.Array(PredictionDistributionOperatingPointSchema, {
+    minItems: 1
+  }),
+  stateDistributions: Type.Optional(Type.Array(StateDistributionSchema))
+});
+
+// src/spec/v2/roc.ts
+var RocV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  ppcr: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  specificity: Type.Number({ minimum: 0, maximum: 1 }),
+  performance: Type.Optional(Type.Array(PerformanceMetricValueSchema))
+});
+var RocV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  OperatingPointSpecSchema,
+  Type.Object({
+    type: Type.Literal("roc"),
+    data: Type.Array(RocV2DatumSchema),
+    x: Type.Literal("false_positive_rate"),
+    y: Type.Literal("sensitivity")
+  })
+]);
+
+// src/spec/v2/chart.ts
+var RtichokeChartSpecV2Schema = Type.Union(
+  [
+    RocV2SpecSchema,
+    CalibrationV2SpecSchema,
+    PrecisionRecallV2SpecSchema,
+    GainsV2SpecSchema,
+    LiftV2SpecSchema,
+    DecisionCurveV2SpecSchema,
+    InterventionsAvoidedV2SpecSchema,
+    PredictionDistributionSpecSchema
+  ],
+  {
+    $id: "https://rtichoke.dev/schema/viz/2.0.json",
+    title: "rtichoke visualization specification v2"
+  }
+);
+
+// src/spec/v2/summary-metrics.ts
+var PopulationSummaryOwnerSpecSchema = Type.Object({
+  id: Type.String(),
+  label: Type.String()
+});
+var AUROCSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("auroc"),
+  owner: Type.Object({
+    type: Type.Literal("evaluation"),
+    evaluationId: Type.String()
+  }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var PrevalenceSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("prevalence"),
+  owner: Type.Object({
+    type: Type.Literal("population"),
+    populationId: Type.String()
+  }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var EventRiskSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("event_risk"),
+  owner: Type.Object({
+    type: Type.Literal("population"),
+    populationId: Type.String()
+  }),
+  horizon: Type.Number({ minimum: 0 }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var SummaryMetricV1_0Schema = Type.Union([
+  AUROCSummaryMetricSchema,
+  PrevalenceSummaryMetricSchema
+]);
+var SummaryMetricV1_1Schema = Type.Union([
+  AUROCSummaryMetricSchema,
+  PrevalenceSummaryMetricSchema,
+  EventRiskSummaryMetricSchema
+]);
+var SummaryMetricsSpecV1_0Schema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  type: Type.Literal("summary_metrics"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
+  metrics: Type.Array(SummaryMetricV1_0Schema)
+});
+var SummaryMetricsSpecV1_1Schema = Type.Object({
+  schemaVersion: Type.Literal("1.1"),
+  type: Type.Literal("summary_metrics"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
+  metrics: Type.Array(SummaryMetricV1_1Schema)
+});
+var SummaryMetricsSpecSchema = Type.Union(
+  [SummaryMetricsSpecV1_0Schema, SummaryMetricsSpecV1_1Schema],
+  {
+    $id: "https://rtichoke.dev/schema/viz/summary-metrics.json",
+    title: "rtichoke summary metrics specification"
+  }
+);
+
+// src/spec/v2/heuristics.ts
+var HeuristicPairKeySchema = Type.Union([
+  Type.Literal("excluded:excluded"),
+  Type.Literal("excluded:adjusted_as_censored"),
+  Type.Literal("excluded:adjusted_as_negative"),
+  Type.Literal("excluded:adjusted_as_composite"),
+  Type.Literal("adjusted:excluded"),
+  Type.Literal("adjusted:adjusted_as_censored"),
+  Type.Literal("adjusted:adjusted_as_negative"),
+  Type.Literal("adjusted:adjusted_as_composite")
+]);
+var ReportHeuristicsSchema = Type.Object({
+  active: HeuristicPairKeySchema,
+  available: Type.Array(HeuristicPairKeySchema, { minItems: 1 })
+});
+
+// src/spec/v2/outcome-distribution.ts
+var HorizonExclusionCountsSchema = Type.Object({
+  horizon: Type.Number(),
+  censoredExcludedCount: Type.Integer({ minimum: 0 }),
+  competingExcludedCount: Type.Integer({ minimum: 0 })
+});
+var PopulationExclusionSchema = Type.Object({
+  evaluationId: Type.String(),
+  originalSampleSize: Type.Integer({ minimum: 1 }),
+  excludedCounts: Type.Array(HorizonExclusionCountsSchema)
+});
+var OutcomeDistributionAvailableVariantSchema = Type.Object({
+  status: Type.Literal("available"),
+  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
+  exclusions: Type.Array(PopulationExclusionSchema)
+});
+var OutcomeDistributionUnsupportedVariantSchema = Type.Object({
+  status: Type.Literal("unsupported")
+});
+var OutcomeDistributionVariantSchema = Type.Union([
+  OutcomeDistributionAvailableVariantSchema,
+  OutcomeDistributionUnsupportedVariantSchema
+]);
+var OutcomeDistributionVariantsRecordSchema = Type.Partial(
+  Type.Record(HeuristicPairKeySchema, OutcomeDistributionVariantSchema)
+);
+var OutcomeDistributionSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  type: Type.Literal("outcome_distribution"),
+  title: Type.Optional(Type.String()),
+  stateScale: Type.Optional(
+    Type.Union([Type.Literal("ordinal"), Type.Literal("nominal")])
+  ),
+  evaluations: Type.Array(EvaluationSpecSchema, { minItems: 1 }),
+  stateDistributions: Type.Array(StateDistributionSchema, { minItems: 1 }),
+  exclusions: Type.Optional(Type.Array(PopulationExclusionSchema)),
+  variants: Type.Optional(OutcomeDistributionVariantsRecordSchema)
+});
+
+// src/spec/report.ts
+var StandaloneCanonicalSpecSchema = Type.Union([
+  RtichokeChartSpecV2Schema,
+  PerformanceTableSpecSchema,
+  SummaryMetricsSpecSchema,
+  PredictionDistributionSpecSchema,
+  OutcomeDistributionSpecSchema
+]);
+var ReportComponentSchema = Type.Object({
+  id: Type.String(),
+  title: Type.Optional(Type.String()),
+  spec: StandaloneCanonicalSpecSchema
+});
+var ReportSpecV1_0Schema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  type: Type.Literal("report"),
+  title: Type.Optional(Type.String()),
+  components: Type.Array(ReportComponentSchema, { minItems: 1 })
+});
+var ReportComponentV1_1Schema = Type.Object({
+  type: Type.Literal("component"),
+  id: Type.String(),
+  title: Type.Optional(Type.String()),
+  spec: StandaloneCanonicalSpecSchema
+});
+var ReportGroupSchema = Type.Object({
+  type: Type.Literal("group"),
+  id: Type.String(),
+  title: Type.String(),
+  components: Type.Array(ReportComponentV1_1Schema, { minItems: 1 })
+});
+var ReportSectionSchema = Type.Object({
+  id: Type.String(),
+  title: Type.String(),
+  items: Type.Array(
+    Type.Union([ReportComponentV1_1Schema, ReportGroupSchema]),
+    { minItems: 1 }
+  )
+});
+var ReportSpecV1_1Schema = Type.Object({
+  schemaVersion: Type.Literal("1.1"),
+  type: Type.Literal("report"),
+  title: Type.Optional(Type.String()),
+  heuristics: Type.Optional(ReportHeuristicsSchema),
+  sections: Type.Array(ReportSectionSchema, { minItems: 1 })
+});
+var ReportSpecSchema = Type.Union(
+  [ReportSpecV1_0Schema, ReportSpecV1_1Schema],
+  {
+    $id: "https://rtichoke.dev/schema/viz/report.json",
+    title: "rtichoke report specification"
+  }
+);
+
+// src/spec/validate-report.ts
+var VALID_HEURISTIC_PAIR_KEYS2 = /* @__PURE__ */ new Set([
+  "excluded:excluded",
+  "excluded:adjusted_as_censored",
+  "excluded:adjusted_as_negative",
+  "excluded:adjusted_as_composite",
+  "adjusted:excluded",
+  "adjusted:adjusted_as_censored",
+  "adjusted:adjusted_as_negative",
+  "adjusted:adjusted_as_composite"
+]);
+function assertReportReferentialIntegrity(spec) {
+  const componentIds = /* @__PURE__ */ new Set();
+  const assertUniqueComponent = (component) => {
+    if (componentIds.has(component.id)) {
+      throw new Error(`duplicate component id: ${component.id}`);
+    }
+    componentIds.add(component.id);
+  };
+  if (spec.schemaVersion === "1.0") {
+    for (const component of spec.components) assertUniqueComponent(component);
+    return;
+  }
+  let reportAvailableHeuristics;
+  if (spec.heuristics) {
+    const { active, available } = spec.heuristics;
+    if (!available || available.length === 0) {
+      throw new Error("heuristics.available must be non-empty");
+    }
+    const availableSet = /* @__PURE__ */ new Set();
+    for (const key of available) {
+      if (!VALID_HEURISTIC_PAIR_KEYS2.has(key)) {
+        throw new Error(`invalid heuristic pair key: '${key}'`);
+      }
+      if (availableSet.has(key)) {
+        throw new Error(`duplicate heuristic pair key in available: '${key}'`);
+      }
+      availableSet.add(key);
+    }
+    if (!VALID_HEURISTIC_PAIR_KEYS2.has(active)) {
+      throw new Error(`invalid active heuristic pair key: '${active}'`);
+    }
+    if (!availableSet.has(active)) {
+      throw new Error(
+        `active heuristic '${active}' must be present in available heuristics`
+      );
+    }
+    reportAvailableHeuristics = availableSet;
+  }
+  const validateComponentVariants = (component) => {
+    assertUniqueComponent(component);
+    if (reportAvailableHeuristics && component.spec.type === "outcome_distribution" && component.spec.variants) {
+      for (const variantKey of Object.keys(component.spec.variants)) {
+        if (!reportAvailableHeuristics.has(variantKey)) {
+          throw new Error(
+            `component '${component.id}' variant '${variantKey}' is not declared in report heuristics.available`
+          );
+        }
+      }
+    }
+  };
+  const sectionIds = /* @__PURE__ */ new Set();
+  const groupIds = /* @__PURE__ */ new Set();
+  for (const section of spec.sections) {
+    if (sectionIds.has(section.id)) {
+      throw new Error(`duplicate section id: ${section.id}`);
+    }
+    sectionIds.add(section.id);
+    for (const item of section.items) {
+      if (item.type === "component") {
+        validateComponentVariants(item);
+        continue;
+      }
+      if (groupIds.has(item.id)) {
+        throw new Error(`duplicate group id: ${item.id}`);
+      }
+      groupIds.add(item.id);
+      for (const component of item.components) {
+        validateComponentVariants(component);
+      }
+    }
+  }
+}
+
+// src/spec/v2/validate-performance-table.ts
+function assertPerformanceTableReferentialIntegrity(spec) {
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  const metricIds = /* @__PURE__ */ new Set();
+  for (const metric of spec.metrics) {
+    if (metricIds.has(metric.id)) {
+      throw new Error(`duplicate metric id: ${metric.id}`);
+    }
+    metricIds.add(metric.id);
+  }
+  for (const row of spec.rows) {
+    if (!evaluationIds.has(row.evaluationId)) {
+      throw new Error(`unknown evaluation id: ${row.evaluationId}`);
+    }
+    for (const value of row.values) {
+      if (!metricIds.has(value.metricId)) {
+        throw new Error(`unknown metric id: ${value.metricId}`);
+      }
+    }
+  }
+}
+
+// src/spec/v2/validate-summary-metrics.ts
+function assertSummaryMetricsReferentialIntegrity(spec) {
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  const populationIds = /* @__PURE__ */ new Set();
+  for (const population of spec.populations) {
+    if (populationIds.has(population.id)) {
+      throw new Error(`duplicate population id: ${population.id}`);
+    }
+    populationIds.add(population.id);
+  }
+  const seenMetrics = /* @__PURE__ */ new Set();
+  for (const item of spec.metrics) {
+    if (item.estimate !== null && !Number.isFinite(item.estimate)) {
+      throw new Error(`non-finite metric estimate: ${item.estimate}`);
+    }
+    if ("horizon" in item && item.horizon !== void 0) {
+      if (!Number.isFinite(item.horizon) || item.horizon < 0) {
+        throw new Error(`invalid horizon: ${item.horizon}`);
+      }
+    }
+    if (item.metric === "auroc") {
+      if ("horizon" in item && item.horizon !== void 0) {
+        throw new Error("auroc metric cannot specify horizon");
+      }
+      if (!evaluationIds.has(item.owner.evaluationId)) {
+        throw new Error(`unknown evaluation id: ${item.owner.evaluationId}`);
+      }
+      const key = `auroc:${item.owner.evaluationId}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: auroc for evaluation ${item.owner.evaluationId}`
+        );
+      }
+      seenMetrics.add(key);
+    } else if (item.metric === "prevalence") {
+      if ("horizon" in item && item.horizon !== void 0) {
+        throw new Error("prevalence metric cannot specify horizon");
+      }
+      if (!populationIds.has(item.owner.populationId)) {
+        throw new Error(`unknown population id: ${item.owner.populationId}`);
+      }
+      const key = `prevalence:${item.owner.populationId}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: prevalence for population ${item.owner.populationId}`
+        );
+      }
+      seenMetrics.add(key);
+    } else if (item.metric === "event_risk") {
+      if (spec.schemaVersion !== "1.1") {
+        throw new Error(
+          `event_risk metric requires schemaVersion 1.1, got ${spec.schemaVersion}`
+        );
+      }
+      if (!("horizon" in item) || item.horizon === void 0) {
+        throw new Error("event_risk metric requires horizon");
+      }
+      if (!populationIds.has(item.owner.populationId)) {
+        throw new Error(`unknown population id: ${item.owner.populationId}`);
+      }
+      const key = `event_risk:${item.owner.populationId}:${item.horizon}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: event_risk for population ${item.owner.populationId} at horizon ${item.horizon}`
+        );
+      }
+      seenMetrics.add(key);
+    }
+  }
+}
+
 // src/render/decision-curve.ts
 var DECISION_CURVE_CARRIED_ORDER = [
   "net_benefit",
@@ -22322,65 +23087,134 @@ function getOrdinalTrueBluePalette(n) {
   }
   return colors;
 }
-function resolveStateLabel(stateId, customLabel, isObservedStep) {
-  if (customLabel && customLabel.trim() !== "") {
-    return customLabel;
+function resolveCanonicalStateLabels(spec) {
+  const canonicalMap = /* @__PURE__ */ new Map();
+  const processDistributions = (dists) => {
+    for (const dist of dists) {
+      for (const s2 of dist.states) {
+        if (s2.label !== void 0 && s2.label !== null) {
+          const trimmed = s2.label.trim();
+          if (trimmed !== "") {
+            canonicalMap.set(s2.stateId, trimmed);
+          }
+        }
+      }
+    }
+  };
+  if (spec.stateDistributions) {
+    processDistributions(spec.stateDistributions);
   }
-  if (!isObservedStep && CANONICAL_STATE_LABELS[stateId]) {
+  if (spec.variants) {
+    for (const variant of Object.values(spec.variants)) {
+      if (variant && variant.status === "available" && variant.stateDistributions) {
+        processDistributions(variant.stateDistributions);
+      }
+    }
+  }
+  return canonicalMap;
+}
+function resolveStateLabel(stateId, customLabel, canonicalMap) {
+  if (customLabel && customLabel.trim() !== "") {
+    return customLabel.trim();
+  }
+  if (canonicalMap && canonicalMap.has(stateId)) {
+    return canonicalMap.get(stateId);
+  }
+  if (CANONICAL_STATE_LABELS[stateId]) {
     return CANONICAL_STATE_LABELS[stateId];
   }
   return stateId;
 }
-function processStateDistribution(dist) {
+function selectNearestStep(currentStep, availableSteps) {
+  if (availableSteps.length === 0) return currentStep;
+  if (availableSteps.includes(currentStep)) return currentStep;
+  let bestStep = availableSteps[0];
+  let minDiff = Math.abs(availableSteps[0] - currentStep);
+  for (let i = 1; i < availableSteps.length; i++) {
+    const step = availableSteps[i];
+    const diff = Math.abs(step - currentStep);
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestStep = step;
+    } else if (diff === minDiff && step < bestStep) {
+      bestStep = step;
+    }
+  }
+  return bestStep;
+}
+function processStateDistribution(dist, canonicalMap, masterStateOrder) {
   const horizon = dist.horizon ?? 0;
-  const states2 = dist.states;
   const isObservedStep = dist.estimateOrigin === "observed_step";
-  let hasEstimate = false;
   let hasMass = false;
   let hasCount = false;
-  for (const s2 of states2) {
-    if (s2.estimate !== void 0 && s2.estimate !== null) hasEstimate = true;
+  for (const s2 of dist.states) {
     if (s2.mass !== void 0 && s2.mass !== null) hasMass = true;
     if (s2.count !== void 0 && s2.count !== null) hasCount = true;
   }
   let totalMass = null;
   let totalCount = null;
   if (hasMass) {
-    totalMass = states2.reduce(
+    totalMass = dist.states.reduce(
       (acc, s2) => acc + (s2.mass !== void 0 && s2.mass !== null ? s2.mass : 0),
       0
     );
   }
   if (hasCount) {
-    totalCount = states2.reduce(
+    totalCount = dist.states.reduce(
       (acc, s2) => acc + (s2.count !== void 0 && s2.count !== null ? s2.count : 0),
       0
     );
   }
-  const processedStates = states2.map((s2) => {
-    const label = resolveStateLabel(s2.stateId, s2.label, isObservedStep);
-    let proportion = 0;
-    if (dist.estimator === "aalen_johansen" && s2.estimate !== void 0 && s2.estimate !== null) {
-      proportion = s2.estimate;
-    } else if (dist.estimator === "raw" && s2.count !== void 0 && s2.count !== null && totalCount && totalCount > 0) {
-      proportion = s2.count / totalCount;
-    } else if (hasEstimate && s2.estimate !== void 0 && s2.estimate !== null) {
-      proportion = s2.estimate;
-    } else if (hasMass && s2.mass !== void 0 && s2.mass !== null && totalMass && totalMass > 0) {
-      proportion = s2.mass / totalMass;
-    } else if (hasCount && s2.count !== void 0 && s2.count !== null && totalCount && totalCount > 0) {
-      proportion = s2.count / totalCount;
+  let effectiveStateIds;
+  if (isObservedStep && masterStateOrder && masterStateOrder.length > 0) {
+    effectiveStateIds = masterStateOrder;
+  } else {
+    effectiveStateIds = dist.states.map((s2) => s2.stateId);
+  }
+  const stateMap = /* @__PURE__ */ new Map();
+  for (const s2 of dist.states) {
+    stateMap.set(s2.stateId, s2);
+  }
+  const processedStates = effectiveStateIds.map(
+    (stateId) => {
+      const s2 = stateMap.get(stateId);
+      if (s2) {
+        const label = resolveStateLabel(s2.stateId, s2.label, canonicalMap);
+        let proportion = 0;
+        if (dist.estimator === "aalen_johansen" && s2.estimate !== void 0 && s2.estimate !== null) {
+          proportion = s2.estimate;
+        } else if (dist.estimator === "raw" && s2.count !== void 0 && s2.count !== null && totalCount && totalCount > 0) {
+          proportion = s2.count / totalCount;
+        } else if (s2.estimate !== void 0 && s2.estimate !== null) {
+          proportion = s2.estimate;
+        } else if (hasMass && s2.mass !== void 0 && s2.mass !== null && totalMass && totalMass > 0) {
+          proportion = s2.mass / totalMass;
+        } else if (hasCount && s2.count !== void 0 && s2.count !== null && totalCount && totalCount > 0) {
+          proportion = s2.count / totalCount;
+        }
+        return {
+          stateId: s2.stateId,
+          label,
+          proportion,
+          percentage: proportion * 100,
+          estimate: s2.estimate ?? null,
+          mass: s2.mass ?? null,
+          count: s2.count ?? null
+        };
+      } else {
+        const label = resolveStateLabel(stateId, null, canonicalMap);
+        return {
+          stateId,
+          label,
+          proportion: 0,
+          percentage: 0,
+          estimate: dist.estimator === "aalen_johansen" ? 0 : null,
+          mass: null,
+          count: dist.estimator === "raw" ? 0 : null
+        };
+      }
     }
-    return {
-      stateId: s2.stateId,
-      label,
-      proportion,
-      percentage: proportion * 100,
-      estimate: s2.estimate ?? null,
-      mass: s2.mass ?? null,
-      count: s2.count ?? null
-    };
-  });
+  );
   return {
     evaluationId: dist.evaluationId,
     horizon,
@@ -22451,6 +23285,7 @@ function renderOutcomeDistribution(spec, options = {}) {
   const resolved = resolveV2RenderOptions(2, options);
   const { theme } = resolved;
   const digits = theme.tip.digits;
+  const canonicalMap = resolveCanonicalStateLabels(spec);
   let currentEvalId = spec.evaluations[0].id;
   const container = document.createElement("div");
   container.className = "rtichoke-outcome-distribution";
@@ -22576,7 +23411,6 @@ function renderOutcomeDistribution(spec, options = {}) {
         radio.addEventListener("change", () => {
           if (radio.checked) {
             currentEvalId = ev.id;
-            currentActiveHorizon = null;
             updateChart();
           }
         });
@@ -22628,9 +23462,19 @@ function renderOutcomeDistribution(spec, options = {}) {
       chartADiv.append(msg);
       return;
     }
-    const eventTableRows = evalDists.filter((d) => d.estimateOrigin === "event_table").map(processStateDistribution).sort((a2, b) => a2.horizon - b.horizon);
-    const fixedHorizonRows = evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon").map(processStateDistribution).sort((a2, b) => a2.horizon - b.horizon);
-    const observedStepRows = evalDists.filter((d) => d.estimateOrigin === "observed_step").map(processStateDistribution).sort((a2, b) => a2.horizon - b.horizon);
+    const observedStepDists = evalDists.filter(
+      (d) => d.estimateOrigin === "observed_step"
+    );
+    let masterStateOrder = [];
+    if (observedStepDists.length > 0) {
+      const stepOrders = observedStepDists.map(
+        (d) => d.states.map((s2) => s2.stateId)
+      );
+      masterStateOrder = inferTopologicalStateOrder(stepOrders) ?? [];
+    }
+    const eventTableRows = evalDists.filter((d) => d.estimateOrigin === "event_table").map((d) => processStateDistribution(d, canonicalMap)).sort((a2, b) => a2.horizon - b.horizon);
+    const fixedHorizonRows = evalDists.filter((d) => d.estimateOrigin === "fixed_time_horizon").map((d) => processStateDistribution(d, canonicalMap)).sort((a2, b) => a2.horizon - b.horizon);
+    const observedStepRows = evalDists.filter((d) => d.estimateOrigin === "observed_step").map((d) => processStateDistribution(d, canonicalMap, masterStateOrder)).sort((a2, b) => a2.horizon - b.horizon);
     const isObservedStepMode = observedStepRows.length > 0;
     let availableSteps;
     if (isObservedStepMode) {
@@ -22664,8 +23508,13 @@ function renderOutcomeDistribution(spec, options = {}) {
     if (isObservedStepMode) {
       if (observedStepRows.length > 1) {
         sliderControl.style.display = "flex";
-        if (currentActiveHorizon === null || !availableSteps.includes(currentActiveHorizon)) {
+        if (currentActiveHorizon === null) {
           currentActiveHorizon = availableSteps[availableSteps.length - 1];
+        } else {
+          currentActiveHorizon = selectNearestStep(
+            currentActiveHorizon,
+            availableSteps
+          );
         }
         const hIdx = availableSteps.indexOf(currentActiveHorizon);
         const maxIdx = availableSteps.length - 1;
@@ -22683,8 +23532,13 @@ function renderOutcomeDistribution(spec, options = {}) {
       }
     } else if (availableSteps.length > 0) {
       sliderControl.style.display = "flex";
-      if (currentActiveHorizon === null || !availableSteps.includes(currentActiveHorizon)) {
+      if (currentActiveHorizon === null) {
         currentActiveHorizon = availableSteps[availableSteps.length - 1];
+      } else {
+        currentActiveHorizon = selectNearestStep(
+          currentActiveHorizon,
+          availableSteps
+        );
       }
       const hIdx = availableSteps.indexOf(currentActiveHorizon);
       const maxIdx = availableSteps.length - 1;
@@ -115697,683 +116551,6 @@ var observedStepNominalSpec = {
   ]
 };
 
-// src/experimental/synthetic-data.ts
-function createRandomGenerator(seed) {
-  let s2 = seed >>> 0;
-  return () => {
-    s2 = s2 + 1831565813 | 0;
-    let t = Math.imul(s2 ^ s2 >>> 15, 1 | s2);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-function createNormalGenerator(rand) {
-  return (mean2 = 0, std = 1) => {
-    let u1 = rand();
-    let u2 = rand();
-    while (u1 === 0) u1 = rand();
-    while (u2 === 0) u2 = rand();
-    const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-    return mean2 + z0 * std;
-  };
-}
-function generateSyntheticContinuousDataset(seed = 42) {
-  const rand = createRandomGenerator(seed);
-  const randNorm = createNormalGenerator(rand);
-  const nSubjects = 600;
-  const numSteps = 36;
-  const clusters = [];
-  for (let i = 0; i < nSubjects; i++) {
-    clusters.push(rand() < 0.55 ? "shifter" : "stayer");
-  }
-  const subjectTraits = [];
-  for (let i = 0; i < nSubjects; i++) {
-    subjectTraits.push(randNorm(0, 0.08));
-  }
-  const censoringSteps = [];
-  for (let i = 0; i < nSubjects; i++) {
-    let lastObserved = 35;
-    for (let s2 = 1; s2 <= 35; s2++) {
-      const hazard = 88e-4 + 15e-5 * s2;
-      if (rand() < hazard) {
-        lastObserved = s2 - 1;
-        break;
-      }
-    }
-    censoringSteps.push(lastObserved);
-  }
-  const subjects = [];
-  for (let i = 0; i < nSubjects; i++) {
-    const isShifter = clusters[i] === "shifter";
-    const trait = subjectTraits[i];
-    const outcomes = [];
-    for (let s2 = 0; s2 < numSteps; s2++) {
-      const progress = s2 / 35;
-      let val;
-      if (isShifter) {
-        const mean2 = 0.25 + 0.53 * Math.pow(progress, 1.4);
-        const std = 0.07 + 0.04 * Math.sin(progress * Math.PI);
-        val = randNorm(mean2, std) + trait * (1 + progress);
-      } else {
-        const mean2 = 0.25 - 0.05 * progress;
-        const std = 0.07 + 0.06 * progress;
-        val = randNorm(mean2, std) + trait;
-      }
-      val += randNorm(0, 0.02);
-      val = Math.max(0, Math.min(1, val));
-      outcomes.push(val);
-    }
-    subjects.push({
-      subjectId: i + 1,
-      outcomes,
-      censoringStep: censoringSteps[i]
-    });
-  }
-  return {
-    subjects,
-    nSubjects,
-    numSteps
-  };
-}
-
-// src/experimental/continuous-outcome-distribution.ts
-var continuousInstanceCounter = 0;
-var continuousSliderCounter = 0;
-function createBinDefinitions(numBins = 20) {
-  const binWidth = 1 / numBins;
-  const bins = [];
-  for (let i = 0; i < numBins; i++) {
-    const lower2 = i * binWidth;
-    const upper = (i + 1) * binWidth;
-    bins.push({
-      index: i,
-      lower: lower2,
-      upper,
-      label: i === 0 ? `0.00\u2013${upper.toFixed(2)}` : `${lower2.toFixed(2)}\u2013${upper.toFixed(2)}`
-    });
-  }
-  return bins;
-}
-function computeScenarioStats(dataset, scenario, numBins = 20) {
-  const bins = createBinDefinitions(numBins);
-  const binWidth = 1 / numBins;
-  const totalN = dataset.nSubjects;
-  const summaries = [];
-  for (let s2 = 0; s2 < dataset.numSteps; s2++) {
-    const included = dataset.subjects.filter((sub) => {
-      if (scenario === "A") return true;
-      return sub.censoringStep >= s2;
-    });
-    const includedCount = included.length;
-    const excludedCount = totalN - includedCount;
-    const excludedProportion = excludedCount / totalN;
-    const excludedPercentage = excludedProportion * 100;
-    const binCounts = new Array(numBins).fill(0);
-    for (const sub of included) {
-      const val = sub.outcomes[s2];
-      let bIdx = Math.floor(val / binWidth);
-      if (bIdx >= numBins) bIdx = numBins - 1;
-      if (bIdx < 0) bIdx = 0;
-      binCounts[bIdx]++;
-    }
-    const cells = bins.map((b, idx) => {
-      const count2 = binCounts[idx];
-      const proportion = includedCount > 0 ? count2 / includedCount : 0;
-      return {
-        step: s2,
-        binIndex: idx,
-        binLower: b.lower,
-        binUpper: b.upper,
-        binLabel: b.label,
-        count: count2,
-        includedCount,
-        proportion,
-        percentage: proportion * 100
-      };
-    });
-    summaries.push({
-      step: s2,
-      includedCount,
-      excludedCount,
-      excludedProportion,
-      excludedPercentage,
-      cells
-    });
-  }
-  return summaries;
-}
-function computeJointMaxProportion(dataset, numBins = 20) {
-  const statsA = computeScenarioStats(dataset, "A", numBins);
-  const statsB = computeScenarioStats(dataset, "B", numBins);
-  let maxProp = 0;
-  for (const step of statsA) {
-    for (const cell3 of step.cells) {
-      if (cell3.proportion > maxProp) maxProp = cell3.proportion;
-    }
-  }
-  for (const step of statsB) {
-    for (const cell3 of step.cells) {
-      if (cell3.proportion > maxProp) maxProp = cell3.proportion;
-    }
-  }
-  const pct = maxProp * 100;
-  const roundedPct = Math.ceil(pct / 5) * 5;
-  return Math.max(5, Math.min(100, roundedPct)) / 100;
-}
-function renderContinuousOutcomeDistributionPOC(options = {}) {
-  const instanceId = ++continuousInstanceCounter;
-  const resolved = resolveV2RenderOptions(2, options);
-  const { theme } = resolved;
-  const digits = theme.tip.digits;
-  const dataset = options.dataset ?? generateSyntheticContinuousDataset();
-  let activeScenario = options.initialScenario ?? "A";
-  const numBins = 20;
-  let selectedStep = 35;
-  let isHistogramOpen = false;
-  let isExcludedExpanded = false;
-  const container = document.createElement("div");
-  container.className = "rtichoke-outcome-distribution rtichoke-continuous-poc";
-  container.style.width = `${theme.width}px`;
-  container.style.maxWidth = "100%";
-  const titleEl = document.createElement("h3");
-  titleEl.className = "rtichoke-outcome-distribution__title";
-  titleEl.textContent = "Continuous Outcome Distribution (Experimental POC)";
-  container.append(titleEl);
-  const descEl = document.createElement("p");
-  descEl.style.margin = "0 0 1rem 0";
-  descEl.style.fontSize = "13px";
-  descEl.style.color = "#4b5563";
-  descEl.textContent = "Longitudinal empirical distribution heatmap of observed numerical outcomes across 36 steps (0\u201335), with optional step histogram detail below.";
-  container.append(descEl);
-  const controlsDiv = document.createElement("div");
-  controlsDiv.className = "rtichoke-outcome-distribution__controls";
-  controlsDiv.style.display = "flex";
-  controlsDiv.style.flexWrap = "wrap";
-  controlsDiv.style.alignItems = "center";
-  controlsDiv.style.gap = "1.5rem";
-  controlsDiv.style.marginBottom = "1rem";
-  container.append(controlsDiv);
-  const mainLayoutDiv = document.createElement("div");
-  mainLayoutDiv.className = "rtichoke-continuous-main-layout";
-  mainLayoutDiv.style.display = "flex";
-  mainLayoutDiv.style.flexDirection = "column";
-  mainLayoutDiv.style.gap = "0.75rem";
-  container.append(mainLayoutDiv);
-  const heatmapWrapper = document.createElement("div");
-  heatmapWrapper.className = "rtichoke-continuous-heatmap-wrapper";
-  const legendDiv = document.createElement("div");
-  legendDiv.className = "rtichoke-continuous-legend";
-  legendDiv.style.display = "flex";
-  legendDiv.style.alignItems = "center";
-  legendDiv.style.gap = "0.75rem";
-  legendDiv.style.marginLeft = `${theme.margins.left + 5}px`;
-  legendDiv.style.marginTop = "0.25rem";
-  legendDiv.style.marginBottom = "0.5rem";
-  const histogramWrapper = document.createElement("div");
-  histogramWrapper.className = "rtichoke-continuous-histogram-wrapper";
-  histogramWrapper.style.marginTop = "0.5rem";
-  histogramWrapper.style.marginBottom = "0.5rem";
-  const sliderControl = document.createElement("div");
-  sliderControl.className = "rtichoke-operating-point-control";
-  sliderControl.style.marginLeft = `${theme.margins.left + 5}px`;
-  sliderControl.style.marginRight = `${theme.margins.right}px`;
-  sliderControl.style.marginTop = "0.5rem";
-  sliderControl.style.marginBottom = "0.75rem";
-  const sliderId = `rtichoke-cod-slider-${++continuousSliderCounter}`;
-  const sliderLabel = document.createElement("label");
-  sliderLabel.className = "rtichoke-operating-point-label";
-  sliderLabel.htmlFor = sliderId;
-  const sliderLabelText = document.createElement("span");
-  sliderLabelText.textContent = "Step: ";
-  const sliderValueText = document.createElement("span");
-  sliderValueText.className = "rtichoke-operating-point-value";
-  sliderValueText.textContent = String(selectedStep);
-  sliderLabel.append(sliderLabelText, sliderValueText);
-  const slider = document.createElement("input");
-  slider.type = "range";
-  slider.id = sliderId;
-  slider.className = "rtichoke-operating-point-slider";
-  slider.min = "0";
-  slider.max = "35";
-  slider.step = "1";
-  slider.value = String(selectedStep);
-  slider.setAttribute("aria-label", "Step");
-  sliderControl.append(sliderLabel, slider);
-  const excludedSection = document.createElement("div");
-  excludedSection.className = "rtichoke-continuous-excluded-section";
-  excludedSection.style.marginTop = "0.25rem";
-  excludedSection.style.padding = "0.5rem 0";
-  excludedSection.style.backgroundColor = "transparent";
-  mainLayoutDiv.append(heatmapWrapper, legendDiv, histogramWrapper, sliderControl, excludedSection);
-  const renderAll = () => {
-    const scenarioStats = computeScenarioStats(dataset, activeScenario, numBins);
-    const jointUpperProp = computeJointMaxProportion(dataset, numBins);
-    const currentStepSummary = scenarioStats.find((s2) => s2.step === selectedStep) ?? scenarioStats[35];
-    controlsDiv.replaceChildren();
-    const scenarioGroup = document.createElement("div");
-    scenarioGroup.className = "rtichoke-pd-radio-group";
-    scenarioGroup.setAttribute("role", "radiogroup");
-    scenarioGroup.setAttribute("aria-label", "Scenario");
-    const scenarioGroupLabel = document.createElement("span");
-    scenarioGroupLabel.className = "rtichoke-pd-radio-group-label";
-    scenarioGroupLabel.textContent = "Demonstration Scenario:";
-    scenarioGroup.append(scenarioGroupLabel);
-    const scenarioOptions = document.createElement("div");
-    scenarioOptions.className = "rtichoke-pd-radio-options";
-    const scenarioItems = [
-      { id: "A", label: "Scenario A (Complete follow-up, N=600)" },
-      { id: "B", label: "Scenario B (Right-censored follow-up, N=600 \u2192 390)" }
-    ];
-    for (const item of scenarioItems) {
-      const optLabel = document.createElement("label");
-      optLabel.className = "rtichoke-pd-radio-option";
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `cod-scenario-${instanceId}`;
-      radio.value = item.id;
-      radio.checked = activeScenario === item.id;
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          activeScenario = item.id;
-          renderAll();
-        }
-      });
-      const span = document.createElement("span");
-      span.textContent = item.label;
-      optLabel.append(radio, span);
-      scenarioOptions.append(optLabel);
-    }
-    scenarioGroup.append(scenarioOptions);
-    controlsDiv.append(scenarioGroup);
-    heatmapWrapper.replaceChildren();
-    const flatCells = [];
-    for (const stepSum of scenarioStats) {
-      const isPastSelected = stepSum.step > selectedStep;
-      const opacity2 = isPastSelected ? 0.28 : 0.88;
-      for (const cell3 of stepSum.cells) {
-        const tipText = tooltip(digits, [
-          ["Step", cell3.step],
-          ["Reals", cell3.binLabel],
-          ["Included count", cell3.includedCount],
-          ["Bin count", cell3.count],
-          ["Bin proportion", `${cell3.percentage.toFixed(1)}%`]
-        ]);
-        flatCells.push({
-          ...cell3,
-          opacity: opacity2,
-          tooltipTitle: tipText
-        });
-      }
-    }
-    const heatmapWidth = theme.width - theme.margins.left - theme.margins.right;
-    const heatmapMarks = [
-      rect(flatCells, {
-        x1: (d) => d.step - 0.5,
-        x2: (d) => d.step + 0.5,
-        y1: (d) => d.binLower,
-        y2: (d) => d.binUpper,
-        fill: (d) => d.proportion,
-        fillOpacity: (d) => d.opacity,
-        stroke: "#ffffff",
-        strokeWidth: 0.4,
-        title: (d) => d.tooltipTitle
-      })
-    ];
-    heatmapMarks.push(
-      rect(
-        [
-          {
-            x1: selectedStep - 0.5,
-            x2: selectedStep + 0.5,
-            y1: 0,
-            y2: 1
-          }
-        ],
-        {
-          x1: "x1",
-          x2: "x2",
-          y1: "y1",
-          y2: "y2",
-          fill: "none",
-          stroke: theme.axis.color,
-          strokeWidth: 2.5
-        }
-      )
-    );
-    const heatmapPlot = themedPlot(
-      {
-        width: heatmapWidth,
-        height: Math.round(theme.height * 0.65),
-        marginTop: theme.margins.top + 10,
-        marginRight: theme.margins.right,
-        marginBottom: theme.margins.bottom,
-        marginLeft: theme.margins.left + 5,
-        style: {
-          background: theme.background,
-          color: theme.axis.color,
-          fontFamily: theme.typography.fontFamily,
-          fontSize: `${theme.typography.fontSize}px`
-        },
-        x: {
-          label: "Step",
-          domain: [-0.5, 35.5],
-          ticks: [0, 5, 10, 15, 20, 25, 30, 35],
-          tickFormat: (d) => String(Math.round(d)),
-          grid: false,
-          line: true
-        },
-        y: {
-          label: "Reals (Outcome Value)",
-          domain: [0, 1],
-          ticks: 5,
-          tickFormat: (d) => d.toFixed(2),
-          grid: false,
-          line: true
-        },
-        color: {
-          type: "linear",
-          scheme: "Blues",
-          domain: [0, jointUpperProp],
-          clamp: true
-        },
-        marks: heatmapMarks
-      },
-      theme
-    );
-    const svgEl = heatmapPlot;
-    svgEl.style.cursor = "pointer";
-    svgEl.tabIndex = 0;
-    svgEl.setAttribute("aria-label", "Heatmap. Press Enter or click a step column to view detail histogram.");
-    const handleStepSelection = (evt) => {
-      let node = evt.target;
-      while (node && node !== svgEl) {
-        const titleEl2 = node.querySelector("title");
-        const titleText = titleEl2 ? titleEl2.textContent : node.getAttribute("title");
-        if (titleText) {
-          const match = titleText.match(/Step:\s*(\d+)/);
-          if (match) {
-            const clickedStep = parseInt(match[1], 10);
-            selectedStep = clickedStep;
-            isHistogramOpen = true;
-            slider.value = String(selectedStep);
-            sliderValueText.textContent = String(selectedStep);
-            renderAll();
-            return;
-          }
-        }
-        node = node.parentElement;
-      }
-    };
-    svgEl.addEventListener("click", handleStepSelection);
-    svgEl.addEventListener("keydown", (evt) => {
-      if (evt.key === "Enter" || evt.key === " ") {
-        handleStepSelection(evt);
-      }
-    });
-    heatmapWrapper.append(heatmapPlot);
-    histogramWrapper.replaceChildren();
-    if (isHistogramOpen) {
-      const histCard = document.createElement("div");
-      histCard.style.padding = "0.75rem";
-      histCard.style.backgroundColor = "#f9fafb";
-      histCard.style.border = "1px solid #e5e7eb";
-      histCard.style.borderRadius = "6px";
-      histCard.style.marginLeft = `${theme.margins.left + 5}px`;
-      histCard.style.marginRight = `${theme.margins.right}px`;
-      const histHeader = document.createElement("div");
-      histHeader.style.display = "flex";
-      histHeader.style.justifyContent = "space-between";
-      histHeader.style.alignItems = "center";
-      histHeader.style.marginBottom = "0.25rem";
-      histHeader.style.paddingBottom = "0.25rem";
-      histHeader.style.borderBottom = "1px solid #e5e7eb";
-      const histTitle = document.createElement("div");
-      histTitle.style.fontWeight = "600";
-      histTitle.style.fontSize = "13px";
-      histTitle.style.color = "#1f2937";
-      histTitle.textContent = `Step ${selectedStep} Detail Histogram (n = ${currentStepSummary.includedCount} observed subjects)`;
-      const closeBtn = document.createElement("button");
-      closeBtn.type = "button";
-      closeBtn.className = "rtichoke-continuous-close-hist";
-      closeBtn.style.background = "none";
-      closeBtn.style.border = "none";
-      closeBtn.style.fontSize = "14px";
-      closeBtn.style.fontWeight = "bold";
-      closeBtn.style.color = "#6b7280";
-      closeBtn.style.cursor = "pointer";
-      closeBtn.style.padding = "2px 6px";
-      closeBtn.setAttribute("aria-label", "Close histogram detail view");
-      closeBtn.textContent = "\u2715 Close";
-      closeBtn.addEventListener("click", () => {
-        isHistogramOpen = false;
-        renderAll();
-      });
-      histHeader.append(histTitle, closeBtn);
-      const histData = currentStepSummary.cells.map((c4) => ({
-        ...c4,
-        title: tooltip(digits, [
-          ["Step", c4.step],
-          ["Reals", c4.binLabel],
-          ["Count", `${c4.count} / ${c4.includedCount}`],
-          ["Proportion", `${c4.percentage.toFixed(1)}%`]
-        ])
-      }));
-      const histWidth = heatmapWidth - 10;
-      const histPlot = themedPlot(
-        {
-          width: histWidth,
-          height: 180,
-          marginTop: 15,
-          marginRight: theme.margins.right,
-          marginBottom: theme.margins.bottom,
-          marginLeft: theme.margins.left + 5,
-          style: {
-            background: theme.background,
-            color: theme.axis.color,
-            fontFamily: theme.typography.fontFamily,
-            fontSize: `${theme.typography.fontSize}px`
-          },
-          x: {
-            label: "Reals (Outcome Value)",
-            domain: [0, 1],
-            ticks: 5,
-            tickFormat: (d) => d.toFixed(2),
-            grid: false,
-            line: true
-          },
-          y: {
-            label: "Proportion (%)",
-            domain: [0, jointUpperProp * 100],
-            ticks: 4,
-            tickFormat: (d) => `${d}%`,
-            grid: true,
-            line: true
-          },
-          marks: [
-            rectY(histData, {
-              x1: "binLower",
-              x2: "binUpper",
-              y: "percentage",
-              fill: "#2477BB",
-              fillOpacity: 0.85,
-              stroke: "#ffffff",
-              strokeWidth: 0.5,
-              title: (d) => d.title
-            })
-          ]
-        },
-        theme
-      );
-      histCard.append(histHeader, histPlot);
-      histogramWrapper.append(histCard);
-    }
-    legendDiv.replaceChildren();
-    const legendLabel = document.createElement("span");
-    legendLabel.style.fontSize = "12px";
-    legendLabel.style.fontWeight = "600";
-    legendLabel.style.color = "#374151";
-    legendLabel.textContent = "Bin Proportion:";
-    const gradientBar = document.createElement("div");
-    gradientBar.style.width = "120px";
-    gradientBar.style.height = "12px";
-    gradientBar.style.borderRadius = "2px";
-    gradientBar.style.border = "1px solid #d1d5db";
-    gradientBar.style.background = "linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #084594)";
-    const legendMinLabel = document.createElement("span");
-    legendMinLabel.style.fontSize = "11px";
-    legendMinLabel.style.color = "#6b7280";
-    legendMinLabel.textContent = "0%";
-    const legendMaxLabel = document.createElement("span");
-    legendMaxLabel.style.fontSize = "11px";
-    legendMaxLabel.style.color = "#6b7280";
-    legendMaxLabel.textContent = `${(jointUpperProp * 100).toFixed(0)}%`;
-    legendDiv.append(legendLabel, legendMinLabel, gradientBar, legendMaxLabel);
-    sliderValueText.textContent = String(selectedStep);
-    excludedSection.replaceChildren();
-    const excludedHeader = document.createElement("div");
-    excludedHeader.style.display = "flex";
-    excludedHeader.style.justifyContent = "space-between";
-    excludedHeader.style.alignItems = "center";
-    const excludedReadout = document.createElement("div");
-    excludedReadout.style.fontSize = "13px";
-    excludedReadout.style.fontWeight = "600";
-    excludedReadout.style.color = "#1f2937";
-    if (activeScenario === "A" || currentStepSummary.excludedCount === 0) {
-      excludedReadout.textContent = `Excluded at step ${selectedStep}: 0 / ${dataset.nSubjects} (0.0%)`;
-    } else {
-      excludedReadout.textContent = `Excluded at step ${selectedStep}: ${currentStepSummary.excludedCount} / ${dataset.nSubjects} (${currentStepSummary.excludedPercentage.toFixed(1)}%)`;
-    }
-    excludedHeader.append(excludedReadout);
-    excludedSection.append(excludedHeader);
-    const excludedPanel = document.createElement("div");
-    excludedPanel.style.marginTop = "0.5rem";
-    excludedPanel.style.paddingTop = "0.5rem";
-    excludedPanel.style.borderTop = "1px dashed #d1d5db";
-    if (activeScenario === "A") {
-      const noExclMsg = document.createElement("p");
-      noExclMsg.style.margin = "0.5rem 0 0 0";
-      noExclMsg.style.fontSize = "13px";
-      noExclMsg.style.color = "#6b7280";
-      noExclMsg.style.fontStyle = "italic";
-      noExclMsg.textContent = "Scenario A has complete follow-up: zero excluded observations across all 36 steps.";
-      excludedPanel.append(noExclMsg);
-    } else {
-      const exclPlotData = scenarioStats.map((s2) => ({
-        step: s2.step,
-        excludedCount: s2.excludedCount,
-        excludedPercentage: s2.excludedPercentage,
-        opacity: s2.step > selectedStep ? 0.28 : 0.88,
-        title: tooltip(digits, [
-          ["Step", s2.step],
-          ["Excluded count", `${s2.excludedCount} / ${dataset.nSubjects}`],
-          ["Excluded proportion", `${s2.excludedPercentage.toFixed(1)}%`]
-        ])
-      }));
-      const maxExclPct = Math.max(...scenarioStats.map((s2) => s2.excludedPercentage), 5);
-      const selectedExcludedPct = currentStepSummary.excludedPercentage;
-      const CENSORING_COLOR = "#E3F09B";
-      const exclMarks = [
-        rectY(exclPlotData, {
-          x1: (d) => d.step - 0.5,
-          x2: (d) => d.step + 0.5,
-          y: "excludedPercentage",
-          fill: CENSORING_COLOR,
-          fillOpacity: (d) => d.opacity,
-          stroke: "#4a5568",
-          strokeWidth: 0.4,
-          title: (d) => d.title
-        })
-      ];
-      if (selectedExcludedPct > 0) {
-        exclMarks.push(
-          rect(
-            [
-              {
-                x1: selectedStep - 0.5,
-                x2: selectedStep + 0.5,
-                y1: 0,
-                y2: selectedExcludedPct
-              }
-            ],
-            {
-              x1: "x1",
-              x2: "x2",
-              y1: "y1",
-              y2: "y2",
-              fill: "none",
-              stroke: theme.axis.color,
-              strokeWidth: 2.5
-            }
-          )
-        );
-      }
-      const exclPlot = themedPlot(
-        {
-          width: heatmapWidth,
-          height: 140,
-          marginTop: 10,
-          marginRight: theme.margins.right,
-          marginBottom: theme.margins.bottom,
-          marginLeft: theme.margins.left + 5,
-          style: {
-            background: theme.background,
-            color: theme.axis.color,
-            fontFamily: theme.typography.fontFamily,
-            fontSize: `${theme.typography.fontSize}px`
-          },
-          x: {
-            label: "Step",
-            domain: [-0.5, 35.5],
-            ticks: [0, 5, 10, 15, 20, 25, 30, 35],
-            tickFormat: (d) => String(Math.round(d)),
-            grid: false,
-            line: true
-          },
-          y: {
-            label: "Excluded (%)",
-            domain: [0, maxExclPct * 1.05],
-            ticks: 4,
-            tickFormat: (d) => `${d.toFixed(0)}%`,
-            grid: true,
-            line: true
-          },
-          marks: exclMarks
-        },
-        theme
-      );
-      const exclSvgEl = exclPlot;
-      exclSvgEl.style.cursor = "pointer";
-      exclSvgEl.addEventListener("click", (evt) => {
-        let node = evt.target;
-        while (node && node !== exclSvgEl) {
-          const titleEl2 = node.querySelector("title");
-          const titleText = titleEl2 ? titleEl2.textContent : node.getAttribute("title");
-          if (titleText) {
-            const match = titleText.match(/Step:\s*(\d+)/);
-            if (match) {
-              const clickedStep = parseInt(match[1], 10);
-              selectedStep = clickedStep;
-              slider.value = String(selectedStep);
-              sliderValueText.textContent = String(selectedStep);
-              renderAll();
-              return;
-            }
-          }
-          node = node.parentElement;
-        }
-      });
-      excludedPanel.append(exclPlot);
-    }
-    excludedSection.append(excludedPanel);
-  };
-  slider.addEventListener("input", () => {
-    selectedStep = Number(slider.value);
-    renderAll();
-  });
-  renderAll();
-  return container;
-}
-
 // fixtures/v2/demo/model-a-test-roc.json with { type: 'json' }
 var model_a_test_roc_default2 = {
   schemaVersion: "2.0",
@@ -158722,7 +158899,6 @@ var observedStepRawHost = document.querySelector("#observed-step-raw-chart");
 var observedStepAjHost = document.querySelector("#observed-step-aj-chart");
 var observedStepOrdinalHost = document.querySelector("#observed-step-ordinal-chart");
 var observedStepNominalHost = document.querySelector("#observed-step-nominal-chart");
-var continuousPocHost = document.querySelector("#continuous-outcome-distribution-poc-chart");
 if (!reportHost1 || !reportHost2 || !reportHost3 || !reportHost4 || !rocHost || !rocOpHost || !rocPpcrHost || !calibrationHost || !calibrationPopulationsHost || !precisionRecallHost || !prPpcrHost || !gainsHost || !gainsTimeHost || !liftHost || !liftTimeHost || !dcOpHost || !iaOpHost || !predDistVisualHost || !outcomeDistHost) {
   throw new Error("Demo chart containers are missing");
 }
@@ -158928,9 +159104,8 @@ if (observedStepOrdinalHost) {
 if (observedStepNominalHost) {
   observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
 }
-if (continuousPocHost) {
-  continuousPocHost.append(renderContinuousOutcomeDistributionPOC());
-}
+var continuousPocHost = document.querySelector("#continuous-outcome-distribution-poc-chart");
+if (continuousPocHost) continuousPocHost.append(renderContinuousOutcomeDistributionPOC());
 export {
   setupDemoTabs
 };
