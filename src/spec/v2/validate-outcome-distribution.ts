@@ -13,6 +13,69 @@ const VALID_HEURISTIC_PAIR_KEYS = new Set<HeuristicPairKey>([
   "adjusted:adjusted_as_composite",
 ]);
 
+/**
+  * Infer a deterministic topological ordering from within-step state orderings.
+  * Returns string[] if a valid DAG order exists, or null if a directed cycle exists.
+  */
+export function inferTopologicalStateOrder(
+  stepOrders: string[][],
+): string[] | null {
+  const nodes = new Set<string>();
+  const inDegree = new Map<string, number>();
+  const adj = new Map<string, Set<string>>();
+  const firstSeenOrder: string[] = [];
+
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      const node = step[i];
+      if (!nodes.has(node)) {
+        nodes.add(node);
+        firstSeenOrder.push(node);
+        inDegree.set(node, 0);
+        adj.set(node, new Set());
+      }
+    }
+  }
+
+  for (const step of stepOrders) {
+    for (let i = 0; i < step.length; i++) {
+      for (let j = i + 1; j < step.length; j++) {
+        const u = step[i];
+        const v = step[j];
+        const neighbors = adj.get(u)!;
+        if (!neighbors.has(v)) {
+          neighbors.add(v);
+          inDegree.set(v, (inDegree.get(v) ?? 0) + 1);
+        }
+      }
+    }
+  }
+
+  const queue: string[] = firstSeenOrder.filter((n) => inDegree.get(n) === 0);
+  const result: string[] = [];
+
+  while (queue.length > 0) {
+    queue.sort((a, b) => firstSeenOrder.indexOf(a) - firstSeenOrder.indexOf(b));
+    const u = queue.shift()!;
+    result.push(u);
+
+    const neighbors = adj.get(u) ?? new Set();
+    for (const v of neighbors) {
+      const newDeg = (inDegree.get(v) ?? 1) - 1;
+      inDegree.set(v, newDeg);
+      if (newDeg === 0) {
+        queue.push(v);
+      }
+    }
+  }
+
+  if (result.length !== nodes.size) {
+    return null;
+  }
+
+  return result;
+}
+
 /** Validate a single PopulationExclusion entry. */
 export function assertPopulationExclusionValid(
   exclusion: PopulationExclusion,
@@ -282,7 +345,30 @@ export function assertOutcomeDistributionReferentialIntegrity(
 
   const seenKeys = new Set<string>();
   const originHorizonKeys = new Set<string>();
-  const evalStateOrders = new Map<string, string[]>();
+  const nonObservedStateOrders = new Map<string, string[]>();
+  const observedStepOrders = new Map<string, string[][]>();
+  const explicitLabels = new Map<string, string>();
+
+  const checkAndRegisterStateLabels = (dists: StateDistribution[]) => {
+    for (const dist of dists) {
+      for (const state of dist.states) {
+        if (state.label !== undefined && state.label !== null) {
+          const trimmed = state.label.trim();
+          if (trimmed !== "") {
+            const existing = explicitLabels.get(state.stateId);
+            if (existing !== undefined && existing !== trimmed) {
+              throw new Error(
+                `conflicting explicit labels for state '${state.stateId}': '${existing}' vs '${trimmed}'`,
+              );
+            }
+            explicitLabels.set(state.stateId, trimmed);
+          }
+        }
+      }
+    }
+  };
+
+  checkAndRegisterStateLabels(spec.stateDistributions);
 
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
@@ -305,21 +391,40 @@ export function assertOutcomeDistributionReferentialIntegrity(
       }
       seenKeys.add(key);
 
-      const stateOrder = dist.states.map((s) => s.stateId);
       const groupKey = `${dist.evaluationId}|${dist.estimator}`;
-      const existingOrder = evalStateOrders.get(groupKey);
-      if (!existingOrder) {
-        evalStateOrders.set(groupKey, stateOrder);
+      let orders = observedStepOrders.get(groupKey);
+      if (!orders) {
+        orders = [];
+        observedStepOrders.set(groupKey, orders);
+      }
+      orders.push(dist.states.map((s) => s.stateId));
+    } else {
+      const strictKey = `${dist.evaluationId}|${dist.estimator}`;
+      const stateOrder = dist.states.map((s) => s.stateId);
+      const existingStrictOrder = nonObservedStateOrders.get(strictKey);
+      if (!existingStrictOrder) {
+        nonObservedStateOrders.set(strictKey, stateOrder);
       } else {
         if (
-          stateOrder.length !== existingOrder.length ||
-          !stateOrder.every((id, idx) => id === existingOrder[idx])
+          stateOrder.length !== existingStrictOrder.length ||
+          !stateOrder.every((id, idx) => id === existingStrictOrder[idx])
         ) {
           throw new Error(
-            `inconsistent state ordering across steps for evaluation ${dist.evaluationId}`,
+            `inconsistent state ordering across horizons for evaluation ${dist.evaluationId}`,
           );
         }
       }
+    }
+  }
+
+  // Validate topological consistency for observed_step distributions
+  for (const [groupKey, orders] of observedStepOrders.entries()) {
+    const evalId = groupKey.split("|")[0];
+    const inferred = inferTopologicalStateOrder(orders);
+    if (!inferred) {
+      throw new Error(
+        `inconsistent state ordering across steps for evaluation ${evalId}`,
+      );
     }
   }
 
@@ -335,6 +440,8 @@ export function assertOutcomeDistributionReferentialIntegrity(
         if (!variant.stateDistributions || variant.stateDistributions.length === 0) {
           throw new Error(`variant '${key}' stateDistributions must be non-empty`);
         }
+
+          checkAndRegisterStateLabels(variant.stateDistributions);
 
         const variantOriginHorizonKeys = new Set<string>();
         for (const dist of variant.stateDistributions) {
