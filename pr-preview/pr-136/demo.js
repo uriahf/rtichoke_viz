@@ -24363,6 +24363,17 @@ function selectNearestStep2(currentStep, availableSteps) {
 function formatBinRange(lower2, upper, digits) {
   return `[${lower2.toFixed(digits)}, ${upper.toFixed(digits)}]`;
 }
+function findStepFromNode(node, rootSvg) {
+  let curr = node;
+  while (curr && curr !== rootSvg) {
+    const stepAttr = curr.getAttribute("data-step") ?? curr.getAttribute("aria-label");
+    if (stepAttr && /^\d+$/.test(stepAttr)) {
+      return parseInt(stepAttr, 10);
+    }
+    curr = curr.parentElement;
+  }
+  return null;
+}
 function computeJointMaxProportion2(spec) {
   let maxProp = 0;
   for (const dist of spec.distributions) {
@@ -24573,7 +24584,8 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
         fillOpacity: (d) => d.observedCount > 0 ? d.opacity : 0.4,
         stroke: "#ffffff",
         strokeWidth: 0.4,
-        title: (d) => d.tooltipTitle
+        title: (d) => d.tooltipTitle,
+        ariaLabel: (d) => String(d.step)
       })
     ];
     heatmapMarks.push(
@@ -24644,28 +24656,27 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
       "aria-label",
       "Continuous outcome heatmap. Press Enter or click a step column to view detail histogram."
     );
-    const handleStepSelection = (evt) => {
-      let node = evt.target;
-      while (node && node !== svgEl) {
-        const titleEl = node.querySelector("title");
-        const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
-        if (titleText) {
-          const match = titleText.match(/Step:\s*(\d+)/);
-          if (match) {
-            const clickedStep = parseInt(match[1], 10);
-            selectedStep = clickedStep;
-            isHistogramOpen = true;
-            updateAll();
-            return;
-          }
-        }
-        node = node.parentElement;
+    const rects = svgEl.querySelectorAll("g[aria-label='rect'] rect");
+    rects.forEach((rect2, idx) => {
+      if (idx < flatCells.length) {
+        rect2.setAttribute("data-step", String(flatCells[idx].step));
       }
+    });
+    const handleHeatmapSelection = (evt) => {
+      const clickedStep = findStepFromNode(evt.target, svgEl);
+      if (clickedStep !== null) {
+        selectedStep = clickedStep;
+      }
+      isHistogramOpen = true;
+      updateAll();
     };
-    svgEl.addEventListener("click", handleStepSelection);
+    svgEl.addEventListener("click", handleHeatmapSelection);
     svgEl.addEventListener("keydown", (evt) => {
       if (evt.key === "Enter" || evt.key === " ") {
-        handleStepSelection(evt);
+        if (evt.key === " ") {
+          evt.preventDefault();
+        }
+        handleHeatmapSelection(evt);
       }
     });
     heatmapWrapper.append(heatmapPlot);
@@ -24872,7 +24883,8 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
           fillOpacity: (d) => d.opacity,
           stroke: "#475569",
           strokeWidth: 0.4,
-          title: (d) => d.title
+          title: (d) => d.title,
+          ariaLabel: (d) => String(d.step)
         })
       ];
       if (selectedUnobsPct > 0) {
@@ -24934,21 +24946,17 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
       );
       const unobsSvgEl = unobsPlot;
       unobsSvgEl.style.cursor = "pointer";
+      const unobsRects = unobsSvgEl.querySelectorAll("g[aria-label='rect'] rect");
+      unobsRects.forEach((rect2, idx) => {
+        if (idx < unobsPlotData.length) {
+          rect2.setAttribute("data-step", String(unobsPlotData[idx].step));
+        }
+      });
       unobsSvgEl.addEventListener("click", (evt) => {
-        let node = evt.target;
-        while (node && node !== unobsSvgEl) {
-          const titleEl = node.querySelector("title");
-          const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
-          if (titleText) {
-            const match = titleText.match(/Step:\s*(\d+)/);
-            if (match) {
-              const clickedStep = parseInt(match[1], 10);
-              selectedStep = clickedStep;
-              updateAll();
-              return;
-            }
-          }
-          node = node.parentElement;
+        const clickedStep = findStepFromNode(evt.target, unobsSvgEl);
+        if (clickedStep !== null) {
+          selectedStep = clickedStep;
+          updateAll();
         }
       });
       unobservedPanel.append(unobsPlot);
