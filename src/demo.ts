@@ -1,3 +1,4 @@
+import { renderContinuousOutcomeDistributionPOC } from "./experimental/continuous-outcome-distribution.js";
 import {
   renderCalibrationV2,
   renderDecisionCurveV2,
@@ -353,3 +354,6 @@ if (observedStepOrdinalHost) {
 if (observedStepNominalHost) {
   observedStepNominalHost.append(renderOutcomeDistribution(observedStepNominalSpec));
 }
+
+const continuousPocHost = document.querySelector<HTMLElement>("#continuous-outcome-distribution-poc-chart");
+if (continuousPocHost) continuousPocHost.append(renderContinuousOutcomeDistributionPOC());
