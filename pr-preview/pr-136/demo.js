@@ -24662,21 +24662,25 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
         rect2.setAttribute("data-step", String(flatCells[idx].step));
       }
     });
-    const handleHeatmapSelection = (evt) => {
+    svgEl.addEventListener("click", (evt) => {
       const clickedStep = findStepFromNode(evt.target, svgEl);
       if (clickedStep !== null) {
         selectedStep = clickedStep;
+        isHistogramOpen = true;
+        updateAll();
       }
-      isHistogramOpen = true;
-      updateAll();
-    };
-    svgEl.addEventListener("click", handleHeatmapSelection);
+    });
     svgEl.addEventListener("keydown", (evt) => {
       if (evt.key === "Enter" || evt.key === " ") {
         if (evt.key === " ") {
           evt.preventDefault();
         }
-        handleHeatmapSelection(evt);
+        const clickedStep = findStepFromNode(evt.target, svgEl);
+        if (clickedStep !== null) {
+          selectedStep = clickedStep;
+        }
+        isHistogramOpen = true;
+        updateAll();
       }
     });
     heatmapWrapper.append(heatmapPlot);
