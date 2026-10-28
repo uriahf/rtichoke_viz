@@ -40,6 +40,21 @@ function formatBinRange(lower: number, upper: number, digits: number): string {
   return `[${lower.toFixed(digits)}, ${upper.toFixed(digits)}]`;
 }
 
+function findStepFromNode(
+  node: HTMLElement | null,
+  rootSvg: SVGSVGElement,
+): number | null {
+  let curr: HTMLElement | null = node;
+  while (curr && curr !== (rootSvg as unknown as HTMLElement)) {
+    const stepAttr = curr.getAttribute("data-step") ?? curr.getAttribute("aria-label");
+    if (stepAttr && /^\d+$/.test(stepAttr)) {
+      return parseInt(stepAttr, 10);
+    }
+    curr = curr.parentElement;
+  }
+  return null;
+}
+
 /**
  * Compute the joint maximum bin proportion across all evaluations and steps where observedCount > 0.
  */
@@ -330,6 +345,7 @@ export function renderContinuousOutcomeDistribution(
         stroke: "#ffffff",
         strokeWidth: 0.4,
         title: (d) => d.tooltipTitle,
+        ariaLabel: (d) => String(d.step),
       }),
     ];
 
@@ -405,29 +421,30 @@ export function renderContinuousOutcomeDistribution(
       "Continuous outcome heatmap. Press Enter or click a step column to view detail histogram.",
     );
 
-    const handleStepSelection = (evt: Event) => {
-      let node: HTMLElement | null = evt.target as HTMLElement;
-      while (node && node !== (svgEl as unknown as HTMLElement)) {
-        const titleEl = node.querySelector("title");
-        const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
-        if (titleText) {
-          const match = titleText.match(/Step:\s*(\d+)/);
-          if (match) {
-            const clickedStep = parseInt(match[1], 10);
-            selectedStep = clickedStep;
-            isHistogramOpen = true;
-            updateAll();
-            return;
-          }
-        }
-        node = node.parentElement;
+    // Explicitly attach data-step attributes to cell rects for robust data-driven hit testing
+    const rects = (svgEl as unknown as HTMLElement).querySelectorAll<SVGRectElement>("g[aria-label='rect'] rect");
+    rects.forEach((rect, idx) => {
+      if (idx < flatCells.length) {
+        rect.setAttribute("data-step", String(flatCells[idx].step));
       }
+    });
+
+    const handleHeatmapSelection = (evt: Event) => {
+      const clickedStep = findStepFromNode(evt.target as HTMLElement, svgEl);
+      if (clickedStep !== null) {
+        selectedStep = clickedStep;
+      }
+      isHistogramOpen = true;
+      updateAll();
     };
 
-    svgEl.addEventListener("click", handleStepSelection);
+    svgEl.addEventListener("click", handleHeatmapSelection);
     svgEl.addEventListener("keydown", (evt: KeyboardEvent) => {
       if (evt.key === "Enter" || evt.key === " ") {
-        handleStepSelection(evt);
+        if (evt.key === " ") {
+          evt.preventDefault();
+        }
+        handleHeatmapSelection(evt);
       }
     });
 
@@ -674,6 +691,7 @@ export function renderContinuousOutcomeDistribution(
           stroke: "#475569",
           strokeWidth: 0.4,
           title: (d) => d.title,
+          ariaLabel: (d) => String(d.step),
         }),
       ];
 
@@ -738,21 +756,19 @@ export function renderContinuousOutcomeDistribution(
 
       const unobsSvgEl = unobsPlot as unknown as SVGSVGElement;
       unobsSvgEl.style.cursor = "pointer";
+
+      const unobsRects = (unobsSvgEl as unknown as HTMLElement).querySelectorAll<SVGRectElement>("g[aria-label='rect'] rect");
+      unobsRects.forEach((rect, idx) => {
+        if (idx < unobsPlotData.length) {
+          rect.setAttribute("data-step", String(unobsPlotData[idx].step));
+        }
+      });
+
       unobsSvgEl.addEventListener("click", (evt) => {
-        let node: HTMLElement | null = evt.target as HTMLElement;
-        while (node && node !== (unobsSvgEl as unknown as HTMLElement)) {
-          const titleEl = node.querySelector("title");
-          const titleText = titleEl ? titleEl.textContent : node.getAttribute("title");
-          if (titleText) {
-            const match = titleText.match(/Step:\s*(\d+)/);
-            if (match) {
-              const clickedStep = parseInt(match[1], 10);
-              selectedStep = clickedStep;
-              updateAll();
-              return;
-            }
-          }
-          node = node.parentElement;
+        const clickedStep = findStepFromNode(evt.target as HTMLElement, unobsSvgEl);
+        if (clickedStep !== null) {
+          selectedStep = clickedStep;
+          updateAll();
         }
       });
 

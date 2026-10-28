@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ContinuousOutcomeDistributionSpec } from "../src/spec/v2/continuous-outcome-distribution.js";
 import { renderContinuousOutcomeDistribution } from "../src/render/continuous-outcome-distribution.js";
 
@@ -79,20 +79,133 @@ describe("renderContinuousOutcomeDistribution DOM & interaction tests", () => {
     expect(unobservedSection?.textContent).toContain("Unobserved at step 0");
   });
 
-  it("switches evaluations and adapts nearest selected step", () => {
+  it("handles keyboard activation (Enter/Space) on focused heatmap SVG and prevents Space scrolling", () => {
+    const el = renderContinuousOutcomeDistribution(sampleSpec);
+    const heatmapSvg = el.querySelector<SVGSVGElement>(".rtichoke-continuous-heatmap-wrapper svg");
+    expect(heatmapSvg).not.toBeNull();
+
+    // Histogram initially closed
+    expect(el.querySelector(".rtichoke-continuous-hist-card")).toBeNull();
+
+    // Keydown Space event on SVG element directly
+    const spaceEvent = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
+    const preventDefaultSpy = vi.spyOn(spaceEvent, "preventDefault");
+
+    heatmapSvg?.dispatchEvent(spaceEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    // Histogram detail card opens for current selected step (step 0)
+    const histCard = el.querySelector(".rtichoke-continuous-hist-card");
+    expect(histCard).not.toBeNull();
+    expect(histCard?.textContent).toContain("Step 0 Detail Histogram");
+
+    // Press Enter to re-trigger
+    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    heatmapSvg?.dispatchEvent(enterEvent);
+    expect(el.querySelector(".rtichoke-continuous-hist-card")).not.toBeNull();
+  });
+
+  it("selects steps cleanly via data-step attributes without regex-matching tooltip text", () => {
+    const el = renderContinuousOutcomeDistribution(sampleSpec);
+    const heatmapWrapper = el.querySelector(".rtichoke-continuous-heatmap-wrapper");
+    const cellRects = heatmapWrapper?.querySelectorAll<SVGRectElement>("g[aria-label='rect'] rect");
+
+    expect(cellRects?.length).toBeGreaterThan(0);
+    // Verify rects have explicit data-step attributes
+    const targetRect = Array.from(cellRects!).find((r) => r.getAttribute("data-step") === "5");
+    expect(targetRect).toBeDefined();
+
+    // Click on cell rect for step 5
+    targetRect?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    // Selected step updates to 5
+    const sliderVal = el.querySelector(".rtichoke-operating-point-value");
+    expect(sliderVal?.textContent).toBe("5");
+
+    const histCard = el.querySelector(".rtichoke-continuous-hist-card");
+    expect(histCard?.textContent).toContain("Step 5 Detail Histogram");
+
+    const unobservedReadout = el.querySelector(".rtichoke-continuous-unobserved-section");
+    expect(unobservedReadout?.textContent).toContain("Unobserved at step 5");
+  });
+
+  it("supports sparse and nonconsecutive steps (e.g. steps 1, 5, 10, 20)", () => {
+    const nonconsecutiveSpec: ContinuousOutcomeDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "continuous_outcome_distribution",
+      title: "Nonconsecutive Steps Test",
+      xAxisKind: "step",
+      estimator: "raw",
+      binEdges: [0, 0.5, 1.0],
+      evaluations: [{ id: "train", population: "Train" }],
+      distributions: [
+        {
+          evaluationId: "train",
+          step: 1,
+          referenceSampleSize: 100,
+          observedCount: 90,
+          unobservedCount: 10,
+          binCounts: [40, 50],
+        },
+        {
+          evaluationId: "train",
+          step: 5,
+          referenceSampleSize: 100,
+          observedCount: 80,
+          unobservedCount: 20,
+          binCounts: [30, 50],
+        },
+        {
+          evaluationId: "train",
+          step: 10,
+          referenceSampleSize: 100,
+          observedCount: 70,
+          unobservedCount: 30,
+          binCounts: [20, 50],
+        },
+        {
+          evaluationId: "train",
+          step: 20,
+          referenceSampleSize: 100,
+          observedCount: 50,
+          unobservedCount: 50,
+          binCounts: [10, 40],
+        },
+      ],
+    };
+
+    const el = renderContinuousOutcomeDistribution(nonconsecutiveSpec);
+    const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider");
+    expect(slider?.max).toBe("3"); // 4 available steps (index 0..3)
+
+    // Move slider to index 2 -> Step 10
+    slider!.value = "2";
+    slider!.dispatchEvent(new Event("input", { bubbles: true }));
+
+    expect(el.querySelector(".rtichoke-operating-point-value")?.textContent).toBe("10");
+    expect(el.querySelector(".rtichoke-continuous-unobserved-section")?.textContent).toContain("Unobserved at step 10: 30 / 100");
+  });
+
+  it("switches evaluations and synchronizes heatmap, histogram, slider, and unobserved panel", () => {
     const el = renderContinuousOutcomeDistribution(sampleSpec);
     const radios = el.querySelectorAll<HTMLInputElement>('input[type="radio"]');
 
-    // Currently on Train step 0. Switch to Test (which has steps 5 and 10).
+    // Open histogram on step 0
+    const cellRect0 = el.querySelector<SVGRectElement>(".rtichoke-continuous-heatmap-wrapper g[aria-label='rect'] rect");
+    cellRect0?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(el.querySelector(".rtichoke-continuous-hist-card")?.textContent).toContain("Step 0 Detail Histogram");
+
+    // Switch evaluation to Test (available steps 5 and 10)
     radios[1].checked = true;
     radios[1].dispatchEvent(new Event("change", { bubbles: true }));
 
-    const slider = el.querySelector<HTMLInputElement>(".rtichoke-operating-point-slider");
-    // Test has steps 5 and 10. Nearest to 0 is step 5 (index 0).
-    expect(slider?.value).toBe("0");
-
-    const sliderVal = el.querySelector(".rtichoke-operating-point-value");
-    expect(sliderVal?.textContent).toBe("5");
+    // Selected step snaps to 5 (nearest available step to 0)
+    expect(el.querySelector(".rtichoke-operating-point-value")?.textContent).toBe("5");
+    // Histogram detail card updates synchronously to Step 5
+    expect(el.querySelector(".rtichoke-continuous-hist-card")?.textContent).toContain("Step 5 Detail Histogram");
+    // Unobserved panel updates synchronously to Step 5
+    expect(el.querySelector(".rtichoke-continuous-unobserved-section")?.textContent).toContain("Unobserved at step 5");
   });
 
   it("handles zero observed outcomes gracefully with an undefined distribution message", () => {
