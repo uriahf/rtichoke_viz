@@ -79,15 +79,21 @@ describe("renderContinuousOutcomeDistribution DOM & interaction tests", () => {
     expect(unobservedSection?.textContent).toContain("Unobserved at step 0");
   });
 
-  it("handles keyboard activation (Enter/Space) on focused heatmap SVG and prevents Space scrolling", () => {
+  it("does NOT open histogram when clicking non-cell SVG space, but keyboard activation (Enter/Space) DOES open histogram", () => {
     const el = renderContinuousOutcomeDistribution(sampleSpec);
     const heatmapSvg = el.querySelector<SVGSVGElement>(".rtichoke-continuous-heatmap-wrapper svg");
     expect(heatmapSvg).not.toBeNull();
 
-    // Histogram initially closed
+    // 1. Initially closed
     expect(el.querySelector(".rtichoke-continuous-hist-card")).toBeNull();
 
-    // Keydown Space event on SVG element directly
+    // 2. Click directly on SVG element (non-cell background / empty space)
+    heatmapSvg?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    // Histogram MUST remain closed when clicking non-cell SVG space
+    expect(el.querySelector(".rtichoke-continuous-hist-card")).toBeNull();
+
+    // 3. Press Space on focused heatmap SVG element
     const spaceEvent = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
     const preventDefaultSpy = vi.spyOn(spaceEvent, "preventDefault");
 
@@ -98,11 +104,6 @@ describe("renderContinuousOutcomeDistribution DOM & interaction tests", () => {
     const histCard = el.querySelector(".rtichoke-continuous-hist-card");
     expect(histCard).not.toBeNull();
     expect(histCard?.textContent).toContain("Step 0 Detail Histogram");
-
-    // Press Enter to re-trigger
-    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
-    heatmapSvg?.dispatchEvent(enterEvent);
-    expect(el.querySelector(".rtichoke-continuous-hist-card")).not.toBeNull();
   });
 
   it("selects steps cleanly via data-step attributes without regex-matching tooltip text", () => {

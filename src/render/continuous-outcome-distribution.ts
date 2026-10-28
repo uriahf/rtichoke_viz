@@ -429,22 +429,28 @@ export function renderContinuousOutcomeDistribution(
       }
     });
 
-    const handleHeatmapSelection = (evt: Event) => {
+    // Mouse click: ONLY open/update histogram when a valid step cell was hit
+    svgEl.addEventListener("click", (evt: MouseEvent) => {
       const clickedStep = findStepFromNode(evt.target as HTMLElement, svgEl);
       if (clickedStep !== null) {
         selectedStep = clickedStep;
+        isHistogramOpen = true;
+        updateAll();
       }
-      isHistogramOpen = true;
-      updateAll();
-    };
+    });
 
-    svgEl.addEventListener("click", handleHeatmapSelection);
+    // Keyboard activation: Enter/Space on focused heatmap SVG opens histogram for selected step
     svgEl.addEventListener("keydown", (evt: KeyboardEvent) => {
       if (evt.key === "Enter" || evt.key === " ") {
         if (evt.key === " ") {
           evt.preventDefault();
         }
-        handleHeatmapSelection(evt);
+        const clickedStep = findStepFromNode(evt.target as HTMLElement, svgEl);
+        if (clickedStep !== null) {
+          selectedStep = clickedStep;
+        }
+        isHistogramOpen = true;
+        updateAll();
       }
     });
 
@@ -764,7 +770,7 @@ export function renderContinuousOutcomeDistribution(
         }
       });
 
-      unobsSvgEl.addEventListener("click", (evt) => {
+      unobsSvgEl.addEventListener("click", (evt: MouseEvent) => {
         const clickedStep = findStepFromNode(evt.target as HTMLElement, unobsSvgEl);
         if (clickedStep !== null) {
           selectedStep = clickedStep;
