@@ -24360,8 +24360,9 @@ function selectNearestStep2(currentStep, availableSteps) {
   }
   return bestStep;
 }
-function formatBinRange(lower2, upper, digits) {
-  return `[${lower2.toFixed(digits)}, ${upper.toFixed(digits)}]`;
+function formatBinRange(lower2, upper, digits, isLastBin = false) {
+  const closeBracket = isLastBin ? "]" : ")";
+  return `[${lower2.toFixed(digits)}, ${upper.toFixed(digits)}${closeBracket}`;
 }
 function findStepFromNode(node, rootSvg) {
   let curr = node;
@@ -24530,7 +24531,8 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
       for (let i = 0; i < numBins; i++) {
         const binLower = binEdges[i];
         const binUpper = binEdges[i + 1];
-        const binLabel = formatBinRange(binLower, binUpper, digits);
+        const isLastBin = i === numBins - 1;
+        const binLabel = formatBinRange(binLower, binUpper, digits, isLastBin);
         const count2 = dist.binCounts[i];
         let proportion = 0;
         let tipText = "";
@@ -24752,7 +24754,8 @@ function renderContinuousOutcomeDistribution(spec, options = {}) {
         const histData = currentDist.binCounts.map((count2, i) => {
           const binLower = binEdges[i];
           const binUpper = binEdges[i + 1];
-          const binLabel = formatBinRange(binLower, binUpper, digits);
+          const isLastBin = i === numBins - 1;
+          const binLabel = formatBinRange(binLower, binUpper, digits, isLastBin);
           const prop = count2 / currentDist.observedCount;
           const pct = prop * 100;
           return {
