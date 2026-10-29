@@ -2,6 +2,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ContinuousOutcomeDistributionSpec } from "../src/spec/v2/continuous-outcome-distribution.js";
 import { renderContinuousOutcomeDistribution } from "../src/render/continuous-outcome-distribution.js";
+import { renderReport } from "../src/render/report.js";
+import type { ReportSpec } from "../src/spec/report.js";
 
 describe("renderContinuousOutcomeDistribution DOM & interaction tests", () => {
   const sampleSpec: ContinuousOutcomeDistributionSpec = {
@@ -207,6 +209,102 @@ describe("renderContinuousOutcomeDistribution DOM & interaction tests", () => {
     expect(el.querySelector(".rtichoke-continuous-hist-card")?.textContent).toContain("Step 5 Detail Histogram");
     // Unobserved panel updates synchronously to Step 5
     expect(el.querySelector(".rtichoke-continuous-unobserved-section")?.textContent).toContain("Unobserved at step 5");
+  });
+
+  it("visualizes bin probability mass for unequal-width bins and formats endpoint brackets correctly ([a, b) and [a, b])", () => {
+    const unequalWidthSpec: ContinuousOutcomeDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "continuous_outcome_distribution",
+      title: "Unequal Width Bins Test",
+      xAxisKind: "step",
+      estimator: "raw",
+      binEdges: [0, 10, 50, 100], // Widths: 10, 40, 50
+      evaluations: [{ id: "train", population: "Train" }],
+      distributions: [
+        {
+          evaluationId: "train",
+          step: 0,
+          referenceSampleSize: 100,
+          observedCount: 100,
+          unobservedCount: 0,
+          binCounts: [50, 30, 20], // Narrow bin [0, 10) has 50% probability mass
+        },
+      ],
+    };
+
+    const el = renderContinuousOutcomeDistribution(unequalWidthSpec);
+    const cellRect = el.querySelector(".rtichoke-continuous-heatmap-wrapper g[aria-label='rect'] rect");
+    cellRect?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const histCard = el.querySelector(".rtichoke-continuous-hist-card");
+    expect(histCard).not.toBeNull();
+    const svgInnerHTML = histCard?.querySelector("svg")?.innerHTML ?? "";
+
+    // Non-final bins use half-open brackets [0.000, 10.000) and [10.000, 50.000)
+    expect(svgInnerHTML).toContain("[0.000, 10.000)");
+    expect(svgInnerHTML).toContain("[10.000, 50.000)");
+    // Final bin uses right-closed bracket [50.000, 100.000]
+    expect(svgInnerHTML).toContain("[50.000, 100.000]");
+  });
+
+  it("embeds inside ReportSpec v1.1 alongside heuristic-aware components without being mutated by report-level heuristic controls", () => {
+    const codSpec: ContinuousOutcomeDistributionSpec = {
+      schemaVersion: "2.0",
+      type: "continuous_outcome_distribution",
+      title: "Embedded Continuous Outcome Component",
+      xAxisKind: "step",
+      estimator: "raw",
+      binEdges: [0, 50, 100],
+      evaluations: [{ id: "train", population: "Train" }],
+      distributions: [
+        {
+          evaluationId: "train",
+          step: 0,
+          referenceSampleSize: 100,
+          observedCount: 100,
+          unobservedCount: 0,
+          binCounts: [40, 60],
+        },
+      ],
+    };
+
+    const reportSpec: ReportSpec = {
+      schemaVersion: "1.1",
+      type: "report",
+      heuristics: {
+        active: "adjusted:adjusted_as_censored",
+        available: [
+          "excluded:excluded",
+          "adjusted:adjusted_as_censored",
+        ],
+      },
+      sections: [
+        {
+          id: "sec-1",
+          title: "Section 1",
+          items: [
+            {
+              type: "component",
+              id: "comp-cod",
+              title: "Continuous Outcome",
+              spec: codSpec,
+            },
+          ],
+        },
+      ],
+    };
+
+    const reportEl = renderReport(reportSpec);
+    expect(reportEl.querySelector(".rtichoke-continuous-outcome-distribution")).not.toBeNull();
+
+    // Toggle censoring radio option to 'excluded'
+    const excludedRadio = reportEl.querySelector<HTMLInputElement>('input[type="radio"][value="excluded"]');
+    expect(excludedRadio).not.toBeNull();
+    excludedRadio?.click();
+
+    // Continuous outcome distribution remains rendered and functional
+    expect(reportEl.querySelector(".rtichoke-continuous-outcome-distribution")).not.toBeNull();
+    expect(reportEl.querySelector(".rtichoke-report__unavailable")).toBeNull();
   });
 
   it("handles zero observed outcomes gracefully with an undefined distribution message", () => {

@@ -36,8 +36,14 @@ function selectNearestStep(
   return bestStep;
 }
 
-function formatBinRange(lower: number, upper: number, digits: number): string {
-  return `[${lower.toFixed(digits)}, ${upper.toFixed(digits)}]`;
+function formatBinRange(
+  lower: number,
+  upper: number,
+  digits: number,
+  isLastBin: boolean = false,
+): string {
+  const closeBracket = isLastBin ? "]" : ")";
+  return `[${lower.toFixed(digits)}, ${upper.toFixed(digits)}${closeBracket}`;
 }
 
 function findStepFromNode(
@@ -284,7 +290,8 @@ export function renderContinuousOutcomeDistribution(
       for (let i = 0; i < numBins; i++) {
         const binLower = binEdges[i];
         const binUpper = binEdges[i + 1];
-        const binLabel = formatBinRange(binLower, binUpper, digits);
+        const isLastBin = i === numBins - 1;
+        const binLabel = formatBinRange(binLower, binUpper, digits, isLastBin);
         const count = dist.binCounts[i];
 
         let proportion = 0;
@@ -541,7 +548,8 @@ export function renderContinuousOutcomeDistribution(
         const histData = currentDist.binCounts.map((count, i) => {
           const binLower = binEdges[i];
           const binUpper = binEdges[i + 1];
-          const binLabel = formatBinRange(binLower, binUpper, digits);
+          const isLastBin = i === numBins - 1;
+          const binLabel = formatBinRange(binLower, binUpper, digits, isLastBin);
           const prop = count / currentDist.observedCount;
           const pct = prop * 100;
           return {
