@@ -147,6 +147,18 @@ The prediction distribution component (`PredictionDistributionSpec`, `type: "pre
 The statistical packages compute the values. `rtichoke_viz` should render the
 ownership already encoded in the canonical spec.
 
+## Continuous Outcome Distribution Semantics
+
+The continuous outcome distribution component (`ContinuousOutcomeDistributionSpec`, `type: "continuous_outcome_distribution"`, `schemaVersion: "2.0"`) represents precomputed empirical distributions of continuous outcomes across discrete longitudinal steps.
+
+- **Scope**: Longitudinal precomputed continuous outcome distributions across discrete measurement steps.
+- **Statistical ownership**: R and Python statistical producers compute all counts, denominators, and bin boundaries (`binEdges`).
+- **Estimand & Probability Mass Semantics**: Visualizes discrete precomputed **bin probability mass / bin proportion** (`proportion = binCounts[i] / observedCount`) for each bin interval conditional on having an observed outcome at that step (`observedCount > 0`). It does NOT represent a continuous probability density function (PDF), kernel density estimate (KDE), or censoring-adjusted estimator. In both heatmap cell color intensity and histogram bar height, the vertical axis and color scale represent bin proportion mass (0%–100%), which is independent of individual bin widths.
+- **Endpoint ownership**: Standard binning interval conventions apply: half-open intervals `[e_i, e_{i+1})` for bins `i = 0 ... numBins - 2`, and right-closed `[e_{numBins-1}, e_{numBins}]` for the final bin. Non-final bin tooltips and labels format as `[lower, upper)` and the final bin as `[lower, upper]`.
+- **Zero-observation steps**: For a step where `observedCount == 0`, the empirical distribution is **undefined**, not a valid 0% probability distribution. Heatmap cells render in a light neutral gray state (`#f3f4f6`), and tooltips/readouts explicitly state that no outcomes were observed at that step.
+- **Unobserved observations**: Unobserved counts (`unobservedCount`) are displayed separately in an optional Unobserved Observations panel using `referenceSampleSize` as the denominator (`unobservedCount / referenceSampleSize`). Styled with a neutral slate color (`#94a3b8`), it is kept strictly distinct from conditional outcome proportions.
+- **Multi-population step switching**: When switching evaluations, step selection automatically adapts to the nearest available step in the newly selected evaluation.
+
 ## Compatibility terminology
 
 ### `reference_group`
