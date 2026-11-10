@@ -4,7 +4,7 @@ import { spawn } from "node:child_process";
 import assert from "node:assert/strict";
 
 // Exercise the built production bundle in a real browser, independently of jsdom.
-const html = `<!doctype html><html><head><link rel="stylesheet" href="/dist/rtichoke-viz.css"></head>
+const html = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/dist/rtichoke-viz.css"></head>
 <body><div id="first"></div><div id="second"></div><pre id="result">RUNNING</pre>
 <script type="module">
 import { renderReport, renderOutcomeDistribution } from "/dist/rtichoke-viz.js";
@@ -61,7 +61,7 @@ const server = createServer(async (request, response) => {
       response.writeHead(404).end(); return;
     }
     const type = path?.endsWith(".js") ? "text/javascript" : path?.endsWith(".css") ? "text/css" : path?.endsWith(".json") ? "application/json" : "text/html";
-    response.setHeader("Content-Type", type);
+    response.setHeader("Content-Type", `${type}; charset=utf-8`);
     response.end(path ? await readFile(path) : html);
   } catch { response.writeHead(500).end(); }
 });
