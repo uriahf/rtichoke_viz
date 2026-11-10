@@ -190,7 +190,36 @@ export function assertStateDistributionValid(
     throw new Error(`states must be non-empty for evaluation ${dist.evaluationId}`);
   }
 
-  if (dist.estimateOrigin === "observed_step") {
+  if (dist.estimateStatus !== undefined && ![
+    "defined", "undefined_empty_population", "beyond_support_plateau",
+  ].includes(dist.estimateStatus)) {
+    throw new Error(`invalid estimateStatus for evaluation ${dist.evaluationId}`);
+  }
+  const undefinedEstimate = dist.estimateStatus === "undefined_empty_population";
+  if (dist.estimateStatus === "defined" && dist.states.every((state) =>
+    [state.estimate, state.count, state.mass].every((value) => value === null || value === undefined),
+  )) {
+    throw new Error("defined distributions require numeric values");
+  }
+  if (undefinedEstimate) {
+    for (const state of dist.states) {
+      if (state.estimate !== null || [state.mass, state.count, state.lower, state.upper]
+        .some((value) => value !== undefined && value !== null)) {
+        throw new Error("undefined_empty_population requires explicit null estimates and no numeric counts, masses or bounds");
+      }
+    }
+  } else if (dist.estimateStatus === "beyond_support_plateau" ||
+    (dist.estimateStatus === "defined" && dist.estimator !== "raw")) {
+    if (dist.states.some((s) => s.estimate === undefined || s.estimate === null)) {
+      throw new Error("defined and plateau distributions require complete estimates");
+    }
+    const sum = dist.states.reduce((total, s) => total + s.estimate!, 0);
+    if (Math.abs(sum - 1) > 1e-8) {
+      throw new Error("defined and plateau estimates must sum to 1");
+    }
+  }
+
+  if (dist.estimateOrigin === "observed_step" && !undefinedEstimate) {
     if (dist.estimator === "raw") {
       let totalCount = 0;
       for (const state of dist.states) {
@@ -370,6 +399,29 @@ export function assertOutcomeDistributionReferentialIntegrity(
 
   checkAndRegisterStateLabels(spec.stateDistributions);
 
+  // Empty retained populations still require complete original-population
+  // accounting, even though no probabilities are available at that horizon.
+  const checkExclusions = (dists: StateDistribution[], exclusions: PopulationExclusion[] = []) => {
+    const seen = new Set<string>();
+    for (const exclusion of exclusions) {
+      if (seen.has(exclusion.evaluationId)) {
+        throw new Error(`duplicate exclusion entry for evaluation ${exclusion.evaluationId}`);
+      }
+      seen.add(exclusion.evaluationId);
+      assertPopulationExclusionValid(exclusion, evaluationIds);
+    }
+    for (const dist of dists) {
+      if (dist.estimateStatus !== "undefined_empty_population") continue;
+      const exclusion = exclusions.find((e) => e.evaluationId === dist.evaluationId);
+      const counts = exclusion?.excludedCounts.find((e) => e.horizon === dist.horizon);
+      if (!exclusion || !counts ||
+        counts.censoredExcludedCount + counts.competingExcludedCount !== exclusion.originalSampleSize) {
+        throw new Error("undefined_empty_population requires matching exclusions accounting for the entire original population");
+      }
+    }
+  };
+  checkExclusions(spec.stateDistributions, spec.exclusions);
+
   for (const dist of spec.stateDistributions) {
     assertStateDistributionValid(dist, evaluationIds);
 
@@ -441,7 +493,8 @@ export function assertOutcomeDistributionReferentialIntegrity(
           throw new Error(`variant '${key}' stateDistributions must be non-empty`);
         }
 
-          checkAndRegisterStateLabels(variant.stateDistributions);
+        checkExclusions(variant.stateDistributions, variant.exclusions);
+        checkAndRegisterStateLabels(variant.stateDistributions);
 
         const variantOriginHorizonKeys = new Set<string>();
         for (const dist of variant.stateDistributions) {
@@ -457,18 +510,7 @@ export function assertOutcomeDistributionReferentialIntegrity(
           variantOriginHorizonKeys.add(horizonKey);
         }
 
-        if (variant.exclusions) {
-          const exclusionEvalIds = new Set<string>();
-          for (const exclusion of variant.exclusions) {
-            if (exclusionEvalIds.has(exclusion.evaluationId)) {
-              throw new Error(
-                `variant '${key}' has duplicate exclusion entry for evaluation ${exclusion.evaluationId}`,
-              );
-            }
-            exclusionEvalIds.add(exclusion.evaluationId);
-            assertPopulationExclusionValid(exclusion, evaluationIds);
-          }
-        }
+
       }
     }
   }

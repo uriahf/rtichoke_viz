@@ -28,6 +28,15 @@ export const StateDistributionSchema = Type.Object({
   evaluationId: Type.String(),
   horizon: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
   estimator: Type.String(),
+  // Omitted for legacy payloads. Status belongs to this evaluation/horizon,
+  // independently of availability of the surrounding heuristic variant.
+  estimateStatus: Type.Optional(
+    Type.Union([
+      Type.Literal("defined"),
+      Type.Literal("undefined_empty_population"),
+      Type.Literal("beyond_support_plateau"),
+    ]),
+  ),
   estimateOrigin: Type.Optional(
     Type.Union([
       Type.Literal("event_table"),
