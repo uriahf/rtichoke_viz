@@ -13,7 +13,11 @@ try {
   const report = {schemaVersion:"1.1", type:"report", heuristics:{active:"excluded:excluded",available:Object.keys(spec.variants)},
     sections:[{id:"outcome",title:"Outcome",items:[{type:"component",id:"od",spec}]}]};
   const first = document.querySelector("#first"), second = document.querySelector("#second");
-  first.append(renderReport(report)); second.append(renderReport(report));
+  // Existing report section IDs are document anchors supplied by the host.
+  // Keep anchors distinct while testing identical component/evaluation identities.
+  const secondReport = structuredClone(report);
+  secondReport.sections[0].id = "outcome-second";
+  first.append(renderReport(report)); second.append(renderReport(secondReport));
   const readout = root => root.querySelector(".rtichoke-outcome-distribution__readout").textContent;
   const check = (ok, message) => { if (!ok) throw Error(message); };
   const choose = (root, selector) => {

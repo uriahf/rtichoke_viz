@@ -46,7 +46,9 @@ not supplied; it does not overwrite a supplied zero-time estimate.
 Terminal-event tooltips distinguish raw observed accounting, KM estimates, and
 AJ estimates. Adjusted probabilities are not labeled as raw observed status.
 The notice and readout update locally when the horizon, evaluation or report
-heuristic selection changes. Other reports on the page remain independent.
+heuristic selection changes. Other reports on the page remain independent. Existing host-supplied report
+section/group anchor IDs must remain distinct across reports; automatic anchor
+namespacing is outside this outcome-status change.
 
 `fixtures/v2/outcome-distribution-estimate-status.json` covers all eight pairs
 for an all-censored cohort (times 0 and 2, matching the #441 reference case) and
