@@ -20,6 +20,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: node scripts/smoke-dist.mjs
+      - name: Outcome estimate status browser acceptance
+        run: node scripts/test-outcome-estimate-status-browser.mjs
       - run: npm run schema
       - name: Verify release artifact invariants
         run: |

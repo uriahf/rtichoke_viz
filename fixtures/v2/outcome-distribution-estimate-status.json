@@ -1,0 +1,1679 @@
+{
+  "schemaVersion": "2.0",
+  "type": "outcome_distribution",
+  "title": "Outcome estimate status",
+  "evaluations": [
+    {
+      "id": "censored",
+      "population": "All censored"
+    },
+    {
+      "id": "complete",
+      "population": "Complete events"
+    }
+  ],
+  "stateDistributions": [
+    {
+      "evaluationId": "censored",
+      "horizon": 0,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "defined",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 0
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 1
+        }
+      ]
+    },
+    {
+      "evaluationId": "censored",
+      "horizon": 1,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "defined",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 0
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 1
+        }
+      ]
+    },
+    {
+      "evaluationId": "censored",
+      "horizon": 3,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "beyond_support_plateau",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 0
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 1
+        }
+      ]
+    },
+    {
+      "evaluationId": "complete",
+      "horizon": 0,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "defined",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 0
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 1
+        }
+      ]
+    },
+    {
+      "evaluationId": "complete",
+      "horizon": 1,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "defined",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 1
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 0
+        }
+      ]
+    },
+    {
+      "evaluationId": "complete",
+      "horizon": 3,
+      "estimator": "aalen_johansen",
+      "estimateOrigin": "fixed_time_horizon",
+      "estimateStatus": "defined",
+      "censoringHeuristic": "adjusted",
+      "competingHeuristic": "adjusted_as_negative",
+      "states": [
+        {
+          "stateId": "primary",
+          "label": "Primary event",
+          "estimate": 1
+        },
+        {
+          "stateId": "competing",
+          "label": "Competing event",
+          "estimate": 0
+        },
+        {
+          "stateId": "event_free",
+          "label": "Event-free",
+          "estimate": 0
+        }
+      ]
+    }
+  ],
+  "exclusions": [
+    {
+      "evaluationId": "censored",
+      "originalSampleSize": 2,
+      "excludedCounts": [
+        {
+          "horizon": 0,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        },
+        {
+          "horizon": 1,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        },
+        {
+          "horizon": 3,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        }
+      ]
+    },
+    {
+      "evaluationId": "complete",
+      "originalSampleSize": 2,
+      "excludedCounts": [
+        {
+          "horizon": 0,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        },
+        {
+          "horizon": 1,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        },
+        {
+          "horizon": 3,
+          "censoredExcludedCount": 0,
+          "competingExcludedCount": 0
+        }
+      ]
+    }
+  ],
+  "variants": {
+    "excluded:excluded": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "undefined_empty_population",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": null
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": null
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 1,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_censored": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "undefined_empty_population",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": null
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": null
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 1,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_negative": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "undefined_empty_population",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": null
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": null
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": null
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 1,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "excluded:adjusted_as_composite": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "undefined_empty_population",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": null
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": null
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "excluded",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 1,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 2,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:excluded": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "beyond_support_plateau",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "excluded",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_censored": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "beyond_support_plateau",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_censored",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_negative": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "beyond_support_plateau",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 0
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "aalen_johansen",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_negative",
+          "states": [
+            {
+              "stateId": "primary",
+              "label": "Primary event",
+              "estimate": 1
+            },
+            {
+              "stateId": "competing",
+              "label": "Competing event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    },
+    "adjusted:adjusted_as_composite": {
+      "status": "available",
+      "stateDistributions": [
+        {
+          "evaluationId": "censored",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "censored",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "beyond_support_plateau",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 0,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 0
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 1
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 1,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "horizon": 3,
+          "estimator": "kaplan_meier",
+          "estimateOrigin": "fixed_time_horizon",
+          "estimateStatus": "defined",
+          "censoringHeuristic": "adjusted",
+          "competingHeuristic": "adjusted_as_composite",
+          "states": [
+            {
+              "stateId": "composite",
+              "label": "Composite event",
+              "estimate": 1
+            },
+            {
+              "stateId": "event_free",
+              "label": "Event-free",
+              "estimate": 0
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "evaluationId": "censored",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        },
+        {
+          "evaluationId": "complete",
+          "originalSampleSize": 2,
+          "excludedCounts": [
+            {
+              "horizon": 0,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 1,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            },
+            {
+              "horizon": 3,
+              "censoredExcludedCount": 0,
+              "competingExcludedCount": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

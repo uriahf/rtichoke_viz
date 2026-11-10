@@ -238,6 +238,7 @@ interface ProcessedHorizonData {
   evaluationId: string;
   horizon: number;
   estimator: string;
+  estimateStatus?: StateDistribution["estimateStatus"] | "undefined";
   estimateOrigin?: string;
   censoringHeuristic?: string;
   competingHeuristic?: string;
@@ -252,6 +253,13 @@ function processStateDistribution(
   masterStateOrder?: string[],
 ): ProcessedHorizonData {
   const horizon = dist.horizon ?? 0;
+  const estimateStatus = dist.estimateStatus ?? (
+    dist.states.every((s) =>
+      [s.estimate, s.count, s.mass].every(
+        (value) => value === null || value === undefined,
+      ),
+    ) ? "undefined" : undefined
+  );
   const isObservedStep = dist.estimateOrigin === "observed_step";
 
   let hasMass = false;
@@ -364,6 +372,7 @@ function processStateDistribution(
     evaluationId: dist.evaluationId,
     horizon,
     estimator: dist.estimator,
+    estimateStatus,
     estimateOrigin: dist.estimateOrigin,
     censoringHeuristic: dist.censoringHeuristic,
     competingHeuristic: dist.competingHeuristic,
@@ -371,6 +380,11 @@ function processStateDistribution(
     totalMass,
     totalCount,
   };
+}
+
+function isUndefinedEstimate(row: ProcessedHorizonData): boolean {
+  return row.estimateStatus === "undefined_empty_population" ||
+    row.estimateStatus === "undefined";
 }
 
 function buildOutcomeTooltip(
@@ -382,6 +396,7 @@ function buildOutcomeTooltip(
   isTrajectory: boolean,
   estimator?: string,
   estimateOrigin?: string,
+  estimateStatus?: ProcessedHorizonData["estimateStatus"],
 ): string {
   const fields: Array<[string, unknown]> = [];
 
@@ -417,12 +432,19 @@ function buildOutcomeTooltip(
     if (totalVal !== null && totalVal !== undefined) {
       fields.push(["Denominator", totalVal]);
     }
-    fields.push(["Accounting", "Raw observed status"]);
+    fields.push(["Accounting", estimator === "raw" || !estimator
+      ? "Raw observed status"
+      : estimator === "kaplan_meier" ? "Kaplan–Meier estimate"
+      : estimator === "aalen_johansen" ? "Aalen–Johansen estimate"
+      : "Estimated outcome probability"]);
+    if (estimateStatus === "beyond_support_plateau") {
+      fields.push(["Support", "Beyond observed follow-up: estimator plateau"]);
+    }
 
-    if (
+    if (estimator === "raw" && (
       st.stateId === "real_censored" ||
       st.label.toLowerCase().includes("censored")
-    ) {
+    )) {
       fields.push([
         "Note",
         "Censored before horizon; no censoring adjustment is applied.",
@@ -524,6 +546,7 @@ export function renderOutcomeDistribution(
 
   const readoutADiv = document.createElement("div");
   readoutADiv.className = "rtichoke-outcome-distribution__readout";
+  readoutADiv.setAttribute("aria-live", "polite");
 
   const legendADiv = document.createElement("div");
   legendADiv.className = "rtichoke-legend";
@@ -851,8 +874,10 @@ export function renderOutcomeDistribution(
     let hasIncompleteExclusionData = false;
 
     if (popExclusion) {
-      // Validate complete horizon coverage: every supplied non-zero prediction horizon in availableSteps must have an explicit record
-      const requiredExclusionHorizons = availableSteps.filter((step) => step > 0);
+      // Supplied zero is a real estimate; only an injected baseline can lack exclusions.
+      const requiredExclusionHorizons = availableSteps.filter((step) =>
+        step > 0 || evalDists.some((d) => d.horizon === 0),
+      );
       const exclusionHorizons = new Set(
         popExclusion.excludedCounts.map((e) => e.horizon),
       );
@@ -911,6 +936,20 @@ export function renderOutcomeDistribution(
         : `Active Horizon: Time = ${activeDataRow.horizon.toFixed(digits)}`;
       readoutCard.append(readoutHeader);
 
+      const unavailable = isUndefinedEstimate(activeDataRow);
+      if (unavailable || activeDataRow.estimateStatus === "beyond_support_plateau") {
+        const notice = document.createElement("p");
+        notice.className = "rtichoke-outcome-distribution__estimate-status";
+        notice.setAttribute("role", "status");
+        notice.dataset.estimateStatus = activeDataRow.estimateStatus!;
+        notice.textContent = unavailable
+          ? activeDataRow.estimateStatus === "undefined_empty_population"
+            ? "Unavailable: no subjects remain at this horizon."
+            : "Unavailable: no outcome probability estimates were supplied."
+          : "Beyond observed follow-up. Shown values are estimator plateaus; they do not establish risk beyond observed follow-up.";
+        readoutCard.append(notice);
+      }
+
       const readoutTable = document.createElement("table");
       readoutTable.className = "rtichoke-outcome-distribution__readout-table";
 
@@ -923,6 +962,8 @@ export function renderOutcomeDistribution(
       const thShare = document.createElement("th");
       if (isObservedStepMode && activeDataRow.estimator === "aalen_johansen") {
         thShare.textContent = "Occupancy (%)";
+      } else if (activeDataRow.estimator !== "raw") {
+        thShare.textContent = "Estimated probability (%)";
       } else {
         thShare.textContent = "Count / Total (%)";
       }
@@ -962,7 +1003,9 @@ export function renderOutcomeDistribution(
         const contentSpan = document.createElement("span");
         contentSpan.className = "rtichoke-performance-table__cell-text";
 
-        if (
+        if (unavailable) {
+          contentSpan.textContent = "Unavailable";
+        } else if (
           isObservedStepMode &&
           activeDataRow.estimator === "aalen_johansen"
         ) {
@@ -981,7 +1024,8 @@ export function renderOutcomeDistribution(
           }
         }
 
-        tdShare.append(barContainer, contentSpan);
+        if (!unavailable) tdShare.append(barContainer);
+        tdShare.append(contentSpan);
         tr.append(tdLabel, tdShare);
         rBody.append(tr);
       }
@@ -996,14 +1040,8 @@ export function renderOutcomeDistribution(
               )
             : undefined;
 
-        const censCount =
-          currentActiveHorizon === 0
-            ? 0
-            : (activeExclusionItem?.censoredExcludedCount ?? 0);
-        const compCount =
-          currentActiveHorizon === 0
-            ? 0
-            : (activeExclusionItem?.competingExcludedCount ?? 0);
+        const censCount = activeExclusionItem?.censoredExcludedCount ?? 0;
+        const compCount = activeExclusionItem?.competingExcludedCount ?? 0;
 
         const activeDist = evalDists.find(
           (d) => d.horizon === currentActiveHorizon,
@@ -1185,6 +1223,7 @@ export function renderOutcomeDistribution(
       }> = [];
 
       for (const row of observedStepRows) {
+        if (isUndefinedEstimate(row)) continue;
         for (const st of row.states) {
           const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
@@ -1196,6 +1235,7 @@ export function renderOutcomeDistribution(
             false,
             row.estimator,
             row.estimateOrigin,
+            row.estimateStatus,
           );
 
           plotData.push({
@@ -1244,13 +1284,19 @@ export function renderOutcomeDistribution(
       const plotData: Array<{
         horizon: number;
         stateId: string;
+        segmentId: string;
         label: string;
         percentage: number;
         color: string;
         title: string;
       }> = [];
 
+      let segment = 0;
       for (const row of eventTableRows) {
+        if (isUndefinedEstimate(row)) {
+          segment++;
+          continue;
+        }
         for (const st of row.states) {
           const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
@@ -1262,11 +1308,13 @@ export function renderOutcomeDistribution(
             true,
             row.estimator,
             row.estimateOrigin,
+            row.estimateStatus,
           );
 
           plotData.push({
             horizon: row.horizon,
             stateId: st.stateId,
+            segmentId: `${st.stateId}:${segment}`,
             label: st.label,
             percentage: st.percentage,
             color,
@@ -1281,7 +1329,7 @@ export function renderOutcomeDistribution(
           Plot.stackY({
             x: "horizon",
             y: "percentage",
-            z: "stateId",
+            z: "segmentId",
             fill: (d) => d.color,
             fillOpacity: 0.85,
             curve: "step-after",
@@ -1294,19 +1342,24 @@ export function renderOutcomeDistribution(
 
       if (numInternalBoundaries > 0) {
         const boundaryData: Array<{
-          boundaryIndex: number;
+          boundaryIndex: string;
           horizon: number;
           cumulativePercentage: number;
         }> = [];
 
+        let boundarySegment = 0;
         for (const row of eventTableRows) {
+          if (isUndefinedEstimate(row)) {
+            boundarySegment++;
+            continue;
+          }
           let cumulative = 0;
           for (let b = 0; b < numInternalBoundaries; b++) {
             const st = row.states[b];
             if (st) {
               cumulative += st.percentage;
               boundaryData.push({
-                boundaryIndex: b,
+                boundaryIndex: `${b}:${boundarySegment}`,
                 horizon: row.horizon,
                 cumulativePercentage: cumulative,
               });
@@ -1371,6 +1424,7 @@ export function renderOutcomeDistribution(
       }> = [];
 
       for (const row of fixedHorizonRows) {
+        if (isUndefinedEstimate(row)) continue;
         for (const st of row.states) {
           const color = getStateColor(st.stateId);
           const tipText = buildOutcomeTooltip(
@@ -1382,6 +1436,7 @@ export function renderOutcomeDistribution(
             false,
             row.estimator,
             row.estimateOrigin,
+            row.estimateStatus,
           );
 
           plotData.push({
@@ -1413,6 +1468,19 @@ export function renderOutcomeDistribution(
       );
     }
 
+    const statusRows = (isObservedStepMode ? observedStepRows :
+      eventTableRows.length ? eventTableRows : fixedHorizonRows)
+      .filter((r) => isUndefinedEstimate(r) || r.estimateStatus === "beyond_support_plateau");
+    if (statusRows.length) {
+      marksA.push(Plot.text(statusRows, {
+        x: (r) => isObservedStepMode || eventTableRows.length ? r.horizon : `Time: ${r.horizon}`,
+        y: 105,
+        text: (r) => isUndefinedEstimate(r) ? "Unavailable" : "Beyond support",
+        fill: theme.axis.color,
+        fontSize: 10,
+      }));
+    }
+
     const plotSpecA = {
       width: panelAWidth,
       height: Math.round(theme.height * 0.65),
@@ -1439,6 +1507,7 @@ export function renderOutcomeDistribution(
             }
           : {
               label: "Step",
+              domain: observedStepRows.map((r) => r.horizon),
               grid: false,
               line: true,
             }
@@ -1453,6 +1522,7 @@ export function renderOutcomeDistribution(
             }
           : {
               label: "Time",
+              domain: fixedHorizonRows.map((r) => `Time: ${r.horizon}`),
               grid: false,
               line: true,
             },
