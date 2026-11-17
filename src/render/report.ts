@@ -532,13 +532,17 @@ function renderReportV1_1(
       return;
     }
 
-    // Audit existing rendered component DOM before replacing to preserve slider/horizon selection if present
+    // Preserve component-local population and numeric horizon before replacement.
+    let previousSelectedEvaluationId: string | undefined;
     let previousSelectedHorizon: number | undefined;
     if (
       compSpec.type === "outcome_distribution" &&
       entry &&
       entry.spec.type === "outcome_distribution"
     ) {
+      previousSelectedEvaluationId = contentEl.querySelector<HTMLInputElement>(
+        'input[type="radio"][name^="od-eval-"]:checked',
+      )?.value;
       const existingSlider = contentEl.querySelector<HTMLInputElement>(
         ".rtichoke-operating-point-slider",
       );
@@ -563,8 +567,10 @@ function renderReportV1_1(
           }
 
           if (prevSpec) {
-            const prevHorizons =
-              getHorizonsForOutcomeDistributionSpec(prevSpec);
+            const prevHorizons = getHorizonsForOutcomeDistributionSpec(
+              prevSpec,
+              previousSelectedEvaluationId,
+            );
             if (parsedIdx >= 0 && parsedIdx < prevHorizons.length) {
               previousSelectedHorizon = prevHorizons[parsedIdx];
             }
@@ -583,6 +589,22 @@ function renderReportV1_1(
       const renderedNode = renderStandaloneComponentContent(resolvedSpec);
       contentEl.append(renderedNode); // Attach to live DOM first!
 
+      // Restore the population first: its selection rebuilds the horizon slider.
+      if (
+        previousSelectedEvaluationId !== undefined &&
+        resolvedSpec.type === "outcome_distribution"
+      ) {
+        const evaluationRadio = Array.from(
+          contentEl.querySelectorAll<HTMLInputElement>(
+            'input[type="radio"][name^="od-eval-"]',
+          ),
+        ).find((radio) => radio.value === previousSelectedEvaluationId);
+        if (evaluationRadio && !evaluationRadio.checked) {
+          evaluationRadio.checked = true;
+          evaluationRadio.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+
       // If a horizon/step slider exists in the newly rendered node and we had a previous selected numeric horizon, re-apply it
       if (
         previousSelectedHorizon !== undefined &&
@@ -592,8 +614,10 @@ function renderReportV1_1(
           ".rtichoke-operating-point-slider",
         );
         if (newSlider) {
-          const newHorizons =
-            getHorizonsForOutcomeDistributionSpec(resolvedSpec);
+          const newHorizons = getHorizonsForOutcomeDistributionSpec(
+            resolvedSpec,
+            previousSelectedEvaluationId,
+          );
           if (newHorizons.length > 0) {
             let targetIdx = newHorizons.indexOf(previousSelectedHorizon);
             if (targetIdx === -1) {

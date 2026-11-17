@@ -43,6 +43,15 @@ try {
   check(readout(first).includes("1 / 2 (50.0%)"), "horizon exclusions incorrect");
   choose(first, 'input[value="complete"]');
   check(readout(first).includes("100.0%"), "population switch lost probability");
+  for (const c of ["adjusted", "excluded"]) {
+    choose(first, 'input[name$="-censoring"][value="'+c+'"]');
+    for (const k of ["excluded","adjusted_as_censored","adjusted_as_negative","adjusted_as_composite"]) {
+      choose(first, 'input[name$="-competing"][value="'+k+'"]');
+      check(first.querySelector('input[value="complete"]').checked, "heuristic switch lost population");
+      check(readout(first).includes("Time = 1.000"), "population restoration lost horizon");
+      check(readout(first).includes("100.0%"), "population restoration lost probability");
+    }
+  }
   check(readout(second).includes("no subjects remain"), "report state leaked");
   // A standalone chart has the same status behavior as ReportSpec dispatch.
   const variant = spec.variants["adjusted:adjusted_as_negative"];
